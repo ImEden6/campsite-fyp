@@ -1,0 +1,44 @@
+{
+  "name": "campsite-management-system",
+  "version": "1.0.0",
+  "description": "Campsite Management System",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
+    "lint": "npm run lint:frontend && npm run lint:shared",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:shared": "cd shared && npm run lint",
+    "type-check": "npm run type-check:shared && npm run type-check:frontend",
+    "type-check:frontend": "cd frontend && npm run type-check",
+    "type-check:shared": "cd shared && npm run type-check",
+    "install:all": "npm install && cd frontend && npm install && cd ../shared && npm install"
+  },
+  "workspaces": [
+    "frontend",
+    "shared"
+  ],
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-reconciler": "0.29.0",
+    "react-dropzone": {
+      "react": "18.3.1"
+    },
+    "@sentry/react": {
+      "react": "18.3.1"
+    },
+    "zustand": {
+      "react": "18.3.1"
+    }
+  },
+  "keywords": [
+    "campsite",
+    "management",
+    "booking",
+    "reservation"
+  ],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,5 @@
+// This doesn't matter mostly if its not actually going into use/production
+User-agent: *
+Allow: /
+
+Sitemap: https://campsite.com/sitemap.xml
