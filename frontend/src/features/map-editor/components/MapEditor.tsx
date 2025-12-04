@@ -34,10 +34,9 @@ const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
 
   // Handle save
   const handleSave = useCallback(() => {
-    // Save is handled in Toolbar component
-    setIsSaving(true);
-    // The actual save logic is in Toolbar, this just tracks state
-  }, []);
+    // Emit event to trigger save in Toolbar component
+    eventBus.emit('map:save-request', {});
+  }, [eventBus]);
 
   // Handle clipboard operations
   useEffect(() => {

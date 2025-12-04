@@ -135,6 +135,10 @@ export interface MapSaveEvent {
   success: boolean;
 }
 
+export interface MapSaveRequestEvent {
+  // No additional data needed
+}
+
 /**
  * Validation events
  */
@@ -202,6 +206,7 @@ export interface MapEditorEvents {
   'snap-to-grid:toggle': SnapToGridToggleEvent;
   'map:load': MapLoadEvent;
   'map:save': MapSaveEvent;
+  'map:save-request': MapSaveRequestEvent;
   'module:validation': ModuleValidationEvent;
   'clipboard:copy': ClipboardCopyEvent;
   'clipboard:cut': ClipboardCutEvent;

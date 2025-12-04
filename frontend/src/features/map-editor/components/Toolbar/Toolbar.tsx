@@ -81,6 +81,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
     return unsubscribe;
   }, [eventBus]);
 
+  // Listen to save requests (e.g., from keyboard shortcuts)
+  useEffect(() => {
+    const unsubscribe = eventBus.on('map:save-request', () => {
+      handleSave();
+    });
+    return unsubscribe;
+  }, [eventBus, handleSave]);
+
   // Track unsaved changes
   useEffect(() => {
     const unsubscribers = [

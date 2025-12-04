@@ -149,11 +149,18 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (currentTool === 'move' && e.button === 0) {
         setIsPanning(true);
-        const currentViewport = viewportService.getViewport();
-        setPanStart({
-          x: e.clientX - currentViewport.position.x,
-          y: e.clientY - currentViewport.position.y,
-        });
+        const rect = svgRef.current?.getBoundingClientRect();
+        if (rect) {
+          const currentViewport = viewportService.getViewport();
+          // Calculate pan start: convert mouse position to canvas coordinates (like handleWheel)
+          // The viewport position is in canvas coordinates, so we need to divide by zoom
+          const mouseX = (e.clientX - rect.left) / currentViewport.zoom;
+          const mouseY = (e.clientY - rect.top) / currentViewport.zoom;
+          setPanStart({
+            x: mouseX - currentViewport.position.x,
+            y: mouseY - currentViewport.position.y,
+          });
+        }
       }
     },
     [currentTool, viewportService]
@@ -162,12 +169,19 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (isPanning && currentTool === 'move') {
-        const currentViewport = viewportService.getViewport();
-        const newPosition: Position = {
-          x: e.clientX - panStart.x,
-          y: e.clientY - panStart.y,
-        };
-        viewportService.setViewport({ position: newPosition });
+        const rect = svgRef.current?.getBoundingClientRect();
+        if (rect) {
+          const currentViewport = viewportService.getViewport();
+          // Convert mouse position to canvas coordinates (like handleWheel)
+          // Then calculate new position based on the pan start offset
+          const mouseX = (e.clientX - rect.left) / currentViewport.zoom;
+          const mouseY = (e.clientY - rect.top) / currentViewport.zoom;
+          const newPosition: Position = {
+            x: mouseX - panStart.x,
+            y: mouseY - panStart.y,
+          };
+          viewportService.setViewport({ position: newPosition });
+        }
       }
     },
     [isPanning, panStart, currentTool, viewportService]
