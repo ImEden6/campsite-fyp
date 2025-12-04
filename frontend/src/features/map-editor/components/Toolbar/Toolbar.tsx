@@ -204,7 +204,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
   }, [viewportService]);
 
   const handleSave = useCallback(async () => {
-    if (!currentMap || !mapId) return;
+    if (!currentMap || !mapId) {
+      // Emit event to reset MapEditor's isSaving state if save was requested but can't proceed
+      eventBus.emit('map:save', { mapId: mapId || '', success: false });
+      return;
+    }
 
     setIsSaving(true);
     setSaveError(null);
@@ -219,6 +223,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
           EDITOR_CONSTANTS.TOAST_DURATION.ERROR
         );
         setIsSaving(false);
+        // Emit event to reset MapEditor's isSaving state
+        eventBus.emit('map:save', { mapId, success: false });
         return;
       }
 
