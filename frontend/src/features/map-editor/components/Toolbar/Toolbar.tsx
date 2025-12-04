@@ -41,8 +41,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
     showGrid,
     toggleGrid,
     setTool,
-    getSelection,
-    areRulersVisible,
+    selection,
+    showRulers,
     toggleRulers,
   } = useEditorService();
   const { canUndo, canRedo, undo, redo } = useMapCommands();
@@ -83,14 +83,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
     });
     return unsubscribe;
   }, [eventBus]);
-
-  // Listen to save requests (e.g., from keyboard shortcuts)
-  useEffect(() => {
-    const unsubscribe = eventBus.on('map:save-request', () => {
-      handleSave();
-    });
-    return unsubscribe;
-  }, [eventBus, handleSave]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -168,11 +160,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
 
   const handleZoomToSelection = useCallback(() => {
     if (!currentMap || containerSize.width === 0) return;
-    const selectedIds = getSelection();
-    if (selectedIds.length === 0) return;
+    if (selection.length === 0) return;
 
     const selectedModules = currentMap.modules.filter((m) =>
-      selectedIds.includes(m.id)
+      selection.includes(m.id)
     );
     if (selectedModules.length === 0) return;
 
@@ -189,7 +180,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
     );
 
     viewportService.zoomToSelection(bounds, containerSize);
-  }, [viewportService, currentMap, containerSize, getSelection]);
+  }, [viewportService, currentMap, containerSize, selection]);
 
   const handleZoomSliderChange = useCallback(
     (value: number) => {
@@ -280,7 +271,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
     }
   }, [currentMap, mapId, mapService, validationErrors, eventBus, showToast]);
 
-  const selectedIds = getSelection();
+  // Listen to save requests (e.g., from keyboard shortcuts)
+  useEffect(() => {
+    const unsubscribe = eventBus.on('map:save-request', () => {
+      handleSave();
+    });
+    return unsubscribe;
+  }, [eventBus, handleSave]);
+
+  const selectedIds = selection;
   const hasSelection = selectedIds.length > 0;
 
   return (
@@ -398,7 +397,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
         <button
           onClick={toggleRulers}
           className={`p-2 rounded-md ${
-            areRulersVisible()
+            showRulers
               ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
           }`}

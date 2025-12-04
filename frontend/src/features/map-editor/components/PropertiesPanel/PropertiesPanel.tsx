@@ -106,7 +106,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
                 })
               }
               aria-label="Position Y"
-              title="Position Y coordinate"
+              title="Position Y coordinate" 
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
