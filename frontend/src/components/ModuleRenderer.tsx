@@ -69,6 +69,8 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
   const groupRef = useRef<Konva.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  // Use ref to store dragOffset to avoid recreating handleDragMove during drag
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
 
   const { updateModule, selectedMapId, maps } = useMapStore();
   const { editor, pushHistory } = useEditorStore();
@@ -99,10 +101,12 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
     };
     
     // Calculate offset in canvas coordinates
-    setDragOffset({
+    const offset = {
       x: canvasPos.x - module.position.x,
       y: canvasPos.y - module.position.y,
-    });
+    };
+    setDragOffset(offset);
+    dragOffsetRef.current = offset;
     
     // Capture state before drag operation
     if (selectedMapId) {
@@ -131,8 +135,10 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
         if (!stage || !pos) return;
 
         // Account for viewport zoom and position
-        let newX = (pos.x - stage.x()) / stage.scaleX() - dragOffset.x;
-        let newY = (pos.y - stage.y()) / stage.scaleY() - dragOffset.y;
+        // Use ref to get current dragOffset without causing function recreation
+        const currentOffset = dragOffsetRef.current;
+        let newX = (pos.x - stage.x()) / stage.scaleX() - currentOffset.x;
+        let newY = (pos.y - stage.y()) / stage.scaleY() - currentOffset.y;
 
         // Snap to grid if enabled
         if (editor.snapToGrid) {
@@ -188,7 +194,7 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
         end();
       }
     }),
-    [isDragging, editor.currentTool, editor.snapToGrid, editor.gridSize, dragOffset, module, selectedMapId, maps, updateModule]
+    [isDragging, editor.currentTool, editor.snapToGrid, editor.gridSize, module, selectedMapId, maps, updateModule]
   );
 
   const handleDragEnd = useCallback(() => {

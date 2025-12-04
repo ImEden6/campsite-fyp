@@ -1163,9 +1163,9 @@ const MapEditor: React.FC = () => {
       
       // Apply scaling
       if (transform.scale) {
-        // Calculate position relative to center
-        const relX = module.position.x - centerX;
-        const relY = module.position.y - centerY;
+        // Calculate position relative to center using newPosition to compose with translation
+        const relX = newPosition.x - centerX;
+        const relY = newPosition.y - centerY;
         
         // Scale position relative to center
         newPosition.x = centerX + relX * transform.scale.x;

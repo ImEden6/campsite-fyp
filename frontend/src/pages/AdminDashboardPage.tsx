@@ -20,7 +20,8 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  Map
+  Map,
+  RefreshCw
 } from 'lucide-react';
 import { getSites, deleteSite } from '@/services/api/sites';
 import { SiteType, SiteStatus } from '@/types';
@@ -185,10 +186,9 @@ export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Fetch all sites
-  const { data: sites = [], isLoading } = useQuery({
+  const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['sites'],
     queryFn: () => getSites(),
-    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Group sites by type
@@ -265,6 +265,10 @@ export const AdminDashboardPage: React.FC = () => {
     navigate('/admin/maps');
   };
 
+  const handleRefresh = async () => {
+    await refetch();
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -274,6 +278,15 @@ export const AdminDashboardPage: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400">Overview and site management</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefetching}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Refresh dashboard data"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
           <button
             onClick={() => navigate('/admin/maps')}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
