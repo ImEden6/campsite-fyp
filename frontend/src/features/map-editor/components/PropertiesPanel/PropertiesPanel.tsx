@@ -37,21 +37,38 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
   }
 
   const handlePropertyChange = async (property: string, value: unknown) => {
-    const updated = {
-      ...selectedModule,
-      metadata: {
-        ...selectedModule.metadata,
+    // Handle position and size as top-level properties, not metadata
+    if (property === 'position' || property === 'size') {
+      const updated = {
+        ...selectedModule,
         [property]: value,
-      },
-      updatedAt: new Date(),
-    };
+        updatedAt: new Date(),
+      };
 
-    await mapService.updateModule(mapId, updated);
-    eventBus.emit('module:update', {
-      moduleId: selectedModule.id,
-      updates: updated,
-      mapId,
-    });
+      await mapService.updateModule(mapId, updated);
+      eventBus.emit('module:update', {
+        moduleId: selectedModule.id,
+        updates: updated,
+        mapId,
+      });
+    } else {
+      // Other properties go into metadata
+      const updated = {
+        ...selectedModule,
+        metadata: {
+          ...selectedModule.metadata,
+          [property]: value,
+        },
+        updatedAt: new Date(),
+      };
+
+      await mapService.updateModule(mapId, updated);
+      eventBus.emit('module:update', {
+        moduleId: selectedModule.id,
+        updates: updated,
+        mapId,
+      });
+    }
   };
 
   return (

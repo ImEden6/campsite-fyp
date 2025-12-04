@@ -3,7 +3,7 @@
  * Hook for executing commands
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useMapEditor } from './useMapEditor';
 import { MoveModuleCommand } from '../commands/MoveModuleCommand';
 import { ResizeModuleCommand } from '../commands/ResizeModuleCommand';
@@ -17,7 +17,7 @@ import type { Position, Size, AnyModule } from '@/types';
  * Hook for executing map editor commands
  */
 export function useMapCommands() {
-  const { commandBus, mapService, historyService } = useMapEditor();
+  const { commandBus, mapService, historyService, eventBus } = useMapEditor();
 
   const moveModule = useCallback(
     async (
@@ -116,13 +116,46 @@ export function useMapCommands() {
     [commandBus, mapService]
   );
 
+  // Track history state to trigger recomputation of canUndo/canRedo
+  const [historyVersion, setHistoryVersion] = useState(0);
+
   const undo = useCallback(async () => {
-    return historyService.undo();
+    await historyService.undo();
+    // Update version to trigger recomputation of canUndo/canRedo
+    setHistoryVersion((v) => v + 1);
   }, [historyService]);
 
   const redo = useCallback(async () => {
-    return historyService.redo();
+    await historyService.redo();
+    // Update version to trigger recomputation of canUndo/canRedo
+    setHistoryVersion((v) => v + 1);
   }, [historyService]);
+
+  // Update history version when commands are executed (via eventBus)
+  useEffect(() => {
+    // Listen to command execution events to update canUndo/canRedo
+    // Since commands are executed through commandBus, we need to check periodically
+    // or listen to module events that indicate state changes
+    const checkHistory = () => {
+      setHistoryVersion((v) => v + 1);
+    };
+
+    // Listen to module events that indicate commands were executed
+    const unsubscribeModule = eventBus.on('module:add', checkHistory);
+    const unsubscribeModuleUpdate = eventBus.on('module:update', checkHistory);
+    const unsubscribeModuleDelete = eventBus.on('module:delete', checkHistory);
+
+    return () => {
+      unsubscribeModule();
+      unsubscribeModuleUpdate();
+      unsubscribeModuleDelete();
+    };
+  }, [eventBus]);
+
+  // Compute canUndo and canRedo dynamically based on current history state
+  // The historyVersion dependency ensures these are recomputed when history changes
+  const canUndo = historyService.canUndo();
+  const canRedo = historyService.canRedo();
 
   return {
     moveModule,
@@ -133,8 +166,8 @@ export function useMapCommands() {
     bulkOperation,
     undo,
     redo,
-    canUndo: historyService.canUndo(),
-    canRedo: historyService.canRedo(),
+    canUndo,
+    canRedo,
   };
 }
 
