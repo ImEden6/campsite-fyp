@@ -92,6 +92,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
                   x: parseFloat(e.target.value) || 0,
                 })
               }
+              aria-label="Position X"
+              title="Position X coordinate"
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
             <input
@@ -103,6 +105,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
                   y: parseFloat(e.target.value) || 0,
                 })
               }
+              aria-label="Position Y"
+              title="Position Y coordinate"
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
@@ -122,6 +126,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
                   width: parseFloat(e.target.value) || 0,
                 })
               }
+              aria-label="Width"
+              title="Module width"
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
             <input
@@ -133,6 +139,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
                   height: parseFloat(e.target.value) || 0,
                 })
               }
+              aria-label="Height"
+              title="Module height"
               className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
@@ -140,13 +148,17 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
 
         {selectedModule.metadata && 'name' in selectedModule.metadata && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="module-name-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Name
             </label>
             <input
+              id="module-name-input"
               type="text"
               value={String(selectedModule.metadata.name || '')}
               onChange={(e) => handlePropertyChange('name', e.target.value)}
+              aria-label="Module name"
+              title="Module name"
+              placeholder="Enter module name"
               className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>

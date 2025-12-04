@@ -34,6 +34,8 @@ const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
 
   // Handle save
   const handleSave = useCallback(() => {
+    // Set saving state immediately to prevent duplicate save calls
+    setIsSaving(true);
     // Emit event to trigger save in Toolbar component
     eventBus.emit('map:save-request', {});
   }, [eventBus]);
