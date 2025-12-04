@@ -207,10 +207,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
   }, [viewportService]);
 
   const handleSave = useCallback(async () => {
-    if (!currentMap || !mapId) {
+    if (!mapId) {
       // Emit event to reset MapEditor's isSaving state if save was requested but can't proceed
-      // No mapId is provided since no valid map exists to save
+      // No mapId is provided, so omit it from the event
       eventBus.emit('map:save', { success: false });
+      return;
+    }
+
+    if (!currentMap) {
+      // Map lookup failed despite mapId being provided
+      // Include mapId in the event for consistency with other error emissions
+      eventBus.emit('map:save', { mapId, success: false });
       return;
     }
 
