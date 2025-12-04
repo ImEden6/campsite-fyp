@@ -6,7 +6,6 @@
 import React from 'react';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapService } from '../../hooks/useMapService';
-import { useMapEditor } from '../../hooks/useMapEditor';
 
 interface PropertiesPanelProps {
   mapId: string;
@@ -15,7 +14,6 @@ interface PropertiesPanelProps {
 export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
   const { selection } = useEditorService();
   const mapService = useMapService();
-  const { eventBus } = useMapEditor();
 
   const modules = mapService.getModules(mapId);
   const selectedModules = modules.filter((m) => selection.includes(m.id));
@@ -45,12 +43,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
         updatedAt: new Date(),
       };
 
+      // mapService.updateModule() already emits 'module:update' event internally
       await mapService.updateModule(mapId, updated);
-      eventBus.emit('module:update', {
-        moduleId: selectedModule.id,
-        updates: updated,
-        mapId,
-      });
     } else {
       // Other properties go into metadata
       const updated = {
@@ -62,12 +56,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
         updatedAt: new Date(),
       };
 
+      // mapService.updateModule() already emits 'module:update' event internally
       await mapService.updateModule(mapId, updated);
-      eventBus.emit('module:update', {
-        moduleId: selectedModule.id,
-        updates: updated,
-        mapId,
-      });
     }
   };
 

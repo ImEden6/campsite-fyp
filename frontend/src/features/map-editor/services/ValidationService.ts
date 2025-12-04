@@ -8,6 +8,7 @@ import type { AnyModule, Position, Size, ModuleType, CampsiteMap } from '@/types
 import {
   validateModule as validateModuleUtil,
   validatePosition as validatePositionUtil,
+  validateBoundaryConstraints as validateBoundaryConstraintsUtil,
   validateSize as validateSizeUtil,
   validateRotation as validateRotationUtil,
   validatePropertyValue as validatePropertyValueUtil,
@@ -29,7 +30,19 @@ export class ValidationService implements IValidationService {
     size: Size,
     bounds?: CampsiteMap['bounds']
   ): ValidationResult {
-    return validatePositionUtil(position, size, bounds);
+    // First validate position coordinates are valid numbers
+    const positionResult = validatePositionUtil(position);
+    
+    // If bounds are provided, also validate boundary constraints
+    if (bounds) {
+      const boundaryResult = validateBoundaryConstraintsUtil(position, size, bounds);
+      return {
+        isValid: positionResult.isValid && boundaryResult.isValid,
+        errors: [...positionResult.errors, ...boundaryResult.errors],
+      };
+    }
+    
+    return positionResult;
   }
 
   validateSize(size: Size): ValidationResult {
