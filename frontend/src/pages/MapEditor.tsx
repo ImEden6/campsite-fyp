@@ -954,6 +954,8 @@ const MapEditor: React.FC = () => {
     if (currentMap?.imageUrl) {
       const img = new window.Image();
       let isMounted = true;
+      // Capture currentMap.imageUrl in a local variable to avoid stale closure
+      const imageUrl = currentMap.imageUrl;
       
       img.onload = () => {
         if (isMounted) {
@@ -966,13 +968,13 @@ const MapEditor: React.FC = () => {
           errorLogger.error(
             ErrorCategory.NETWORK,
             'Failed to load background image',
-            { imageUrl: currentMap.imageUrl },
+            { imageUrl },
             new Error('Image load failed')
           );
         }
       };
       
-      img.src = currentMap.imageUrl;
+      img.src = imageUrl;
       
       return () => {
         isMounted = false;

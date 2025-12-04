@@ -191,9 +191,9 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
     [isDragging, editor.currentTool, editor.snapToGrid, editor.gridSize, dragOffset, module, selectedMapId, maps, updateModule]
   );
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   // Attach global mouse move and mouse up listeners when dragging
   // This allows for handle drag manually without Konva's automatic Group movement
@@ -212,7 +212,7 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
       stage.off('mouseup', handleDragEnd);
       stage.off('mouseleave', handleDragEnd);
     };
-  }, [isDragging, handleDragMove]);
+  }, [isDragging, handleDragMove, handleDragEnd]);
 
   const handleClick = (e: KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
