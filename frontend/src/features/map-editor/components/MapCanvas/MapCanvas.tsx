@@ -8,6 +8,7 @@ import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { BackgroundLayer } from './BackgroundLayer';
 import { GridLayer } from './GridLayer';
 import { ModulesLayer } from './ModulesLayer';
+import { Rulers } from '../Rulers/Rulers';
 import { useMapService } from '../../hooks/useMapService';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapEditor } from '../../hooks/useMapEditor';
@@ -38,6 +39,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
   const { eventBus } = useMapEditor();
   const { addModule } = useMapCommands();
   const viewportService = useViewportService();
+  const editorService = useEditorService();
+
+  // Track drag position for drop handling
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Make canvas a drop target
   const { setNodeRef: setDropRef, isOver } = useDroppable({
@@ -46,34 +51,60 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
 
   // Handle drop events
   useDndMonitor({
+    onDragMove: (event) => {
+      if (event.activatorEvent && event.activatorEvent instanceof MouseEvent) {
+        setDragPosition({ x: event.activatorEvent.clientX, y: event.activatorEvent.clientY });
+      }
+    },
     onDragEnd: (event) => {
       if (event.over?.id === 'map-editor-canvas' && event.active.data.current?.template) {
         const template = event.active.data.current.template as ModuleTemplate;
         const map = mapService.getMap(mapId);
         
-        if (map) {
-          // Calculate drop position (simplified - can be enhanced with actual mouse position)
-          const position: Position = {
-            x: map.imageSize.width / 2 - template.defaultSize.width / 2,
-            y: map.imageSize.height / 2 - template.defaultSize.height / 2,
-          };
-
-          const newModule: AnyModule = {
-            id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
-            type: template.type,
-            position,
-            size: template.defaultSize,
-            rotation: 0,
-            zIndex: map.modules.length,
-            locked: false,
-            visible: true,
-            metadata: template.defaultMetadata,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          } as AnyModule;
-
-          addModule(mapId, newModule);
+        if (!map || !dragPosition || !svgRef.current) {
+          setDragPosition(null);
+          return;
         }
+
+        // Get SVG bounding rect
+        const svgRect = svgRef.current.getBoundingClientRect();
+        const currentViewport = viewportService.getViewport();
+        
+        // Convert client coordinates to SVG coordinates
+        // Account for viewport transform (position and zoom)
+        const svgRelativeX = dragPosition.x - svgRect.left;
+        const svgRelativeY = dragPosition.y - svgRect.top;
+        
+        // Convert to canvas coordinates (accounting for viewport transform)
+        // The SVG has a transform: translate(viewport.position) scale(viewport.zoom)
+        // So we need to reverse that: (svgPos - viewport.position) / viewport.zoom
+        const canvasX = (svgRelativeX - currentViewport.position.x) / currentViewport.zoom;
+        const canvasY = (svgRelativeY - currentViewport.position.y) / currentViewport.zoom;
+        
+        // Snap to grid if enabled
+        const gridSize = editorService.getGridSize();
+        const snapToGrid = editorService.isSnapToGrid();
+        const finalX = snapToGrid ? Math.round(canvasX / gridSize) * gridSize : canvasX;
+        const finalY = snapToGrid ? Math.round(canvasY / gridSize) * gridSize : canvasY;
+
+        const newModule: AnyModule = {
+          id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+          type: template.type,
+          position: { x: finalX, y: finalY },
+          size: template.defaultSize,
+          rotation: 0,
+          zIndex: map.modules.length,
+          locked: false,
+          visible: true,
+          metadata: template.defaultMetadata,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as AnyModule;
+
+        addModule(mapId, newModule);
+        setDragPosition(null);
+      } else {
+        setDragPosition(null);
       }
     },
   });
@@ -207,19 +238,32 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  const showRulers = editorService.areRulersVisible();
+  const rulerSize = 24; // Height for horizontal, width for vertical
+
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full overflow-hidden bg-gray-50 dark:bg-gray-900 ${
+      className={`w-full h-full overflow-hidden bg-gray-50 dark:bg-gray-900 relative ${
         isOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''
       }`}
     >
-      <div ref={setDropRef} className="w-full h-full">
+      {/* Rulers */}
+      {showRulers && <Rulers containerSize={containerSize} />}
+
+      <div
+        ref={setDropRef}
+        className="w-full h-full"
+        style={{
+          paddingTop: showRulers ? `${rulerSize}px` : '0',
+          paddingLeft: showRulers ? `${rulerSize}px` : '0',
+        }}
+      >
         <svg
           ref={svgRef}
         viewBox={`0 0 ${imageSize.width} ${imageSize.height}`}
-        width={containerSize.width || '100%'}
-        height={containerSize.height || '100%'}
+        width={containerSize.width ? containerSize.width - (showRulers ? rulerSize : 0) : '100%'}
+        height={containerSize.height ? containerSize.height - (showRulers ? rulerSize : 0) : '100%'}
         style={{
           transform: `translate(${viewport.position.x}px, ${viewport.position.y}px) scale(${viewport.zoom})`,
           transformOrigin: '0 0',

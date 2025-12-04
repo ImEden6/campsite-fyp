@@ -18,6 +18,7 @@ import {
   Maximize2,
   Loader2,
   AlertCircle,
+  Ruler,
 } from 'lucide-react';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapCommands } from '../../hooks/useMapCommands';
@@ -41,6 +42,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
     toggleGrid,
     setTool,
     getSelection,
+    areRulersVisible,
+    toggleRulers,
   } = useEditorService();
   const { canUndo, canRedo, undo, redo } = useMapCommands();
   const { eventBus } = useMapEditor();
@@ -384,6 +387,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
           title="Toggle Grid"
         >
           <Grid3X3 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={toggleRulers}
+          className={`p-2 rounded-md ${
+            areRulersVisible()
+              ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+          }`}
+          title="Toggle Rulers"
+        >
+          <Ruler className="w-4 h-4" />
         </button>
 
         <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />

@@ -5,17 +5,20 @@
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { MapEditorProvider } from '../../context/MapEditorContext';
+import { MapEditorProvider } from '../context/MapEditorContext';
 import { MapCanvas } from './MapCanvas/MapCanvas';
 import { Toolbar } from './Toolbar/Toolbar';
 import { ModuleLibrary } from './ModuleLibrary/ModuleLibrary';
 import { PropertiesPanel } from './PropertiesPanel/PropertiesPanel';
-import { useMapService } from '../../hooks/useMapService';
-import { useMapEditor } from '../../hooks/useMapEditor';
-import { useMapCommands } from '../../hooks/useMapCommands';
-import { useEditorService } from '../../hooks/useEditorService';
-import { useMapEditorShortcuts } from '../../hooks/useMapEditorShortcuts';
-import { ZustandMapRepository } from '../../infrastructure/ZustandRepository';
+import { StatusBar } from './StatusBar/StatusBar';
+import { BulkOperationsToolbar } from './BulkOperationsToolbar/BulkOperationsToolbar';
+import { useMapService } from '../hooks/useMapService';
+import { useMapEditor } from '../hooks/useMapEditor';
+import { useMapCommands } from '../hooks/useMapCommands';
+import { useEditorService } from '../hooks/useEditorService';
+import { useMapEditorShortcuts } from '../hooks/useMapEditorShortcuts';
+import { useMapEditorContext } from '../context/MapEditorContext';
+import { ZustandMapRepository } from '../infrastructure/ZustandRepository';
 import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
 import type { AnyModule, Position } from '@/types';
 
@@ -25,10 +28,12 @@ const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
   const { eventBus } = useMapEditor();
   const { addModule, moveModule } = useMapCommands();
   const editorService = useEditorService();
+  const { validationService } = useMapEditorContext();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [clipboard, setClipboard] = useState<AnyModule[]>([]);
   const [isCut, setIsCut] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Map<string, string[]>>(new Map());
   // Memoize repository instance to prevent recreation on every render
   const repository = useMemo(() => new ZustandMapRepository(), []);
 
@@ -181,8 +186,37 @@ const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
       }),
     ];
 
+    // Validate modules when they change
+    const validateModules = () => {
+      const map = mapService.getMap(mapId);
+      if (!map) return;
+
+      const errors = new Map<string, string[]>();
+      map.modules.forEach((module) => {
+        const validation = validationService.validateModule(module, map.bounds);
+        if (!validation.isValid && validation.errors.length > 0) {
+          errors.set(module.id, validation.errors.map((e) => e.code));
+        }
+      });
+      setValidationErrors(errors);
+    };
+
+    // Validate on module changes
+    const validationUnsubscribers = [
+      eventBus.on('module:add', validateModules),
+      eventBus.on('module:delete', validateModules),
+      eventBus.on('module:update', validateModules),
+      eventBus.on('module:move', validateModules),
+      eventBus.on('module:resize', validateModules),
+      eventBus.on('module:rotate', validateModules),
+    ];
+
+    // Initial validation
+    validateModules();
+
     return () => {
       unsubscribers.forEach((unsub) => unsub());
+      validationUnsubscribers.forEach((unsub) => unsub());
     };
   }, [
     mapId,
@@ -240,9 +274,17 @@ const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
         {/* Toolbar */}
         <Toolbar mapId={mapId} />
 
+        {/* Bulk Operations Toolbar - Shows when multiple modules are selected */}
+        <BulkOperationsToolbar mapId={mapId} />
+
         {/* Canvas */}
         <div className="flex-1 relative">
           <MapCanvas mapId={mapId} />
+          <StatusBar
+            mapId={mapId}
+            validationErrors={validationErrors}
+            hasUnsavedChanges={hasUnsavedChanges}
+          />
         </div>
       </div>
 
