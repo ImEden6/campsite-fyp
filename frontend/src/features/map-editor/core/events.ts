@@ -131,7 +131,7 @@ export interface MapLoadEvent {
 }
 
 export interface MapSaveEvent {
-  mapId: string;
+  mapId?: string;
   success: boolean;
 }
 
