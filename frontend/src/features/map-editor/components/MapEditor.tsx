@@ -3,7 +3,7 @@
  * Main orchestrator component for the map editor
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { MapEditorProvider } from '../../context/MapEditorContext';
 import { MapCanvas } from './MapCanvas/MapCanvas';
@@ -18,7 +18,8 @@ import { ZustandMapRepository } from '../../infrastructure/ZustandRepository';
 const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
   const mapService = useMapService();
   const { eventBus } = useMapEditor();
-  const repository = new ZustandMapRepository();
+  // Memoize repository instance to prevent recreation on every render
+  const repository = useMemo(() => new ZustandMapRepository(), []);
 
   useEffect(() => {
     // Load map when component mounts

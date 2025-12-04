@@ -66,7 +66,13 @@ export class EditorService implements IEditorService {
 
     // Listen to selection:clear events
     this.eventBus.on('selection:clear', () => {
-      this.clearSelection();
+      // Only clear if there's actually a selection to avoid circular calls
+      const current = this.getSelection();
+      if (current.length > 0) {
+        // Update state directly without emitting event to avoid circular dependency
+        this.store.setState({ selectedModuleIds: [] });
+        this.eventBus.emit('selection:change', { selectedModuleIds: [] });
+      }
     });
   }
 

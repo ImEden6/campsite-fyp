@@ -6,6 +6,7 @@
 import React from 'react';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapService } from '../../hooks/useMapService';
+import type { AnyModule } from '@/types';
 
 interface PropertiesPanelProps {
   mapId: string;
@@ -37,24 +38,24 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
   const handlePropertyChange = async (property: string, value: unknown) => {
     // Handle position and size as top-level properties, not metadata
     if (property === 'position' || property === 'size') {
-      const updated = {
+      const updated: AnyModule = {
         ...selectedModule,
         [property]: value,
         updatedAt: new Date(),
-      };
+      } as AnyModule;
 
       // mapService.updateModule() already emits 'module:update' event internally
       await mapService.updateModule(mapId, updated);
     } else {
       // Other properties go into metadata
-      const updated = {
+      const updated: AnyModule = {
         ...selectedModule,
         metadata: {
           ...selectedModule.metadata,
           [property]: value,
         },
         updatedAt: new Date(),
-      };
+      } as AnyModule;
 
       // mapService.updateModule() already emits 'module:update' event internally
       await mapService.updateModule(mapId, updated);

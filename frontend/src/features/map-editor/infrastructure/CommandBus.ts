@@ -31,10 +31,10 @@ export class CommandBus {
     }
 
     try {
-      // If we're in a transaction, add to group
+      // If in a transaction, add to group but don't execute yet
       if (this.currentGroupId !== null) {
         this.groupCommands.push(command);
-        await command.execute();
+        // Don't execute here - will be executed when transaction is committed
         return { success: true };
       }
 
