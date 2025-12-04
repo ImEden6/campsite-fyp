@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
 import { useMapEditor } from '../../hooks/useMapEditor';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapService } from '../../hooks/useMapService';
-import type { AnyModule } from '@/types';
 
 interface ModulesLayerProps {
   mapId: string;
@@ -22,7 +21,7 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId }) => {
 
   // Listen for module:select events
   useEffect(() => {
-    const unsubscribe = eventBus.on('module:select', (payload) => {
+    const unsubscribe = eventBus.on('module:select', () => {
       // Handle selection via editor service
       // This will be handled by the editor service listener
     });

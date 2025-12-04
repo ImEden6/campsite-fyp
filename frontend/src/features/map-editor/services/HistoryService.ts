@@ -4,7 +4,6 @@
  */
 
 import type { IHistoryService } from '../core/services';
-import { CommandBus } from '../infrastructure/CommandBus';
 import type { CommandBus as ICommandBus } from '../infrastructure/CommandBus';
 
 export class HistoryService implements IHistoryService {

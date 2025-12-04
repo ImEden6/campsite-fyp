@@ -68,7 +68,6 @@ const getModuleShape = (type: ModuleType) => {
 const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, hasValidationErrors = false, onSelect }) => {
   const groupRef = useRef<Konva.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   // Use ref to store dragOffset to avoid recreating handleDragMove during drag
   const dragOffsetRef = useRef({ x: 0, y: 0 });
 
@@ -105,7 +104,6 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
       x: canvasPos.x - module.position.x,
       y: canvasPos.y - module.position.y,
     };
-    setDragOffset(offset);
     dragOffsetRef.current = offset;
     
     // Capture state before drag operation

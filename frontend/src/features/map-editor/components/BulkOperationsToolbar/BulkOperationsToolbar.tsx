@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapCommands } from '../../hooks/useMapCommands';
-import { useMapService } from '../../hooks/useMapService';
 import { useToast } from '@/hooks/useToast';
 import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
 import type { BulkOperation } from '../../commands/BulkOperationCommand';
@@ -29,7 +28,6 @@ interface BulkOperationsToolbarProps {
 export const BulkOperationsToolbar: React.FC<BulkOperationsToolbarProps> = ({ mapId }) => {
   const editorService = useEditorService();
   const { bulkOperation } = useMapCommands();
-  const mapService = useMapService();
   const { showToast } = useToast();
 
   const selectedIds = editorService.getSelection();

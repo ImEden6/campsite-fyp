@@ -3,7 +3,7 @@
  * Type-safe event definitions for the map editor system
  */
 
-import type { AnyModule, Position, Size, ModuleType, CampsiteMap } from '@/types';
+import type { AnyModule, Position, Size, CampsiteMap } from '@/types';
 
 // ============================================================================
 // EVENT TYPE DEFINITIONS
@@ -55,6 +55,7 @@ export interface SelectionChangeEvent {
   selectedModuleIds: string[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SelectionClearEvent {
   // No additional data needed
 }
@@ -76,22 +77,27 @@ export interface ViewportChangeEvent {
   position: Position;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViewportZoomInEvent {
   // No additional data needed
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViewportZoomOutEvent {
   // No additional data needed
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViewportFitToScreenEvent {
   // No additional data needed
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViewportZoomToSelectionEvent {
   // No additional data needed
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViewportResetEvent {
   // No additional data needed
 }
@@ -99,10 +105,12 @@ export interface ViewportResetEvent {
 /**
  * History events
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HistoryUndoEvent {
   // No additional data needed
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HistoryRedoEvent {
   // No additional data needed
 }
@@ -135,6 +143,7 @@ export interface MapSaveEvent {
   success: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MapSaveRequestEvent {
   // No additional data needed
 }
@@ -159,6 +168,7 @@ export interface ClipboardCutEvent {
   moduleIds: string[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClipboardPasteEvent {
   // No additional data needed
 }

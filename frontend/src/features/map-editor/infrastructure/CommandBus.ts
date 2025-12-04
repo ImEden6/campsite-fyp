@@ -176,7 +176,10 @@ export class CommandBus {
       undo: async () => {
         // Undo in reverse order
         for (let i = commands.length - 1; i >= 0; i--) {
-          await commands[i].undo();
+          const cmd = commands[i];
+          if (cmd) {
+            await cmd.undo();
+          }
         }
       },
     };

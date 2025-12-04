@@ -7,11 +7,6 @@ import type { Position } from '@/types';
 import type { EventBus } from '../infrastructure/EventBus';
 import type {
   ViewportChangeEvent,
-  ViewportZoomInEvent,
-  ViewportZoomOutEvent,
-  ViewportFitToScreenEvent,
-  ViewportZoomToSelectionEvent,
-  ViewportResetEvent,
 } from '../core/events';
 import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
 

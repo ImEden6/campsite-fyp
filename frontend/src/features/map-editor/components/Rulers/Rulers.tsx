@@ -3,7 +3,7 @@
  * Wrapper for ruler components that integrates with the new map editor
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import RulerComponent from '@/components/RulerComponent';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useViewportService } from '../../hooks/useViewportService';

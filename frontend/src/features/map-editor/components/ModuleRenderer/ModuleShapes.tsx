@@ -40,7 +40,6 @@ export const ModuleShapes: React.FC<ModuleShapesProps> = ({
   hasValidationErrors = false,
   opacity = 0.8,
   onSelect,
-  onMove,
 }) => {
   const { x, y } = module.position;
   const { width, height } = module.size;
@@ -167,8 +166,7 @@ export const ModuleShapes: React.FC<ModuleShapesProps> = ({
     <g
       transform={transform}
       onClick={handleClick}
-      style={{ cursor: 'pointer' }}
-      className={`module module-${module.type}`}
+      className={`module module-${module.type} cursor-pointer`}
       data-module-id={module.id}
     >
       {renderShape()}

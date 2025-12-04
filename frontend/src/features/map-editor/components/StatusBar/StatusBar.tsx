@@ -9,7 +9,6 @@ import { useEditorService } from '../../hooks/useEditorService';
 import { useViewportService } from '../../hooks/useViewportService';
 import { useMapService } from '../../hooks/useMapService';
 import { useMapEditor } from '../../hooks/useMapEditor';
-import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
 
 interface StatusBarProps {
   mapId: string;

@@ -102,6 +102,7 @@ export const MapEditorProvider: React.FC<MapEditorProviderProps> = ({
 /**
  * Hook to access map editor context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMapEditorContext(): MapEditorContextValue {
   const context = useContext(MapEditorContext);
   if (!context) {

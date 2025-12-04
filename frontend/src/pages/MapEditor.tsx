@@ -983,6 +983,7 @@ const MapEditor: React.FC = () => {
       };
     } else {
       setBackgroundImage(null);
+      return undefined;
     }
   }, [currentMap?.imageUrl]);
   
@@ -1081,7 +1082,7 @@ const MapEditor: React.FC = () => {
     setIsDragging(false);
   }, []);
 
-  const handleToolChange = useCallback((tool: typeof editor.currentTool) => {
+  const handleToolChange = useCallback((tool: 'select' | 'move' | 'rotate' | 'scale' | 'draw' | 'measure') => {
     setEditor({ currentTool: tool });
     const toolNames = {
       select: 'Select',
@@ -1257,32 +1258,35 @@ const MapEditor: React.FC = () => {
             
             {/* Tool Buttons */}
             <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-              {tools.map((tool) => (
-                <Tooltip
-                  key={tool.id}
-                  content={
-                    <div className="text-center">
-                      <div className="font-semibold">{tool.label}</div>
-                      <div className="text-xs opacity-90">Press {tool.shortcut}</div>
-                    </div>
-                  }
-                  placement="bottom"
-                >
-                  <button
-                    onClick={() => handleToolChange(tool.id as typeof editor.currentTool)}
-                    aria-label={`${tool.label} tool, press ${tool.shortcut} to activate`}
-                    aria-pressed={editor.currentTool === tool.id}
-                    className={`p-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
-                      editor.currentTool === tool.id
-                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm scale-105 ring-2 ring-blue-500 dark:ring-blue-400'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
-                    }`}
+              {tools.map((tool) => {
+                const isPressed = editor.currentTool === tool.id;
+                return (
+                  <Tooltip
+                    key={tool.id}
+                    content={
+                      <div className="text-center">
+                        <div className="font-semibold">{tool.label}</div>
+                        <div className="text-xs opacity-90">Press {tool.shortcut}</div>
+                      </div>
+                    }
+                    placement="bottom"
                   >
-                    <tool.icon className="w-4 h-4" aria-hidden="true" />
-                    <span className="sr-only">{tool.label}</span>
-                  </button>
-                </Tooltip>
-              ))}
+                    <button
+                      onClick={() => handleToolChange(tool.id as typeof editor.currentTool)}
+                      aria-label={`${tool.label} tool, press ${tool.shortcut} to activate`}
+                      aria-pressed={isPressed ? 'true' : 'false'}
+                      className={`p-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                        isPressed
+                          ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm scale-105 ring-2 ring-blue-500 dark:ring-blue-400'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <tool.icon className="w-4 h-4" aria-hidden="true" />
+                      <span className="sr-only">{tool.label}</span>
+                    </button>
+                  </Tooltip>
+                );
+              })}
             </div>
             
             {/* Tool Indicator Badge */}
@@ -1380,47 +1384,60 @@ const MapEditor: React.FC = () => {
             {/* View Options */}
             <div className="flex items-center space-x-2">
               <Tooltip content="Toggle Grid (G)" placement="bottom">
-                <button
-                  onClick={handleToggleGrid}
-                  aria-label={`Grid is ${editor.showGrid ? 'visible' : 'hidden'}. Press G to toggle.`}
-                  aria-pressed={editor.showGrid}
-                  className={`p-2 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
-                    editor.showGrid 
-                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100' 
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <Grid3X3 className="w-4 h-4" aria-hidden="true" />
-                </button>
+                {(() => {
+                  const isGridVisible = editor.showGrid;
+                  return (
+                    <button
+                      onClick={handleToggleGrid}
+                      aria-label={`Grid is ${isGridVisible ? 'visible' : 'hidden'}. Press G to toggle.`}
+                      aria-pressed={isGridVisible ? 'true' : 'false'}
+                      className={`p-2 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                        isGridVisible 
+                          ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <Grid3X3 className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  );
+                })()}
               </Tooltip>
               <Tooltip content="Toggle Rulers" placement="bottom">
-                <button
-                  onClick={() => {
-                    try {
-                      const newRulerState = !editor.showRulers;
-                      setEditor({ showRulers: newRulerState });
-                      showToast(`Rulers ${newRulerState ? 'enabled' : 'disabled'}`, 'info', EDITOR_CONSTANTS.TOAST_DURATION.SHORT);
-                    } catch (error) {
-                      errorLogger.error(
-                        ErrorCategory.STATE,
-                        'Failed to toggle rulers',
-                        {},
-                        error as Error
-                      );
-                    }
-                  }}
-                  className={`p-2 rounded-md transition-all ${
-                    editor.showRulers 
-                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100' 
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <Ruler className="w-4 h-4" />
-                </button>
+                {(() => {
+                  const areRulersVisible = editor.showRulers;
+                  return (
+                    <button
+                      onClick={() => {
+                        try {
+                          const newRulerState = !areRulersVisible;
+                          setEditor({ showRulers: newRulerState });
+                          showToast(`Rulers ${newRulerState ? 'enabled' : 'disabled'}`, 'info', EDITOR_CONSTANTS.TOAST_DURATION.SHORT);
+                        } catch (error) {
+                          errorLogger.error(
+                            ErrorCategory.STATE,
+                            'Failed to toggle rulers',
+                            {},
+                            error as Error
+                          );
+                        }
+                      }}
+                      aria-label={`Rulers are ${areRulersVisible ? 'visible' : 'hidden'}. Click to toggle.`}
+                      aria-pressed={areRulersVisible ? 'true' : 'false'}
+                      className={`p-2 rounded-md transition-all ${
+                        areRulersVisible 
+                          ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <Ruler className="w-4 h-4" />
+                    </button>
+                  );
+                })()}
               </Tooltip>
               <Tooltip content="Keyboard Shortcuts (? or F1)" placement="bottom">
                 <button
                   onClick={toggleShortcutsDialog}
+                  aria-label="Show keyboard shortcuts dialog. Press ? or F1 to open."
                   className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <HelpCircle className="w-4 h-4" />
@@ -1570,6 +1587,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Show All" placement="bottom">
                     <button
                       onClick={() => handleBulkVisibility(true)}
+                      aria-label={`Show all ${editor.selectedModuleIds.length} selected modules`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <Eye className="w-4 h-4" />
@@ -1578,6 +1596,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Hide All" placement="bottom">
                     <button
                       onClick={() => handleBulkVisibility(false)}
+                      aria-label={`Hide all ${editor.selectedModuleIds.length} selected modules`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <EyeOff className="w-4 h-4" />
@@ -1592,6 +1611,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Align Left" placement="bottom">
                     <button
                       onClick={() => handleAlignModules('left')}
+                      aria-label={`Align ${editor.selectedModuleIds.length} selected modules to the left`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <AlignLeft className="w-4 h-4" />
@@ -1600,6 +1620,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Align Center (Horizontal)" placement="bottom">
                     <button
                       onClick={() => handleAlignModules('center')}
+                      aria-label={`Align ${editor.selectedModuleIds.length} selected modules to the center horizontally`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <AlignCenter className="w-4 h-4" />
@@ -1608,6 +1629,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Align Right" placement="bottom">
                     <button
                       onClick={() => handleAlignModules('right')}
+                      aria-label={`Align ${editor.selectedModuleIds.length} selected modules to the right`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <AlignRight className="w-4 h-4" />
@@ -1616,6 +1638,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Align Top" placement="bottom">
                     <button
                       onClick={() => handleAlignModules('top')}
+                      aria-label={`Align ${editor.selectedModuleIds.length} selected modules to the top`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <AlignVerticalJustifyStart className="w-4 h-4" />
@@ -1624,6 +1647,7 @@ const MapEditor: React.FC = () => {
                   <Tooltip content="Align Bottom" placement="bottom">
                     <button
                       onClick={() => handleAlignModules('bottom')}
+                      aria-label={`Align ${editor.selectedModuleIds.length} selected modules to the bottom`}
                       className="p-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-all"
                     >
                       <AlignVerticalJustifyEnd className="w-4 h-4" />

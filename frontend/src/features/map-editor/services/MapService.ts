@@ -6,7 +6,6 @@
 import type { IMapService } from '../core/services';
 import type { CampsiteMap, AnyModule } from '@/types';
 import { ZustandMapRepository } from '../infrastructure/ZustandRepository';
-import { EventBus } from '../infrastructure/EventBus';
 import type { EventBus as IEventBus } from '../infrastructure/EventBus';
 
 export class MapService implements IMapService {
@@ -50,7 +49,6 @@ export class MapService implements IMapService {
   }
 
   async updateModule(mapId: string, module: AnyModule): Promise<void> {
-    const oldModule = this.repository.getModule(mapId, module.id);
     this.repository.updateModule(mapId, module);
     
     // Emit event

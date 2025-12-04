@@ -144,6 +144,32 @@ export interface IEditorService {
    * Toggle layer visibility
    */
   toggleLayerVisibility(layer: ModuleType): void;
+
+  /**
+   * Get current state (internal method for reactive hooks)
+   */
+  getState(): {
+    selectedModuleIds: string[];
+    currentTool: ToolType;
+    showGrid: boolean;
+    gridSize: number;
+    snapToGrid: boolean;
+    showRulers: boolean;
+    layerVisibility: Record<ModuleType, boolean>;
+  };
+
+  /**
+   * Subscribe to state changes (internal method for reactive hooks)
+   */
+  subscribe(callback: (state: {
+    selectedModuleIds: string[];
+    currentTool: ToolType;
+    showGrid: boolean;
+    gridSize: number;
+    snapToGrid: boolean;
+    showRulers: boolean;
+    layerVisibility: Record<ModuleType, boolean>;
+  }) => void): () => void;
 }
 
 // ============================================================================

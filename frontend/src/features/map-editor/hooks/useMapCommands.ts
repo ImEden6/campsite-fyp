@@ -117,7 +117,7 @@ export function useMapCommands() {
   );
 
   // Track history state to trigger recomputation of canUndo/canRedo
-  const [historyVersion, setHistoryVersion] = useState(0);
+  const [_historyVersion, setHistoryVersion] = useState(0);
 
   const undo = useCallback(async () => {
     await historyService.undo();

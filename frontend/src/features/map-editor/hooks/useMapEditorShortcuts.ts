@@ -9,7 +9,6 @@ import { useEditorService } from './useEditorService';
 import { useMapCommands } from './useMapCommands';
 import { useViewportService } from './useViewportService';
 import { useMapService } from './useMapService';
-import type { ToolType } from '../core/services';
 
 interface UseMapEditorShortcutsOptions {
   enabled?: boolean;

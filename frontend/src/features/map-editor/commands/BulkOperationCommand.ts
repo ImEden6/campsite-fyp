@@ -86,7 +86,7 @@ export class BulkOperationCommand implements Command {
 
   async undo(): Promise<void> {
     // Restore original state
-    for (const [moduleId, originalModule] of this.originalModules) {
+    for (const [, originalModule] of this.originalModules) {
       await this.mapService.updateModule(this.mapId, originalModule);
     }
   }

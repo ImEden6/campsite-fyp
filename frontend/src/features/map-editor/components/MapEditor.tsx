@@ -227,6 +227,7 @@ const MapEditorContent: React.FC<{ mapId: string }> = ({ mapId }) => {
     editorService,
     clipboard,
     isCut,
+    validationService,
   ]);
 
   // Keyboard shortcuts

@@ -7,6 +7,7 @@ import type {
   MapEditorEvents,
   MapEditorEventName,
   MapEditorEventHandler,
+  EventHandler,
 } from '../core/events';
 
 type EventListener = {

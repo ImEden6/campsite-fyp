@@ -111,6 +111,9 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
 
   const map = mapService.getMap(mapId);
 
+  // Update container dimensions
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
   // Initialize viewport from service
   useEffect(() => {
     if (!map) return;
@@ -132,15 +135,18 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
     return unsubscribe;
   }, [map, eventBus]);
 
-  if (!map) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p>Map not found</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
+    };
 
-  const { imageSize } = map;
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   // Handle wheel zoom
   const handleWheel = useCallback(
@@ -222,21 +228,15 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
     setIsPanning(false);
   }, []);
 
-  // Update container dimensions
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  if (!map) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Map not found</p>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setContainerSize({ width: rect.width, height: rect.height });
-      }
-    };
-
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
+  const { imageSize } = map;
 
   const showRulers = editorService.areRulersVisible();
   const rulerSize = 24; // Height for horizontal, width for vertical

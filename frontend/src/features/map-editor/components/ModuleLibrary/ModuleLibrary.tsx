@@ -4,9 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { useDraggable, useDndMonitor } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
 import { Home, Building, Package, Car, Droplets, Zap, TreePine, Trash2, Search } from 'lucide-react';
-import { useMapEditor } from '../../hooks/useMapEditor';
 import type { ModuleTemplate, ModuleType } from '@/types';
 
 // Mock templates - in real app, these would come from a service
@@ -110,7 +109,6 @@ const DraggableModule: React.FC<DraggableModuleProps> = ({ template }) => {
 
 export const ModuleLibrary: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { eventBus } = useMapEditor();
 
   // Note: Drop handling is done in MapCanvas component via useDroppable
   // This component just provides draggable modules

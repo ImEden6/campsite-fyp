@@ -6,7 +6,6 @@
 import { create } from 'zustand';
 import type { IEditorService, ToolType } from '../core/services';
 import type { ModuleType } from '@/types';
-import { EventBus } from '../infrastructure/EventBus';
 import type { EventBus as IEventBus } from '../infrastructure/EventBus';
 
 interface EditorState {
