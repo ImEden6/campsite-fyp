@@ -46,7 +46,7 @@ const CheckOutPage = lazy(() => import('@/pages/CheckOutPage'));
 // Admin pages - lazy loaded (heavy components)
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const MapsListPage = lazy(() => import('@/pages/MapsListPage'));
-const MapEditor = lazy(() => import('@/pages/MapEditor'));
+const MapEditor = lazy(() => import('@/features/map-editor').then(m => ({ default: m.MapEditor })));
 const UserManagementPage = lazy(() => import('@/pages/UserManagementPage').then(m => ({ default: m.UserManagementPage })));
 
 // Accessibility and PWA components - lazy loaded
