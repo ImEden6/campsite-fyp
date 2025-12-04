@@ -286,12 +286,11 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
           height={handleSize}
           fill="#0EA5E9"
           stroke="#fff"
-          strokeWidth="1"
+          strokeWidth={1}
           cursor={handle.cursor}
-          onMouseDown={(e) => handleMouseDown(e, handle.corner)}
+          onMouseDown={(e) => handleMouseDown(e, handle.corner as 'nw' | 'ne' | 'sw' | 'se')}
         />
       ))}
     </>
   );
 };
-
