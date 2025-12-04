@@ -76,6 +76,26 @@ export interface ViewportChangeEvent {
   position: Position;
 }
 
+export interface ViewportZoomInEvent {
+  // No additional data needed
+}
+
+export interface ViewportZoomOutEvent {
+  // No additional data needed
+}
+
+export interface ViewportFitToScreenEvent {
+  // No additional data needed
+}
+
+export interface ViewportZoomToSelectionEvent {
+  // No additional data needed
+}
+
+export interface ViewportResetEvent {
+  // No additional data needed
+}
+
 /**
  * History events
  */
@@ -124,6 +144,33 @@ export interface ModuleValidationEvent {
   errors: string[];
 }
 
+/**
+ * Clipboard events
+ */
+export interface ClipboardCopyEvent {
+  moduleIds: string[];
+}
+
+export interface ClipboardCutEvent {
+  moduleIds: string[];
+}
+
+export interface ClipboardPasteEvent {
+  // No additional data needed
+}
+
+export interface ClipboardDuplicateEvent {
+  moduleIds: string[];
+}
+
+/**
+ * Arrow key movement event
+ */
+export interface ModuleMoveArrowEvent {
+  direction: 'up' | 'down' | 'left' | 'right';
+  distance: number;
+}
+
 // ============================================================================
 // EVENT MAP TYPE
 // ============================================================================
@@ -143,6 +190,11 @@ export interface MapEditorEvents {
   'selection:clear': SelectionClearEvent;
   'tool:change': ToolChangeEvent;
   'viewport:change': ViewportChangeEvent;
+  'viewport:zoom-in': ViewportZoomInEvent;
+  'viewport:zoom-out': ViewportZoomOutEvent;
+  'viewport:fit-to-screen': ViewportFitToScreenEvent;
+  'viewport:zoom-to-selection': ViewportZoomToSelectionEvent;
+  'viewport:reset': ViewportResetEvent;
   'history:undo': HistoryUndoEvent;
   'history:redo': HistoryRedoEvent;
   'grid:toggle': GridToggleEvent;
@@ -151,6 +203,11 @@ export interface MapEditorEvents {
   'map:load': MapLoadEvent;
   'map:save': MapSaveEvent;
   'module:validation': ModuleValidationEvent;
+  'clipboard:copy': ClipboardCopyEvent;
+  'clipboard:cut': ClipboardCutEvent;
+  'clipboard:paste': ClipboardPasteEvent;
+  'clipboard:duplicate': ClipboardDuplicateEvent;
+  'module:move-arrow': ModuleMoveArrowEvent;
 }
 
 /**

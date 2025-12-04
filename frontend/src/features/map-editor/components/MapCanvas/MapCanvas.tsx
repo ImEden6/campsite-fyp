@@ -12,6 +12,8 @@ import { useMapService } from '../../hooks/useMapService';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapEditor } from '../../hooks/useMapEditor';
 import { useMapCommands } from '../../hooks/useMapCommands';
+import { useViewportService } from '../../hooks/useViewportService';
+import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
 import type { Position, ModuleTemplate, AnyModule } from '@/types';
 
 interface MapCanvasProps {
@@ -35,6 +37,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
   const { currentTool } = useEditorService();
   const { eventBus } = useMapEditor();
   const { addModule } = useMapCommands();
+  const viewportService = useViewportService();
 
   // Make canvas a drop target
   const { setNodeRef: setDropRef, isOver } = useDroppable({
@@ -77,10 +80,17 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
 
   const map = mapService.getMap(mapId);
 
+  // Initialize viewport from service
+  useEffect(() => {
+    if (!map) return;
+    const initialViewport = viewportService.getViewport();
+    setViewport(initialViewport);
+  }, [map, viewportService]);
+
+  // Listen to viewport changes
   useEffect(() => {
     if (!map) return;
 
-    // Listen to viewport changes
     const unsubscribe = eventBus.on('viewport:change', (payload) => {
       setViewport({
         zoom: payload.zoom,
@@ -110,28 +120,28 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
       }
 
       e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(0.1, Math.min(5, viewport.zoom * delta));
+      const delta = e.deltaY > 0 ? 1 / EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR : EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR;
+      const currentViewport = viewportService.getViewport();
+      const newZoom = Math.max(
+        EDITOR_CONSTANTS.MIN_ZOOM,
+        Math.min(EDITOR_CONSTANTS.MAX_ZOOM, currentViewport.zoom * delta)
+      );
 
       // Zoom to mouse position
       const rect = svgRef.current?.getBoundingClientRect();
       if (rect) {
-        const mouseX = (e.clientX - rect.left) / viewport.zoom;
-        const mouseY = (e.clientY - rect.top) / viewport.zoom;
+        const mouseX = (e.clientX - rect.left) / currentViewport.zoom;
+        const mouseY = (e.clientY - rect.top) / currentViewport.zoom;
 
         const newPosition: Position = {
-          x: viewport.position.x - mouseX * (newZoom - viewport.zoom),
-          y: viewport.position.y - mouseY * (newZoom - viewport.zoom),
+          x: currentViewport.position.x - mouseX * (newZoom - currentViewport.zoom),
+          y: currentViewport.position.y - mouseY * (newZoom - currentViewport.zoom),
         };
 
-        setViewport({ zoom: newZoom, position: newPosition });
-        eventBus.emit('viewport:change', {
-          zoom: newZoom,
-          position: newPosition,
-        });
+        viewportService.setViewport({ zoom: newZoom, position: newPosition });
       }
     },
-    [viewport, currentTool, eventBus]
+    [currentTool, viewportService]
   );
 
   // Handle pan
@@ -139,30 +149,28 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (currentTool === 'move' && e.button === 0) {
         setIsPanning(true);
+        const currentViewport = viewportService.getViewport();
         setPanStart({
-          x: e.clientX - viewport.position.x,
-          y: e.clientY - viewport.position.y,
+          x: e.clientX - currentViewport.position.x,
+          y: e.clientY - currentViewport.position.y,
         });
       }
     },
-    [currentTool, viewport.position]
+    [currentTool, viewportService]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (isPanning && currentTool === 'move') {
+        const currentViewport = viewportService.getViewport();
         const newPosition: Position = {
           x: e.clientX - panStart.x,
           y: e.clientY - panStart.y,
         };
-        setViewport((prev) => ({ ...prev, position: newPosition }));
-        eventBus.emit('viewport:change', {
-          zoom: viewport.zoom,
-          position: newPosition,
-        });
+        viewportService.setViewport({ position: newPosition });
       }
     },
-    [isPanning, panStart, currentTool, viewport.zoom, eventBus]
+    [isPanning, panStart, currentTool, viewportService]
   );
 
   const handleMouseUp = useCallback(() => {

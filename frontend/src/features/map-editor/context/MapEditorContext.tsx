@@ -11,6 +11,7 @@ import { MapService } from '../services/MapService';
 import { EditorService } from '../services/EditorService';
 import { HistoryService } from '../services/HistoryService';
 import { ValidationService } from '../services/ValidationService';
+import { ViewportService } from '../services/ViewportService';
 import { createRenderer } from '../renderers/RendererFactory';
 import type {
   IMapService,
@@ -19,6 +20,7 @@ import type {
   IValidationService,
   IRenderer,
 } from '../core/services';
+import type { IViewportService } from '../services/ViewportService';
 import type { EventBus } from '../infrastructure/EventBus';
 import type { CommandBus } from '../infrastructure/CommandBus';
 
@@ -27,6 +29,7 @@ interface MapEditorContextValue {
   editorService: IEditorService;
   historyService: IHistoryService;
   validationService: IValidationService;
+  viewportService: IViewportService;
   renderer: IRenderer;
   eventBus: EventBus;
   commandBus: CommandBus;
@@ -60,6 +63,10 @@ export const MapEditorProvider: React.FC<MapEditorProviderProps> = ({
     [commandBus]
   );
   const validationService = useMemo(() => new ValidationService(), []);
+  const viewportService = useMemo(
+    () => new ViewportService(eventBus),
+    [eventBus]
+  );
   const renderer = useMemo(() => createRenderer('svg'), []);
 
   const value: MapEditorContextValue = useMemo(
@@ -68,6 +75,7 @@ export const MapEditorProvider: React.FC<MapEditorProviderProps> = ({
       editorService,
       historyService,
       validationService,
+      viewportService,
       renderer,
       eventBus,
       commandBus,
@@ -77,6 +85,7 @@ export const MapEditorProvider: React.FC<MapEditorProviderProps> = ({
       editorService,
       historyService,
       validationService,
+      viewportService,
       renderer,
       eventBus,
       commandBus,
