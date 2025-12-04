@@ -139,9 +139,15 @@ const MapEditor: React.FC = () => {
       const stage = stageRef.current;
       const stageBox = stage.container().getBoundingClientRect();
       
-      // Convert screen coordinates to canvas coordinates
-      const x = (dragPosition.x - stageBox.left - viewport.position.x) / viewport.zoom;
-      const y = (dragPosition.y - stageBox.top - viewport.position.y) / viewport.zoom;
+      // Convert client coordinates to stage-relative coordinates
+      // dragPosition is in clientX/clientY (screen coordinates)
+      const stageRelativeX = dragPosition.x - stageBox.left;
+      const stageRelativeY = dragPosition.y - stageBox.top;
+      
+      // Convert stage-relative coordinates to canvas coordinates
+      // Use the same formula as drag handlers: (pos - stage.position) / stage.scale
+      const x = (stageRelativeX - stage.x()) / stage.scaleX();
+      const y = (stageRelativeY - stage.y()) / stage.scaleY();
       
       // Snap to grid if enabled
       const finalX = editor.snapToGrid ? Math.round(x / editor.gridSize) * editor.gridSize : x;
@@ -150,7 +156,7 @@ const MapEditor: React.FC = () => {
       try {
         // Create new module from template
         const newModule: AnyModule = {
-          id: `module-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
           type: template.type,
           position: { x: finalX, y: finalY },
           size: template.defaultSize,
@@ -947,10 +953,34 @@ const MapEditor: React.FC = () => {
   useEffect(() => {
     if (currentMap?.imageUrl) {
       const img = new window.Image();
+      let isMounted = true;
+      
       img.onload = () => {
-        setBackgroundImage(img);
+        if (isMounted) {
+          setBackgroundImage(img);
+        }
       };
+      
+      img.onerror = () => {
+        if (isMounted) {
+          errorLogger.error(
+            ErrorCategory.NETWORK,
+            'Failed to load background image',
+            { imageUrl: currentMap.imageUrl },
+            new Error('Image load failed')
+          );
+        }
+      };
+      
       img.src = currentMap.imageUrl;
+      
+      return () => {
+        isMounted = false;
+        // Clean up: remove image source to prevent memory leaks
+        img.src = '';
+      };
+    } else {
+      setBackgroundImage(null);
     }
   }, [currentMap?.imageUrl]);
   
@@ -1024,7 +1054,7 @@ const MapEditor: React.FC = () => {
     }
   }, [viewport.zoom, setViewport]);
 
-  const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
+  const handleMouseDown = useCallback((e: KonvaEventObject<MouseEvent>) => {
     if (editor.currentTool === 'move') {
       setIsDragging(true);
       setDragStart({
@@ -1032,7 +1062,7 @@ const MapEditor: React.FC = () => {
         y: e.evt.clientY - viewport.position.y,
       });
     }
-  };
+  }, [editor.currentTool, viewport.position.x, viewport.position.y]);
 
   const handleMouseMove = useCallback((e: KonvaEventObject<MouseEvent>) => {
     if (isDragging && editor.currentTool === 'move') {
@@ -1045,11 +1075,11 @@ const MapEditor: React.FC = () => {
     }
   }, [isDragging, editor.currentTool, dragStart, setViewport]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleToolChange = (tool: typeof editor.currentTool) => {
+  const handleToolChange = useCallback((tool: typeof editor.currentTool) => {
     setEditor({ currentTool: tool });
     const toolNames = {
       select: 'Select',
@@ -1063,7 +1093,7 @@ const MapEditor: React.FC = () => {
     showToast(`${toolName} tool activated`, 'info', 1500);
     announce(`${toolName} tool activated`);
     setAnnouncement(`${toolName} tool activated`);
-  };
+  }, [setEditor, showToast, announce]);
 
   const handleResetView = useCallback(() => {
     try {
@@ -1079,7 +1109,7 @@ const MapEditor: React.FC = () => {
   }, [setViewport]);
 
   // Group transform handlers for SelectionBoundingBox
-  const handleGroupTransformStart = () => {
+  const handleGroupTransformStart = useCallback(() => {
     // Capture state before group transform
     if (currentMap && selectedMapId) {
       pushHistory(currentMap, {
@@ -1087,9 +1117,9 @@ const MapEditor: React.FC = () => {
         moduleIds: editor.selectedModuleIds,
       });
     }
-  };
+  }, [currentMap, selectedMapId, editor.selectedModuleIds, pushHistory]);
   
-  const handleGroupTransform = (transform: {
+  const handleGroupTransform = useCallback((transform: {
     translation?: { x: number; y: number };
     scale?: { x: number; y: number };
     rotation?: number;
@@ -1183,12 +1213,12 @@ const MapEditor: React.FC = () => {
     });
     
     setHasUnsavedChanges(true);
-  };
+  }, [currentMap, selectedMapId, editor.selectedModuleIds, updateModule]);
   
-  const handleGroupTransformEnd = () => {
+  const handleGroupTransformEnd = useCallback(() => {
     // Transform is complete, no additional action needed
     // History was already captured in handleGroupTransformStart
-  };
+  }, []);
 
   const tools = [
     { id: 'select', icon: MousePointer, label: 'Select', shortcut: 'V' },
@@ -1237,7 +1267,7 @@ const MapEditor: React.FC = () => {
                   placement="bottom"
                 >
                   <button
-                    onClick={() => handleToolChange(tool.id as 'select' | 'move' | 'draw')}
+                    onClick={() => handleToolChange(tool.id as typeof editor.currentTool)}
                     aria-label={`${tool.label} tool, press ${tool.shortcut} to activate`}
                     aria-pressed={editor.currentTool === tool.id}
                     className={`p-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${

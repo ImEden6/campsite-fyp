@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Group, Rect, Circle, Text, Line } from 'react-konva';
 import Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
@@ -82,12 +82,26 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
   const handleDragStart = (e: KonvaEventObject<DragEvent>) => {
     if (editor.currentTool !== 'select') return;
 
+    // handle position updates manually to avoid compounding with Group position
+    e.target.stopDrag();
+
     setIsDragging(true);
-    const pos = e.target.getStage()?.getPointerPosition();
+    const stage = e.target.getStage();
+    if (!stage) return;
+    
+    const pos = stage.getPointerPosition();
     if (!pos) return;
+    
+    // Convert screen coordinates to canvas coordinates
+    const canvasPos = {
+      x: (pos.x - stage.x()) / stage.scaleX(),
+      y: (pos.y - stage.y()) / stage.scaleY(),
+    };
+    
+    // Calculate offset in canvas coordinates
     setDragOffset({
-      x: pos.x - module.position.x,
-      y: pos.y - module.position.y,
+      x: canvasPos.x - module.position.x,
+      y: canvasPos.y - module.position.y,
     });
     
     // Capture state before drag operation
@@ -103,14 +117,16 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
   };
 
   // Throttle drag move using RAF for 60 FPS performance
+  // Note: This is called manually via mouse move listeners, not by Konva's drag system
   const handleDragMove = useMemo(() =>
-    rafThrottle((e: KonvaEventObject<DragEvent>) => {
+    rafThrottle((e: KonvaEventObject<MouseEvent>) => {
       if (!isDragging || editor.currentTool !== 'select') return;
 
       const end = performanceMonitor.start('module-drag');
 
       try {
-        const stage = e.target.getStage();
+        // Get stage from the event or from groupRef
+        const stage = e.target.getStage() || groupRef.current?.getStage();
         const pos = stage?.getPointerPosition();
         if (!stage || !pos) return;
 
@@ -178,6 +194,25 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
   const handleDragEnd = () => {
     setIsDragging(false);
   };
+
+  // Attach global mouse move and mouse up listeners when dragging
+  // This allows for handle drag manually without Konva's automatic Group movement
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const stage = groupRef.current?.getStage();
+    if (!stage) return;
+
+    stage.on('mousemove', handleDragMove);
+    stage.on('mouseup', handleDragEnd);
+    stage.on('mouseleave', handleDragEnd);
+
+    return () => {
+      stage.off('mousemove', handleDragMove);
+      stage.off('mouseup', handleDragEnd);
+      stage.off('mouseleave', handleDragEnd);
+    };
+  }, [isDragging, handleDragMove]);
 
   const handleClick = (e: KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
@@ -596,8 +631,8 @@ const ModuleRenderer: React.FC<ModuleRendererProps> = ({ module, isSelected, has
       ref={groupRef}
       draggable={editor.currentTool === 'select' && !module.locked}
       onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragEnd={handleDragEnd}
+      // Note: onDragMove and onDragEnd are handled manually via mouse event listeners
+      // to prevent Konva's automatic Group movement from interfering
       onClick={handleClick}
       onDblClick={handleDoubleClick}
       onMouseEnter={(e) => {
