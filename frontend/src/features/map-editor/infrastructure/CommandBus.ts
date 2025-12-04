@@ -195,22 +195,12 @@ export class CommandBus {
       };
     }
 
-    // Undo all commands in reverse order
-    const commands = [...this.groupCommands];
+    // Commands queued during a transaction are not executed until commit.
+    // On rollback, we simply discard them without undoing, since they were never executed.
     this.currentGroupId = null;
     this.groupCommands = [];
 
-    try {
-      for (let i = commands.length - 1; i >= 0; i--) {
-        await commands[i].undo();
-      }
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error : new Error(String(error)),
-      };
-    }
+    return { success: true };
   }
 
   /**
