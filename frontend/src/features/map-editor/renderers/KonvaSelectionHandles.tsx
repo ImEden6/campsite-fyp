@@ -56,6 +56,7 @@ export const KonvaSelectionHandles: React.FC<KonvaSelectionHandlesProps> = ({
   modules,
   onTransform,
 }) => {
+  // Track resize state (currently unused but may be needed for visual feedback)
   const [_isResizing, setIsResizing] = useState(false);
   const [resizeStart, setResizeStart] = useState<{
     x: number;
@@ -66,6 +67,15 @@ export const KonvaSelectionHandles: React.FC<KonvaSelectionHandlesProps> = ({
   const [isRotating, setIsRotating] = useState(false);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
   const groupRef = useRef<Konva.Group>(null);
+
+  // Cleanup state on unmount
+  useEffect(() => {
+    return () => {
+      setIsResizing(false);
+      setResizeStart(null);
+      setIsRotating(false);
+    };
+  }, []);
 
   const bounds = useMemo(() => calculateBounds(modules), [modules]);
 

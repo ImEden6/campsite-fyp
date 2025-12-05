@@ -63,52 +63,59 @@ export function useKonvaAnimation(
     );
   }, [skipIfOutsideViewport, stageRef, nodeRef]);
 
+  // Helper to validate numeric values
+  const isValidNumber = (value: number | undefined): boolean => {
+    return value !== undefined && !isNaN(value) && isFinite(value);
+  };
+
+  // Helper to safely set width/height on nodes that support it
+  const setNodeSize = useCallback((node: Konva.Node, w?: number, h?: number) => {
+    // Use setAttr for safer property setting that works with all node types
+    if (w !== undefined && isValidNumber(w) && 'setAttr' in node) {
+      node.setAttr('width', w);
+    }
+    if (h !== undefined && isValidNumber(h) && 'setAttr' in node) {
+      node.setAttr('height', h);
+    }
+  }, []);
+
+  // Helper to apply all values immediately without animation
+  const applyValuesImmediately = useCallback((node: Konva.Node) => {
+    if (x !== undefined && isValidNumber(x)) node.x(x);
+    if (y !== undefined && isValidNumber(y)) node.y(y);
+    if (rotation !== undefined && isValidNumber(rotation)) node.rotation(rotation);
+    setNodeSize(node, width, height);
+    node.getLayer()?.batchDraw();
+  }, [x, y, rotation, width, height, setNodeSize]);
+
   useEffect(() => {
     const node = nodeRef.current;
     if (!node) return;
 
-    // Helper to safely set width/height on nodes that support it
-    const setNodeSize = (node: Konva.Node, w?: number, h?: number) => {
-      if (w !== undefined && 'width' in node.attrs) {
-        (node as Konva.Rect).width(w);
-      }
-      if (h !== undefined && 'height' in node.attrs) {
-        (node as Konva.Rect).height(h);
-      }
-    };
-
     // Skip animation if disabled
     if (!enabled) {
       // Still update values immediately
-      if (x !== undefined) node.x(x);
-      if (y !== undefined) node.y(y);
-      if (rotation !== undefined) node.rotation(rotation);
-      setNodeSize(node, width, height);
-      node.getLayer()?.batchDraw();
+      applyValuesImmediately(node);
       return;
     }
 
     // Only animate user-initiated actions
     if (!isUserInitiated) {
       // Apply changes immediately without animation
-      if (x !== undefined) node.x(x);
-      if (y !== undefined) node.y(y);
-      if (rotation !== undefined) node.rotation(rotation);
-      setNodeSize(node, width, height);
-      node.getLayer()?.batchDraw();
+      applyValuesImmediately(node);
       // Update previous values
       prevValuesRef.current = { x, y, rotation, width, height };
       return;
     }
 
-    // Check if values actually changed
+    // Validate and check if values actually changed
     const prevValues = prevValuesRef.current;
     const hasChanged =
-      (x !== undefined && x !== prevValues.x) ||
-      (y !== undefined && y !== prevValues.y) ||
-      (rotation !== undefined && rotation !== prevValues.rotation) ||
-      (width !== undefined && width !== prevValues.width) ||
-      (height !== undefined && height !== prevValues.height);
+      (x !== undefined && isValidNumber(x) && x !== prevValues.x) ||
+      (y !== undefined && isValidNumber(y) && y !== prevValues.y) ||
+      (rotation !== undefined && isValidNumber(rotation) && rotation !== prevValues.rotation) ||
+      (width !== undefined && isValidNumber(width) && width !== prevValues.width) ||
+      (height !== undefined && isValidNumber(height) && height !== prevValues.height);
 
     if (!hasChanged) return;
 
@@ -118,22 +125,14 @@ export function useKonvaAnimation(
     // Skip animation if user prefers reduced motion
     if (skipIfReducedMotion && prefersReducedMotion()) {
       // Apply changes immediately without animation
-      if (x !== undefined) node.x(x);
-      if (y !== undefined) node.y(y);
-      if (rotation !== undefined) node.rotation(rotation);
-      setNodeSize(node, width, height);
-      node.getLayer()?.batchDraw();
+      applyValuesImmediately(node);
       return;
     }
 
     // Skip animation if module is outside viewport
     if (skipIfOutsideViewport && !isInViewport()) {
       // Apply changes immediately without animation
-      if (x !== undefined) node.x(x);
-      if (y !== undefined) node.y(y);
-      if (rotation !== undefined) node.rotation(rotation);
-      setNodeSize(node, width, height);
-      node.getLayer()?.batchDraw();
+      applyValuesImmediately(node);
       return;
     }
 
@@ -164,14 +163,14 @@ export function useKonvaAnimation(
       },
     };
 
-    // Only include properties that are defined
-    if (x !== undefined) tweenConfig.x = x;
-    if (y !== undefined) tweenConfig.y = y;
-    if (rotation !== undefined) tweenConfig.rotation = rotation;
-    if (width !== undefined && 'width' in node.attrs) {
+    // Only include properties that are defined and valid
+    if (x !== undefined && isValidNumber(x)) tweenConfig.x = x;
+    if (y !== undefined && isValidNumber(y)) tweenConfig.y = y;
+    if (rotation !== undefined && isValidNumber(rotation)) tweenConfig.rotation = rotation;
+    if (width !== undefined && isValidNumber(width) && 'setAttr' in node) {
       tweenConfig.width = width;
     }
-    if (height !== undefined && 'height' in node.attrs) {
+    if (height !== undefined && isValidNumber(height) && 'setAttr' in node) {
       tweenConfig.height = height;
     }
 
@@ -201,6 +200,7 @@ export function useKonvaAnimation(
     isInViewport,
     isUserInitiated,
     enabled,
+    applyValuesImmediately,
   ]);
 }
 

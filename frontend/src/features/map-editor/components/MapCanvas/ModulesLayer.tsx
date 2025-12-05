@@ -41,6 +41,54 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
   const [modulesToAnimate, setModulesToAnimate] = useState<Set<string>>(new Set());
   const animationTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
+  // Animation duration constant (matches useKonvaAnimation default)
+  const ANIMATION_DURATION_MS = 200;
+  const ANIMATION_CLEANUP_DELAY_MS = ANIMATION_DURATION_MS + 50; // Small buffer
+
+  // Helper to clear animation timeout for a module
+  const clearAnimationTimeout = useCallback((moduleId: string) => {
+    const timeoutMap = animationTimeoutRef.current;
+    const existingTimeout = timeoutMap.get(moduleId);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+      timeoutMap.delete(moduleId);
+    }
+  }, []);
+
+  // Helper to clear all animation timeouts
+  const clearAllAnimationTimeouts = useCallback(() => {
+    const timeoutMap = animationTimeoutRef.current;
+    timeoutMap.forEach((timeout) => clearTimeout(timeout));
+    timeoutMap.clear();
+  }, []);
+
+  // Clean up animation flags and timeouts for modules that no longer exist
+  useEffect(() => {
+    const moduleIds = new Set(modules.map((m) => m.id));
+    
+    setModulesToAnimate((prev) => {
+      const next = new Set(prev);
+      let hasChanges = false;
+      
+      prev.forEach((id) => {
+        if (!moduleIds.has(id)) {
+          next.delete(id);
+          clearAnimationTimeout(id);
+          hasChanges = true;
+        }
+      });
+      
+      return hasChanges ? next : prev;
+    });
+  }, [modules, clearAnimationTimeout]);
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearAllAnimationTimeouts();
+    };
+  }, [clearAllAnimationTimeouts]);
+
   // Listen for module:select events
   useEffect(() => {
     const unsubscribe = eventBus.on('module:select', () => {
@@ -68,10 +116,7 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
       const timeoutMap = animationTimeoutRef.current;
       selectedIds.forEach((id) => {
         // Clear existing timeout
-        const existingTimeout = timeoutMap.get(id);
-        if (existingTimeout) {
-          clearTimeout(existingTimeout);
-        }
+        clearAnimationTimeout(id);
 
         // Set new timeout to clear animation flag
         const timeout = setTimeout(() => {
@@ -81,7 +126,7 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
             return next;
           });
           timeoutMap.delete(id);
-        }, 250); // Slightly longer than animation duration
+        }, ANIMATION_CLEANUP_DELAY_MS);
 
         timeoutMap.set(id, timeout);
       });
@@ -89,13 +134,10 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
 
     return () => {
       unsubscribe();
-      // Cleanup timeouts - use ref value captured in closure
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      const timeoutMap = animationTimeoutRef.current;
-      timeoutMap.forEach((timeout) => clearTimeout(timeout));
-      timeoutMap.clear();
+      // Note: Individual timeouts are cleaned up by the unmount effect
+      // This cleanup is for the event listener only
     };
-  }, [eventBus, selection]);
+  }, [eventBus, selection, clearAnimationTimeout, ANIMATION_CLEANUP_DELAY_MS]);
 
   // Filter modules by layer visibility
   const visibleModules = modules.filter(
@@ -199,12 +241,9 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
       });
 
       // Clear animation flag after animation completes
-      const timeoutMap = animationTimeoutRef.current;
-      const existingTimeout = timeoutMap.get(moduleId);
-      if (existingTimeout) {
-        clearTimeout(existingTimeout);
-      }
+      clearAnimationTimeout(moduleId);
 
+      const timeoutMap = animationTimeoutRef.current;
       const timeout = setTimeout(() => {
         setModulesToAnimate((prev) => {
           const next = new Set(prev);
@@ -212,7 +251,7 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
           return next;
         });
         timeoutMap.delete(moduleId);
-      }, 250); // Slightly longer than animation duration
+      }, ANIMATION_CLEANUP_DELAY_MS);
 
       timeoutMap.set(moduleId, timeout);
 
@@ -226,7 +265,7 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
         rotateModule(mapId, moduleId, transform.rotation, module.rotation || 0);
       }
     },
-    [selection, modules, mapId, moveModule, resizeModule, rotateModule]
+    [selection, modules, mapId, moveModule, resizeModule, rotateModule, clearAnimationTimeout, ANIMATION_CLEANUP_DELAY_MS]
   );
 
   // Handle Layer-level click events for event delegation
