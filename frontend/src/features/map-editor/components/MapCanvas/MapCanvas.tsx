@@ -427,6 +427,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
           modules={map.modules}
           selectedIds={selection}
           focusedModuleId={focusedModuleId}
+          onModuleFocus={setFocusedModuleId}
+          onModuleSelect={(moduleId, multiSelect) => {
+            editorService.selectModules(multiSelect ? [...selection, moduleId] : [moduleId]);
+          }}
         />
       </div>
     </div>
