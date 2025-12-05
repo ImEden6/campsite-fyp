@@ -7,11 +7,11 @@
 - **Phase 4**: MapCanvas Integration - 90% complete
   - ✅ Rotation handle IS implemented in `KonvaSelectionHandles.tsx`
   - ✅ Transform handles working
-- **Phase 5**: UI/UX Enhancements - 70% complete
+- **Phase 5**: UI/UX Enhancements - 85% complete
   - ✅ Hover states implemented in `KonvaModuleRenderer.tsx`
   - ✅ Performance optimizations (viewport culling, caching)
   - ✅ **Accessibility layer complete** - Full keyboard navigation, screen reader support, ARIA labels
-  - ⚠️ Smooth animations - Partially implemented (needs enhancement for selection/transform)
+  - ✅ **Smooth animations complete** - User-initiated animations with proper cleanup and validation
   - ⚠️ Touch/mobile support - Needs testing
 - **Phase 6**: Testing - 60% complete
   - ✅ **KonvaSelectionHandles.test.tsx** - Rendering, resize, rotation tests
@@ -22,26 +22,26 @@
 
 ### 🔴 High Priority (Immediate)
 
-#### 1. **Smooth Animations Enhancement** (Phase 5) — **NEXT PRIORITY**
-**Why**: Better UX, professional feel, but needs to respect `prefers-reduced-motion`
+### 🟡 Medium Priority (Next Sprint)
+
+#### 1. **Performance Testing & Optimization** (Phase 6) — **NEXT PRIORITY**
+**Why**: Ensure good performance with many modules, identify bottlenecks
 
 **What to do**:
-- Enhance `useKonvaAnimation` hook (already has `prefers-reduced-motion` support):
-  - Only animate user-initiated actions (not programmatic changes)
-  - Skip animations for modules outside viewport
-- Add animations for:
-  - Selection changes (when modules are selected/deselected)
-  - Transform operations (resize, rotate) - smooth transitions
-  - Ensure animations only trigger for user actions
+- Create performance testing utilities
+- Benchmark rendering performance with varying module counts (10, 50, 100, 200, 500)
+- Measure frame rates during interactions (drag, pan, zoom)
+- Compare Konva renderer with SVG renderer (if available)
+- Test viewport culling effectiveness
+- Identify and optimize bottlenecks
+- Create performance regression tests
 
-**Files to modify**:
-- `frontend/src/features/map-editor/hooks/useKonvaAnimation.ts` (enhance existing)
-- `frontend/src/features/map-editor/renderers/KonvaModuleRenderer.tsx` (add animation calls)
-- `frontend/src/features/map-editor/renderers/KonvaSelectionHandles.tsx` (add transform animations)
+**Files to create**:
+- `frontend/src/features/map-editor/utils/performanceBenchmark.ts` (performance utilities)
+- `frontend/src/features/map-editor/__tests__/performance/rendering.performance.test.tsx` (benchmark tests)
+- `frontend/src/features/map-editor/utils/frameRateMonitor.ts` (FPS monitoring)
 
 **Estimated effort**: 4-6 hours
-
-### 🟡 Medium Priority (Next Sprint)
 
 #### 2. **Touch/Mobile Support** (Phase 5)
 **Why**: Important for mobile users, but not blocking
@@ -58,19 +58,7 @@
 
 **Estimated effort**: 4-6 hours
 
-#### 3. **Performance Testing & Optimization** (Phase 6)
-**Why**: Ensure good performance with many modules
-
-**What to do**:
-- Benchmark rendering performance
-- Test with 100+ modules
-- Compare with SVG renderer
-- Measure frame rates
-- Optimize if needed
-
-**Estimated effort**: 4-6 hours
-
-#### 4. **Documentation** (Phase 6)
+#### 3. **Documentation** (Phase 6)
 **Why**: Important for maintenance and onboarding
 
 **What to do**:
@@ -98,10 +86,10 @@
 ## Recommended Order
 
 1. ✅ **Accessibility** - **COMPLETE** (Full keyboard navigation, screen reader support)
-2. **Enhance Animations** (Better UX, relatively quick) — **NEXT**
+2. ✅ **Enhance Animations** - **COMPLETE** (User-initiated animations with proper cleanup)
 3. ✅ **Test Coverage** - **COMPLETE** (Core tests added: KonvaSelectionHandles, useKonvaStage, MapCanvas integration)
-4. **Touch Support** (Mobile users)
-5. **Performance Testing** (Optimize if needed)
+4. **Performance Testing** (Optimize if needed) — **NEXT**
+5. **Touch Support** (Mobile users)
 6. **Documentation** (Maintenance)
 
 ---
@@ -125,7 +113,7 @@
 - Hover states **ARE implemented** (contrary to review doc)
 - ✅ **Accessibility layer is complete** - Full implementation in `AccessibilityLayer.tsx`
 - ✅ **Test coverage expanded** - Three comprehensive test files added
-- Main remaining gap: **Enhanced animations** for selection/transform operations
+- ✅ **Smooth animations complete** - User-initiated animations with validation and cleanup
 - Current renderer is set to `'konva'` in `MapEditorContext.tsx`
 
 ## Recent Completions
@@ -142,6 +130,13 @@
 - ✅ **KonvaSelectionHandles.test.tsx**: Rendering, resize, rotation, edge cases
 - ✅ **useKonvaStage.test.ts**: Initialization, viewport, coordinate conversion, edge cases
 - ✅ **MapCanvas.integration.test.tsx**: Full workflows, selection, transforms, accessibility
+
+### Smooth Animations
+- ✅ **useKonvaAnimation.ts**: Enhanced with user-initiated flag, validation, and proper cleanup
+- ✅ **KonvaModuleRenderer.tsx**: Integrated animations for user-initiated moves
+- ✅ **ModulesLayer.tsx**: Animation tracking with memory leak prevention
+- ✅ **Type safety**: Improved width/height handling with setAttr
+- ✅ **Code quality**: Extracted duplicate code, added validation
 
 ---
 
