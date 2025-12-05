@@ -284,6 +284,11 @@ export interface RenderProps {
   onMove?: (position: Position) => void;
   onResize?: (size: Size) => void;
   onRotate?: (rotation: number) => void;
+  shouldAnimate?: boolean; // For Konva animations (user-initiated moves)
+  isFocused?: boolean; // For keyboard focus indicator
+  onDragStart?: (moduleId: string, offset: Position) => void;
+  onDragMove?: (moduleId: string, position: Position) => void;
+  onDragEnd?: (moduleId: string) => void;
 }
 
 export interface GridOptions {

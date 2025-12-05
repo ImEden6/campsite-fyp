@@ -58,6 +58,21 @@ export interface IViewportService {
    * Reset viewport to default
    */
   reset(): void;
+
+  /**
+   * Set minimum zoom level (for grid boundary constraints)
+   */
+  setMinZoom(minZoom: number): void;
+
+  /**
+   * Get current minimum zoom level
+   */
+  getMinZoom(): number;
+
+  /**
+   * Calculate minimum zoom to fit grid in container
+   */
+  calculateMinZoom(gridSize: ViewportBounds, containerSize: ViewportBounds): number;
 }
 
 export class ViewportService implements IViewportService {
@@ -65,6 +80,8 @@ export class ViewportService implements IViewportService {
     zoom: EDITOR_CONSTANTS.DEFAULT_ZOOM,
     position: { x: 0, y: 0 },
   };
+
+  private minZoom: number = EDITOR_CONSTANTS.MIN_ZOOM;
 
   constructor(private eventBus: EventBus) {}
 
@@ -78,9 +95,9 @@ export class ViewportService implements IViewportService {
       position: viewport.position ?? { ...this.viewport.position },
     };
 
-    // Clamp zoom
+    // Clamp zoom using dynamic minZoom
     newViewport.zoom = Math.max(
-      EDITOR_CONSTANTS.MIN_ZOOM,
+      this.minZoom,
       Math.min(EDITOR_CONSTANTS.MAX_ZOOM, newViewport.zoom)
     );
 
@@ -99,7 +116,7 @@ export class ViewportService implements IViewportService {
 
   zoomOut(): void {
     const newZoom = Math.max(
-      EDITOR_CONSTANTS.MIN_ZOOM,
+      this.minZoom,
       this.viewport.zoom / EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR
     );
     this.setViewport({ zoom: newZoom });
@@ -112,7 +129,7 @@ export class ViewportService implements IViewportService {
     const newZoom = Math.min(scaleX, scaleY) * 0.9; // 90% to add padding
 
     const clampedZoom = Math.max(
-      EDITOR_CONSTANTS.MIN_ZOOM,
+      this.minZoom,
       Math.min(EDITOR_CONSTANTS.MAX_ZOOM, newZoom)
     );
 
@@ -141,7 +158,7 @@ export class ViewportService implements IViewportService {
     const newZoom = Math.min(scaleX, scaleY) * 0.8; // 80% to add padding
 
     const clampedZoom = Math.max(
-      EDITOR_CONSTANTS.MIN_ZOOM,
+      this.minZoom,
       Math.min(EDITOR_CONSTANTS.MAX_ZOOM, newZoom)
     );
 
@@ -164,6 +181,30 @@ export class ViewportService implements IViewportService {
       position: { x: 0, y: 0 },
     });
     this.eventBus.emit('viewport:reset', {});
+  }
+
+  setMinZoom(minZoom: number): void {
+    this.minZoom = Math.max(EDITOR_CONSTANTS.MIN_ZOOM, minZoom);
+    
+    // If current zoom is below new minZoom, adjust it
+    if (this.viewport.zoom < this.minZoom) {
+      this.setViewport({ zoom: this.minZoom });
+    }
+  }
+
+  getMinZoom(): number {
+    return this.minZoom;
+  }
+
+  calculateMinZoom(gridSize: ViewportBounds, containerSize: ViewportBounds): number {
+    // Calculate minimum zoom to fit grid in container
+    // Use the smaller scale to ensure entire grid fits
+    const scaleX = containerSize.width / gridSize.width;
+    const scaleY = containerSize.height / gridSize.height;
+    const minZoom = Math.min(scaleX, scaleY);
+    
+    // Ensure it's not below the absolute minimum
+    return Math.max(EDITOR_CONSTANTS.MIN_ZOOM, minZoom);
   }
 
   private emitChange(): void {

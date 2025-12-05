@@ -75,17 +75,18 @@ export default defineConfig(({ mode }) => {
             let html = readFileSync(htmlPath, 'utf-8');
             
             // Move service worker script to end of body
-            const swScriptRegex = /<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*>.*?<\/script>/is;
+            // Use [\s\S] instead of . with 's' flag for ES2018 compatibility
+            const swScriptRegex = /<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*>[\s\S]*?<\/script>/i;
             let swScript = html.match(swScriptRegex)?.[0];
             
             if (!swScript) {
-              swScript = html.match(/<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*\/>/is)?.[0];
+              swScript = html.match(/<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*\/>/i)?.[0];
             }
             
             if (swScript) {
               // Remove script from anywhere
               html = html.replace(swScriptRegex, '');
-              html = html.replace(/<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*\/>/is, '');
+              html = html.replace(/<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*\/>/i, '');
               // Clean up
               html = html.replace(/(<link[^>]*manifest[^>]*>)\s*(<\/head>)/i, '$2');
               // Add to end of body
@@ -422,6 +423,20 @@ export default defineConfig(({ mode }) => {
       environment: 'happy-dom',
       setupFiles: './src/tests/setup.ts',
       css: true,
+      // Exclude Playwright e2e tests from Vitest
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/cypress/**',
+        '**/.{idea,git,cache,output,temp}/**',
+        '**/tests/e2e/**', // Exclude Playwright tests
+        '**/*.e2e.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      ],
+      // esbuild options for test transformation
+      // Ensures esbuild can properly transform TypeScript/TSX files during tests
+      esbuild: {
+        target: 'node18',
+      },
     },
   }
 })

@@ -1,19 +1,24 @@
 /**
  * Map Canvas
- * Main SVG canvas container replacing Konva Stage
+ * Main Konva Stage container for rendering map layers
  */
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Stage } from 'react-konva';
+import type { KonvaEventObject } from 'konva/lib/Node';
 import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { BackgroundLayer } from './BackgroundLayer';
 import { GridLayer } from './GridLayer';
 import { ModulesLayer } from './ModulesLayer';
+import { AccessibilityLayer } from './AccessibilityLayer';
+import { DragPreviewLayer } from './DragPreviewLayer';
 import { Rulers } from '../Rulers/Rulers';
 import { useMapService } from '../../hooks/useMapService';
 import { useEditorService } from '../../hooks/useEditorService';
-import { useMapEditor } from '../../hooks/useMapEditor';
 import { useMapCommands } from '../../hooks/useMapCommands';
 import { useViewportService } from '../../hooks/useViewportService';
+import { useKonvaStage } from '../../hooks/useKonvaStage';
+import { useTouchGestures } from '../../hooks/useTouchGestures';
 import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
 import type { Position, ModuleTemplate, AnyModule } from '@/types';
 
@@ -22,21 +27,25 @@ interface MapCanvasProps {
 }
 
 export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [viewport, setViewport] = useState<{
-    zoom: number;
-    position: Position;
-  }>({
-    zoom: 1,
-    position: { x: 0, y: 0 },
-  });
+  const {
+    stageRef,
+    containerRef,
+    stageSize,
+    screenToCanvas,
+  } = useKonvaStage();
+
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState<Position>({ x: 0, y: 0 });
+  const [focusedModuleId, setFocusedModuleId] = useState<string | undefined>(undefined);
+  // Drag state for preview layer
+  const [dragState, setDragState] = useState<Array<{
+    module: AnyModule;
+    offset: { x: number; y: number };
+    currentPosition: { x: number; y: number };
+  }>>([]);
 
   const mapService = useMapService();
-  const { currentTool } = useEditorService();
-  const { eventBus } = useMapEditor();
+  const { currentTool, selection } = useEditorService();
   const { addModule } = useMapCommands();
   const viewportService = useViewportService();
   const editorService = useEditorService();
@@ -61,31 +70,28 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
         const template = event.active.data.current.template as ModuleTemplate;
         const map = mapService.getMap(mapId);
         
-        if (!map || !dragPosition || !svgRef.current) {
+        if (!map || !dragPosition || !stageRef.current) {
           setDragPosition(null);
           return;
         }
 
-        // Get SVG bounding rect
-        const svgRect = svgRef.current.getBoundingClientRect();
-        const currentViewport = viewportService.getViewport();
+        // Get Stage bounding rect
+        const stageRect = stageRef.current.container().getBoundingClientRect();
         
-        // Convert client coordinates to SVG coordinates
-        // Account for viewport transform (position and zoom)
-        const svgRelativeX = dragPosition.x - svgRect.left;
-        const svgRelativeY = dragPosition.y - svgRect.top;
+        // Convert client coordinates to screen coordinates relative to stage
+        const screenPos = {
+          x: dragPosition.x - stageRect.left,
+          y: dragPosition.y - stageRect.top,
+        };
         
-        // Convert to canvas coordinates (accounting for viewport transform)
-        // The SVG has a transform: translate(viewport.position) scale(viewport.zoom)
-        // So we need to reverse that: (svgPos - viewport.position) / viewport.zoom
-        const canvasX = (svgRelativeX - currentViewport.position.x) / currentViewport.zoom;
-        const canvasY = (svgRelativeY - currentViewport.position.y) / currentViewport.zoom;
+        // Convert to canvas coordinates using Konva coordinate conversion
+        const canvasPos = screenToCanvas(screenPos);
         
         // Snap to grid if enabled
         const gridSize = editorService.getGridSize();
         const snapToGrid = editorService.isSnapToGrid();
-        const finalX = snapToGrid ? Math.round(canvasX / gridSize) * gridSize : canvasX;
-        const finalY = snapToGrid ? Math.round(canvasY / gridSize) * gridSize : canvasY;
+        const finalX = snapToGrid ? Math.round(canvasPos.x / gridSize) * gridSize : canvasPos.x;
+        const finalY = snapToGrid ? Math.round(canvasPos.y / gridSize) * gridSize : canvasPos.y;
 
         const newModule: AnyModule = {
           id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
@@ -111,122 +117,255 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
 
   const map = mapService.getMap(mapId);
 
-  // Update container dimensions
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  // Calculate container size accounting for rulers
+  const showRulers = editorService.areRulersVisible();
+  const rulerSize = 24; // Height for horizontal, width for vertical
+  const containerSize = useMemo(() => ({
+    width: Math.max(0, stageSize.width - (showRulers ? rulerSize : 0)),
+    height: Math.max(0, stageSize.height - (showRulers ? rulerSize : 0)),
+  }), [stageSize.width, stageSize.height, showRulers]);
 
-  // Initialize viewport from service
+  // Calculate and set minimum zoom based on grid bounds
   useEffect(() => {
-    if (!map) return;
-    const initialViewport = viewportService.getViewport();
-    setViewport(initialViewport);
-  }, [map, viewportService]);
+    if (!map || containerSize.width === 0 || containerSize.height === 0) return;
 
-  // Listen to viewport changes
-  useEffect(() => {
-    if (!map) return;
+    // Use gridBounds if available, otherwise use imageSize
+    const gridSize = map.gridBounds || map.imageSize;
 
-    const unsubscribe = eventBus.on('viewport:change', (payload) => {
-      setViewport({
-        zoom: payload.zoom,
-        position: payload.position,
-      });
-    });
-
-    return unsubscribe;
-  }, [map, eventBus]);
-
-  useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setContainerSize({ width: rect.width, height: rect.height });
-      }
-    };
-
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
+    // Calculate minimum zoom to fit grid in container
+    const minZoom = viewportService.calculateMinZoom(gridSize, containerSize);
+    viewportService.setMinZoom(minZoom);
+  }, [map, containerSize, viewportService]);
 
   // Handle wheel zoom
   const handleWheel = useCallback(
-    (e: React.WheelEvent<SVGSVGElement>) => {
+    (e: KonvaEventObject<WheelEvent>) => {
       if (currentTool !== 'move') {
-        e.preventDefault();
+        e.evt.preventDefault();
         return;
       }
 
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? 1 / EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR : EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR;
+      e.evt.preventDefault();
+      const delta = e.evt.deltaY > 0 ? 1 / EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR : EDITOR_CONSTANTS.ZOOM_SCALE_FACTOR;
       const currentViewport = viewportService.getViewport();
+      const minZoom = viewportService.getMinZoom();
       const newZoom = Math.max(
-        EDITOR_CONSTANTS.MIN_ZOOM,
+        minZoom,
         Math.min(EDITOR_CONSTANTS.MAX_ZOOM, currentViewport.zoom * delta)
       );
 
       // Zoom to mouse position
-      const rect = svgRef.current?.getBoundingClientRect();
-      if (rect) {
-        const mouseX = (e.clientX - rect.left) / currentViewport.zoom;
-        const mouseY = (e.clientY - rect.top) / currentViewport.zoom;
+      const stage = stageRef.current;
+      if (stage) {
+        // Get mouse position in canvas coordinates before zoom
+        const pointerPos = stage.getPointerPosition();
+        if (pointerPos) {
+          const canvasPos = screenToCanvas(pointerPos);
 
-        const newPosition: Position = {
-          x: currentViewport.position.x - mouseX * (newZoom - currentViewport.zoom),
-          y: currentViewport.position.y - mouseY * (newZoom - currentViewport.zoom),
-        };
+          // Calculate new position to keep the same point under the mouse
+          const newPosition: Position = {
+            x: pointerPos.x - canvasPos.x * newZoom,
+            y: pointerPos.y - canvasPos.y * newZoom,
+          };
 
-        viewportService.setViewport({ zoom: newZoom, position: newPosition });
+          viewportService.setViewport({ zoom: newZoom, position: newPosition });
+        }
       }
     },
-    [currentTool, viewportService]
+    [currentTool, viewportService, stageRef, screenToCanvas]
   );
 
   // Handle pan
   const handleMouseDown = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      if (currentTool === 'move' && e.button === 0) {
+    (e: KonvaEventObject<MouseEvent>) => {
+      if (currentTool === 'move' && e.evt.button === 0) {
         setIsPanning(true);
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (rect) {
-          const currentViewport = viewportService.getViewport();
-          // Calculate pan start: convert mouse position to canvas coordinates (like handleWheel)
-          // The viewport position is in canvas coordinates, so we need to divide by zoom
-          const mouseX = (e.clientX - rect.left) / currentViewport.zoom;
-          const mouseY = (e.clientY - rect.top) / currentViewport.zoom;
-          setPanStart({
-            x: mouseX - currentViewport.position.x,
-            y: mouseY - currentViewport.position.y,
-          });
+        const stage = stageRef.current;
+        if (stage) {
+          const pointerPos = stage.getPointerPosition();
+          if (pointerPos) {
+            const currentViewport = viewportService.getViewport();
+            const canvasPos = screenToCanvas(pointerPos);
+            setPanStart({
+              x: canvasPos.x - currentViewport.position.x,
+              y: canvasPos.y - currentViewport.position.y,
+            });
+          }
         }
       }
     },
-    [currentTool, viewportService]
+    [currentTool, viewportService, stageRef, screenToCanvas]
   );
 
   const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
+    (_e: KonvaEventObject<MouseEvent>) => {
       if (isPanning && currentTool === 'move') {
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (rect) {
-          const currentViewport = viewportService.getViewport();
-          // Convert mouse position to canvas coordinates (like handleWheel)
-          // Then calculate new position based on the pan start offset
-          const mouseX = (e.clientX - rect.left) / currentViewport.zoom;
-          const mouseY = (e.clientY - rect.top) / currentViewport.zoom;
-          const newPosition: Position = {
-            x: mouseX - panStart.x,
-            y: mouseY - panStart.y,
-          };
-          viewportService.setViewport({ position: newPosition });
+        const stage = stageRef.current;
+        if (stage) {
+          const pointerPos = stage.getPointerPosition();
+          if (pointerPos) {
+            const canvasPos = screenToCanvas(pointerPos);
+            const newPosition: Position = {
+              x: canvasPos.x - panStart.x,
+              y: canvasPos.y - panStart.y,
+            };
+            viewportService.setViewport({ position: newPosition });
+          }
         }
       }
     },
-    [isPanning, panStart, currentTool, viewportService]
+    [isPanning, panStart, currentTool, viewportService, stageRef, screenToCanvas]
   );
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
   }, []);
+
+  // Handle pinch zoom
+  const handlePinchZoom = useCallback(
+    (delta: number, screenCenter: { x: number; y: number }) => {
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      // Convert screen center to canvas coordinates
+      const oldScale = stage.scaleX();
+      const newScale = Math.max(
+        viewportService.getMinZoom(),
+        Math.min(EDITOR_CONSTANTS.MAX_ZOOM, oldScale * delta)
+      );
+
+      // Get canvas position from screen center
+      const mousePointTo = {
+        x: (screenCenter.x - stage.x()) / oldScale,
+        y: (screenCenter.y - stage.y()) / oldScale,
+      };
+
+      // Update stage transform
+      stage.scale({ x: newScale, y: newScale });
+      stage.position({
+        x: screenCenter.x - mousePointTo.x * newScale,
+        y: screenCenter.y - mousePointTo.y * newScale,
+      });
+
+      stage.batchDraw();
+
+      // Update viewport service
+      viewportService.setViewport({
+        zoom: newScale,
+        position: { x: stage.x(), y: stage.y() },
+      });
+    },
+    [viewportService, stageRef]
+  );
+
+  // Touch gesture handlers
+  const { handleTouchStart, handleTouchMove, handleTouchEnd } = useTouchGestures({
+    onPinchZoom: handlePinchZoom,
+  });
+
+  // Keyboard navigation for focus management
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if typing in input fields
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Only handle when canvas is focused and no modules are selected
+      if (selection.length > 0) {
+        // Arrow keys move selected modules (handled by useMapEditorShortcuts)
+        return;
+      }
+
+      const map = mapService.getMap(mapId);
+      if (!map || map.modules.length === 0) return;
+
+      const modules = map.modules;
+      const currentFocusIndex = focusedModuleId
+        ? modules.findIndex((m) => m.id === focusedModuleId)
+        : -1;
+
+      // Arrow key navigation between modules
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+
+        // If no focus, start with first module
+        if (currentFocusIndex === -1) {
+          setFocusedModuleId(modules[0]?.id);
+          return;
+        }
+
+        // Calculate next module based on direction
+        // Simple implementation: move to nearest module in that direction
+        const currentModule = modules[currentFocusIndex];
+        if (!currentModule) return;
+        
+        let nextIndex = currentFocusIndex;
+
+        if (e.key === 'ArrowUp') {
+          // Find module above current
+          const candidates = modules
+            .map((m, idx) => ({ module: m, idx, y: m.position.y }))
+            .filter((item) => item.y < currentModule.position.y)
+            .sort((a, b) => b.y - a.y); // Closest above
+          nextIndex = candidates[0]?.idx ?? currentFocusIndex;
+        } else if (e.key === 'ArrowDown') {
+          // Find module below current
+          const candidates = modules
+            .map((m, idx) => ({ module: m, idx, y: m.position.y }))
+            .filter((item) => item.y > currentModule.position.y)
+            .sort((a, b) => a.y - b.y); // Closest below
+          nextIndex = candidates[0]?.idx ?? currentFocusIndex;
+        } else if (e.key === 'ArrowLeft') {
+          // Find module to the left
+          const candidates = modules
+            .map((m, idx) => ({ module: m, idx, x: m.position.x }))
+            .filter((item) => item.x < currentModule.position.x)
+            .sort((a, b) => b.x - a.x); // Closest left
+          nextIndex = candidates[0]?.idx ?? currentFocusIndex;
+        } else if (e.key === 'ArrowRight') {
+          // Find module to the right
+          const candidates = modules
+            .map((m, idx) => ({ module: m, idx, x: m.position.x }))
+            .filter((item) => item.x > currentModule.position.x)
+            .sort((a, b) => a.x - b.x); // Closest right
+          nextIndex = candidates[0]?.idx ?? currentFocusIndex;
+        }
+
+        const nextModule = modules[nextIndex];
+        if (nextIndex !== currentFocusIndex && nextModule) {
+          setFocusedModuleId(nextModule.id);
+        }
+      }
+
+      // Enter/Space: Select focused module
+      if ((e.key === 'Enter' || e.key === ' ') && focusedModuleId) {
+        e.preventDefault();
+        editorService.selectModules([focusedModuleId]);
+        setFocusedModuleId(undefined);
+      }
+
+      // Escape: Clear focus
+      if (e.key === 'Escape') {
+        setFocusedModuleId(undefined);
+        editorService.clearSelection();
+      }
+    };
+
+    // Only attach listener when canvas container is focused
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('keydown', handleKeyDown);
+    return () => {
+      container.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mapId, focusedModuleId, selection, mapService, editorService, containerRef]);
 
   if (!map) {
     return (
@@ -236,10 +375,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
     );
   }
 
-  const { imageSize } = map;
-
-  const showRulers = editorService.areRulersVisible();
-  const rulerSize = 24; // Height for horizontal, width for vertical
+  const { imageSize, gridBounds } = map;
+  
+  // Use gridBounds if available, otherwise fallback to imageSize
+  const gridSize = gridBounds || imageSize;
 
   return (
     <div
@@ -259,28 +398,37 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
           paddingLeft: showRulers ? `${rulerSize}px` : '0',
         }}
       >
-        <svg
-          ref={svgRef}
-        viewBox={`0 0 ${imageSize.width} ${imageSize.height}`}
-        width={containerSize.width ? containerSize.width - (showRulers ? rulerSize : 0) : '100%'}
-        height={containerSize.height ? containerSize.height - (showRulers ? rulerSize : 0) : '100%'}
-        style={{
-          transform: `translate(${viewport.position.x}px, ${viewport.position.y}px) scale(${viewport.zoom})`,
-          transformOrigin: '0 0',
-        }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className="map-canvas"
-      >
-        <BackgroundLayer imageUrl={map.imageUrl} size={imageSize} />
-        <GridLayer size={imageSize} />
-        <ModulesLayer mapId={mapId} />
-      </svg>
+        <Stage
+          ref={stageRef}
+          width={containerSize.width || stageSize.width}
+          height={containerSize.height || stageSize.height}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="map-canvas"
+          tabIndex={0}
+        >
+          <BackgroundLayer imageUrl={map.imageUrl} size={imageSize} />
+          <GridLayer size={gridSize} />
+          <ModulesLayer 
+            mapId={mapId} 
+            focusedModuleId={focusedModuleId}
+            onDragStateChange={setDragState}
+          />
+          <DragPreviewLayer draggedModules={dragState} />
+        </Stage>
+        {/* Accessibility layer for screen readers */}
+        <AccessibilityLayer
+          modules={map.modules}
+          selectedIds={selection}
+          focusedModuleId={focusedModuleId}
+        />
       </div>
     </div>
   );
 };
-

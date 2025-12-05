@@ -65,19 +65,31 @@ describe('Accessibility Components', () => {
       const onClose = vi.fn();
       render(<KeyboardShortcutsDialog isOpen={true} onClose={onClose} />);
       
-      expect(screen.getByText('Navigation')).toBeInTheDocument();
-      expect(screen.getByText('Actions')).toBeInTheDocument();
-      expect(screen.getByText('UI')).toBeInTheDocument();
-      expect(screen.getByText('Accessibility')).toBeInTheDocument();
+      // Check for actual categories from KeyboardShortcutsDialog component
+      // Note: The text is "Selection" but CSS makes it appear uppercase
+      expect(screen.getByText('Selection')).toBeInTheDocument();
+      expect(screen.getByText('Tools')).toBeInTheDocument();
+      expect(screen.getByText('Editing')).toBeInTheDocument();
+      expect(screen.getByText('History')).toBeInTheDocument();
+      expect(screen.getByText('View')).toBeInTheDocument();
+      expect(screen.getByText('File')).toBeInTheDocument();
+      expect(screen.getByText('Help')).toBeInTheDocument();
     });
 
     it('displays keyboard shortcuts', () => {
       const onClose = vi.fn();
       render(<KeyboardShortcutsDialog isOpen={true} onClose={onClose} />);
       
-      expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('Create New Booking')).toBeInTheDocument();
-      expect(screen.getByText('Toggle Sidebar')).toBeInTheDocument();
+      // Check for actual shortcuts from KeyboardShortcutsDialog component
+      expect(screen.getByText('Select tool')).toBeInTheDocument();
+      expect(screen.getByText('Select all modules')).toBeInTheDocument();
+      expect(screen.getByText('Pan tool')).toBeInTheDocument();
+      // Note: "Delete selected modules" appears twice (Delete and Backspace keys)
+      // Use getAllByText to handle multiple instances
+      expect(screen.getAllByText('Delete selected modules').length).toBeGreaterThan(0);
+      expect(screen.getByText('Undo')).toBeInTheDocument();
+      expect(screen.getByText('Toggle grid')).toBeInTheDocument();
+      expect(screen.getByText('Save map')).toBeInTheDocument();
     });
   });
 });

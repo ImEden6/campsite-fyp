@@ -8,24 +8,28 @@ afterEach(() => {
 });
 
 // Mock environment variables
-vi.stubEnv('VITE_API_URL', 'http://localhost:5000');
+vi.stubEnv('VITE_API_URL', 'http://localhost:5000/api/v1');
 vi.stubEnv('VITE_WS_URL', 'ws://localhost:5000');
 vi.stubEnv('VITE_STRIPE_PUBLIC_KEY', 'pk_test_mock');
+// Disable mock auth in tests - use MSW instead
+vi.stubEnv('VITE_USE_MOCK_AUTH', 'false');
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+// Mock window.matchMedia (only if window exists - not in node environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
@@ -63,3 +67,24 @@ const sessionStorageMock = {
   clear: vi.fn(),
 };
 global.sessionStorage = sessionStorageMock as any;
+
+// Mock Konva to prevent Node.js canvas requirement
+vi.mock('konva', () => ({
+  default: {
+    Stage: class MockStage {},
+    Layer: class MockLayer {},
+    Group: class MockGroup {},
+    Rect: class MockRect {},
+    Circle: class MockCircle {},
+    Text: class MockText {},
+    Image: class MockImage {},
+    Line: class MockLine {},
+    Tween: class MockTween {
+      play() {}
+      destroy() {}
+    },
+    Easings: {
+      EaseInOut: () => {},
+    },
+  },
+}));

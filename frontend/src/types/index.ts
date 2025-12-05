@@ -308,6 +308,10 @@ export interface CampsiteMap {
     maxX: number;
     maxY: number;
   };
+  gridBounds?: {
+    width: number;
+    height: number;
+  };
   modules: AnyModule[];
   metadata: {
     address: string;

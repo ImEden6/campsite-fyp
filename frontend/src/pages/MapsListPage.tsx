@@ -16,7 +16,8 @@ import {
   Calendar
 } from 'lucide-react';
 import { useMapStore } from '@/stores/mapStore';
-import type { CampsiteMap } from '@/types';
+import { getImageDimensions } from '@/utils/imageOptimization';
+import type { CampsiteMap, Size } from '@/types';
 
 export const MapsListPage: React.FC = () => {
   const { motion } = useLazyFramerMotion();
@@ -28,6 +29,7 @@ export const MapsListPage: React.FC = () => {
   const [newMapDescription, setNewMapDescription] = useState('');
   const [_imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [detectedImageSize, setDetectedImageSize] = useState<Size | null>(null);
 
   const handleCreateMap = () => {
     if (!newMapName.trim()) {
@@ -35,20 +37,28 @@ export const MapsListPage: React.FC = () => {
       return;
     }
 
+    // Use detected image size or fallback to default
+    const imageSize = detectedImageSize || { width: 1920, height: 1080 };
+
     // Create a new map
     const newMap: CampsiteMap = {
       id: `map-${Date.now()}`,
       name: newMapName,
       description: newMapDescription,
       imageUrl: imagePreview || '/placeholder-map.jpg',
-      imageSize: { width: 1920, height: 1080 },
+      imageSize,
       scale: 10, // 10 pixels per meter
       bounds: {
         minX: 0,
         minY: 0,
-        maxX: 1920,
-        maxY: 1080,
+        maxX: imageSize.width,
+        maxY: imageSize.height,
       },
+      // Set gridBounds to match image size when image is uploaded
+      gridBounds: detectedImageSize ? {
+        width: detectedImageSize.width,
+        height: detectedImageSize.height,
+      } : undefined,
       modules: [],
       metadata: {
         address: '',
@@ -69,15 +79,28 @@ export const MapsListPage: React.FC = () => {
     setNewMapDescription('');
     setImageFile(null);
     setImagePreview(null);
+    setDetectedImageSize(null);
     
     // Navigate to the new map editor
     navigate(`/admin/map-editor/${newMap.id}`);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      
+      // Detect image dimensions
+      try {
+        const dimensions = await getImageDimensions(file);
+        setDetectedImageSize(dimensions);
+      } catch (error) {
+        console.error('Failed to detect image dimensions:', error);
+        // Fallback to default size
+        setDetectedImageSize({ width: 1920, height: 1080 });
+      }
+      
+      // Update preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -255,6 +278,7 @@ export const MapsListPage: React.FC = () => {
                           onClick={() => {
                             setImageFile(null);
                             setImagePreview(null);
+                            setDetectedImageSize(null);
                           }}
                           className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                         >
@@ -293,6 +317,7 @@ export const MapsListPage: React.FC = () => {
                   setNewMapDescription('');
                   setImageFile(null);
                   setImagePreview(null);
+                  setDetectedImageSize(null);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >

@@ -257,3 +257,31 @@ export async function createBlurPlaceholder(
     img.src = src;
   });
 }
+
+/**
+ * Get image dimensions from a file
+ * @param file - Image file
+ * @returns Promise with image dimensions { width, height }
+ */
+export function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    img.onload = () => {
+      // Clean up object URL
+      URL.revokeObjectURL(img.src);
+      resolve({ width: img.width, height: img.height });
+    };
+    
+    img.onerror = () => {
+      // Clean up object URL on error
+      if (img.src.startsWith('blob:')) {
+        URL.revokeObjectURL(img.src);
+      }
+      reject(new Error('Failed to load image'));
+    };
+    
+    // Create object URL for the file
+    img.src = URL.createObjectURL(file);
+  });
+}

@@ -19,6 +19,7 @@ import {
   Loader2,
   AlertCircle,
   Ruler,
+  Settings,
 } from 'lucide-react';
 import { useEditorService } from '../../hooks/useEditorService';
 import { useMapCommands } from '../../hooks/useMapCommands';
@@ -29,6 +30,7 @@ import { useMapEditorContext } from '../../context/MapEditorContext';
 import { useToast } from '@/hooks/useToast';
 import { bulkUpdateModules } from '@/services/api';
 import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
+import { GridSettings } from '../GridSettings/GridSettings';
 import type { ToolType } from '../../core/services';
 
 interface ToolbarProps {
@@ -58,6 +60,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Map<string, string[]>>(new Map());
+  const [showGridSettings, setShowGridSettings] = useState(false);
 
   // Get current map
   const currentMap = mapId ? mapService.getMap(mapId) : null;
@@ -383,17 +386,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
 
       <div className="flex items-center space-x-4">
         {/* View Options */}
-        <button
-          onClick={toggleGrid}
-          className={`p-2 rounded-md ${
-            showGrid
-              ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
-          title="Toggle Grid"
-        >
-          <Grid3X3 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={toggleGrid}
+            className={`p-2 rounded-md ${
+              showGrid
+                ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Toggle Grid"
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowGridSettings(true)}
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-md"
+            title="Grid Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
         <button
           onClick={toggleRulers}
           className={`p-2 rounded-md ${
@@ -485,6 +497,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({ mapId }) => {
           )}
         </button>
       </div>
+
+      {/* Grid Settings Modal */}
+      {mapId && (
+        <GridSettings
+          mapId={mapId}
+          isOpen={showGridSettings}
+          onClose={() => setShowGridSettings(false)}
+        />
+      )}
     </div>
   );
 };

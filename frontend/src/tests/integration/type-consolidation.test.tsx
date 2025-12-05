@@ -73,20 +73,20 @@ const mockEquipmentList = [
 
 const server = setupServer(
   // Dashboard endpoints
-  http.get('/api/analytics/dashboard', () => {
+  http.get('http://localhost:5000/api/v1/analytics/dashboard', () => {
     return HttpResponse.json(mockDashboardMetrics);
   }),
-  http.get('/api/analytics/revenue', () => {
+  http.get('http://localhost:5000/api/v1/analytics/revenue', () => {
     return HttpResponse.json(mockRevenueData);
   }),
-  http.get('/api/analytics/occupancy', () => {
+  http.get('http://localhost:5000/api/v1/analytics/occupancy', () => {
     return HttpResponse.json([
       { date: '2024-01', occupancy: 65 },
       { date: '2024-02', occupancy: 72 },
       { date: '2024-03', occupancy: 78 },
     ]);
   }),
-  http.get('/api/analytics/customers', () => {
+  http.get('http://localhost:5000/api/v1/analytics/customers', () => {
     return HttpResponse.json({
       totalCustomers: 150,
       newCustomers: 25,
@@ -95,7 +95,7 @@ const server = setupServer(
   }),
   
   // Booking endpoints
-  http.get('/api/bookings', ({ request }) => {
+  http.get('http://localhost:5000/api/v1/bookings', ({ request }) => {
     const url = new URL(request.url);
     const searchTerm = url.searchParams.get('searchTerm');
     
@@ -110,7 +110,7 @@ const server = setupServer(
   }),
   
   // Equipment endpoints
-  http.get('/api/equipment', ({ request }) => {
+  http.get('http://localhost:5000/api/v1/equipment', ({ request }) => {
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
     const search = url.searchParams.get('search') || url.searchParams.get('searchTerm');
@@ -171,7 +171,7 @@ describe('Type Consolidation Integration Tests', () => {
       
       // Track API calls
       server.use(
-        http.get('/api/analytics/dashboard', () => {
+        http.get('http://localhost:5000/api/v1/analytics/dashboard', () => {
           return HttpResponse.json(mockDashboardMetrics);
         })
       );

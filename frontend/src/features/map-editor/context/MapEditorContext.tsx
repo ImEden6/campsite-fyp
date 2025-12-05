@@ -67,7 +67,7 @@ export const MapEditorProvider: React.FC<MapEditorProviderProps> = ({
     () => new ViewportService(eventBus),
     [eventBus]
   );
-  const renderer = useMemo(() => createRenderer('svg'), []);
+  const renderer = useMemo(() => createRenderer('konva'), []);
 
   const value: MapEditorContextValue = useMemo(
     () => ({

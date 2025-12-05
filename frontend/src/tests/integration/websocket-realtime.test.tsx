@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { waitFor } from '../utils/test-utils';
 import { renderHook, act } from '@testing-library/react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useWebSocketEvent } from '@/hooks/useWebSocketEvent';
 import { useBookingEvents } from '@/hooks/useBookingEvents';
 import { mockBooking } from '../utils/mock-data';
 import { createMockWebSocketServer, MockWebSocketServer } from '../utils/websocket-test-utils';
+import { createTestQueryClient } from '../utils/test-query-client';
 
 // Mock Socket.io client
 const mockSocket = {
@@ -66,6 +68,16 @@ vi.mock('@/services/websocket', () => {
 
 let mockWsServer: MockWebSocketServer;
 
+// Create wrapper component with QueryClientProvider
+const createWrapper = () => {
+  const queryClient = createTestQueryClient();
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
 describe('WebSocket Real-time Updates', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -90,7 +102,9 @@ describe('WebSocket Real-time Updates', () => {
   it('should handle booking created event', async () => {
     const onBookingCreated = vi.fn();
     
-    renderHook(() => useBookingEvents({ onBookingCreated }));
+    renderHook(() => useBookingEvents({ onBookingCreated }), {
+      wrapper: createWrapper(),
+    });
 
     // Simulate booking created event
     const bookingCreatedHandler = mockSocket.on.mock.calls.find(
@@ -111,7 +125,9 @@ describe('WebSocket Real-time Updates', () => {
   it('should handle booking updated event', async () => {
     const onBookingUpdated = vi.fn();
     
-    renderHook(() => useBookingEvents({ onBookingUpdated }));
+    renderHook(() => useBookingEvents({ onBookingUpdated }), {
+      wrapper: createWrapper(),
+    });
 
     const updatedBooking = { ...mockBooking, status: 'CHECKED_IN' as const };
 

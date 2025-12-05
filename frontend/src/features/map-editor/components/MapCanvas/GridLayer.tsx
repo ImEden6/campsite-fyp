@@ -1,9 +1,10 @@
 /**
  * Grid Layer
- * Renders the grid pattern
+ * Renders the grid pattern using Konva
  */
 
 import React from 'react';
+import { Layer } from 'react-konva';
 import { useMapEditor } from '../../hooks/useMapEditor';
 import { useEditorService } from '../../hooks/useEditorService';
 import type { Size } from '@/types';
@@ -21,19 +22,13 @@ export const GridLayer: React.FC<GridLayerProps> = ({ size }) => {
   }
 
   return (
-    <g className="grid-layer">
+    <Layer listening={false} perfectDrawEnabled={false}>
       {renderer.renderGrid({
         gridSize,
         width: size.width,
         height: size.height,
       })}
-      <rect
-        width={size.width}
-        height={size.height}
-        fill="url(#grid-pattern)"
-        pointerEvents="none"
-      />
-    </g>
+    </Layer>
   );
 };
 

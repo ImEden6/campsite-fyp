@@ -7,6 +7,9 @@ export const mockUser = {
   lastName: 'User',
   role: 'STAFF' as const,
   phone: '555-0100',
+  isActive: true,
+  isEmailVerified: true,
+  isPhoneVerified: false,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
 };
@@ -45,18 +48,25 @@ export const mockSite = {
 
 export const mockBooking = {
   id: '1',
+  bookingNumber: 'BK-001',
   userId: '1',
   siteId: '1',
   checkInDate: new Date('2024-12-20'),
   checkOutDate: new Date('2024-12-22'),
   status: 'CONFIRMED' as const,
+  paymentStatus: 'PAID' as const,
   totalAmount: 70.00,
   depositAmount: 35.00,
+  paidAmount: 70.00,
+  taxAmount: 5.00,
+  discountAmount: 0,
   guests: {
     adults: 2,
     children: 1,
     pets: 0,
   },
+  vehicles: [],
+  equipmentRentals: [],
   specialRequests: 'Early check-in if possible',
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
@@ -119,4 +129,23 @@ export const mockRevenueData = [
   { date: '2024-02', revenue: 6500 },
   { date: '2024-03', revenue: 7200 },
   { date: '2024-04', revenue: 8100 },
+];
+
+// Additional mock bookings for list tests
+export const mockBookingsList = [
+  {
+    ...mockBooking,
+    id: '1',
+    bookingNumber: 'BK-001',
+    status: 'CONFIRMED' as const,
+    paymentStatus: 'PAID' as const,
+  },
+  {
+    ...mockBooking,
+    id: '2',
+    bookingNumber: 'BK-002',
+    status: 'PENDING' as const,
+    paymentStatus: 'PENDING' as const,
+    paidAmount: 0,
+  },
 ];

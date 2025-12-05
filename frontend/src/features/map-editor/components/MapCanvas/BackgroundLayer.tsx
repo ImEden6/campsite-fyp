@@ -1,9 +1,10 @@
 /**
  * Background Layer
- * Renders the map background image
+ * Renders the map background image using Konva
  */
 
 import React from 'react';
+import { Layer } from 'react-konva';
 import { useMapEditor } from '../../hooks/useMapEditor';
 import type { Size } from '@/types';
 
@@ -19,9 +20,9 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({
   const { renderer } = useMapEditor();
 
   return (
-    <g className="background-layer">
+    <Layer listening={false} perfectDrawEnabled={false}>
       {renderer.renderBackground(imageUrl, size)}
-    </g>
+    </Layer>
   );
 };
 
