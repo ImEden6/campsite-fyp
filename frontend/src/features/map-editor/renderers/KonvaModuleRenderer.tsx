@@ -185,7 +185,7 @@ export const KonvaModuleRenderer: React.FC<KonvaModuleRendererProps> = ({
     onDragEnd?.(module.id);
   }, [isDragging, module.id, onDragEnd]);
 
-  // Animate module position when shouldAnimate is true
+  // Animate module position when shouldAnimate is true (user-initiated moves)
   useKonvaAnimation(
     groupRef,
     shouldAnimate ? { x, y, rotation } : {},
@@ -194,6 +194,8 @@ export const KonvaModuleRenderer: React.FC<KonvaModuleRendererProps> = ({
       skipIfReducedMotion: true,
       skipIfOutsideViewport: true,
       stageRef,
+      isUserInitiated: shouldAnimate, // Only animate user-initiated moves
+      enabled: shouldAnimate,
     }
   );
 

@@ -191,6 +191,31 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
       const module = modules.find((m) => m.id === moduleId);
       if (!module) return;
 
+      // Mark module for animation (transforms are user-initiated)
+      setModulesToAnimate((prev) => {
+        const next = new Set(prev);
+        next.add(moduleId);
+        return next;
+      });
+
+      // Clear animation flag after animation completes
+      const timeoutMap = animationTimeoutRef.current;
+      const existingTimeout = timeoutMap.get(moduleId);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+      }
+
+      const timeout = setTimeout(() => {
+        setModulesToAnimate((prev) => {
+          const next = new Set(prev);
+          next.delete(moduleId);
+          return next;
+        });
+        timeoutMap.delete(moduleId);
+      }, 250); // Slightly longer than animation duration
+
+      timeoutMap.set(moduleId, timeout);
+
       if (transform.position) {
         moveModule(mapId, moduleId, transform.position, module.position);
       }

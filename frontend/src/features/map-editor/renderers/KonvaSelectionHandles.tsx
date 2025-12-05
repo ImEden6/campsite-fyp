@@ -125,7 +125,7 @@ export const KonvaSelectionHandles: React.FC<KonvaSelectionHandlesProps> = ({
       e.cancelBubble = true;
       setIsRotating(true);
     },
-    [onTransform, modules.length, rotationData]
+    [onTransform, modules, rotationData]
   );
 
   // Handle rotation mouse move (attached to stage)
@@ -220,7 +220,7 @@ export const KonvaSelectionHandles: React.FC<KonvaSelectionHandlesProps> = ({
         height,
       });
     },
-    [onTransform, modules.length, width, height]
+    [onTransform, modules, width, height]
   );
 
   // Handle resize drag move
