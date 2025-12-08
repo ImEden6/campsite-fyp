@@ -1,130 +1,152 @@
 /**
  * Map Store
- * Manages campsite map state and modules
+ * Manages the current campsite map data and modules.
+ * This is the single source of truth for all module data.
  */
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { CampsiteMap, AnyModule } from '@/types';
-import { indexedDBStorage } from '@/utils/indexedDBStorage';
 
 interface MapState {
-  maps: CampsiteMap[];
-  selectedMapId: string | null;
-  
-  // Actions
-  setMaps: (maps: CampsiteMap[]) => void;
-  addMap: (map: CampsiteMap) => void;
-  updateMap: (id: string, updates: Partial<CampsiteMap>) => void;
-  removeMap: (id: string) => void;
-  selectMap: (id: string | null) => void;
-  
-  // Module actions
-  addModule: (mapId: string, module: AnyModule) => void;
-  updateModule: (mapId: string, module: AnyModule) => void;
-  removeModule: (mapId: string, moduleId: string) => void;
-  duplicateModule: (mapId: string, moduleId: string) => void;
+    // State
+    currentMap: CampsiteMap | null;
+    isLoading: boolean;
+    isDirty: boolean;
+    error: string | null;
 }
 
-export const useMapStore = create<MapState>()(
-  persist(
-    (set) => ({
-      maps: [],
-      selectedMapId: null,
+interface MapActions {
+    // Map lifecycle
+    setMap: (map: CampsiteMap) => void;
+    clearMap: () => void;
+    markDirty: () => void;
+    markClean: () => void;
+    setLoading: (loading: boolean) => void;
+    setError: (error: string | null) => void;
 
-      setMaps: (maps) => set({ maps }),
+    // Module CRUD (internal - use commands for history)
+    _addModule: (module: AnyModule) => void;
+    _updateModule: (id: string, changes: Partial<AnyModule>) => void;
+    _removeModule: (id: string) => void;
+    _removeModules: (ids: string[]) => void;
+    _setModules: (modules: AnyModule[]) => void;
+    _reorderModule: (id: string, newZIndex: number) => void;
 
-      addMap: (map) =>
-        set((state) => ({
-          maps: [...state.maps, map],
-        })),
+    // Selectors
+    getModule: (id: string) => AnyModule | undefined;
+    getModules: () => AnyModule[];
+}
 
-      updateMap: (id, updates) =>
-        set((state) => ({
-          maps: state.maps.map((map) =>
-            map.id === id ? { ...map, ...updates, updatedAt: new Date() } : map
-          ),
-        })),
+type MapStore = MapState & MapActions;
 
-      removeMap: (id) =>
-        set((state) => ({
-          maps: state.maps.filter((map) => map.id !== id),
-          selectedMapId: state.selectedMapId === id ? null : state.selectedMapId,
-        })),
+export const useMapStore = create<MapStore>((set, get) => ({
+    // Initial state
+    currentMap: null,
+    isLoading: false,
+    isDirty: false,
+    error: null,
 
-      selectMap: (id) => set({ selectedMapId: id }),
+    // Map lifecycle
+    setMap: (map) => set({ currentMap: map, isDirty: false, error: null }),
 
-      addModule: (mapId, module) =>
-        set((state) => ({
-          maps: state.maps.map((map) =>
-            map.id === mapId
-              ? { ...map, modules: [...map.modules, module], updatedAt: new Date() }
-              : map
-          ),
-        })),
+    clearMap: () => set({ currentMap: null, isDirty: false, error: null }),
 
-      updateModule: (mapId, updatedModule) =>
-        set((state) => ({
-          maps: state.maps.map((map) =>
-            map.id === mapId
-              ? {
-                  ...map,
-                  modules: map.modules.map((module) =>
-                    module.id === updatedModule.id ? updatedModule : module
-                  ),
-                  updatedAt: new Date(),
-                }
-              : map
-          ),
-        })),
+    markDirty: () => set({ isDirty: true }),
 
-      removeModule: (mapId, moduleId) =>
-        set((state) => ({
-          maps: state.maps.map((map) =>
-            map.id === mapId
-              ? {
-                  ...map,
-                  modules: map.modules.filter((module) => module.id !== moduleId),
-                  updatedAt: new Date(),
-                }
-              : map
-          ),
-        })),
+    markClean: () => set({ isDirty: false }),
 
-      duplicateModule: (mapId, moduleId) =>
-        set((state) => ({
-          maps: state.maps.map((map) => {
-            if (map.id !== mapId) return map;
+    setLoading: (loading) => set({ isLoading: loading }),
 
-            const moduleToDuplicate = map.modules.find((m) => m.id === moduleId);
-            if (!moduleToDuplicate) return map;
+    setError: (error) => set({ error }),
 
-            const duplicatedModule: AnyModule = {
-              ...moduleToDuplicate,
-              id: `${moduleToDuplicate.id}-copy-${Date.now()}`,
-              position: {
-                x: moduleToDuplicate.position.x + 20,
-                y: moduleToDuplicate.position.y + 20,
-              },
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
-
-            return {
-              ...map,
-              modules: [...map.modules, duplicatedModule],
-              updatedAt: new Date(),
-            };
-          }),
-        })),
+    // Module CRUD (internal)
+    _addModule: (module) => set((state) => {
+        if (!state.currentMap) return state;
+        return {
+            currentMap: {
+                ...state.currentMap,
+                modules: [...state.currentMap.modules, module],
+                updatedAt: new Date(),
+            },
+        };
     }),
-    {
-      name: 'campsite-map-storage',
-      storage: indexedDBStorage,
-      partialize: (state) => ({
-        maps: state.maps,
-        selectedMapId: state.selectedMapId,
-      }),
-    }
-  )
-);
+
+    _updateModule: (id, changes) => set((state) => {
+        if (!state.currentMap) return state;
+        return {
+            currentMap: {
+                ...state.currentMap,
+                modules: state.currentMap.modules.map((m) =>
+                    m.id === id ? { ...m, ...changes, updatedAt: new Date() } as AnyModule : m
+                ),
+                updatedAt: new Date(),
+            },
+        };
+    }),
+
+    _removeModule: (id) => set((state) => {
+        if (!state.currentMap) return state;
+        return {
+            currentMap: {
+                ...state.currentMap,
+                modules: state.currentMap.modules.filter((m) => m.id !== id),
+                updatedAt: new Date(),
+            },
+        };
+    }),
+
+    _removeModules: (ids) => set((state) => {
+        if (!state.currentMap) return state;
+        const idSet = new Set(ids);
+        return {
+            currentMap: {
+                ...state.currentMap,
+                modules: state.currentMap.modules.filter((m) => !idSet.has(m.id)),
+                updatedAt: new Date(),
+            },
+        };
+    }),
+
+    _setModules: (modules) => set((state) => {
+        if (!state.currentMap) return state;
+        return {
+            currentMap: {
+                ...state.currentMap,
+                modules,
+                updatedAt: new Date(),
+            },
+        };
+    }),
+
+    _reorderModule: (id, newZIndex) => set((state) => {
+        if (!state.currentMap) return state;
+        return {
+            currentMap: {
+                ...state.currentMap,
+                modules: state.currentMap.modules.map((m) =>
+                    m.id === id ? { ...m, zIndex: newZIndex, updatedAt: new Date() } as AnyModule : m
+                ),
+                updatedAt: new Date(),
+            },
+        };
+    }),
+
+    // Selectors
+    getModule: (id) => {
+        const { currentMap } = get();
+        return currentMap?.modules.find((m) => m.id === id);
+    },
+
+    getModules: () => {
+        const { currentMap } = get();
+        return currentMap?.modules ?? [];
+    },
+}));
+
+// Granular selector for a specific module
+export const selectModuleById = (id: string) => (state: MapStore) =>
+    state.currentMap?.modules.find((m) => m.id === id);
+
+// Selector for modules sorted by zIndex
+export const selectModulesSorted = (state: MapStore) =>
+    [...(state.currentMap?.modules ?? [])].sort((a, b) => a.zIndex - b.zIndex);

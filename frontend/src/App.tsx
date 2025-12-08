@@ -45,8 +45,9 @@ const CheckOutPage = lazy(() => import('@/pages/CheckOutPage'));
 
 // Admin pages - lazy loaded (heavy components)
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
-const MapsListPage = lazy(() => import('@/pages/MapsListPage'));
-const MapEditor = lazy(() => import('@/features/map-editor').then(m => ({ default: m.MapEditor })));
+// TODO: Re-add when map editor pages are reimplemented
+// const MapsListPage = lazy(() => import('@/pages/MapsListPage'));
+// const MapEditor = lazy(() => import('@/features/map-editor').then(m => ({ default: m.MapEditor })));
 const UserManagementPage = lazy(() => import('@/pages/UserManagementPage').then(m => ({ default: m.UserManagementPage })));
 
 // Accessibility and PWA components - lazy loaded
@@ -217,6 +218,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* TODO: Re-add when map editor pages are reimplemented
               <Route
                 path="/admin/maps"
                 element={
@@ -233,6 +235,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              */}
               <Route
                 path="/admin/equipment"
                 element={
@@ -265,6 +268,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* TODO: Re-add when map editor pages are reimplemented
               <Route
                 path="/maps/:id"
                 element={
@@ -273,6 +277,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              */}
             </Route>
 
             {/* Catch all - redirect to login */}

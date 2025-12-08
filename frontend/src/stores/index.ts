@@ -3,11 +3,13 @@
  * Central export point for all Zustand stores
  */
 
-// Export all stores
+// Core stores
 export { useAuthStore } from './authStore';
 export { useUIStore } from './uiStore';
 export { useBookingStore } from './bookingStore';
-export { useMapStore } from './mapStore';
-export { useViewportStore } from './viewportStore';
-export { useEditorStore } from './editorStore';
+
+// Map editor stores
+export { useMapStore, selectModuleById, selectModulesSorted } from './mapStore';
+export { useEditorStore, selectIsSelected, selectSelectedCount } from './editorStore';
+export { useViewportStore, VIEWPORT_CONSTANTS } from './viewportStore';
 

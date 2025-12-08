@@ -1,460 +1,220 @@
 /**
  * Editor Store
- * Manages map editor state and tools
+ * Manages UI state: selection, tools, grid settings, and command history.
  */
 
 import { create } from 'zustand';
-import type { EditorState, ModuleType, CampsiteMap, AnyModule, Position } from '@/types';
-import { HistoryManager, type HistoryAction } from '@/utils/historyManager';
-import { validateClipboardData, sanitizeClipboardData } from '@/utils/validationUtils';
-import errorLogger, { ErrorCategory } from '@/utils/errorLogger';
+import type { AnyModule } from '@/types';
+import type { Command } from '@/commands/Command';
+import { useMapStore } from './mapStore';
 
-interface EditorStoreState {
-  editor: EditorState;
-  historyManager: HistoryManager;
-  
-  // Basic editor actions
-  setEditor: (updates: Partial<EditorState>) => void;
-  resetEditor: () => void;
-  toggleLayerVisibility: (layer: ModuleType) => void;
-  
-  // History management actions
-  pushHistory: (mapState: CampsiteMap, action: HistoryAction) => void;
-  undo: () => CampsiteMap | null;
-  redo: () => CampsiteMap | null;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
-  clearHistory: () => void;
-  
-  // Clipboard management actions
-  copyModules: (modules: AnyModule[]) => void;
-  cutModules: (modules: AnyModule[]) => void;
-  pasteModules: (offset?: Position) => AnyModule[];
-  duplicateModules: (modules: AnyModule[], offset?: Position) => AnyModule[];
-  
-  // Selection actions
-  selectModules: (moduleIds: string[]) => void;
-  clearSelection: () => void;
-  
-  // Keyboard shortcuts actions
-  toggleShortcutsDialog: () => void;
-  updatePressedKeys: (keys: Set<string>) => void;
+// Types
+type Tool = 'select' | 'pan';
+
+interface EditorState {
+    // Selection
+    selectedIds: string[];
+
+    // Tool
+    activeTool: Tool;
+
+    // Grid
+    snapToGrid: boolean;
+    gridSize: number;
+    showGrid: boolean;
+
+    // History
+    undoStack: Command[];
+    redoStack: Command[];
+    historyLimit: number;
+
+    // Clipboard
+    clipboard: AnyModule[];
 }
 
-const defaultEditor: EditorState = {
-  selectedModuleIds: [],
-  clipboardModules: [],
-  undoStack: [],
-  redoStack: [],
-  maxHistorySize: 50,
-  isEditing: false,
-  currentTool: 'select',
-  snapToGrid: true,
-  gridSize: 20,
-  showGrid: true,
-  showRulers: true,
-  showMinimap: false,
-  layerVisibility: {
-    campsite: true,
-    toilet: true,
-    storage: true,
-    building: true,
-    parking: true,
-    road: true,
-    water_source: true,
-    electricity: true,
-    waste_disposal: true,
-    recreation: true,
-    custom: true,
-  },
-  activeTransform: null,
-  showShortcutsDialog: false,
-  pressedKeys: new Set<string>(),
-};
+interface EditorActions {
+    // Selection
+    select: (ids: string[], additive?: boolean) => void;
+    selectAll: () => void;
+    clearSelection: () => void;
+    toggleSelection: (id: string) => void;
 
-export const useEditorStore = create<EditorStoreState>((set, get) => ({
-  editor: defaultEditor,
-  historyManager: new HistoryManager({ maxHistorySize: 50 }),
+    // Tool
+    setTool: (tool: Tool) => void;
 
-  // Basic editor actions
-  setEditor: (updates) =>
-    set((state) => ({
-      editor: { ...state.editor, ...updates },
+    // Grid
+    toggleGrid: () => void;
+    toggleSnapToGrid: () => void;
+    setGridSize: (size: number) => void;
+
+    // History
+    execute: (command: Command) => void;
+    undo: () => void;
+    redo: () => void;
+    clearHistory: () => void;
+
+    // Clipboard
+    copy: () => void;
+    cut: () => void;
+    paste: (offset?: { x: number; y: number }) => AnyModule[];
+
+    // Computed
+    canUndo: () => boolean;
+    canRedo: () => boolean;
+}
+
+type EditorStore = EditorState & EditorActions;
+
+// Default values
+const DEFAULT_GRID_SIZE = 20;
+const DEFAULT_HISTORY_LIMIT = 50;
+
+export const useEditorStore = create<EditorStore>((set, get) => ({
+    // Initial state
+    selectedIds: [],
+    activeTool: 'select',
+    snapToGrid: true,
+    gridSize: DEFAULT_GRID_SIZE,
+    showGrid: true,
+    undoStack: [],
+    redoStack: [],
+    historyLimit: DEFAULT_HISTORY_LIMIT,
+    clipboard: [],
+
+    // Selection
+    select: (ids, additive = false) => set((state) => ({
+        selectedIds: additive
+            ? [...new Set([...state.selectedIds, ...ids])]
+            : ids,
     })),
 
-  resetEditor: () => 
-    set({ 
-      editor: defaultEditor,
-      historyManager: new HistoryManager({ maxHistorySize: 50 }),
+    selectAll: () => {
+        const modules = useMapStore.getState().getModules();
+        set({ selectedIds: modules.map((m) => m.id) });
+    },
+
+    clearSelection: () => set({ selectedIds: [] }),
+
+    toggleSelection: (id) => set((state) => {
+        const isSelected = state.selectedIds.includes(id);
+        return {
+            selectedIds: isSelected
+                ? state.selectedIds.filter((i) => i !== id)
+                : [...state.selectedIds, id],
+        };
     }),
 
-  toggleLayerVisibility: (layer) =>
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        layerVisibility: {
-          ...state.editor.layerVisibility,
-          [layer]: !state.editor.layerVisibility[layer],
-        },
-      },
-    })),
+    // Tool
+    setTool: (tool) => set({ activeTool: tool }),
 
-  // History management actions
-  pushHistory: (mapState, action) => {
-    const { historyManager } = get();
-    historyManager.pushState(mapState, action);
-    
-    // Update editor state to reflect history changes
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        undoStack: Array(historyManager.getUndoStackSize()).fill(null),
-        redoStack: Array(historyManager.getRedoStackSize()).fill(null),
-      },
-    }));
-  },
+    // Grid
+    toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
 
-  undo: () => {
-    const { historyManager } = get();
-    const previousState = historyManager.undo();
-    
-    // Update editor state to reflect history changes
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        undoStack: Array(historyManager.getUndoStackSize()).fill(null),
-        redoStack: Array(historyManager.getRedoStackSize()).fill(null),
-      },
-    }));
-    
-    return previousState;
-  },
+    toggleSnapToGrid: () => set((state) => ({ snapToGrid: !state.snapToGrid })),
 
-  redo: () => {
-    const { historyManager } = get();
-    const nextState = historyManager.redo();
-    
-    // Update editor state to reflect history changes
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        undoStack: Array(historyManager.getUndoStackSize()).fill(null),
-        redoStack: Array(historyManager.getRedoStackSize()).fill(null),
-      },
-    }));
-    
-    return nextState;
-  },
+    setGridSize: (size) => set({ gridSize: Math.max(5, Math.min(100, size)) }),
 
-  canUndo: () => {
-    const { historyManager } = get();
-    return historyManager.canUndo();
-  },
+    // History
+    execute: (command) => {
+        command.execute();
 
-  canRedo: () => {
-    const { historyManager } = get();
-    return historyManager.canRedo();
-  },
+        set((state) => {
+            const newStack = [...state.undoStack, command];
+            // Prune old commands if over limit
+            const prunedStack = newStack.slice(-state.historyLimit);
 
-  clearHistory: () => {
-    const { historyManager } = get();
-    historyManager.clear();
-    
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        undoStack: [],
-        redoStack: [],
-      },
-    }));
-  },
+            return {
+                undoStack: prunedStack,
+                redoStack: [], // Clear redo stack on new action
+            };
+        });
 
-  // Clipboard management actions
-  copyModules: (modules) => {
-    try {
-      // Validate clipboard data before copying
-      const validation = validateClipboardData(modules);
-      
-      if (!validation.isValid) {
-        errorLogger.warn(
-          ErrorCategory.CLIPBOARD,
-          'Attempted to copy invalid modules, sanitizing data',
-          { errors: validation.errors, moduleCount: modules.length }
-        );
-        
-        // Sanitize the data by removing invalid modules
-        const sanitized = sanitizeClipboardData(modules);
-        
-        set((state) => ({
-          editor: {
-            ...state.editor,
-            clipboardModules: sanitized.map(module => ({ ...module })),
-          },
+        // Mark map as dirty
+        useMapStore.getState().markDirty();
+    },
+
+    undo: () => {
+        const { undoStack, redoStack } = get();
+        if (undoStack.length === 0) return;
+
+        const command = undoStack[undoStack.length - 1]!;
+
+        command.undo();
+
+        set({
+            undoStack: undoStack.slice(0, -1),
+            redoStack: [...redoStack, command],
+        });
+
+        useMapStore.getState().markDirty();
+    },
+
+    redo: () => {
+        const { undoStack, redoStack } = get();
+        if (redoStack.length === 0) return;
+
+        const command = redoStack[redoStack.length - 1]!;
+
+        command.execute();
+
+        set({
+            undoStack: [...undoStack, command],
+            redoStack: redoStack.slice(0, -1),
+        });
+
+        useMapStore.getState().markDirty();
+    },
+
+    clearHistory: () => set({ undoStack: [], redoStack: [] }),
+
+    // Clipboard
+    copy: () => {
+        const { selectedIds } = get();
+        const modules = useMapStore.getState().getModules();
+        const selected = modules.filter((m) => selectedIds.includes(m.id));
+
+        // Deep clone to avoid reference issues
+        set({ clipboard: JSON.parse(JSON.stringify(selected)) });
+    },
+
+    cut: () => {
+        const { selectedIds, copy } = get();
+        if (selectedIds.length === 0) return;
+
+        // Copy first
+        copy();
+
+        // Then delete via command (caller should use DeleteModuleCommand)
+        // Note: The actual deletion should be done by the component using a command
+    },
+
+    paste: (offset = { x: 20, y: 20 }) => {
+        const { clipboard } = get();
+        if (clipboard.length === 0) return [];
+
+        // Create new modules with unique IDs and offset positions
+        const newModules: AnyModule[] = clipboard.map((m) => ({
+            ...m,
+            id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            position: {
+                x: m.position.x + offset.x,
+                y: m.position.y + offset.y,
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
         }));
-        
-        return;
-      }
-      
-      set((state) => ({
-        editor: {
-          ...state.editor,
-          clipboardModules: modules.map(module => ({ ...module })),
-        },
-      }));
-      
-      errorLogger.info(
-        ErrorCategory.CLIPBOARD,
-        'Modules copied to clipboard',
-        { moduleCount: modules.length }
-      );
-    } catch (error) {
-      errorLogger.error(
-        ErrorCategory.CLIPBOARD,
-        'Error copying modules to clipboard',
-        { moduleCount: modules.length },
-        error as Error
-      );
-    }
-  },
 
-  cutModules: (modules) => {
-    try {
-      // Validate clipboard data before cutting
-      const validation = validateClipboardData(modules);
-      
-      if (!validation.isValid) {
-        errorLogger.warn(
-          ErrorCategory.CLIPBOARD,
-          'Attempted to cut invalid modules, sanitizing data',
-          { errors: validation.errors, moduleCount: modules.length }
-        );
-        
-        // Sanitize the data by removing invalid modules
-        const sanitized = sanitizeClipboardData(modules);
-        
-        set((state) => ({
-          editor: {
-            ...state.editor,
-            clipboardModules: sanitized.map(module => ({ ...module })),
-          },
-        }));
-        
-        return;
-      }
-      
-      set((state) => ({
-        editor: {
-          ...state.editor,
-          clipboardModules: modules.map(module => ({ ...module })),
-        },
-      }));
-      
-      errorLogger.info(
-        ErrorCategory.CLIPBOARD,
-        'Modules cut to clipboard',
-        { moduleCount: modules.length }
-      );
-    } catch (error) {
-      errorLogger.error(
-        ErrorCategory.CLIPBOARD,
-        'Error cutting modules to clipboard',
-        { moduleCount: modules.length },
-        error as Error
-      );
-    }
-  },
+        return newModules;
+    },
 
-  pasteModules: (offset = { x: 20, y: 20 }) => {
-    const { editor } = get();
-    const { clipboardModules } = editor;
-    
-    try {
-      if (clipboardModules.length === 0) {
-        errorLogger.warn(
-          ErrorCategory.CLIPBOARD,
-          'Attempted to paste from empty clipboard',
-          {}
-        );
-        return [];
-      }
-      
-      // Validate clipboard data before pasting
-      const validation = validateClipboardData(clipboardModules);
-      
-      if (!validation.isValid) {
-        errorLogger.error(
-          ErrorCategory.CLIPBOARD,
-          'Clipboard contains invalid data',
-          { errors: validation.errors }
-        );
-        
-        // Attempt to sanitize and use valid modules only
-        const sanitized = sanitizeClipboardData(clipboardModules);
-        
-        if (sanitized.length === 0) {
-          errorLogger.error(
-            ErrorCategory.CLIPBOARD,
-            'No valid modules found in clipboard after sanitization',
-            {}
-          );
-          return [];
-        }
-        
-        errorLogger.info(
-          ErrorCategory.CLIPBOARD,
-          'Using sanitized clipboard data',
-          { originalCount: clipboardModules.length, sanitizedCount: sanitized.length }
-        );
-        
-        // Use sanitized modules
-        const pastedModules: AnyModule[] = sanitized.map((module) => ({
-          ...module,
-          id: `${module.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          position: {
-            x: module.position.x + offset.x,
-            y: module.position.y + offset.y,
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }));
-        
-        return pastedModules;
-      }
-      
-      // Create new modules with new IDs and offset positions
-      const pastedModules: AnyModule[] = clipboardModules.map((module) => ({
-        ...module,
-        id: `${module.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        position: {
-          x: module.position.x + offset.x,
-          y: module.position.y + offset.y,
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
-      
-      errorLogger.info(
-        ErrorCategory.CLIPBOARD,
-        'Modules pasted from clipboard',
-        { moduleCount: pastedModules.length }
-      );
-      
-      return pastedModules;
-    } catch (error) {
-      errorLogger.error(
-        ErrorCategory.CLIPBOARD,
-        'Error pasting modules from clipboard',
-        { clipboardSize: clipboardModules.length },
-        error as Error
-      );
-      return [];
-    }
-  },
-
-  duplicateModules: (modules, offset = { x: 20, y: 20 }) => {
-    try {
-      // Validate modules before duplicating
-      const validation = validateClipboardData(modules);
-      
-      if (!validation.isValid) {
-        errorLogger.warn(
-          ErrorCategory.CLIPBOARD,
-          'Attempted to duplicate invalid modules, sanitizing data',
-          { errors: validation.errors, moduleCount: modules.length }
-        );
-        
-        // Sanitize the data
-        const sanitized = sanitizeClipboardData(modules);
-        
-        if (sanitized.length === 0) {
-          errorLogger.error(
-            ErrorCategory.CLIPBOARD,
-            'No valid modules to duplicate after sanitization',
-            {}
-          );
-          return [];
-        }
-        
-        // Create new modules with new IDs and offset positions
-        const duplicatedModules: AnyModule[] = sanitized.map((module) => ({
-          ...module,
-          id: `${module.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          position: {
-            x: module.position.x + offset.x,
-            y: module.position.y + offset.y,
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }));
-        
-        return duplicatedModules;
-      }
-      
-      // Create new modules with new IDs and offset positions
-      const duplicatedModules: AnyModule[] = modules.map((module) => ({
-        ...module,
-        id: `${module.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        position: {
-          x: module.position.x + offset.x,
-          y: module.position.y + offset.y,
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
-      
-      errorLogger.info(
-        ErrorCategory.CLIPBOARD,
-        'Modules duplicated',
-        { moduleCount: duplicatedModules.length }
-      );
-      
-      return duplicatedModules;
-    } catch (error) {
-      errorLogger.error(
-        ErrorCategory.CLIPBOARD,
-        'Error duplicating modules',
-        { moduleCount: modules.length },
-        error as Error
-      );
-      return [];
-    }
-  },
-
-  // Selection actions
-  selectModules: (moduleIds) => {
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        selectedModuleIds: moduleIds,
-      },
-    }));
-  },
-
-  clearSelection: () => {
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        selectedModuleIds: [],
-      },
-    }));
-  },
-
-  // Keyboard shortcuts actions
-  toggleShortcutsDialog: () => {
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        showShortcutsDialog: !state.editor.showShortcutsDialog,
-      },
-    }));
-  },
-
-  updatePressedKeys: (keys) => {
-    set((state) => ({
-      editor: {
-        ...state.editor,
-        pressedKeys: new Set(keys),
-      },
-    }));
-  },
+    // Computed
+    canUndo: () => get().undoStack.length > 0,
+    canRedo: () => get().redoStack.length > 0,
 }));
+
+// Selectors
+export const selectIsSelected = (id: string) => (state: EditorStore) =>
+    state.selectedIds.includes(id);
+
+export const selectSelectedCount = (state: EditorStore) =>
+    state.selectedIds.length;
