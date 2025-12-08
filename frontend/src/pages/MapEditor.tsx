@@ -4,7 +4,7 @@
  * Uses Konva for canvas rendering with pan/zoom controls.
  */
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Stage, Layer, Rect } from 'react-konva';
 import type Konva from 'konva';
@@ -13,6 +13,13 @@ import { useMapStore, useEditorStore, useViewportStore, VIEWPORT_CONSTANTS } fro
 import { PageLoader } from '@/components/ui/PageLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { MapGrid } from '@/components/MapGrid';
+import { ModuleRenderer } from '@/components/ModuleRenderer';
+import { TransformHandles } from '@/components/TransformHandles';
+import { MoveCommand } from '@/commands/MoveCommand';
+import { ResizeCommand } from '@/commands/ResizeCommand';
+import { RotateCommand } from '@/commands/RotateCommand';
+import { snapToGrid as snapPositionToGrid } from '@/utils/transformUtils';
+import type { Position, Size, AnyModule } from '@/types';
 
 const MapEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -22,12 +29,25 @@ const MapEditor: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<Konva.Stage>(null);
 
+    // Drag state refs
+    const dragStartPositions = useRef<Map<string, Position>>(new Map());
+
     // Local state
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [transformState, setTransformState] = useState<{
+        type: 'resize' | 'rotate' | null;
+        startPosition?: Position;
+        startSize?: Size;
+        startRotation?: number;
+    }>({ type: null });
 
     // Store state
-    const { currentMap, isLoading, isDirty, setMap, setLoading } = useMapStore();
+    const { currentMap, isLoading, isDirty, setMap, setLoading, getModule } = useMapStore();
     const {
+        selectedIds,
+        select,
+        clearSelection,
+        toggleSelection,
         showGrid,
         snapToGrid,
         gridSize,
@@ -37,7 +57,7 @@ const MapEditor: React.FC = () => {
         canRedo,
         undo,
         redo,
-        clearSelection
+        execute,
     } = useEditorStore();
     const {
         zoom,
@@ -49,6 +69,14 @@ const MapEditor: React.FC = () => {
         fitToScreen,
         reset: resetViewport
     } = useViewportStore();
+
+    // Get selected module (for single-select transforms)
+    const selectedModule = useMemo(() => {
+        if (selectedIds.length === 1) {
+            return getModule(selectedIds[0]!);
+        }
+        return undefined;
+    }, [selectedIds, getModule]);
 
     // Handle container resize
     useEffect(() => {
@@ -71,7 +99,7 @@ const MapEditor: React.FC = () => {
         if (id && !currentMap) {
             setLoading(true);
             // TODO: Replace with actual API call
-            // For now, create a mock map
+            // For now, create a mock map with sample modules
             setTimeout(() => {
                 setMap({
                     id,
@@ -81,7 +109,67 @@ const MapEditor: React.FC = () => {
                     imageSize: { width: 1920, height: 1080 },
                     scale: 10,
                     bounds: { minX: 0, minY: 0, maxX: 1920, maxY: 1080 },
-                    modules: [],
+                    modules: [
+                        {
+                            id: 'module-1',
+                            type: 'campsite',
+                            position: { x: 100, y: 100 },
+                            size: { width: 120, height: 80 },
+                            rotation: 0,
+                            zIndex: 1,
+                            locked: false,
+                            visible: true,
+                            metadata: {
+                                name: 'Site A1',
+                                capacity: 4,
+                                amenities: ['fire_pit'],
+                                pricing: { basePrice: 35, seasonalMultiplier: 1 },
+                                accessibility: false,
+                                electricHookup: true,
+                                waterHookup: true,
+                                sewerHookup: false,
+                            },
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                        },
+                        {
+                            id: 'module-2',
+                            type: 'toilet',
+                            position: { x: 300, y: 150 },
+                            size: { width: 80, height: 80 },
+                            rotation: 0,
+                            zIndex: 2,
+                            locked: false,
+                            visible: true,
+                            metadata: {
+                                name: 'Restroom A',
+                                capacity: 10,
+                                facilities: ['male', 'female', 'accessible'],
+                                maintenanceSchedule: 'daily',
+                                accessible: true,
+                            },
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                        },
+                        {
+                            id: 'module-3',
+                            type: 'parking',
+                            position: { x: 500, y: 100 },
+                            size: { width: 200, height: 100 },
+                            rotation: 0,
+                            zIndex: 1,
+                            locked: false,
+                            visible: true,
+                            metadata: {
+                                name: 'Parking Lot A',
+                                capacity: 20,
+                                vehicleTypes: ['car', 'rv'],
+                                accessible: true,
+                            },
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                        },
+                    ] as AnyModule[],
                     metadata: {
                         address: '123 Camp Road',
                         coordinates: { latitude: 0, longitude: 0 },
@@ -132,7 +220,7 @@ const MapEditor: React.FC = () => {
     }, [zoom, position, setZoom, setPosition]);
 
     // Handle stage drag for panning
-    const handleDragEnd = useCallback((e: Konva.KonvaEventObject<DragEvent>) => {
+    const handleStageDragEnd = useCallback((e: Konva.KonvaEventObject<DragEvent>) => {
         if (e.target === stageRef.current) {
             setPosition({
                 x: e.target.x(),
@@ -148,6 +236,158 @@ const MapEditor: React.FC = () => {
             clearSelection();
         }
     }, [clearSelection]);
+
+    // Module selection handler
+    const handleModuleSelect = useCallback((moduleId: string, additive: boolean) => {
+        if (additive) {
+            toggleSelection(moduleId);
+        } else {
+            select([moduleId]);
+        }
+    }, [select, toggleSelection]);
+
+    // Module drag start - capture all selected module positions
+    const handleModuleDragStart = useCallback((moduleId: string, startPos: Position) => {
+        // If the dragged module is not selected, select it
+        if (!selectedIds.includes(moduleId)) {
+            select([moduleId]);
+        }
+
+        // Capture start positions for all selected modules
+        dragStartPositions.current.clear();
+        const modules = currentMap?.modules ?? [];
+        const idsToCapture = selectedIds.includes(moduleId) ? selectedIds : [moduleId];
+
+        idsToCapture.forEach(id => {
+            const module = modules.find(m => m.id === id);
+            if (module) {
+                dragStartPositions.current.set(id, { ...module.position });
+            }
+        });
+    }, [selectedIds, select, currentMap?.modules]);
+
+    // Module drag move - apply grid snapping if enabled
+    const handleModuleDragMove = useCallback((moduleId: string, currentPos: Position) => {
+        if (snapToGrid) {
+            const stage = stageRef.current;
+            const node = stage?.findOne(`#${moduleId}`);
+            if (node) {
+                const snappedPos = snapPositionToGrid(currentPos, gridSize);
+                node.position(snappedPos);
+            }
+        }
+    }, [snapToGrid, gridSize]);
+
+    // Module drag end - execute move command
+    const handleModuleDragEnd = useCallback((moduleId: string, finalPos: Position) => {
+        const startPositions = dragStartPositions.current;
+        if (startPositions.size === 0) return;
+
+        // Build move data for command
+        const moves: { id: string; oldPosition: Position; newPosition: Position }[] = [];
+
+        // Calculate the delta from the dragged module
+        const draggedStartPos = startPositions.get(moduleId);
+        if (!draggedStartPos) return;
+
+        let finalPosition = finalPos;
+        if (snapToGrid) {
+            finalPosition = snapPositionToGrid(finalPos, gridSize);
+        }
+
+        const deltaX = finalPosition.x - draggedStartPos.x;
+        const deltaY = finalPosition.y - draggedStartPos.y;
+
+        // Skip if no actual movement
+        if (deltaX === 0 && deltaY === 0) {
+            dragStartPositions.current.clear();
+            return;
+        }
+
+        // Apply delta to all captured modules
+        startPositions.forEach((startPos, id) => {
+            let newPos = {
+                x: startPos.x + deltaX,
+                y: startPos.y + deltaY,
+            };
+            if (snapToGrid) {
+                newPos = snapPositionToGrid(newPos, gridSize);
+            }
+            moves.push({
+                id,
+                oldPosition: startPos,
+                newPosition: newPos,
+            });
+        });
+
+        // Execute move command
+        if (moves.length > 0) {
+            execute(new MoveCommand(moves));
+        }
+
+        dragStartPositions.current.clear();
+    }, [snapToGrid, gridSize, execute]);
+
+    // Transform handlers for single selection
+    const handleResizeStart = useCallback(() => {
+        if (!selectedModule) return;
+        setTransformState({
+            type: 'resize',
+            startPosition: { ...selectedModule.position },
+            startSize: { ...selectedModule.size },
+        });
+    }, [selectedModule]);
+
+    const handleResize = useCallback((newPosition: Position, newSize: Size) => {
+        if (!selectedModule) return;
+        // Update module position and size directly for visual feedback
+        useMapStore.getState()._updateModule(selectedModule.id, {
+            position: newPosition,
+            size: newSize,
+        });
+    }, [selectedModule]);
+
+    const handleResizeEnd = useCallback((newPosition: Position, newSize: Size) => {
+        if (!selectedModule || !transformState.startPosition || !transformState.startSize) return;
+
+        execute(new ResizeCommand({
+            id: selectedModule.id,
+            oldPosition: transformState.startPosition,
+            oldSize: transformState.startSize,
+            newPosition,
+            newSize,
+        }));
+
+        setTransformState({ type: null });
+    }, [selectedModule, transformState, execute]);
+
+    const handleRotateStart = useCallback(() => {
+        if (!selectedModule) return;
+        setTransformState({
+            type: 'rotate',
+            startRotation: selectedModule.rotation,
+        });
+    }, [selectedModule]);
+
+    const handleRotate = useCallback((angle: number) => {
+        if (!selectedModule) return;
+        // Update module rotation directly for visual feedback
+        useMapStore.getState()._updateModule(selectedModule.id, {
+            rotation: angle,
+        });
+    }, [selectedModule]);
+
+    const handleRotateEnd = useCallback((angle: number) => {
+        if (!selectedModule || transformState.startRotation === undefined) return;
+
+        execute(new RotateCommand({
+            id: selectedModule.id,
+            oldRotation: transformState.startRotation,
+            newRotation: angle,
+        }));
+
+        setTransformState({ type: null });
+    }, [selectedModule, transformState, execute]);
 
     // Fit to screen
     const handleFitToScreen = useCallback(() => {
@@ -201,12 +441,23 @@ const MapEditor: React.FC = () => {
             } else if (e.key === '1' && isCtrl) {
                 e.preventDefault();
                 handleFitToScreen();
+            } else if (e.key === 'Escape') {
+                clearSelection();
+            } else if (e.key === 'a' && isCtrl) {
+                e.preventDefault();
+                useEditorStore.getState().selectAll();
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [canUndo, canRedo, undo, redo, handleSave, toggleGrid, resetViewport, handleFitToScreen]);
+    }, [canUndo, canRedo, undo, redo, handleSave, toggleGrid, resetViewport, handleFitToScreen, clearSelection]);
+
+    // Sort modules by zIndex for rendering
+    const sortedModules = useMemo(() => {
+        if (!currentMap) return [];
+        return [...currentMap.modules].sort((a, b) => a.zIndex - b.zIndex);
+    }, [currentMap]);
 
     if (isLoading) {
         return <PageLoader />;
@@ -349,7 +600,7 @@ const MapEditor: React.FC = () => {
                     y={position.y}
                     draggable
                     onWheel={handleWheel}
-                    onDragEnd={handleDragEnd}
+                    onDragEnd={handleStageDragEnd}
                     onClick={handleStageClick}
                     onTap={handleStageClick}
                 >
@@ -383,12 +634,36 @@ const MapEditor: React.FC = () => {
 
                     {/* Modules Layer */}
                     <Layer>
-                        {/* TODO: Add ModuleRenderer components */}
+                        {sortedModules.map((module) => (
+                            <ModuleRenderer
+                                key={module.id}
+                                module={module}
+                                isSelected={selectedIds.includes(module.id)}
+                                onSelect={handleModuleSelect}
+                                onDragStart={handleModuleDragStart}
+                                onDragMove={handleModuleDragMove}
+                                onDragEnd={handleModuleDragEnd}
+                            />
+                        ))}
                     </Layer>
 
-                    {/* Selection Layer */}
+                    {/* Transform Handles Layer */}
                     <Layer>
-                        {/* TODO: Add selection handles */}
+                        {selectedModule && (
+                            <TransformHandles
+                                position={selectedModule.position}
+                                size={selectedModule.size}
+                                rotation={selectedModule.rotation}
+                                snapToGrid={snapToGrid}
+                                gridSize={gridSize}
+                                onResizeStart={handleResizeStart}
+                                onResize={handleResize}
+                                onResizeEnd={handleResizeEnd}
+                                onRotateStart={handleRotateStart}
+                                onRotate={handleRotate}
+                                onRotateEnd={handleRotateEnd}
+                            />
+                        )}
                     </Layer>
                 </Stage>
             </div>
@@ -397,6 +672,7 @@ const MapEditor: React.FC = () => {
             <div className="flex items-center justify-between px-4 py-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-4">
                     <span>Modules: {currentMap.modules.length}</span>
+                    <span>Selected: {selectedIds.length}</span>
                     <span>Grid: {gridSize}px</span>
                     <span>Snap: {snapToGrid ? 'On' : 'Off'}</span>
                 </div>

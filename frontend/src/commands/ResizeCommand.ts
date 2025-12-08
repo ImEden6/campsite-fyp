@@ -1,16 +1,19 @@
 /**
  * ResizeCommand
- * Resizes a module to a new size.
+ * Resizes a module to a new size and optionally adjusts position.
+ * Position changes are needed when resizing from top/left handles.
  */
 
 import type { Command } from './Command';
-import type { Size } from '@/types';
+import type { Size, Position } from '@/types';
 import { useMapStore } from '@/stores/mapStore';
 
 interface ResizeData {
     id: string;
     oldSize: Size;
     newSize: Size;
+    oldPosition?: Position;
+    newPosition?: Position;
 }
 
 export class ResizeCommand implements Command {
@@ -19,10 +22,18 @@ export class ResizeCommand implements Command {
     constructor(private resize: ResizeData) { }
 
     execute(): void {
-        useMapStore.getState()._updateModule(this.resize.id, { size: this.resize.newSize });
+        const updates: { size: Size; position?: Position } = { size: this.resize.newSize };
+        if (this.resize.newPosition) {
+            updates.position = this.resize.newPosition;
+        }
+        useMapStore.getState()._updateModule(this.resize.id, updates);
     }
 
     undo(): void {
-        useMapStore.getState()._updateModule(this.resize.id, { size: this.resize.oldSize });
+        const updates: { size: Size; position?: Position } = { size: this.resize.oldSize };
+        if (this.resize.oldPosition) {
+            updates.position = this.resize.oldPosition;
+        }
+        useMapStore.getState()._updateModule(this.resize.id, updates);
     }
 }

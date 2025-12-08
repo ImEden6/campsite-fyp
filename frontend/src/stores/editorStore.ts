@@ -61,6 +61,9 @@ interface EditorActions {
     // Computed
     canUndo: () => boolean;
     canRedo: () => boolean;
+
+    // Reset
+    resetEditor: () => void;
 }
 
 type EditorStore = EditorState & EditorActions;
@@ -210,6 +213,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     // Computed
     canUndo: () => get().undoStack.length > 0,
     canRedo: () => get().redoStack.length > 0,
+
+    // Reset (for tests and cleanup)
+    resetEditor: () => set({
+        selectedIds: [],
+        activeTool: 'select',
+        snapToGrid: true,
+        gridSize: DEFAULT_GRID_SIZE,
+        showGrid: true,
+        undoStack: [],
+        redoStack: [],
+        clipboard: [],
+    }),
 }));
 
 // Selectors
