@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { webSocketService } from '@/services/websocket';
 import { useNotificationEvents } from '@/hooks/useNotificationEvents';
+import { useStorageQuota } from '@/hooks/useStorageQuota';
 import { SkipNavigation } from '@/components/accessibility';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -41,6 +42,9 @@ const AppLayout: React.FC = () => {
     showToast: true,
     invalidateQueries: true,
   });
+
+  // Monitor storage quota and show warnings
+  useStorageQuota();
 
   // Listen for custom notification toast events
   useEffect(() => {

@@ -24,7 +24,7 @@ interface ModulesLayerProps {
 
 export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModuleId, onDragStateChange }) => {
   const { renderer, eventBus } = useMapEditor();
-  const { selection, layerVisibility } = useEditorService();
+  const { selection, layerVisibility, snapToGrid, getGridSize } = useEditorService();
   const mapService = useMapService();
   const { moveModule, resizeModule, rotateModule } = useMapCommands();
 
@@ -196,13 +196,27 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
     const deltaY = position.y - primaryDragState.currentPosition.y;
 
     // Update all dragged modules' positions in drag state
-    dragStateRef.current = dragStateRef.current.map((dragState) => ({
-      ...dragState,
-      currentPosition: {
-        x: dragState.currentPosition.x + deltaX,
-        y: dragState.currentPosition.y + deltaY,
-      },
-    }));
+    dragStateRef.current = dragStateRef.current.map((dragState) => {
+      let newX = dragState.currentPosition.x + deltaX;
+      let newY = dragState.currentPosition.y + deltaY;
+      
+      // Apply grid snapping if enabled (snap all modules, not just primary)
+      if (snapToGrid) {
+        const gridSize = getGridSize();
+        if (gridSize > 0) {
+          newX = Math.round(newX / gridSize) * gridSize;
+          newY = Math.round(newY / gridSize) * gridSize;
+        }
+      }
+      
+      return {
+        ...dragState,
+        currentPosition: {
+          x: newX,
+          y: newY,
+        },
+      };
+    });
 
     onDragStateChange?.(dragStateRef.current);
 
@@ -213,7 +227,7 @@ export const ModulesLayer: React.FC<ModulesLayerProps> = ({ mapId, focusedModule
         moveModule(mapId, module.id, dragState.currentPosition, module.position, 'drag-group');
       }
     });
-  }, [selection, modules, mapId, moveModule, onDragStateChange]);
+  }, [selection, modules, mapId, moveModule, onDragStateChange, snapToGrid, getGridSize]);
 
   // Handle drag end
   const handleDragEnd = useCallback((_moduleId: string) => {

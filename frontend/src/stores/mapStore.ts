@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CampsiteMap, AnyModule } from '@/types';
+import { indexedDBStorage } from '@/utils/indexedDBStorage';
 
 interface MapState {
   maps: CampsiteMap[];
@@ -119,6 +120,7 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'campsite-map-storage',
+      storage: indexedDBStorage,
       partialize: (state) => ({
         maps: state.maps,
         selectedMapId: state.selectedMapId,

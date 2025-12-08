@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { Group, Rect, Circle, Text } from 'react-konva';
+import { Group, Rect, Circle, Text, Path } from 'react-konva';
 import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type { AnyModule, ModuleType, Position } from '@/types';
@@ -12,6 +12,7 @@ import type { RenderProps } from '../core/renderer';
 import { useKonvaAnimation } from '../hooks/useKonvaAnimation';
 import { useKonvaStage } from '../hooks/useKonvaStage';
 import { useEditorService } from '../hooks/useEditorService';
+import { getModuleIconPath } from '../utils/lucideIconPaths';
 
 interface KonvaModuleRendererProps {
   module: AnyModule;
@@ -40,22 +41,7 @@ const getModuleColor = (type: ModuleType): string => {
   return colorMap[type] || '#6B7280';
 };
 
-const getModuleIcon = (type: ModuleType): string => {
-  const iconMap: Record<ModuleType, string> = {
-    campsite: '🏕️',
-    toilet: '🚻',
-    storage: '📦',
-    building: '🏢',
-    parking: '🅿️',
-    road: '🛣️',
-    water_source: '💧',
-    electricity: '⚡',
-    waste_disposal: '🗑️',
-    recreation: '🎮',
-    custom: '⚙️',
-  };
-  return iconMap[type] || '⚙️';
-};
+// Removed getModuleIcon - now using getModuleIconPath from lucideIconPaths
 
 /**
  * Konva Module Renderer Component
@@ -158,8 +144,10 @@ export const KonvaModuleRenderer: React.FC<KonvaModuleRendererProps> = ({
       // Apply grid snapping if enabled
       if (snapToGrid) {
         const gridSize = getGridSize();
-        newX = Math.round(newX / gridSize) * gridSize;
-        newY = Math.round(newY / gridSize) * gridSize;
+        if (gridSize > 0) {
+          newX = Math.round(newX / gridSize) * gridSize;
+          newY = Math.round(newY / gridSize) * gridSize;
+        }
       }
 
       const newPosition: Position = { x: newX, y: newY };
@@ -253,26 +241,38 @@ export const KonvaModuleRenderer: React.FC<KonvaModuleRendererProps> = ({
     }
   }, [module.type, width, height, color, strokeColor, strokeWidth, opacity]);
 
-  // Render icon (emoji text)
+  // Render icon using Lucide icon SVG paths
   const renderIcon = useMemo(() => {
-    const icon = getModuleIcon(module.type);
-    const fontSize = Math.min(width, height) * 0.4;
+    const iconPath = getModuleIconPath(module.type);
+    const iconSize = Math.min(width, height) * 0.5; // Icon size relative to module
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // Scale the path to fit within the module
+    // Lucide icons are typically 24x24, so we scale proportionally
+    const scale = iconSize / 24;
+    const offsetX = centerX - (iconSize / 2);
+    const offsetY = centerY - (iconSize / 2);
 
     return (
-      <Text
-        x={width / 2}
-        y={height / 2}
-        text={icon}
-        fontSize={fontSize}
-        fill="white"
-        opacity={0.9}
+      <Group
+        x={offsetX}
+        y={offsetY}
+        scaleX={scale}
+        scaleY={scale}
         listening={false}
         perfectDrawEnabled={false}
-        align="center"
-        verticalAlign="middle"
-        offsetX={0}
-        offsetY={fontSize / 2}
-      />
+      >
+        <Path
+          data={iconPath}
+          fill="white"
+          stroke="white"
+          strokeWidth={1.5}
+          opacity={0.95}
+          listening={false}
+          perfectDrawEnabled={false}
+        />
+      </Group>
     );
   }, [module.type, width, height]);
 
