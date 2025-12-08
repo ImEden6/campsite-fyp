@@ -8,8 +8,5 @@ export { useAuthStore } from './authStore';
 export { useUIStore } from './uiStore';
 export { useBookingStore } from './bookingStore';
 
-// Map editor stores
+// Map store (data only - editor will use Fabric.js)
 export { useMapStore, selectModuleById, selectModulesSorted } from './mapStore';
-export { useEditorStore, selectIsSelected, selectSelectedCount } from './editorStore';
-export { useViewportStore, VIEWPORT_CONSTANTS } from './viewportStore';
-
