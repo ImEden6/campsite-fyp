@@ -39,7 +39,10 @@ import { bulkUpdateModules } from '@/services/api';
 import { PageLoader } from '@/components/ui/PageLoader';
 
 // Lazy load heavy MapEditor components
-const ModuleLibrary = lazy(() => import('@/components/ModuleLibrary'));
+// Note: ModuleLibrary was moved to features/map-editor
+const ModuleLibrary = lazy(() => 
+  import('@/features/map-editor/components/ModuleLibrary/ModuleLibrary').then(m => ({ default: m.ModuleLibrary }))
+);
 const ModuleRenderer = lazy(() => import('@/components/ModuleRenderer'));
 const PropertiesPanel = lazy(() => import('@/components/PropertiesPanel'));
 const RulerComponent = lazy(() => import('@/components/RulerComponent'));
