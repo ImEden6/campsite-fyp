@@ -99,9 +99,16 @@ export class DeleteModuleCommand implements Command {
             if (deletedModuleIds.has(originalModule.id)) {
                 // This module was deleted - use the restored copy
                 const restoredModule = modulesToRestoreMap.get(originalModule.id);
-                if (restoredModule) {
-                    restoredModules.push(restoredModule);
+                
+                // Bug 2 Fix: Fail explicitly if restored module is missing (should never happen)
+                if (!restoredModule) {
+                    throw new Error(
+                        `Cannot undo delete: Restored module with id "${originalModule.id}" is missing. ` +
+                        `This indicates an invariant violation in DeleteModuleCommand.`
+                    );
                 }
+                
+                restoredModules.push(restoredModule);
             } else {
                 // This module wasn't deleted - use current version if it still exists
                 const currentModule = currentModuleMap.get(originalModule.id);
