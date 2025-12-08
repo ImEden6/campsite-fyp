@@ -83,7 +83,10 @@ export const KonvaModuleRenderer: React.FC<KonvaModuleRendererProps> = ({
         : color;
   const strokeWidth = props.hasValidationErrors ? 3 : props.isSelected ? 2 : isHovered ? 2 : 1;
 
-  const handleClick = () => {
+  const handleClick = (e: any) => {
+    // Stop event propagation to prevent layer click handler from also firing
+    e.cancelBubble = true;
+    e.evt?.stopPropagation?.();
     props.onSelect?.();
   };
 
@@ -339,7 +342,7 @@ export const KonvaModuleRenderer: React.FC<KonvaModuleRendererProps> = ({
       onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
       listening={true}
-      moduleId={module.id}
+      attrs={{ moduleId: module.id }}
     >
       {renderShape}
       {renderIcon}

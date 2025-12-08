@@ -149,14 +149,28 @@ const validateAndGetError = (property: string, value: unknown, moduleType?: Modu
 export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
   const { selection, selectModules } = useEditorService();
   const mapService = useMapService();
-  const { addModule, removeModule } = useMapCommands();
+  const { addModule, deleteModules } = useMapCommands();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
 
   const modules = mapService.getModules(mapId);
-  const selectedModules = modules.filter((m) => selection.includes(m.id));
+  const selectedModules = React.useMemo(
+    () => modules.filter((m) => selection.includes(m.id)),
+    [modules, selection]
+  );
   const selectedModule = selectedModules.length === 1 ? selectedModules[0] : null;
   const multipleSelected = selectedModules.length > 1;
+
+  // Debug selection state
+  React.useEffect(() => {
+    if (selection.length > 0) {
+      console.log('[PropertiesPanel] Module selected:', {
+        selectionIds: selection,
+        modulesFound: selectedModules.map(m => ({ id: m.id, name: m.metadata?.name || m.type })),
+        totalModules: modules.length,
+      });
+    }
+  }, [selection, selectedModules, modules.length]);
 
   const handlePropertyChange = async (property: string, value: unknown) => {
     if (!selectedModule) return;
@@ -185,8 +199,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
         } as AnyModule;
 
         await mapService.updateModule(mapId, updated);
-      } else if (property === 'locked' || property === 'visible' || property === 'rotation' || property === 'zIndex') {
-        // Handle other top-level properties
+      } else if (property === 'type' || property === 'locked' || property === 'visible' || property === 'rotation' || property === 'zIndex') {
+        // Handle other top-level properties (including type)
         const updated: AnyModule = {
           ...selectedModule,
           [property]: value,
@@ -299,7 +313,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
     if (!selectedModule) return;
    
     try {
-      await removeModule(mapId, selectedModule.id);
+      await deleteModules(mapId, [selectedModule.id]);
       selectModules([]);
      
       errorLogger.info(
@@ -710,9 +724,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ mapId }) => {
         <div className="flex space-x-2">
           <button
             onClick={async () => {
-              for (const module of selectedModules) {
-                await removeModule(mapId, module.id);
-              }
+              const moduleIds = selectedModules.map(m => m.id);
+              await deleteModules(mapId, moduleIds);
               selectModules([]);
             }}
             className="flex-1 px-3 py-2 text-sm font-medium rounded-md border border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-800/30 focus:outline-none focus:ring-2 focus:ring-red-500"
