@@ -20,6 +20,7 @@ import { useViewportService } from '../../hooks/useViewportService';
 import { useKonvaStage } from '../../hooks/useKonvaStage';
 import { useTouchGestures } from '../../hooks/useTouchGestures';
 import { EDITOR_CONSTANTS } from '@/constants/editorConstants';
+import errorLogger, { ErrorCategory } from '@/utils/errorLogger';
 import type { Position, ModuleTemplate, AnyModule } from '@/types';
 
 interface MapCanvasProps {
@@ -65,7 +66,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
         setDragPosition({ x: event.activatorEvent.clientX, y: event.activatorEvent.clientY });
       }
     },
-    onDragEnd: (event) => {
+    onDragEnd: async (event) => {
       if (event.over?.id === 'map-editor-canvas' && event.active.data.current?.template) {
         const template = event.active.data.current.template as ModuleTemplate;
         const map = mapService.getMap(mapId);
@@ -75,40 +76,74 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({ mapId }) => {
           return;
         }
 
-        // Get Stage bounding rect
-        const stageRect = stageRef.current.container().getBoundingClientRect();
-        
-        // Convert client coordinates to screen coordinates relative to stage
-        const screenPos = {
-          x: dragPosition.x - stageRect.left,
-          y: dragPosition.y - stageRect.top,
-        };
-        
-        // Convert to canvas coordinates using Konva coordinate conversion
-        const canvasPos = screenToCanvas(screenPos);
-        
-        // Snap to grid if enabled
-        const gridSize = editorService.getGridSize();
-        const snapToGrid = editorService.isSnapToGrid();
-        const finalX = snapToGrid ? Math.round(canvasPos.x / gridSize) * gridSize : canvasPos.x;
-        const finalY = snapToGrid ? Math.round(canvasPos.y / gridSize) * gridSize : canvasPos.y;
+        try {
+          // Get Stage bounding rect
+          const stageRect = stageRef.current.container().getBoundingClientRect();
+          
+          // Convert client coordinates to screen coordinates relative to stage
+          const screenPos = {
+            x: dragPosition.x - stageRect.left,
+            y: dragPosition.y - stageRect.top,
+          };
+          
+          // Convert to canvas coordinates using Konva coordinate conversion
+          const canvasPos = screenToCanvas(screenPos);
+          
+          // Snap to grid if enabled
+          const gridSize = editorService.getGridSize();
+          const snapToGrid = editorService.isSnapToGrid();
+          let finalX = snapToGrid ? Math.round(canvasPos.x / gridSize) * gridSize : canvasPos.x;
+          let finalY = snapToGrid ? Math.round(canvasPos.y / gridSize) * gridSize : canvasPos.y;
 
-        const newModule: AnyModule = {
-          id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
-          type: template.type,
-          position: { x: finalX, y: finalY },
-          size: template.defaultSize,
-          rotation: 0,
-          zIndex: map.modules.length,
-          locked: false,
-          visible: true,
-          metadata: template.defaultMetadata,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as AnyModule;
+          // Ensure position is not negative
+          finalX = Math.max(0, finalX);
+          finalY = Math.max(0, finalY);
 
-        addModule(mapId, newModule);
-        setDragPosition(null);
+          // Ensure metadata has all required fields based on module type
+          const baseMetadata = { ...template.defaultMetadata };
+          
+          // Ensure name field exists
+          if (!baseMetadata.name) {
+            baseMetadata.name = template.name;
+          }
+
+          // Ensure size is valid (minimum 20x20)
+          const validSize = {
+            width: Math.max(20, template.defaultSize.width),
+            height: Math.max(20, template.defaultSize.height),
+          };
+
+          const newModule: AnyModule = {
+            id: `module-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+            type: template.type,
+            position: { x: finalX, y: finalY },
+            size: validSize,
+            rotation: 0,
+            zIndex: map.modules.length,
+            locked: false,
+            visible: true,
+            metadata: baseMetadata,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as AnyModule;
+
+          await addModule(mapId, newModule);
+          setDragPosition(null);
+        } catch (error) {
+          console.error('Error adding module:', error);
+          errorLogger.error(
+            ErrorCategory.STATE,
+            'Failed to add module from drop',
+            { 
+              templateType: template.type, 
+              templateId: template.id,
+              position: { x: dragPosition.x, y: dragPosition.y },
+              error: error instanceof Error ? error.message : String(error)
+            },
+            error as Error
+          );
+          setDragPosition(null);
+        }
       } else {
         setDragPosition(null);
       }

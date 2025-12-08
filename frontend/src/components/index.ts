@@ -12,7 +12,6 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 
 // Map Editor Components
 export { default as RulerComponent } from './RulerComponent';
-export { default as ModuleLibrary } from './ModuleLibrary';
 export { default as ModuleRenderer } from './ModuleRenderer';
 export { default as PropertiesPanel } from './PropertiesPanel';
 export { default as TransformHandles } from './TransformHandles';
