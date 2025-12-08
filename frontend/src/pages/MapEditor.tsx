@@ -6,7 +6,7 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Stage, Layer } from 'react-konva';
+import { Stage, Layer, Rect } from 'react-konva';
 import type Konva from 'konva';
 import { ArrowLeft, Save, Undo2, Redo2, ZoomIn, ZoomOut, Maximize2, Grid3X3, Magnet } from 'lucide-react';
 import { useMapStore, useEditorStore, useViewportStore, VIEWPORT_CONSTANTS } from '@/stores';
@@ -312,8 +312,8 @@ const MapEditor: React.FC = () => {
                         <button
                             onClick={toggleSnapToGrid}
                             className={`p-2 rounded-md transition-colors ${snapToGrid
-                                    ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400'
-                                    : 'hover:bg-white dark:hover:bg-gray-600'
+                                ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400'
+                                : 'hover:bg-white dark:hover:bg-gray-600'
                                 }`}
                         >
                             <Magnet className="w-4 h-4" />
@@ -355,8 +355,16 @@ const MapEditor: React.FC = () => {
                 >
                     {/* Background Layer */}
                     <Layer>
-                        {/* Map background - placeholder rect for now */}
-                        {/* TODO: Add background image */}
+                        {/* Map canvas background */}
+                        <Rect
+                            x={0}
+                            y={0}
+                            width={currentMap.imageSize.width}
+                            height={currentMap.imageSize.height}
+                            fill="#f8f9fa"
+                            stroke="#dee2e6"
+                            strokeWidth={2}
+                        />
                     </Layer>
 
                     {/* Grid Layer */}
