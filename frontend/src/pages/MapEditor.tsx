@@ -354,7 +354,7 @@ const MapEditor: React.FC = () => {
                     onTap={handleStageClick}
                 >
                     {/* Background Layer */}
-                    <Layer>
+                    <Layer listening={false}>
                         {/* Map canvas background */}
                         <Rect
                             x={0}
