@@ -364,6 +364,7 @@ const MapEditor: React.FC = () => {
                             fill="#f8f9fa"
                             stroke="#dee2e6"
                             strokeWidth={2}
+                            listening={false}
                         />
                     </Layer>
 
