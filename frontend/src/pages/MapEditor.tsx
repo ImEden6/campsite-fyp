@@ -54,6 +54,12 @@ const MapEditor: React.FC = () => {
     // Store state
     const { currentMap, isLoading, isDirty, setMap, setLoading, markDirty, _updateModule } = useMapStore();
 
+    // Bug 1 & 2 Fix: Use refs to store latest function references to avoid effect re-runs
+    const executeCommandRef = useRef<(command: Command) => void>();
+    const updateModuleRef = useRef<(id: string, changes: Partial<AnyModule>) => void>();
+    const undoRef = useRef<() => void>();
+    const redoRef = useRef<() => void>();
+
     // Execute command and add to history
     const executeCommand = useCallback((command: Command) => {
         command.execute();
@@ -61,6 +67,15 @@ const MapEditor: React.FC = () => {
         setRedoStack([]);
         markDirty();
     }, [markDirty]);
+
+    // Update refs when functions change
+    useEffect(() => {
+        executeCommandRef.current = executeCommand;
+    }, [executeCommand]);
+
+    useEffect(() => {
+        updateModuleRef.current = _updateModule;
+    }, [_updateModule]);
 
     // Undo
     const undo = useCallback(() => {
@@ -81,6 +96,15 @@ const MapEditor: React.FC = () => {
         setUndoStack(prev => [...prev, command]);
         markDirty();
     }, [redoStack, markDirty]);
+
+    // Update undo/redo refs when functions change
+    useEffect(() => {
+        undoRef.current = undo;
+    }, [undo]);
+
+    useEffect(() => {
+        redoRef.current = redo;
+    }, [redo]);
 
     // Initialize canvas
     useEffect(() => {
@@ -114,10 +138,13 @@ const MapEditor: React.FC = () => {
         canvas.on('selection:cleared', () => setSelectedCount(0));
 
         // Handle object modification start
-        canvas.on('object:moving', (e) => {
+        // Bug 1 Fix: Capture transform start state before snap-to-grid modifies position
+        // This handler must run before the snap-to-grid handler to capture original position
+        const handleTransformStart = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
             if (!transformStartRef.current && e.target) {
                 const data = (e.target as FabricObjectWithData).data;
                 if (data?.moduleId) {
+                    // Capture the ORIGINAL position before any modifications (like snap-to-grid)
                     const changes = extractModuleChanges(e.target as fabric.Group);
                     transformStartRef.current = {
                         id: data.moduleId,
@@ -127,7 +154,10 @@ const MapEditor: React.FC = () => {
                     };
                 }
             }
-        });
+        };
+
+        // Register with high priority (before other handlers)
+        canvas.on('object:moving', handleTransformStart);
 
         canvas.on('object:scaling', (e) => {
             if (!transformStartRef.current && e.target) {
@@ -169,6 +199,12 @@ const MapEditor: React.FC = () => {
             const startState = transformStartRef.current;
             const changes = extractModuleChanges(e.target as fabric.Group);
 
+            // Bug 1 & 2 Fix: Use refs to access latest function references
+            const executeCommand = executeCommandRef.current;
+            const updateModule = updateModuleRef.current;
+
+            if (!executeCommand || !updateModule) return;
+
             // Check if it was just a move or a full transform
             const sizeChanged =
                 startState.size.width !== changes.size.width ||
@@ -195,12 +231,8 @@ const MapEditor: React.FC = () => {
                 }]));
             }
 
-            // Update the store
-            _updateModule(data.moduleId, {
-                position: changes.position,
-                size: changes.size,
-                rotation: changes.rotation,
-            });
+            // Bug 2 Fix: Commands already update the store via their execute() methods
+            // No need to call updateModule() again here - it would cause duplicate updates
 
             transformStartRef.current = null;
         });
@@ -222,7 +254,9 @@ const MapEditor: React.FC = () => {
             canvas.dispose();
             canvasRef.current = null;
         };
-    }, [executeCommand, _updateModule]);
+        // Bug 1 & 2 Fix: Empty dependency array - canvas should only be created once
+        // Function references are accessed via refs to avoid unnecessary re-creation
+    }, []);
 
     // Handle mouse wheel zoom
     useEffect(() => {
@@ -300,11 +334,17 @@ const MapEditor: React.FC = () => {
     // Load map data (mock for now)
     useEffect(() => {
         console.log('[MapEditor] Load effect - id:', id, 'currentMap:', currentMap?.id);
-        if (id && !currentMap) {
+        // Bug 1 Fix: Check if we need to load a different map (ID mismatch) or if no map is loaded
+        if (!id) {
+            console.error('[MapEditor] No map ID provided in route');
+            return;
+        }
+        
+        if (!currentMap || currentMap.id !== id) {
             console.log('[MapEditor] Loading map...');
             setLoading(true);
             // TODO: Replace with actual API call
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 console.log('[MapEditor] Setting map data');
                 setMap({
                     id,
@@ -390,6 +430,10 @@ const MapEditor: React.FC = () => {
                 console.log('[MapEditor] Map set, stopping loading');
                 setLoading(false);
             }, 500);
+            
+            return () => {
+                clearTimeout(timeoutId);
+            };
         }
     }, [id, currentMap, setMap, setLoading]);
 
@@ -488,8 +532,12 @@ const MapEditor: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const handleMoving = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
+        // Bug 1 Fix: Snap-to-grid handler runs after transform tracking
+        // Since event handlers fire in registration order, and this is registered later,
+        // it will run after the transform start is captured, allowing safe snapping
+        const handleSnapToGrid = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
             if (!snapToGrid || !e.target) return;
+
             const gridSize = DEFAULT_GRID_SIZE;
             const obj = e.target;
             obj.set({
@@ -498,12 +546,17 @@ const MapEditor: React.FC = () => {
             });
         };
 
-        canvas.on('object:moving', handleMoving);
+        canvas.on('object:moving', handleSnapToGrid);
 
         return () => {
-            canvas.off('object:moving', handleMoving);
+            canvas.off('object:moving', handleSnapToGrid);
         };
     }, [snapToGrid]);
+
+    // Save handler (defined before keyboard shortcuts for dependency order)
+    const handleSave = useCallback(async () => {
+        console.log('Save map:', currentMap);
+    }, [currentMap]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -516,10 +569,12 @@ const MapEditor: React.FC = () => {
 
             if (isCtrl && e.key === 'z' && !e.shiftKey) {
                 e.preventDefault();
-                undo();
+                // Bug 1 Fix: Use ref to access latest undo function
+                undoRef.current?.();
             } else if (isCtrl && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
                 e.preventDefault();
-                redo();
+                // Bug 1 Fix: Use ref to access latest redo function
+                redoRef.current?.();
             } else if (isCtrl && e.key === 's') {
                 e.preventDefault();
                 handleSave();
@@ -542,7 +597,8 @@ const MapEditor: React.FC = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [undo, redo]);
+        // Bug 1 Fix: Removed undo/redo from dependencies - using refs instead to avoid re-registration
+    }, [handleSave]);
 
     // Zoom controls
     const handleZoomIn = useCallback(() => {
@@ -580,10 +636,7 @@ const MapEditor: React.FC = () => {
         canvas.requestRenderAll();
     }, [currentMap]);
 
-    // Save handler
-    const handleSave = useCallback(async () => {
-        console.log('Save map:', currentMap);
-    }, [currentMap]);
+
 
     // Back navigation
     const handleBack = useCallback(() => {
@@ -600,10 +653,34 @@ const MapEditor: React.FC = () => {
         return <PageLoader />;
     }
 
-    if (!currentMap) {
+    if (!id) {
         return (
             <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500">Map not found</p>
+                <div className="text-center">
+                    <p className="text-gray-500 mb-4">No map ID provided</p>
+                    <button
+                        onClick={() => navigate('/admin/maps')}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Go to Maps
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentMap && !isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                    <p className="text-gray-500 mb-4">Map not found</p>
+                    <button
+                        onClick={() => navigate('/admin/maps')}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Go to Maps
+                    </button>
+                </div>
             </div>
         );
     }

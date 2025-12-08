@@ -7,6 +7,4 @@ export { cn } from './cn';
 export * from './imageOptimization';
 export * from './errorLogging';
 export * from './accessibility';
-export * from './transformUtils';
-export * from './historyManager';
 export * from './keyboardHandler';
