@@ -13,7 +13,7 @@ This project is a comprehensive **Campsite Management System** designed to handl
 - **Routing**: React Router DOM
 - **UI Components**: Framer Motion (animations), Lucide React (icons)
 - **Forms**: React Hook Form, Zod
-- **Visualization**: Recharts (charts), Konva / React Konva (interactive maps/canvas)
+- **Visualization**: Recharts (charts), Fabric.js (interactive maps/canvas)
 - **Testing**: Vitest (unit), Playwright (E2E), React Testing Library
 - **Utilities**: date-fns, axios, socket.io-client
 
@@ -45,7 +45,7 @@ This project is a comprehensive **Campsite Management System** designed to handl
     - **Staff Interface**: Tools for managing bookings and operations.
 
 2.  **Site Management**:
-    - **Map Editor**: Interactive tool to design campsite layouts (uses Konva).
+    - **Map Editor**: Interactive tool to design campsite layouts (uses Fabric.js).
     - **Site Browsing**: List and view available campsites.
 
 3.  **Booking Management**:

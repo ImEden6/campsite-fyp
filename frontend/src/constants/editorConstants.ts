@@ -40,5 +40,41 @@ export const EDITOR_CONSTANTS = {
     LONG: 3000,
     ERROR: 5000,
   },
+
+  // Panel dimensions
+  PANEL: {
+    TOOLBOX_WIDTH: 200,
+    TOOLBOX_COLLAPSED_WIDTH: 48,
+    PROPERTIES_WIDTH: 280,
+    LAYERS_WIDTH: 240,
+  },
+
+  // Ruler settings
+  RULER: {
+    SIZE: 20,
+    TICK_SMALL: 10,
+    TICK_MEDIUM: 50,
+    TICK_LARGE: 100,
+    COLOR: '#1e1e2e',
+    TEXT_COLOR: '#cdd6f4',
+    TICK_COLOR: '#6c7086',
+  },
+
+  // Guide settings
+  GUIDE: {
+    COLOR: '#00bcd4',
+    STROKE_WIDTH: 1,
+    DASH_ARRAY: [5, 5],
+    SNAP_THRESHOLD: 5,
+  },
+
+  // Background image constraints
+  BACKGROUND: {
+    MAX_WIDTH: 4000,
+    MAX_HEIGHT: 4000,
+    MIN_WIDTH: 400,
+    MIN_HEIGHT: 300,
+    VALID_TYPES: ['image/png', 'image/jpeg', 'image/webp'],
+  },
 } as const;
 

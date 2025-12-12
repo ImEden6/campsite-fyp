@@ -1,6 +1,6 @@
 # Error Handling and Validation Documentation
 
-This document describes the comprehensive error handling and validation system implemented for the Konva map editor.
+This document describes the comprehensive error handling and validation system implemented for the Fabric.js map editor.
 
 ## Overview
 

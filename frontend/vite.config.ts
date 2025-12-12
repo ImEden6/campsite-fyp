@@ -16,10 +16,10 @@ export default defineConfig(({ mode }) => {
       resolveId(id) {
         // In production, exclude dev dependencies
         if (mode === 'production') {
-          if (id.includes('@vite/client') || 
-              id.includes('@react-refresh') || 
-              id.includes('/@vite/') ||
-              id.includes('/@react-refresh')) {
+          if (id.includes('@vite/client') ||
+            id.includes('@react-refresh') ||
+            id.includes('/@vite/') ||
+            id.includes('/@react-refresh')) {
             // Return a virtual module that does nothing
             return { id: '\0dev-dependency-excluded', external: true };
           }
@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
   };
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '')
-  
+
   // Plugin to optimize HTML: make CSS non-render-blocking and defer service worker
   const htmlOptimizePlugin = (): Plugin => {
     return {
@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
       enforce: 'post' as const,
       transformIndexHtml(html) {
         let transformed = html;
-        
+
         // Transform CSS links to non-render-blocking pattern
         // Match: <link rel="stylesheet" ... href="/assets/index-XXXX.css" ...>
         // Skip if already has onload or is inside noscript
@@ -63,26 +63,26 @@ export default defineConfig(({ mode }) => {
     <noscript><link rel="stylesheet" href="${href}"${beforeHref}${afterHref}></noscript>`;
           }
         );
-        
+
         return transformed;
       },
       writeBundle(options, bundle) {
         // Post-process the HTML file after all plugins have run
         if (options.dir) {
           const htmlPath = join(options.dir, 'index.html');
-          
+
           if (existsSync(htmlPath)) {
             let html = readFileSync(htmlPath, 'utf-8');
-            
+
             // Move service worker script to end of body
             // Use [\s\S] instead of . with 's' flag for ES2018 compatibility
             const swScriptRegex = /<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*>[\s\S]*?<\/script>/i;
             let swScript = html.match(swScriptRegex)?.[0];
-            
+
             if (!swScript) {
               swScript = html.match(/<script[^>]*id\s*=\s*["']vite-plugin-pwa:register-sw["'][^>]*\/>/i)?.[0];
             }
-            
+
             if (swScript) {
               // Remove script from anywhere
               html = html.replace(swScriptRegex, '');
@@ -98,7 +98,7 @@ export default defineConfig(({ mode }) => {
       },
     };
   };
-  
+
   return {
     plugins: [
       // Exclude dev dependencies plugin (must be first)
@@ -244,7 +244,7 @@ export default defineConfig(({ mode }) => {
       // HTML optimization plugin (runs after VitePWA to transform its output)
       htmlOptimizePlugin()
     ],
-    
+
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),
@@ -263,9 +263,9 @@ export default defineConfig(({ mode }) => {
       // Prevent mis-matched React copies when working inside the monorepo
       dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
     },
-    
+
     server: {
-      port: 3000,
+      port: 4173,
       host: true,
       open: false,
       proxy: {
@@ -281,7 +281,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    
+
     build: {
       outDir: 'dist',
       // Production optimizations (mode is determined by build command)
@@ -301,7 +301,7 @@ export default defineConfig(({ mode }) => {
           assetFileNames: (assetInfo) => {
             const info = assetInfo.name?.split('.') || [];
             const ext = info[info.length - 1];
-            
+
             if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
               return 'assets/images/[name]-[hash][extname]';
             }
@@ -312,26 +312,21 @@ export default defineConfig(({ mode }) => {
           },
           // Manual chunk splitting for better code splitting of heavy libraries
           manualChunks: (id) => {
-            // React vendor chunk
-            if (id.includes('node_modules/react') || 
-                id.includes('node_modules/react-dom') || 
-                id.includes('node_modules/react-router')) {
+            // React vendor chunk - includes scheduler for proper React initialization
+            if (id.includes('node_modules/react') ||
+              id.includes('node_modules/react-dom') ||
+              id.includes('node_modules/react-router') ||
+              id.includes('node_modules/scheduler')) {
               return 'react-vendor';
             }
             // UI vendor chunk (framer-motion, lucide-react)
-            if (id.includes('node_modules/framer-motion') || 
-                id.includes('node_modules/lucide-react')) {
+            if (id.includes('node_modules/framer-motion') ||
+              id.includes('node_modules/lucide-react')) {
               return 'ui-vendor';
             }
-            // Canvas vendor chunk (konva, react-konva)
-            if (id.includes('node_modules/konva') || 
-                id.includes('node_modules/react-konva')) {
-              return 'canvas-vendor';
-            }
-            // Chart vendor chunk (recharts)
-            if (id.includes('node_modules/recharts')) {
-              return 'chart-vendor';
-            }
+
+            // Note: recharts is NOT split into a separate chunk because it has
+            // complex React dependencies that cause loading order issues
           },
         },
       },
@@ -372,7 +367,7 @@ export default defineConfig(({ mode }) => {
         polyfill: false, // Modern browsers support module preload
       },
     },
-    
+
     // Optimize dependencies
     optimizeDeps: {
       include: [
@@ -387,9 +382,7 @@ export default defineConfig(({ mode }) => {
       // Exclude heavy libraries from pre-bundling - let them be code-split
       exclude: [
         'framer-motion', // Lazy load when needed
-        'react-konva',
-        'konva', // Heavy canvas library - lazy load
-        'recharts', // Heavy chart library - lazy load
+
         'socket.io-client', // Only load when needed
         '@sentry/react', // Lazy load Sentry - don't include in initial bundle
         'lucide-react', // Code-split for better initial load performance
@@ -400,7 +393,7 @@ export default defineConfig(({ mode }) => {
         treeShaking: true,
       },
     },
-    
+
     // Define global constants
     define: {
       __APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION || '1.0.0'),
@@ -410,13 +403,13 @@ export default defineConfig(({ mode }) => {
       // Remove dev-only code
       __DEV__: mode !== 'production',
     },
-    
+
     // Preview server configuration
     preview: {
-      port: 3000,
+      port: 5173,
       host: true,
     },
-    
+
     // Test configuration
     test: {
       globals: true,

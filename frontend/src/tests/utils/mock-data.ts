@@ -112,6 +112,7 @@ export const mockNotification = {
 export const mockAuthTokens = {
   accessToken: 'mock-access-token',
   refreshToken: 'mock-refresh-token',
+  expiresIn: 86400, // Required by parseLoginResponse validation
 };
 
 export const mockDashboardMetrics = {

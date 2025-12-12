@@ -17,6 +17,7 @@ import {
   mockRevenueData,
   mockBooking,
   mockEquipment,
+  mockSite,
 } from '../utils/mock-data';
 import type { DateRange } from '@/types/common';
 import type { BookingFilters } from '@/types/booking';
@@ -93,40 +94,52 @@ const server = setupServer(
       returningCustomers: 125,
     });
   }),
-  
+
+  // Sites endpoint - required by AdminDashboardPage
+  http.get('http://localhost:5000/api/v1/sites', () => {
+    // Return mock sites that match expected dashboard calculations
+    // 3 occupied sites at $5000 = $15,000 revenue, 75% occupancy
+    return HttpResponse.json([
+      { ...mockSite, id: '1', status: 'OCCUPIED', basePrice: 5000, pricePerNight: 5000 },
+      { ...mockSite, id: '2', status: 'OCCUPIED', basePrice: 5000, pricePerNight: 5000 },
+      { ...mockSite, id: '3', status: 'OCCUPIED', basePrice: 5000, pricePerNight: 5000 },
+      { ...mockSite, id: '4', status: 'AVAILABLE', basePrice: 35, pricePerNight: 35 },
+    ]);
+  }),
+
   // Booking endpoints
   http.get('http://localhost:5000/api/v1/bookings', ({ request }) => {
     const url = new URL(request.url);
     const searchTerm = url.searchParams.get('searchTerm');
-    
+
     let filteredBookings = mockBookings;
     if (searchTerm) {
-      filteredBookings = mockBookings.filter(b => 
+      filteredBookings = mockBookings.filter(b =>
         b.bookingNumber.includes(searchTerm)
       );
     }
-    
+
     return HttpResponse.json(filteredBookings);
   }),
-  
+
   // Equipment endpoints
   http.get('http://localhost:5000/api/v1/equipment', ({ request }) => {
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
     const search = url.searchParams.get('search') || url.searchParams.get('searchTerm');
-    
+
     let filteredEquipment = mockEquipmentList;
-    
+
     if (category) {
       filteredEquipment = filteredEquipment.filter(e => e.category === category);
     }
-    
+
     if (search) {
-      filteredEquipment = filteredEquipment.filter(e => 
+      filteredEquipment = filteredEquipment.filter(e =>
         e.name.toLowerCase().includes(search.toLowerCase())
       );
     }
-    
+
     return HttpResponse.json(filteredEquipment);
   })
 );
@@ -168,7 +181,7 @@ describe('Type Consolidation Integration Tests', () => {
 
     it('should filter dashboard data using DateRange interface', async () => {
       const user = userEvent.setup();
-      
+
       // Track API calls
       server.use(
         http.get('http://localhost:5000/api/v1/analytics/dashboard', () => {
@@ -184,7 +197,7 @@ describe('Type Consolidation Integration Tests', () => {
 
       // Find and interact with date range filter
       const dateRangeButton = screen.queryByRole('button', { name: /date range/i });
-      
+
       if (dateRangeButton) {
         await user.click(dateRangeButton);
 
@@ -194,7 +207,7 @@ describe('Type Consolidation Integration Tests', () => {
         if (startDateInput && endDateInput) {
           await user.clear(startDateInput);
           await user.type(startDateInput, '2024-01-01');
-          
+
           await user.clear(endDateInput);
           await user.type(endDateInput, '2024-03-31');
 

@@ -17,19 +17,19 @@ const ForgotPasswordPage: React.FC = () => {
       setValidationError('Email is required');
       return false;
     }
-    
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setValidationError('Please enter a valid email address');
       return false;
     }
-    
+
     setValidationError(null);
     return true;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    
+
     // Clear errors when user types
     if (validationError) {
       setValidationError(null);
@@ -41,14 +41,14 @@ const ForgotPasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateEmail()) {
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       await post('/auth/forgot-password', { email });
       setSuccess(true);
@@ -65,26 +65,26 @@ const ForgotPasswordPage: React.FC = () => {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
         <div className="w-full max-w-md text-center">
           <div className="mb-6 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+              <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          
-          <h2 className="mb-2 text-2xl font-bold text-gray-900">
+
+          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
             Check your email
           </h2>
-          
-          <p className="mb-6 text-gray-600">
-            We've sent a password reset link to <strong>{email}</strong>
+
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
+            We've sent a password reset link to <strong className="text-gray-900 dark:text-gray-100">{email}</strong>
           </p>
-          
-          <p className="mb-8 text-sm text-gray-500">
+
+          <p className="mb-8 text-sm text-gray-500 dark:text-gray-500">
             Didn't receive the email? Check your spam folder or try again.
           </p>
-          
+
           <div className="space-y-3">
             <Button
               variant="primary"
@@ -94,7 +94,7 @@ const ForgotPasswordPage: React.FC = () => {
             >
               Try another email
             </Button>
-            
+
             <Link to="/login">
               <Button
                 variant="outline"
@@ -112,7 +112,7 @@ const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Reset your password</h1>
@@ -124,7 +124,7 @@ const ForgotPasswordPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Error message */}
           {error && (
-            <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 text-sm text-red-800">
+            <div className="flex items-start gap-3 rounded-md bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-800 dark:text-red-300">
               <AlertCircle className="h-5 w-5 shrink-0" />
               <div>
                 <p className="font-medium">Error</p>

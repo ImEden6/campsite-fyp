@@ -18,15 +18,15 @@ export function preload(
   link.rel = 'preload';
   link.href = href;
   link.as = as;
-  
+
   if (type) {
     link.type = type;
   }
-  
+
   if (as === 'font') {
     link.crossOrigin = 'anonymous';
   }
-  
+
   document.head.appendChild(link);
 }
 
@@ -50,11 +50,11 @@ export function preconnect(origin: string, crossorigin: boolean = false): void {
   const link = document.createElement('link');
   link.rel = 'preconnect';
   link.href = origin;
-  
+
   if (crossorigin) {
     link.crossOrigin = 'anonymous';
   }
-  
+
   document.head.appendChild(link);
 }
 
@@ -115,7 +115,7 @@ export function preloadStyles(styles: string[]): void {
 export function setupExternalResourceHints(): void {
   const apiUrl = import.meta.env.VITE_API_URL;
   const wsUrl = import.meta.env.VITE_WS_URL;
-  
+
   // Preconnect to API
   if (apiUrl) {
     try {
@@ -125,7 +125,7 @@ export function setupExternalResourceHints(): void {
       console.warn('Invalid API URL for preconnect:', apiUrl);
     }
   }
-  
+
   // Preconnect to WebSocket
   if (wsUrl) {
     try {
@@ -135,11 +135,11 @@ export function setupExternalResourceHints(): void {
       console.warn('Invalid WebSocket URL for preconnect:', wsUrl);
     }
   }
-  
+
   // Preconnect to Stripe
   preconnect('https://js.stripe.com');
   preconnect('https://api.stripe.com');
-  
+
   // DNS prefetch for common CDNs
   dnsPrefetch('https://fonts.googleapis.com');
   dnsPrefetch('https://fonts.gstatic.com');
@@ -152,7 +152,7 @@ export function setupExternalResourceHints(): void {
 export function preloadRouteResources(route: string): void {
   const routeResources: Record<string, string[]> = {
     'map-editor': [
-      // Preload Konva library chunks
+      // Preload Fabric.js library chunks
       '/assets/js/canvas-vendor-*.js',
     ],
     'analytics': [
@@ -165,7 +165,7 @@ export function preloadRouteResources(route: string): void {
       '/assets/js/stripe-vendor-*.js',
     ],
   };
-  
+
   const resources = routeResources[route];
   if (resources) {
     resources.forEach((resource) => {
@@ -180,10 +180,10 @@ export function preloadRouteResources(route: string): void {
 export function initResourceHints(): void {
   // Setup external resource hints
   setupExternalResourceHints();
-  
+
   // Preload critical fonts (if any)
   // preloadFonts(['/fonts/inter-var.woff2']);
-  
+
   // Preload critical images
   // preloadImages(['/logo.svg', '/hero-image.webp']);
 }

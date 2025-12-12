@@ -57,3 +57,8 @@ export type {
   AuthTokens,
   RefreshTokenResponse,
 } from './types';
+
+// Export mock data (for development)
+export * from './mock-sites';
+export * from './mock-equipment';
+export * from './mockAnalyticsData';

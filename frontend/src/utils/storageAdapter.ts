@@ -27,9 +27,11 @@ function getStringSize(str: string): number {
  */
 function compressData(data: StorageData): StorageData {
   // Sort maps by updatedAt (most recent first) and keep only the most recent ones
-  const sortedMaps = [...(data.maps || [])].sort((a: any, b: any) => {
-    const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-    const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+  const sortedMaps = [...(data.maps || [])].sort((a: unknown, b: unknown) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const aTime = (a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bTime = (b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0;
     return bTime - aTime;
   });
 
@@ -94,20 +96,20 @@ export const quotaAwareStorage: StateStorage = {
           const parsed = JSON.parse(value) as StorageData;
           const compressed = compressData(parsed);
           const compressedValue = JSON.stringify(compressed);
-          
+
           // If compressed data is still too large, remove oldest maps
           if (checkStorageSize(compressedValue)) {
             console.warn('Storage quota exceeded. Removing oldest maps.');
-            
+
             // Keep only the most recent 5 maps
             const furtherCompressed = {
               ...compressed,
               maps: compressed.maps.slice(0, 5),
             };
             const finalValue = JSON.stringify(furtherCompressed);
-            
+
             localStorage.setItem(name, finalValue);
-            
+
             // Show user notification
             if (typeof window !== 'undefined') {
               const event = new CustomEvent('storage-quota-warning', {
@@ -120,13 +122,13 @@ export const quotaAwareStorage: StateStorage = {
             }
             return;
           }
-          
+
           // Use compressed data
           localStorage.setItem(name, compressedValue);
-          
+
           if (compressed.maps.length < parsed.maps.length) {
             console.warn(`Compressed storage: kept ${compressed.maps.length} of ${parsed.maps.length} maps`);
-            
+
             if (typeof window !== 'undefined') {
               const event = new CustomEvent('storage-quota-warning', {
                 detail: {
@@ -149,15 +151,15 @@ export const quotaAwareStorage: StateStorage = {
       // Handle quota exceeded error
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
         console.error('localStorage quota exceeded');
-        
+
         try {
           // Try to compress and save
           const parsed = JSON.parse(value) as StorageData;
           const compressed = compressData(parsed);
           const compressedValue = JSON.stringify(compressed);
-          
+
           localStorage.setItem(name, compressedValue);
-          
+
           // Notify user
           if (typeof window !== 'undefined') {
             const event = new CustomEvent('storage-quota-error', {
@@ -170,7 +172,7 @@ export const quotaAwareStorage: StateStorage = {
           }
         } catch (fallbackError) {
           console.error('Failed to save compressed data:', fallbackError);
-          
+
           // Last resort: clear old data and try again
           try {
             // Remove the oldest maps
@@ -183,7 +185,7 @@ export const quotaAwareStorage: StateStorage = {
                 timestamp: Date.now(),
               };
               localStorage.setItem(name, JSON.stringify(minimal));
-              
+
               if (typeof window !== 'undefined') {
                 const event = new CustomEvent('storage-quota-error', {
                   detail: {
@@ -196,10 +198,10 @@ export const quotaAwareStorage: StateStorage = {
             }
           } catch (emergencyError) {
             console.error('Emergency cleanup failed:', emergencyError);
-            
+
             // Final fallback: clear this key and notify
             localStorage.removeItem(name);
-            
+
             if (typeof window !== 'undefined') {
               const event = new CustomEvent('storage-quota-error', {
                 detail: {

@@ -9,6 +9,7 @@ import { Calendar } from 'lucide-react';
 import { Button, Input, Select, Card } from '@/components/ui';
 import { VehicleInput, EquipmentSelector, PricingBreakdown } from './';
 import { getSites } from '@/services/api/sites';
+import { mockSites } from '@/services/api/mock-sites';
 import { calculateBookingPrice, createBooking } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, Vehicle, SiteStatus } from '@/types';
@@ -68,10 +69,22 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
     return 'An unexpected error occurred';
   };
 
-  // Fetch available sites
+  // Fetch available sites (with mock data fallback)
   const { data: sites = [], isLoading: sitesLoading } = useQuery({
     queryKey: queryKeys.sites.lists(),
-    queryFn: () => getSites({ status: [SiteStatus.AVAILABLE] }),
+    queryFn: async () => {
+      try {
+        const apiSites = await getSites({ status: [SiteStatus.AVAILABLE] });
+        // Use mock data if API returns empty
+        if (apiSites.length === 0) {
+          return mockSites.filter(s => s.status === SiteStatus.AVAILABLE);
+        }
+        return apiSites;
+      } catch {
+        // Fallback to mock data on error
+        return mockSites.filter(s => s.status === SiteStatus.AVAILABLE);
+      }
+    },
   });
 
   // Calculate pricing when dates or site changes

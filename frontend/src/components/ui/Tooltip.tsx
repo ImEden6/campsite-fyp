@@ -12,7 +12,7 @@ export interface TooltipProps {
 export const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
-  delay = 300,
+  delay = 100,
   placement = 'top',
   disabled = false,
 }) => {
@@ -21,16 +21,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const isHoveringRef = useRef(false);
 
   const showTooltip = (e: React.MouseEvent<HTMLElement>) => {
     if (disabled) return;
-    
+
+    isHoveringRef.current = true;
     triggerRef.current = e.currentTarget;
     const rect = e.currentTarget.getBoundingClientRect();
-    
+
     let x = 0;
     let y = 0;
-    
+
     switch (placement) {
       case 'top':
         x = rect.left + rect.width / 2;
@@ -49,15 +51,24 @@ export const Tooltip: React.FC<TooltipProps> = ({
         y = rect.top + rect.height / 2;
         break;
     }
-    
+
     setPosition({ x, y });
-    
+
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     timeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
+      // Only show if still hovering
+      if (isHoveringRef.current) {
+        setIsVisible(true);
+      }
     }, delay);
   };
 
   const hideTooltip = () => {
+    isHoveringRef.current = false;
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -68,10 +79,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
   useEffect(() => {
     if (isVisible && tooltipRef.current && triggerRef.current) {
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      
+
       let adjustedX = position.x;
       let adjustedY = position.y;
-      
+
       // Adjust for viewport boundaries
       if (placement === 'top' || placement === 'bottom') {
         adjustedX -= tooltipRect.width / 2;
@@ -79,7 +90,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         if (adjustedX + tooltipRect.width > window.innerWidth - 8) {
           adjustedX = window.innerWidth - tooltipRect.width - 8;
         }
-        
+
         if (placement === 'top') {
           adjustedY -= tooltipRect.height + 8;
         } else {
@@ -91,14 +102,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
         if (adjustedY + tooltipRect.height > window.innerHeight - 8) {
           adjustedY = window.innerHeight - tooltipRect.height - 8;
         }
-        
+
         if (placement === 'left') {
           adjustedX -= tooltipRect.width + 8;
         } else {
           adjustedX += 8;
         }
       }
-      
+
       setPosition({ x: adjustedX, y: adjustedY });
     }
   }, [isVisible, placement, position]);
@@ -118,22 +129,21 @@ export const Tooltip: React.FC<TooltipProps> = ({
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        transform: placement === 'top' || placement === 'bottom' 
-          ? 'translateX(-50%)' 
+        transform: placement === 'top' || placement === 'bottom'
+          ? 'translateX(-50%)'
           : 'translateY(-50%)',
       }}
     >
       {content}
       <div
-        className={`absolute ${
-          placement === 'top' 
-            ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800'
-            : placement === 'bottom'
+        className={`absolute ${placement === 'top'
+          ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800'
+          : placement === 'bottom'
             ? 'top-0 left-1/2 -translate-x-1/2 -translate-y-full border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-gray-800'
             : placement === 'left'
-            ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900 dark:border-l-gray-800'
-            : 'left-0 top-1/2 -translate-y-1/2 -translate-x-full border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900 dark:border-r-gray-800'
-        }`}
+              ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900 dark:border-l-gray-800'
+              : 'left-0 top-1/2 -translate-y-1/2 -translate-x-full border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900 dark:border-r-gray-800'
+          }`}
       />
     </div>
   );

@@ -20,7 +20,7 @@ const MapsListPage: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400">Manage campsite maps</p>
         </div>
         <button
-          onClick={() => handleOpenMapEditor()}
+          onClick={() => handleOpenMapEditor('new')}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -39,7 +39,7 @@ const MapsListPage: React.FC = () => {
             Maps list functionality coming soon. For now, you can open the map editor directly.
           </p>
           <button
-            onClick={() => handleOpenMapEditor('test-map-1')}
+            onClick={() => handleOpenMapEditor()}
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             <Edit className="w-5 h-5" />

@@ -33,21 +33,21 @@ if (typeof window !== 'undefined') {
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
+  constructor() { }
+  disconnect() { }
+  observe() { }
   takeRecords() {
     return [];
   }
-  unobserve() {}
+  unobserve() { }
 } as any;
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  constructor() { }
+  disconnect() { }
+  observe() { }
+  unobserve() { }
 } as any;
 
 // Mock localStorage
@@ -67,24 +67,3 @@ const sessionStorageMock = {
   clear: vi.fn(),
 };
 global.sessionStorage = sessionStorageMock as any;
-
-// Mock Konva to prevent Node.js canvas requirement
-vi.mock('konva', () => ({
-  default: {
-    Stage: class MockStage {},
-    Layer: class MockLayer {},
-    Group: class MockGroup {},
-    Rect: class MockRect {},
-    Circle: class MockCircle {},
-    Text: class MockText {},
-    Image: class MockImage {},
-    Line: class MockLine {},
-    Tween: class MockTween {
-      play() {}
-      destroy() {}
-    },
-    Easings: {
-      EaseInOut: () => {},
-    },
-  },
-}));

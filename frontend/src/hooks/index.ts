@@ -28,3 +28,6 @@ export * from './useKeyboardShortcuts';
 
 // Monitoring hooks
 export * from './useNavigationTracking';
+
+// Editor hooks
+export * from './useCommandHistory';

@@ -4,6 +4,7 @@
  */
 
 @import "tailwindcss";
+@import "./editor.css";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -33,7 +34,7 @@
   --color-secondary-850: #1f1e1d;
   --color-secondary-900: #1c1917;
   --color-secondary-950: #0c0a09;
-  
+
   /* Gray scale with 850 */
   --color-gray-850: #1a1d23;
 
@@ -341,6 +342,7 @@ body.using-keyboard *:focus-visible {
     opacity: 0;
     transform: translate3d(0, 4px, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -352,6 +354,7 @@ body.using-keyboard *:focus-visible {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
+
   to {
     opacity: 0;
     transform: translate3d(0, -4px, 0);
@@ -362,6 +365,7 @@ body.using-keyboard *:focus-visible {
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -371,6 +375,7 @@ body.using-keyboard *:focus-visible {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -381,6 +386,7 @@ body.using-keyboard *:focus-visible {
     transform: translate3d(0, 10px, 0);
     opacity: 0;
   }
+
   to {
     transform: translate3d(0, 0, 0);
     opacity: 1;
@@ -392,6 +398,7 @@ body.using-keyboard *:focus-visible {
     transform: translate3d(0, -10px, 0);
     opacity: 0;
   }
+
   to {
     transform: translate3d(0, 0, 0);
     opacity: 1;
@@ -403,6 +410,7 @@ body.using-keyboard *:focus-visible {
     transform: translate3d(10px, 0, 0);
     opacity: 0;
   }
+
   to {
     transform: translate3d(0, 0, 0);
     opacity: 1;
@@ -414,6 +422,7 @@ body.using-keyboard *:focus-visible {
     transform: translate3d(-10px, 0, 0);
     opacity: 0;
   }
+
   to {
     transform: translate3d(0, 0, 0);
     opacity: 1;
@@ -424,6 +433,7 @@ body.using-keyboard *:focus-visible {
   from {
     background-position: -200% 0;
   }
+
   to {
     background-position: 200% 0;
   }
@@ -433,9 +443,11 @@ body.using-keyboard *:focus-visible {
   0% {
     transform: translate3d(-100%, 0, 0);
   }
+
   50% {
     transform: translate3d(100%, 0, 0);
   }
+
   100% {
     transform: translate3d(-100%, 0, 0);
   }
@@ -443,6 +455,7 @@ body.using-keyboard *:focus-visible {
 
 /* View Transition API styles for smooth dark mode */
 @supports (view-transition-name: root) {
+
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation-duration: 0.3s;
@@ -486,6 +499,7 @@ body.using-keyboard *:focus-visible {
 
 /* Mobile-specific styles */
 @media (max-width: 767px) {
+
   /* Optimize tap targets */
   button,
   a,
@@ -522,9 +536,9 @@ body.using-keyboard *:focus-visible {
 
 /* Sidebar slide animations */
 .sidebar {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Only add will-change when sidebar is actively animating */
@@ -569,7 +583,7 @@ body.using-keyboard *:focus-visible {
 }
 
 /* Canvas cursor transitions */
-.konvajs-content {
+.canvas-container {
   transition: cursor 0.1s ease-in-out;
 }
 
@@ -580,9 +594,12 @@ body.using-keyboard *:focus-visible {
 
 /* Unsaved changes indicator pulse */
 @keyframes pulse-warning {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -602,12 +619,10 @@ body.using-keyboard *:focus-visible {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   animation: shimmer 1.5s infinite;
 }
 
@@ -617,10 +632,13 @@ body.using-keyboard *:focus-visible {
 }
 
 @keyframes pulse-drop {
-  0%, 100% {
+
+  0%,
+  100% {
     border-color: rgb(96 165 250);
     background-color: rgba(96, 165, 250, 0.05);
   }
+
   50% {
     border-color: rgb(59 130 246);
     background-color: rgba(59, 130, 246, 0.1);
@@ -684,6 +702,7 @@ body.using-keyboard *:focus-visible {
     opacity: 0;
     transform: translate3d(-10px, 0, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -719,10 +738,13 @@ body.using-keyboard *:focus-visible {
 
 /* Module lock indicator pulse */
 @keyframes pulse-lock {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.9;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.1);
@@ -743,6 +765,7 @@ body.using-keyboard *:focus-visible {
     opacity: 0;
     transform: translate3d(100%, 0, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -751,13 +774,24 @@ body.using-keyboard *:focus-visible {
 
 /* Error message shake */
 @keyframes shake {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
-  10%, 30%, 50%, 70%, 90% {
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translate3d(-5px, 0, 0);
   }
-  20%, 40%, 60%, 80% {
+
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translate3d(5px, 0, 0);
   }
 }
@@ -771,6 +805,7 @@ body.using-keyboard *:focus-visible {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -790,8 +825,8 @@ body.using-keyboard *:focus-visible {
   transition: none !important;
 }
 
-/* Performance optimization for canvas */
-.konvajs-content canvas {
+/* Performance optimization for Fabric.js canvas */
+.canvas-container canvas {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }

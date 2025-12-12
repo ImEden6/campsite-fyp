@@ -146,6 +146,5 @@ export const mockDeleteUser = async (id: string): Promise<void> => {
 export const mockSendPasswordResetEmail = async (_userId: string): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 300));
   // In a real implementation, this would send an email
-  // For mock, we just simulate the delay
+  // For mock, just simulate the delay
 };
-

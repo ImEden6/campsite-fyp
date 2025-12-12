@@ -105,9 +105,9 @@ export const CustomerInsights: React.FC<CustomerInsightsProps> = ({ data, loadin
           </ResponsiveContainer>
         </div>
 
-        {/* Top Locations */}
+        {/* Guest Origins */}
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 mb-4">Top Locations</h4>
+          <h4 className="text-sm font-semibold text-gray-900 mb-4">Guest Origins</h4>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie

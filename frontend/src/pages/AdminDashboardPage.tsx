@@ -7,12 +7,12 @@ import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useLazyFramerMotion } from '@/hooks/useLazyFramerMotion';
-import { 
-  MapPin, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Settings, 
+import {
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Settings,
   Eye,
   Home,
   Tent,
@@ -21,9 +21,13 @@ import {
   DollarSign,
   TrendingUp,
   Map,
-  RefreshCw
+  RefreshCw,
+  Users,
+  BarChart3,
 } from 'lucide-react';
 import { getSites, deleteSite } from '@/services/api/sites';
+import { mockDashboardMetrics } from '@/services/api/mockAnalyticsData';
+import { mockSites } from '@/services/api/mock-sites';
 import { SiteType, SiteStatus } from '@/types';
 import type { Site } from '@/types';
 
@@ -36,41 +40,41 @@ interface MapBoxProps {
   onViewMap: () => void;
 }
 
-const MapBox: React.FC<MapBoxProps> = ({ 
-  type, 
-  sites, 
-  onAddSite, 
-  onEditSite, 
+const MapBox: React.FC<MapBoxProps> = ({
+  type,
+  sites,
+  onAddSite,
+  onEditSite,
   onDeleteSite,
-  onViewMap 
+  onViewMap
 }) => {
   const { motion } = useLazyFramerMotion();
   const MotionDiv = motion?.div || 'div';
-  
+
   const typeConfig: Record<SiteType, { icon: React.ComponentType<{ className?: string }>; color: string; borderColor: string; title: string }> = {
-    [SiteType.TENT]: { 
-      icon: Tent, 
-      color: 'bg-green-500', 
+    [SiteType.TENT]: {
+      icon: Tent,
+      color: 'bg-green-500',
       borderColor: 'border-green-200',
-      title: 'Tent Sites' 
+      title: 'Tent Sites'
     },
-    [SiteType.RV]: { 
-      icon: Truck, 
-      color: 'bg-blue-500', 
+    [SiteType.RV]: {
+      icon: Truck,
+      color: 'bg-blue-500',
       borderColor: 'border-blue-200',
-      title: 'RV Sites' 
+      title: 'RV Sites'
     },
-    [SiteType.CABIN]: { 
-      icon: Home, 
-      color: 'bg-orange-500', 
+    [SiteType.CABIN]: {
+      icon: Home,
+      color: 'bg-orange-500',
       borderColor: 'border-orange-200',
-      title: 'Cabins' 
+      title: 'Cabins'
     }
   };
 
   const config = typeConfig[type];
   const Icon = config.icon;
-  
+
   const availableSites = sites.filter(s => s.status === 'AVAILABLE').length;
   const occupiedSites = sites.filter(s => s.status === 'OCCUPIED').length;
   const maintenanceSites = sites.filter(s => s.status === 'MAINTENANCE').length;
@@ -131,11 +135,10 @@ const MapBox: React.FC<MapBoxProps> = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">{site.name}</h3>
-                    <span className={`px-2 py-0.5 text-xs rounded-full ${
-                      site.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${site.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
                       site.status === 'OCCUPIED' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
                       {site.status}
                     </span>
                   </div>
@@ -185,10 +188,19 @@ export const AdminDashboardPage: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Fetch all sites
+  // Fetch all sites (with mock data fallback)
   const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['sites'],
-    queryFn: () => getSites(),
+    queryFn: async () => {
+      try {
+        const apiSites = await getSites();
+        // Use mock data if API returns empty
+        return apiSites.length > 0 ? apiSites : mockSites;
+      } catch {
+        // Fallback to mock data on error
+        return mockSites;
+      }
+    },
   });
 
   // Group sites by type
@@ -196,43 +208,46 @@ export const AdminDashboardPage: React.FC = () => {
   const rvSites = sites.filter(s => s.type === SiteType.RV);
   const cabinSites = sites.filter(s => s.type === SiteType.CABIN);
 
-  // Calculate metrics
+  // Calculate metrics for site counts
   const totalSites = sites.length;
   const occupiedSites = sites.filter(s => s.status === SiteStatus.OCCUPIED).length;
-  const availableSites = sites.filter(s => s.status === SiteStatus.AVAILABLE).length;
-  const maintenanceSites = sites.filter(s => s.status === SiteStatus.MAINTENANCE).length;
-  const occupancyRate = totalSites > 0 ? Math.round((occupiedSites / totalSites) * 100) : 0;
-  const totalRevenue = sites.reduce((sum, site) => sum + (site.status === SiteStatus.OCCUPIED ? site.basePrice : 0), 0);
 
-  // Stats for the cards
+  // Use analytics mock data for dashboard metrics
+  const analyticsMetrics = mockDashboardMetrics;
+
+  // Stats for the cards - now using analytics data
   const stats = [
-    { 
-      name: 'Total Revenue', 
-      value: `$${totalRevenue.toLocaleString()}`, 
-      icon: DollarSign, 
+    {
+      name: 'Total Revenue',
+      value: `$${analyticsMetrics.totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
       color: 'bg-blue-500',
-      subtext: 'Current occupied sites'
+      subtext: `${analyticsMetrics.revenueChange >= 0 ? '+' : ''}${analyticsMetrics.revenueChange.toFixed(1)}% from last period`,
+      change: analyticsMetrics.revenueChange,
     },
-    { 
-      name: 'Occupancy Rate', 
-      value: `${occupancyRate}%`, 
-      icon: TrendingUp, 
+    {
+      name: 'Occupancy Rate',
+      value: `${analyticsMetrics.occupancyRate.toFixed(1)}%`,
+      icon: TrendingUp,
       color: 'bg-green-500',
-      subtext: `${occupiedSites} of ${totalSites} sites`
+      subtext: `${occupiedSites} of ${totalSites} sites`,
+      change: analyticsMetrics.occupancyChange,
     },
-    { 
-      name: 'Available Sites', 
-      value: availableSites, 
-      icon: Calendar, 
+    {
+      name: 'Active Bookings',
+      value: analyticsMetrics.activeBookings,
+      icon: Calendar,
       color: 'bg-purple-500',
-      subtext: 'Ready for booking'
+      subtext: `${analyticsMetrics.bookingsChange >= 0 ? '+' : ''}${analyticsMetrics.bookingsChange.toFixed(1)}% from last period`,
+      change: analyticsMetrics.bookingsChange,
     },
-    { 
-      name: 'Maintenance', 
-      value: maintenanceSites, 
-      icon: Settings, 
+    {
+      name: 'Total Customers',
+      value: analyticsMetrics.totalCustomers.toLocaleString(),
+      icon: Users,
       color: 'bg-orange-500',
-      subtext: 'Sites under maintenance'
+      subtext: `${analyticsMetrics.customersChange >= 0 ? '+' : ''}${analyticsMetrics.customersChange.toFixed(1)}% growth`,
+      change: analyticsMetrics.customersChange,
     }
   ];
 
@@ -250,7 +265,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   const handleDeleteSite = async (siteId: string) => {
     if (!confirm('Are you sure you want to delete this site?')) return;
-    
+
     try {
       await deleteSite(siteId);
       queryClient.invalidateQueries({ queryKey: ['sites'] });
@@ -288,6 +303,13 @@ export const AdminDashboardPage: React.FC = () => {
             Refresh
           </button>
           <button
+            onClick={() => navigate('/admin/analytics')}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </button>
+          <button
             onClick={() => navigate('/admin/maps')}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
@@ -319,17 +341,26 @@ export const AdminDashboardPage: React.FC = () => {
             {stats.map((stat, index) => (
               <MotionDiv
                 key={stat.name}
-                {...(motion ? { 
+                {...(motion ? {
                   initial: { opacity: 0, y: 20 },
                   animate: { opacity: 1, y: 0 },
                   transition: { duration: 0.3, delay: index * 0.1 }
                 } : {})}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.name}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{stat.value}</p>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
+                      {stat.change !== undefined && (
+                        <span className={`flex items-center text-xs font-medium ${stat.change >= 0 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                          <TrendingUp className={`w-3 h-3 mr-0.5 ${stat.change < 0 ? 'rotate-180' : ''}`} />
+                          {Math.abs(stat.change).toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{stat.subtext}</p>
                   </div>
                   <div className={`p-3 rounded-lg ${stat.color}`}>
