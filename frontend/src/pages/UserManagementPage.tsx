@@ -23,7 +23,7 @@ import { Plus, Users } from 'lucide-react';
 export const UserManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  
+
   const [showForm, setShowForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
   const [filters, setFilters] = useState<UserFilterValues>({

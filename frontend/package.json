@@ -90,6 +90,7 @@
     "msw": "^2.11.5",
     "postcss": "^8.4.32",
     "rimraf": "^6.1.0",
+    "rollup-plugin-visualizer": "^6.0.5",
     "sharp": "^0.34.5",
     "source-map": "^0.7.4",
     "tailwindcss": "^4.1.16",

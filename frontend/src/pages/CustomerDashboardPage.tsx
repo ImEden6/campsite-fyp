@@ -4,22 +4,21 @@ import { useQuery } from '@tanstack/react-query';
 import { Calendar, CreditCard, MapPin, Plus, ArrowRight } from 'lucide-react';
 import { getMyBookings, getUpcomingBookings } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
-import { BookingStatus, PaymentStatus } from '@/types';
+import { BookingStatus, PaymentStatus, type Booking } from '@/types';
 import Button from '@/components/ui/Button';
 import { BookingCard } from '@/features/bookings/components/BookingCard';
-import { format } from 'date-fns';
 
 const CustomerDashboardPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Fetch customer bookings
-  const { data: allBookings = [], isLoading: isLoadingBookings } = useQuery({
-    queryKey: queryKeys.bookings.myBookings,
+  const { data: allBookings = [], isLoading: isLoadingBookings, error: bookingsError } = useQuery<Booking[]>({
+    queryKey: queryKeys.bookings.myBookings(),
     queryFn: () => getMyBookings(),
   });
 
-  const { data: upcomingBookings = [] } = useQuery({
-    queryKey: queryKeys.bookings.upcoming,
+  const { data: upcomingBookings = [], error: upcomingError } = useQuery<Booking[]>({
+    queryKey: queryKeys.bookings.upcoming(),
     queryFn: () => getUpcomingBookings(),
   });
 
@@ -29,14 +28,14 @@ const CustomerDashboardPage: React.FC = () => {
   const stats = {
     total: allBookings.length,
     upcoming: upcomingBookings.length,
-    pending: allBookings.filter((b) => b.status === BookingStatus.PENDING).length,
-    confirmed: allBookings.filter((b) => b.status === BookingStatus.CONFIRMED).length,
+    pending: allBookings.filter((b: Booking) => b.status === BookingStatus.PENDING).length,
+    confirmed: allBookings.filter((b: Booking) => b.status === BookingStatus.CONFIRMED).length,
     needsPayment: allBookings.filter(
-      (b) => b.paymentStatus === PaymentStatus.PENDING || b.paymentStatus === PaymentStatus.PARTIAL
+      (b: Booking) => b.paymentStatus === PaymentStatus.PENDING || b.paymentStatus === PaymentStatus.PARTIAL
     ).length,
   };
 
-  const handleViewBooking = (booking: any) => {
+  const handleViewBooking = (booking: Booking) => {
     navigate(`/customer/bookings/${booking.id}`);
   };
 
@@ -45,6 +44,22 @@ const CustomerDashboardPage: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (bookingsError || upcomingError) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center py-12">
+          <p className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+            Failed to load bookings
+          </p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {bookingsError instanceof Error ? bookingsError.message : 'An unexpected error occurred'}
+          </p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
       </div>
     );
@@ -60,7 +75,7 @@ const CustomerDashboardPage: React.FC = () => {
             Welcome back! Here's an overview of your bookings.
           </p>
         </div>
-        <Button onClick={() => navigate('/sites')}>
+        <Button onClick={() => navigate('/customer/sites')}>
           <Plus className="w-4 h-4 mr-2" />
           Book a Site
         </Button>
@@ -178,7 +193,7 @@ const CustomerDashboardPage: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Start exploring our campsites and book your first stay!
           </p>
-          <Button onClick={() => navigate('/sites')}>
+          <Button onClick={() => navigate('/customer/sites')}>
             Browse Sites
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>

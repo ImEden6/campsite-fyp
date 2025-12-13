@@ -20,9 +20,9 @@ const GuestBookingLookupPage: React.FC = () => {
 
     try {
       // Verify email and get access token
-      const response = await post(`/bookings/guest/${bookingNumber}/verify`, { email });
-      const { token } = response.data;
-      
+      const response = await post<{ data: { token: string } }>(`/bookings/guest/${bookingNumber}/verify`, { email });
+      const { token } = (response as { data: { token: string } }).data;
+
       // Navigate to booking detail with token
       navigate(`/booking/${bookingNumber}?token=${token}`);
     } catch (err: any) {

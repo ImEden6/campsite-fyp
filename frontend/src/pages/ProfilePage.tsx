@@ -21,7 +21,7 @@ const ProfilePage: React.FC = () => {
             Manage your personal information and preferences
           </p>
         </div>
-        
+
         <Button
           variant="outline"
           onClick={handleBack}

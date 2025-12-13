@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Users, DollarSign, UserPlus } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, UserPlus } from 'lucide-react';
 import { verifyGuestBookingEmail, getGuestBooking } from '@/services/api/bookings';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { format } from 'date-fns';
-import { useQuery } from '@tanstack/react-query';
 
 const GuestBookingDetailPage: React.FC = () => {
   const { bookingNumber } = useParams<{ bookingNumber: string }>();
@@ -99,7 +98,7 @@ const GuestBookingDetailPage: React.FC = () => {
 
   const nights = Math.ceil(
     (new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime()) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   );
 
   return (

@@ -4,21 +4,20 @@
  */
 
 import React, { useState } from 'react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+// Deep imports for better tree-shaking
+import { LineChart } from 'recharts/es6/chart/LineChart';
+import { BarChart } from 'recharts/es6/chart/BarChart';
+import { PieChart } from 'recharts/es6/chart/PieChart';
+import { Line } from 'recharts/es6/cartesian/Line';
+import { Bar } from 'recharts/es6/cartesian/Bar';
+import { XAxis } from 'recharts/es6/cartesian/XAxis';
+import { YAxis } from 'recharts/es6/cartesian/YAxis';
+import { CartesianGrid } from 'recharts/es6/cartesian/CartesianGrid';
+import { Tooltip } from 'recharts/es6/component/Tooltip';
+import { Legend } from 'recharts/es6/component/Legend';
+import { ResponsiveContainer } from 'recharts/es6/component/ResponsiveContainer';
+import { Pie } from 'recharts/es6/polar/Pie';
+import { Cell } from 'recharts/es6/component/Cell';
 import { TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import type { RevenueMetrics } from '@/services/api/analytics';
 
@@ -70,8 +69,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
           <button
             onClick={() => setChartType('line')}
             className={`p-2 rounded-lg transition-colors ${chartType === 'line'
-                ? 'bg-blue-100 text-blue-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 text-blue-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             title="Line Chart"
           >
@@ -80,8 +79,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
           <button
             onClick={() => setChartType('bar')}
             className={`p-2 rounded-lg transition-colors ${chartType === 'bar'
-                ? 'bg-blue-100 text-blue-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 text-blue-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             title="Bar Chart"
           >
@@ -90,8 +89,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
           <button
             onClick={() => setChartType('pie')}
             className={`p-2 rounded-lg transition-colors ${chartType === 'pie'
-                ? 'bg-blue-100 text-blue-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 text-blue-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             title="Pie Chart"
           >

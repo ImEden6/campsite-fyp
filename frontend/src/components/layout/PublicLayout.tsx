@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogIn } from 'lucide-react';
+import { Menu, X, LogIn } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -34,7 +34,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               >
                 Browse Sites
               </Link>
-              
+
               {isAuthenticated ? (
                 <>
                   {user?.role === 'CUSTOMER' ? (
@@ -104,7 +104,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               >
                 Browse Sites
               </Link>
-              
+
               {isAuthenticated ? (
                 <>
                   {user?.role === 'CUSTOMER' ? (

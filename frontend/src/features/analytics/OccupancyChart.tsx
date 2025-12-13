@@ -4,16 +4,15 @@
  */
 
 import React, { useState } from 'react';
-import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from 'recharts';
+// Deep imports for better tree-shaking
+import { LineChart } from 'recharts/es6/chart/LineChart';
+import { Line } from 'recharts/es6/cartesian/Line';
+import { XAxis } from 'recharts/es6/cartesian/XAxis';
+import { YAxis } from 'recharts/es6/cartesian/YAxis';
+import { CartesianGrid } from 'recharts/es6/cartesian/CartesianGrid';
+import { Tooltip } from 'recharts/es6/component/Tooltip';
+import { Legend } from 'recharts/es6/component/Legend';
+import { ResponsiveContainer } from 'recharts/es6/component/ResponsiveContainer';
 import { Calendar, TrendingUp } from 'lucide-react';
 import type { OccupancyMetrics } from '@/services/api/analytics';
 
@@ -74,8 +73,8 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
           <button
             onClick={() => setViewType('chart')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${viewType === 'chart'
-                ? 'bg-blue-100 text-blue-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 text-blue-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-1" />
@@ -84,8 +83,8 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
           <button
             onClick={() => setViewType('heatmap')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${viewType === 'heatmap'
-                ? 'bg-blue-100 text-blue-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 text-blue-600'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
           >
             <Calendar className="w-4 h-4 inline mr-1" />

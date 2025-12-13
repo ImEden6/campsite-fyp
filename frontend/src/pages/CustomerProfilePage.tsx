@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
 const CustomerProfilePage: React.FC = () => {
   const { user, updateProfile } = useAuthStore();
+  const { showToast } = useUIStore();
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -19,8 +21,13 @@ const CustomerProfilePage: React.FC = () => {
     setIsSaving(true);
     try {
       await updateProfile(formData);
+      showToast('Profile updated successfully', 'success');
     } catch (error) {
       console.error('Error updating profile:', error);
+      showToast(
+        error instanceof Error ? error.message : 'Failed to update profile',
+        'error'
+      );
     } finally {
       setIsSaving(false);
     }

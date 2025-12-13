@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import type { AnyModule } from '@/types';
 import { useEditorStore, useMapStore } from '@/stores';
-import { PropertyCommand, type PropertyChange, type Command } from '@/commands';
+import { PropertyCommand, type PropertyChange } from '@/commands/PropertyCommand';
+import type { Command } from '@/commands/Command';
 
 // ============================================================================
 // TYPES

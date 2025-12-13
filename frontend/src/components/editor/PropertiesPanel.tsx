@@ -19,7 +19,10 @@ import {
 import type { AnyModule, CampsiteModule, BuildingModule, RoadModule, CustomModule } from '@/types';
 import { useEditorStore } from '@/stores';
 import { useMapStore } from '@/stores/mapStore';
-import { PropertyCommand, AddCommand, DeleteCommand, type PropertyChange, type Command } from '@/commands';
+import { PropertyCommand, type PropertyChange } from '@/commands/PropertyCommand';
+import { AddCommand } from '@/commands/AddCommand';
+import { DeleteCommand } from '@/commands/DeleteCommand';
+import type { Command } from '@/commands/Command';
 import { createNewModule } from '@/utils/moduleFactory';
 import {
     getModuleIcon,
@@ -82,7 +85,7 @@ function PropertyInput({
     // Use local state for controlled input to prevent value reset issues
     const [localValue, setLocalValue] = useState<string | number>(displayValue);
     const isFocusedRef = useRef(false);
-    
+
     // Update local value when displayValue changes (but not when user is typing)
     useEffect(() => {
         if (!isFocusedRef.current) {
@@ -263,7 +266,7 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
             const executeChange = () => {
                 // Prevent execution after unmount
                 if (!isMountedRef.current) return;
-                
+
                 const currentModule = currentMap?.modules.find((m) => m.id === moduleId);
                 if (!currentModule) return;
 

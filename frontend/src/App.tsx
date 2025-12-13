@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from '@/features/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -154,7 +154,7 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Public routes with PublicLayout (no auth required) */}
+            {/* Public routes with PublicLayout (no auth required) - for non-authenticated users */}
             <Route
               element={
                 <PublicLayout>
@@ -163,8 +163,30 @@ function App() {
               }
             >
               <Route path="/" element={<HomePage />} />
+              {/* Sites are available publicly for browsing without login */}
               <Route path="/sites" element={<SiteBrowsePage />} />
               <Route path="/sites/:id" element={<SiteDetailPage />} />
+            </Route>
+
+            {/* Customer routes with CustomerLayout - for authenticated customers */}
+            <Route
+              element={
+                <ProtectedRoute requiredRole={[UserRole.CUSTOMER]}>
+                  <CustomerLayout>
+                    <Outlet />
+                  </CustomerLayout>
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
+              <Route path="/customer/bookings" element={<CustomerBookingsPage />} />
+              <Route path="/customer/bookings/new" element={<CustomerBookingPage />} />
+              <Route path="/customer/bookings/:id" element={<CustomerBookingDetailPage />} />
+              <Route path="/customer/payments" element={<CustomerPaymentsPage />} />
+              <Route path="/customer/profile" element={<CustomerProfilePage />} />
+              {/* Sites browsing within customer layout - same pages but with customer sidebar */}
+              <Route path="/customer/sites" element={<SiteBrowsePage />} />
+              <Route path="/customer/sites/:id" element={<SiteDetailPage />} />
             </Route>
 
             {/* Public auth routes (only accessible when NOT authenticated) */}
@@ -209,24 +231,6 @@ function App() {
 
             {/* Unauthorized page */}
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
-
-            {/* Customer routes with CustomerLayout */}
-            <Route
-              element={
-                <ProtectedRoute requiredRole={[UserRole.CUSTOMER]}>
-                  <CustomerLayout>
-                    <Outlet />
-                  </CustomerLayout>
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
-              <Route path="/customer/bookings" element={<CustomerBookingsPage />} />
-              <Route path="/customer/bookings/new" element={<CustomerBookingPage />} />
-              <Route path="/customer/bookings/:id" element={<CustomerBookingDetailPage />} />
-              <Route path="/customer/payments" element={<CustomerPaymentsPage />} />
-              <Route path="/customer/profile" element={<CustomerProfilePage />} />
-            </Route>
 
             {/* Protected routes with AppLayout (Staff/Admin) */}
             <Route

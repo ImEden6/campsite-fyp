@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Users, DollarSign, CreditCard, Download } from 'lucide-react';
-import { getBookingById, cancelBooking, calculateCancellationRefund } from '@/services/api/bookings';
+import { ArrowLeft, Calendar, Users, CreditCard } from 'lucide-react';
+import { getBookingById, cancelBooking, calculateCancellationRefund, type CancellationRefund } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, PaymentStatus } from '@/types';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
 import { PaymentModal } from '@/features/payments/components/PaymentModal';
+import { useUIStore } from '@/stores/uiStore';
 import { format } from 'date-fns';
 
 const CustomerBookingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { showToast } = useUIStore();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [refundInfo, setRefundInfo] = useState<any>(null);
+  const [refundInfo, setRefundInfo] = useState<CancellationRefund | null>(null);
 
-  const { data: booking, isLoading } = useQuery({
+  const { data: booking, isLoading, error: bookingError } = useQuery({
     queryKey: queryKeys.bookings.detail(id!),
     queryFn: () => getBookingById(id!),
     enabled: !!id,
@@ -31,6 +33,13 @@ const CustomerBookingDetailPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.myBookings() });
       setShowCancelDialog(false);
+      showToast('Booking cancelled successfully', 'success');
+    },
+    onError: (error) => {
+      showToast(
+        error instanceof Error ? error.message : 'Failed to cancel booking',
+        'error'
+      );
     },
   });
 
@@ -42,11 +51,15 @@ const CustomerBookingDetailPage: React.FC = () => {
       setShowCancelDialog(true);
     } catch (error) {
       console.error('Error calculating refund:', error);
+      showToast(
+        error instanceof Error ? error.message : 'Failed to calculate refund',
+        'error'
+      );
     }
   };
 
   const handleCancel = () => {
-    cancelMutation.mutate();
+    cancelMutation.mutate(undefined);
   };
 
   if (isLoading) {
@@ -59,20 +72,24 @@ const CustomerBookingDetailPage: React.FC = () => {
     );
   }
 
-  if (!booking) {
+  if (bookingError || !booking) {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="text-center py-12">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            Booking not found
+          <p className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+            {bookingError ? 'Failed to load booking' : 'Booking not found'}
           </p>
+          {bookingError && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {bookingError instanceof Error ? bookingError.message : 'An unexpected error occurred'}
+            </p>
+          )}
           <Button onClick={() => navigate('/customer/bookings')}>Back to Bookings</Button>
         </div>
       </div>
     );
   }
 
-  const canModify = booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED;
   const canCancel = booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED;
   const needsPayment = booking.paymentStatus === PaymentStatus.PENDING || booking.paymentStatus === PaymentStatus.PARTIAL;
   const nights = Math.ceil(
@@ -88,6 +105,7 @@ const CustomerBookingDetailPage: React.FC = () => {
           <button
             onClick={() => navigate('/customer/bookings')}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            aria-label="Back to bookings"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -227,10 +245,10 @@ const CustomerBookingDetailPage: React.FC = () => {
             {refundInfo && (
               <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Refund Amount:</strong> ${(refundInfo.refundAmount / 100).toFixed(2)}
+                  <strong>Refund Amount:</strong> ${refundInfo.refundAmount.toFixed(2)}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Cancellation Fee:</strong> ${(refundInfo.cancellationFee / 100).toFixed(2)}
+                  <strong>Cancellation Fee:</strong> ${refundInfo.cancellationFee.toFixed(2)}
                 </p>
               </div>
             )}

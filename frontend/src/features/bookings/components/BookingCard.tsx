@@ -27,36 +27,36 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
       case 'CHECKED_IN':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
       case 'CHECKED_OUT':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
       case 'NO_SHOW':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case 'PAID':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'PARTIAL':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
       case 'PENDING':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
       case 'REFUNDED':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
       case 'FAILED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
     }
   };
 
@@ -83,10 +83,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Booking #{booking.bookingNumber}
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {booking.site?.name || 'Site information unavailable'}
             </p>
           </div>
@@ -100,14 +100,14 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center gap-2 text-gray-700">
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
             <Calendar size={18} className="text-gray-400" />
             <div>
               <div className="text-sm font-medium">Check-in</div>
               <div className="text-sm">{formatDate(booking.checkInDate)}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-gray-700">
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
             <Calendar size={18} className="text-gray-400" />
             <div>
               <div className="text-sm font-medium">Check-out</div>
@@ -118,17 +118,17 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Details */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <Clock size={16} />
             <span>{calculateNights()} nights</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <Users size={16} />
             <span>
               {booking.guests.adults + booking.guests.children} guests
             </span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <DollarSign size={16} />
             <span>${booking.totalAmount.toFixed(2)}</span>
           </div>
@@ -136,8 +136,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Payment Info */}
         {booking.paymentStatus === 'PARTIAL' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-yellow-800">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
+            <p className="text-sm text-yellow-800 dark:text-yellow-300">
               <strong>Balance Due:</strong> $
               {(booking.totalAmount - booking.paidAmount).toFixed(2)}
             </p>
@@ -146,7 +146,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Actions */}
         {showActions && (
-          <div className="flex gap-2 pt-4 border-t border-gray-200">
+          <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"
               size="sm"

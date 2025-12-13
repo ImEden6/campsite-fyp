@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  MapPin, 
-  Users, 
-  Calendar, 
-  Wifi, 
-  Zap, 
-  Droplet, 
+import {
+  MapPin,
+  Users,
+  Wifi,
+  Zap,
+  Droplet,
   Heart,
   ArrowLeft,
   CheckCircle
@@ -26,7 +25,7 @@ const SiteDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated, user } = useAuthStore();
-  
+
   const [checkInDate, setCheckInDate] = useState(searchParams.get('checkIn') || '');
   const [checkOutDate, setCheckOutDate] = useState(searchParams.get('checkOut') || '');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -35,7 +34,7 @@ const SiteDetailPage: React.FC = () => {
 
   // Fetch site details
   const { data: site, isLoading } = useQuery({
-    queryKey: queryKeys.sites.byId(id!),
+    queryKey: queryKeys.sites.detail(id!),
     queryFn: async () => {
       try {
         const apiSite = await getSiteById(id!);
@@ -50,7 +49,7 @@ const SiteDetailPage: React.FC = () => {
 
   const handleCheckAvailability = async () => {
     if (!checkInDate || !checkOutDate || !site) return;
-    
+
     setIsCheckingAvailability(true);
     try {
       const isAvailable = await checkSiteAvailability(site.id, checkInDate, checkOutDate);
@@ -65,11 +64,11 @@ const SiteDetailPage: React.FC = () => {
 
   const handleBookNow = () => {
     if (!site) return;
-    
+
     const params = new URLSearchParams();
     if (checkInDate) params.set('checkIn', checkInDate);
     if (checkOutDate) params.set('checkOut', checkOutDate);
-    
+
     if (isAuthenticated && user?.role === 'CUSTOMER') {
       navigate(`/customer/bookings/new?siteId=${site.id}&${params.toString()}`);
     } else {
@@ -141,9 +140,8 @@ const SiteDetailPage: React.FC = () => {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-3 h-3 rounded-full ${
-                        index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                      }`}
+                      className={`w-3 h-3 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                        }`}
                     />
                   ))}
                 </div>
@@ -319,11 +317,10 @@ const SiteDetailPage: React.FC = () => {
               )}
               {availabilityStatus && (
                 <div
-                  className={`p-3 rounded-lg ${
-                    availabilityStatus === 'available'
-                      ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
-                      : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
-                  }`}
+                  className={`p-3 rounded-lg ${availabilityStatus === 'available'
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+                    }`}
                 >
                   {availabilityStatus === 'available' ? (
                     <div className="flex items-center space-x-2">
@@ -352,7 +349,7 @@ const SiteDetailPage: React.FC = () => {
                     <span className="font-medium text-gray-900 dark:text-gray-100">
                       {Math.ceil(
                         (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) /
-                          (1000 * 60 * 60 * 24)
+                        (1000 * 60 * 60 * 24)
                       )}
                     </span>
                   </div>
@@ -362,12 +359,12 @@ const SiteDetailPage: React.FC = () => {
                       $
                       {checkInDate && checkOutDate
                         ? (
-                            Math.ceil(
-                              (new Date(checkOutDate).getTime() -
-                                new Date(checkInDate).getTime()) /
-                                (1000 * 60 * 60 * 24)
-                            ) * site.basePrice
-                          ).toFixed(2)
+                          Math.ceil(
+                            (new Date(checkOutDate).getTime() -
+                              new Date(checkInDate).getTime()) /
+                            (1000 * 60 * 60 * 24)
+                          ) * site.basePrice
+                        ).toFixed(2)
                         : site.basePrice.toFixed(2)}
                     </span>
                   </div>

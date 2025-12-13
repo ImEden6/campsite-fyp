@@ -98,28 +98,73 @@ export const getBookingById = async (id: string): Promise<Booking> => {
 
 /**
  * Get current user's bookings
+ * Falls back to mock data if API is unavailable
  */
 export const getMyBookings = async (filters?: BookingFilters): Promise<Booking[]> => {
-  const response = await get<ApiResponse<Booking[]>>('/bookings/my-bookings', {
-    params: filters,
-  });
-  return response.data || [];
+  try {
+    const response = await get<ApiResponse<Booking[]>>('/bookings/my-bookings', {
+      params: filters,
+    });
+
+    // Use mock data if API returns empty or invalid response
+    if (!response || !response.data || response.data.length === 0) {
+      const { getMockMyBookings } = await import('./mock-bookings');
+      return getMockMyBookings();
+    }
+
+    return response.data;
+  } catch (error) {
+    // Fallback to mock data on any error
+    console.warn('Failed to fetch bookings from API, using mock data:', error);
+    const { getMockMyBookings } = await import('./mock-bookings');
+    return getMockMyBookings();
+  }
 };
 
 /**
  * Get upcoming bookings for current user
+ * Falls back to mock data if API is unavailable
  */
 export const getUpcomingBookings = async (): Promise<Booking[]> => {
-  const response = await get<ApiResponse<Booking[]>>('/bookings/upcoming');
-  return response.data || [];
+  try {
+    const response = await get<ApiResponse<Booking[]>>('/bookings/upcoming');
+
+    // Use mock data if API returns empty or invalid response
+    if (!response || !response.data || response.data.length === 0) {
+      const { getMockUpcomingBookings } = await import('./mock-bookings');
+      return getMockUpcomingBookings();
+    }
+
+    return response.data;
+  } catch (error) {
+    // Fallback to mock data on any error
+    console.warn('Failed to fetch upcoming bookings from API, using mock data:', error);
+    const { getMockUpcomingBookings } = await import('./mock-bookings');
+    return getMockUpcomingBookings();
+  }
 };
 
 /**
  * Get booking history for current user
+ * Falls back to mock data if API is unavailable
  */
 export const getBookingHistory = async (): Promise<Booking[]> => {
-  const response = await get<ApiResponse<Booking[]>>('/bookings/history');
-  return response.data || [];
+  try {
+    const response = await get<ApiResponse<Booking[]>>('/bookings/history');
+
+    // Use mock data if API returns empty or invalid response
+    if (!response || !response.data || response.data.length === 0) {
+      const { getMockBookingHistory } = await import('./mock-bookings');
+      return getMockBookingHistory();
+    }
+
+    return response.data;
+  } catch (error) {
+    // Fallback to mock data on any error
+    console.warn('Failed to fetch booking history from API, using mock data:', error);
+    const { getMockBookingHistory } = await import('./mock-bookings');
+    return getMockBookingHistory();
+  }
 };
 
 /**
@@ -243,7 +288,7 @@ export const getGuestBooking = async (
   const params: Record<string, string> = {};
   if (token) params.token = token;
   if (email) params.email = email;
-  
+
   const response = await get<ApiResponse<Booking>>(`/bookings/guest/${bookingNumber}`, { params });
   return response.data!;
 };

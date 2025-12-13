@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, Grid, List, X } from 'lucide-react';
-import { getSites, checkSiteAvailability } from '@/services/api/sites';
+import { getSites } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
 import { mockSites } from '@/services/api/mock-sites';
 import { SiteType, SiteStatus } from '@/types';
@@ -36,7 +36,7 @@ const SiteBrowsePage: React.FC = () => {
   const checkOutDate = searchParams.get('checkOut') || '';
 
   // Fetch sites
-  const { data: sites = [], isLoading } = useQuery({
+  const { data: sites = [], isLoading, error: sitesError } = useQuery({
     queryKey: queryKeys.sites.all,
     queryFn: async () => {
       try {
@@ -188,11 +188,13 @@ const SiteBrowsePage: React.FC = () => {
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
             className="relative"
+            aria-expanded={showFilters}
+            aria-controls="filters-panel"
           >
             <Filter className="w-4 h-4 mr-2" />
             Filters
             {activeFiltersCount > 0 && (
-              <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
+              <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full" aria-label={`${activeFiltersCount} active filters`}>
                 {activeFiltersCount}
               </span>
             )}
@@ -201,12 +203,16 @@ const SiteBrowsePage: React.FC = () => {
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}
+              aria-label="Grid view"
+              aria-pressed={viewMode === 'grid'}
             >
               <Grid className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}
+              aria-label="List view"
+              aria-pressed={viewMode === 'list'}
             >
               <List className="w-5 h-5" />
             </button>
@@ -215,7 +221,7 @@ const SiteBrowsePage: React.FC = () => {
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+          <div id="filters-panel" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6" role="region" aria-label="Filters">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
               <div className="flex gap-2">
@@ -344,6 +350,15 @@ const SiteBrowsePage: React.FC = () => {
       {isLoading ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">Loading sites...</p>
+        </div>
+      ) : sitesError ? (
+        <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+            Failed to load sites
+          </p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Please try refreshing the page
+          </p>
         </div>
       ) : filteredSites.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">

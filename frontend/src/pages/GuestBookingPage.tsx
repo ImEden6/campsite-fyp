@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, User, Mail, Phone } from 'lucide-react';
@@ -63,11 +63,15 @@ const GuestBookingPage: React.FC = () => {
     queryKey: queryKeys.bookings.detail(bookingId!),
     queryFn: () => getBookingById(bookingId!),
     enabled: !!bookingId && showPaymentModal,
-    onSuccess: (data) => {
-      const amountDue = data.totalAmount - data.paidAmount;
-      setPaymentAmount(Math.round(amountDue * 100)); // Convert to cents
-    },
   });
+
+  // Update payment amount when booking data is fetched
+  useEffect(() => {
+    if (booking) {
+      const amountDue = booking.totalAmount - booking.paidAmount;
+      setPaymentAmount(Math.round(amountDue * 100)); // Convert to cents
+    }
+  }, [booking]);
 
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
@@ -223,7 +227,7 @@ const GuestBookingPage: React.FC = () => {
           initialCheckInDate={checkInDate}
           initialCheckOutDate={checkOutDate}
           initialGuests={initialGuests}
-          onSuccess={(bookingId: string, accessToken: string, bookingNumber: string) => {
+          onSuccess={(bookingId: string, _accessToken: string, bookingNumber: string) => {
             setBookingId(bookingId);
             setBookingNumber(bookingNumber);
             setStep('payment');

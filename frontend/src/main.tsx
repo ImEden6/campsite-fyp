@@ -7,25 +7,7 @@ import { queryClient } from '@/config/react-query';
 import { ErrorBoundaryWithFeedback } from '@/components/ErrorBoundaryWithFeedback';
 import '@styles/index.css';
 
-// Initialize lucide-react icon registry early to prevent registration errors
-// This ensures the icon registry is ready before any lazy-loaded components use icons
-console.log('[Main] Starting lucide-react import...');
-import * as lucideReact from 'lucide-react';
-console.log('[Main] lucide-react imported successfully', {
-  hasActivity: 'Activity' in lucideReact,
-  activityType: typeof lucideReact.Activity,
-  moduleKeys: Object.keys(lucideReact).slice(0, 10),
-});
-// Store on window for debugging and ensure it's available globally
-if (typeof window !== 'undefined') {
-  (window as unknown as Record<string, unknown>).__lucideReact = lucideReact;
-  // Also ensure Activity is available immediately
-  if (lucideReact.Activity) {
-    (window as unknown as Record<string, unknown>).__lucideActivity = lucideReact.Activity;
-  }
-}
-
-// Import test utility in dev mode
+// Import test utility in dev mode - uses dynamic imports so won't affect bundle
 if (import.meta.env.DEV) {
   import('@/utils/test-icon-init');
 }

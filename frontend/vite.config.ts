@@ -3,6 +3,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer'
 import { resolve, join } from 'path'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import tailwindcss from "@tailwindcss/vite";
@@ -242,7 +243,14 @@ export default defineConfig(({ mode }) => {
         }
       }),
       // HTML optimization plugin (runs after VitePWA to transform its output)
-      htmlOptimizePlugin()
+      htmlOptimizePlugin(),
+      // Bundle visualizer - generates stats.html for bundle analysis
+      visualizer({
+        filename: 'dist/stats.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+      }),
     ],
 
     resolve: {
@@ -319,14 +327,19 @@ export default defineConfig(({ mode }) => {
               id.includes('node_modules/scheduler')) {
               return 'react-vendor';
             }
-            // UI vendor chunk (framer-motion, lucide-react)
-            if (id.includes('node_modules/framer-motion') ||
-              id.includes('node_modules/lucide-react')) {
-              return 'ui-vendor';
+            // Icons chunk - lucide-react icons (tree-shakeable, but shared across many pages)
+            if (id.includes('node_modules/lucide-react')) {
+              return 'icons';
+            }
+            // Animation chunk - framer-motion (heavy, lazy-load when needed)
+            if (id.includes('node_modules/framer-motion')) {
+              return 'animations';
             }
 
-            // Note: recharts is NOT split into a separate chunk because it has
-            // complex React dependencies that cause loading order issues
+            // Charts chunk - recharts (lazy-loaded via React.lazy on AnalyticsPage)
+            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
+              return 'charts';
+            }
           },
         },
       },

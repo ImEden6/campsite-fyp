@@ -50,25 +50,6 @@ export async function testIconInitialization() {
     });
   }
 
-  // Test 3: Check if icons are available on window (from main.tsx)
-  if (typeof window !== 'undefined' && (window as any).__lucideReact) {
-    const windowLucide = (window as any).__lucideReact;
-    results.tests.push({
-      name: 'Window global check',
-      passed: 'Activity' in windowLucide,
-      details: {
-        hasActivity: 'Activity' in windowLucide,
-        activityType: typeof windowLucide.Activity,
-      },
-    });
-  } else {
-    results.tests.push({
-      name: 'Window global check',
-      passed: false,
-      error: '__lucideReact not found on window',
-    });
-  }
-
   return results;
 }
 
