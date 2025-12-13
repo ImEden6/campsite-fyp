@@ -52,6 +52,21 @@ const mockUsers: Record<string, { user: User; password: string }> = {
       updatedAt: new Date(),
     },
   },
+  'customer@campsite.com': {
+    password: 'customer123',
+    user: {
+      id: '2',
+      email: 'customer@campsite.com',
+      firstName: 'John',
+      lastName: 'Customer',
+      role: UserRole.CUSTOMER,
+      isActive: true,
+      isEmailVerified: true,
+      isPhoneVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  },
 };
 
 /**
