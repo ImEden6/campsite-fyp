@@ -245,10 +245,10 @@ const CustomerBookingDetailPage: React.FC = () => {
             {refundInfo && (
               <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Refund Amount:</strong> ${refundInfo.refundAmount.toFixed(2)}
+                  <strong>Refund Amount:</strong> ${(refundInfo.refundAmount / 100).toFixed(2)}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Cancellation Fee:</strong> ${refundInfo.cancellationFee.toFixed(2)}
+                  <strong>Cancellation Fee:</strong> ${(refundInfo.cancellationFee / 100).toFixed(2)}
                 </p>
               </div>
             )}
