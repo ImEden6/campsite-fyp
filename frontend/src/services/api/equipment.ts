@@ -6,6 +6,7 @@
 import { get, post, put, del } from './client';
 import type { Equipment, EquipmentRental, EquipmentCategory, EquipmentStatus, EquipmentFilters } from '@/types';
 import type { PaginatedResponse, ApiResponse } from './types';
+import { getMockEquipmentWithAvailability } from './mock-equipment';
 
 export interface EquipmentAvailability {
   equipmentId: string;
@@ -130,6 +131,7 @@ export const checkEquipmentAvailability = async (
 /**
  * Get available equipment for a date range
  * Returns all equipment with availability status for the specified period
+ * Falls back to mock data if API is unavailable
  */
 export const getAvailableEquipment = async (
   startDate: Date,
@@ -137,20 +139,41 @@ export const getAvailableEquipment = async (
   siteId?: string,
   equipmentType?: string
 ): Promise<ApiResponse<EquipmentWithAvailability[]>> => {
-  const params = new URLSearchParams({
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
+  try {
+    const params = new URLSearchParams({
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
 
-  if (siteId) {
-    params.append('siteId', siteId);
+    if (siteId) {
+      params.append('siteId', siteId);
+    }
+
+    if (equipmentType) {
+      params.append('equipmentType', equipmentType);
+    }
+
+    const response = await get<ApiResponse<EquipmentWithAvailability[]>>(`/equipment/available?${params.toString()}`);
+    
+    // Use mock data if API returns empty or invalid response
+    if (!response || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+      return { 
+        data: getMockEquipmentWithAvailability(),
+        success: true,
+        message: 'Using mock equipment data'
+      };
+    }
+    
+    return response;
+  } catch (error) {
+    // Fallback to mock data on any error (network, 404, 500, etc.)
+    console.warn('Failed to fetch equipment from API, using mock data:', error);
+    return { 
+      data: getMockEquipmentWithAvailability(),
+      success: true,
+      message: 'Using mock equipment data (API unavailable)'
+    };
   }
-
-  if (equipmentType) {
-    params.append('equipmentType', equipmentType);
-  }
-
-  return get<ApiResponse<EquipmentWithAvailability[]>>(`/equipment/available?${params.toString()}`);
 };
 
 /**

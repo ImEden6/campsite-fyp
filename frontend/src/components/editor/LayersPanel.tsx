@@ -138,7 +138,10 @@ export function LayersPanel({ onClose: _onClose }: LayersPanelProps) {
                                         style={{ backgroundColor: color }}
                                     />
 
-                                    <span className="layers-panel__item-name">
+                                    <span className={`layers-panel__item-name ${isLocked ? 'layers-panel__item-name--locked' : ''}`}>
+                                        {isLocked && (
+                                            <Lock size={12} className="layers-panel__item-lock-icon" />
+                                        )}
                                         {getModuleName(module)}
                                     </span>
 
@@ -171,7 +174,8 @@ export function LayersPanel({ onClose: _onClose }: LayersPanelProps) {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 toggleModuleVisibility(
-                                                    module.id
+                                                    module.id,
+                                                    executeCommand
                                                 );
                                             }}
                                             title={
@@ -194,7 +198,7 @@ export function LayersPanel({ onClose: _onClose }: LayersPanelProps) {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                toggleModuleLock(module.id);
+                                                toggleModuleLock(module.id, executeCommand);
                                             }}
                                             title={
                                                 isLocked

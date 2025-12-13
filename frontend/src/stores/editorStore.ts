@@ -7,6 +7,9 @@
 
 import { create } from 'zustand';
 import type { AnyModule, ModuleType, Position } from '@/types';
+import { useMapStore } from './mapStore';
+import { PropertyCommand } from '@/commands';
+import type { Command } from '@/commands/Command';
 
 // Use native crypto.randomUUID() for ID generation
 const generateId = (): string => crypto.randomUUID();
@@ -90,8 +93,8 @@ export interface EditorActions {
     clearGuides: () => void;
 
     // === Layer Settings ===
-    toggleModuleVisibility: (id: string) => void;
-    toggleModuleLock: (id: string) => void;
+    toggleModuleVisibility: (id: string, executeCommand?: (command: Command) => void) => void;
+    toggleModuleLock: (id: string, executeCommand?: (command: Command) => void) => void;
     isModuleHidden: (id: string) => boolean;
     isModuleLocked: (id: string) => boolean;
     toggleTypeGroupExpanded: (type: ModuleType) => void;
@@ -244,27 +247,95 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     clearGuides: () => set({ guides: [] }),
 
     // === Layer Settings ===
-    toggleModuleVisibility: (id) =>
-        set((state) => {
-            const newHidden = new Set(state.hiddenModuleIds);
-            if (newHidden.has(id)) {
-                newHidden.delete(id);
+    toggleModuleVisibility: (id, executeCommand?: (command: import('@/commands').Command) => void) => {
+        const { getModule } = useMapStore.getState();
+        const module = getModule(id);
+        
+        if (!module) {
+            console.warn(`[editorStore] Module ${id} not found for visibility toggle`);
+            return;
+        }
+        
+        try {
+            const newVisible = !module.visible;
+            
+            // If executeCommand is provided, use PropertyCommand for undo/redo support
+            if (executeCommand) {
+                executeCommand(new PropertyCommand([{
+                    moduleId: id,
+                    oldProps: { visible: module.visible },
+                    newProps: { visible: newVisible },
+                }]));
             } else {
-                newHidden.add(id);
+                // Fallback: direct update (bypasses command history)
+                // This maintains backward compatibility but logs a warning
+                console.warn(
+                    '[editorStore] toggleModuleVisibility called without executeCommand. ' +
+                    'This bypasses undo/redo. Consider passing executeCommand parameter.'
+                );
+                const { _updateModule } = useMapStore.getState();
+                _updateModule(id, { visible: newVisible });
+                
+                // Sync editorStore Set
+                set((state) => {
+                    const newHidden = new Set(state.hiddenModuleIds);
+                    if (newVisible) {
+                        newHidden.delete(id);
+                    } else {
+                        newHidden.add(id);
+                    }
+                    return { hiddenModuleIds: newHidden };
+                });
             }
-            return { hiddenModuleIds: newHidden };
-        }),
+        } catch (error) {
+            console.error(`[editorStore] Error toggling visibility for module ${id}:`, error);
+        }
+    },
 
-    toggleModuleLock: (id) =>
-        set((state) => {
-            const newLocked = new Set(state.lockedModuleIds);
-            if (newLocked.has(id)) {
-                newLocked.delete(id);
+    toggleModuleLock: (id, executeCommand?: (command: import('@/commands').Command) => void) => {
+        const { getModule } = useMapStore.getState();
+        const module = getModule(id);
+        
+        if (!module) {
+            console.warn(`[editorStore] Module ${id} not found for lock toggle`);
+            return;
+        }
+        
+        try {
+            const shouldLock = !module.locked;
+            
+            // If executeCommand is provided, use PropertyCommand for undo/redo support
+            if (executeCommand) {
+                executeCommand(new PropertyCommand([{
+                    moduleId: id,
+                    oldProps: { locked: module.locked },
+                    newProps: { locked: shouldLock },
+                }]));
             } else {
-                newLocked.add(id);
+                // Fallback: direct update (bypasses command history)
+                // This maintains backward compatibility but logs a warning
+                console.warn(
+                    '[editorStore] toggleModuleLock called without executeCommand. ' +
+                    'This bypasses undo/redo. Consider passing executeCommand parameter.'
+                );
+                const { _updateModule } = useMapStore.getState();
+                _updateModule(id, { locked: shouldLock });
+                
+                // Sync editorStore Set
+                set((state) => {
+                    const newLockedSet = new Set(state.lockedModuleIds);
+                    if (shouldLock) {
+                        newLockedSet.add(id);
+                    } else {
+                        newLockedSet.delete(id);
+                    }
+                    return { lockedModuleIds: newLockedSet };
+                });
             }
-            return { lockedModuleIds: newLocked };
-        }),
+        } catch (error) {
+            console.error(`[editorStore] Error toggling lock for module ${id}:`, error);
+        }
+    },
 
     isModuleHidden: (id) => get().hiddenModuleIds.has(id),
 

@@ -8,8 +8,45 @@ import type { AnyModule, ModuleType, Position, Size } from '@/types';
 
 // Type helper for accessing custom data on Fabric objects
 export type FabricObjectWithData = fabric.FabricObject & {
-    data?: { moduleId?: string; moduleType?: string; isGrid?: boolean };
+    data?: { moduleId?: string; moduleType?: string; isGrid?: boolean; isLockIcon?: boolean };
 };
+
+/**
+ * Type guard to check if a Fabric object has a data property
+ */
+function hasDataProperty(obj: fabric.FabricObject): obj is fabric.FabricObject & { data: Record<string, unknown> } {
+    return 'data' in obj && typeof (obj as fabric.FabricObject & { data?: unknown }).data === 'object' && (obj as fabric.FabricObject & { data?: unknown }).data !== null;
+}
+
+/**
+ * Create a lock icon group for locked modules
+ * The scale should be applied by the caller based on module dimensions
+ * @returns A Fabric Group containing the lock icon, or null if creation fails
+ */
+function createLockIcon(): fabric.Group | null {
+    const lockIconElements: IconElement[] = [
+        { type: 'path', d: 'M6 10V8a6 6 0 0 1 12 0v2' },
+        { type: 'path', d: 'M8 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z' },
+    ];
+    const lockIconParts = createIconObjects(lockIconElements, '#6b7280');
+    
+    if (lockIconParts.length === 0) return null;
+    
+    const lockIconGroup = new fabric.Group(lockIconParts, {
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+        evented: false,
+        opacity: OPACITY_LOCK_ICON,
+    });
+    
+    if (hasDataProperty(lockIconGroup)) {
+        lockIconGroup.data.isLockIcon = true;
+    }
+    
+    lockIconGroup.setCoords();
+    return lockIconGroup;
+}
 
 /**
  * Get the module ID from a Fabric object, or null if not a module
@@ -47,30 +84,97 @@ const MODULE_COLORS: Record<ModuleType, string> = {
     custom: '#8b5cf6',        // violet
 };
 
-// Simple custom SVG paths for module icons (24x24 viewBox)
-const MODULE_ICONS: Record<ModuleType, string> = {
-    // Simple tent shape
-    campsite: 'M4 20L12 4L20 20H4Z M12 20V12',
-    // Simple toilet/WC symbol
-    toilet: 'M8 4h8v4H8V4Z M6 10h12v10H6V10Z M12 14v4',
-    // Simple box/crate
-    storage: 'M4 8L12 4L20 8V16L12 20L4 16V8Z M12 12V20',
-    // Simple building with windows
-    building: 'M4 20V6h16v14H4Z M8 10h2v2H8V10Z M14 10h2v2h-2V10Z M10 16h4v4h-4v-4Z',
-    // P letter for parking
-    parking: 'M7 4h6a5 5 0 0 1 0 10H11v6H7V4Z M11 10h2a1 1 0 0 0 0-2h-2v2Z',
-    // Simple road lines
-    road: 'M6 4v16 M18 4v16 M12 4v3 M12 10v4 M12 17v3',
-    // Water drop
-    water_source: 'M12 4C12 4 6 12 6 15a6 6 0 0 0 12 0c0-3-6-11-6-11Z',
-    // Lightning bolt
-    electricity: 'M13 2L4 14h7l-2 8 11-12h-7l2-8Z',
-    // Trash bin
-    waste_disposal: 'M6 6h12 M8 6V4h8v2 M7 6v12h10V6 M10 9v6 M14 9v6',
-    // Simple play/activity symbol
-    recreation: 'M8 6l10 6-10 6V6Z',
-    // Simple gear/settings
-    custom: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z M12 2v4 M12 18v4 M4 12h4 M16 12h4',
+// Opacity constants for module states
+const OPACITY_LOCKED = 0.85;
+const OPACITY_HIDDEN = 0.3;
+const OPACITY_LOCK_ICON = 0.5;
+
+// Interface for structured SVG icon element definitions
+// Lucide icons are composed of multiple SVG elements (path, circle, polyline)
+interface IconElement {
+    type: 'path' | 'circle' | 'polyline';
+    d?: string;           // For path elements
+    cx?: number;          // For circle elements
+    cy?: number;
+    r?: number;
+    points?: [number, number][];  // For polyline elements [[x1,y1], [x2,y2], ...]
+    fill?: string;        // Optional fill color
+    strokeWidth?: number; // Optional per-element stroke width
+}
+
+// Lucide React icon SVG definitions (24x24 viewBox) - matching ModuleToolbox icons
+// These paths match the icons used in the module selector for consistency
+// Paths extracted directly from Lucide icon library source
+const MODULE_ICONS: Record<ModuleType, IconElement[]> = {
+    // Tent icon (Lucide Tent) - 4 path elements
+    campsite: [
+        { type: 'path', d: 'M3.5 21 14 3' },
+        { type: 'path', d: 'M20.5 21 10 3' },
+        { type: 'path', d: 'M15.5 21 12 15l-3.5 6' },
+        { type: 'path', d: 'M2 21h20' },
+    ],
+    // Bath icon (Lucide Bath) - toilet/restroom - 5 path elements
+    toilet: [
+        { type: 'path', d: 'M10 4 8 6' },
+        { type: 'path', d: 'M17 19v2' },
+        { type: 'path', d: 'M2 12h20' },
+        { type: 'path', d: 'M7 19v2' },
+        { type: 'path', d: 'M9 5 7.621 3.621A2.121 2.121 0 0 0 4 5v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5' },
+    ],
+    // Package icon (Lucide Package) - storage - 3 paths + 1 polyline
+    storage: [
+        { type: 'path', d: 'M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z' },
+        { type: 'path', d: 'M12 22V12' },
+        { type: 'polyline', points: [[3.29, 7], [12, 12], [20.71, 7]] },
+        { type: 'path', d: 'm7.5 4.27 9 5.15' },
+    ],
+    // Building2 icon (Lucide Building2) - 5 path elements
+    building: [
+        { type: 'path', d: 'M10 12h4' },
+        { type: 'path', d: 'M10 8h4' },
+        { type: 'path', d: 'M14 21v-3a2 2 0 0 0-4 0v3' },
+        { type: 'path', d: 'M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2' },
+        { type: 'path', d: 'M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16' },
+    ],
+    // Car icon (Lucide Car) - parking - 2 paths + 2 circles
+    parking: [
+        { type: 'path', d: 'M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2' },
+        { type: 'circle', cx: 7, cy: 17, r: 2 },
+        { type: 'path', d: 'M9 17h6' },
+        { type: 'circle', cx: 17, cy: 17, r: 2 },
+    ],
+    // Route icon (Lucide Route) - road - 1 path + 2 circles
+    road: [
+        { type: 'circle', cx: 6, cy: 19, r: 3 },
+        { type: 'path', d: 'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15' },
+        { type: 'circle', cx: 18, cy: 5, r: 3 },
+    ],
+    // Droplet icon (Lucide Droplet) - water source - 1 path
+    water_source: [
+        { type: 'path', d: 'M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z' },
+    ],
+    // Zap icon (Lucide Zap) - electricity - 1 path
+    electricity: [
+        { type: 'path', d: 'M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z' },
+    ],
+    // Trash2 icon (Lucide Trash2) - waste disposal - 5 path elements
+    waste_disposal: [
+        { type: 'path', d: 'M10 11v6' },
+        { type: 'path', d: 'M14 11v6' },
+        { type: 'path', d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6' },
+        { type: 'path', d: 'M3 6h18' },
+        { type: 'path', d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' },
+    ],
+    // TreePine icon (Lucide TreePine) - recreation - 2 path elements
+    recreation: [
+        { type: 'path', d: 'm17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z' },
+        { type: 'path', d: 'M12 22v-3' },
+    ],
+    // Plus icon (Lucide Plus) - custom - 2 path elements
+    custom: [
+        { type: 'path', d: 'M5 12h14' },
+        { type: 'path', d: 'M12 5v14' },
+    ],
 };
 
 /**
@@ -81,10 +185,62 @@ export function getModuleColor(type: ModuleType): string {
 }
 
 /**
- * Get the icon path for a module type
+ * Get the icon elements for a module type
  */
-export function getModuleIconPath(type: ModuleType): string {
+export function getModuleIconElements(type: ModuleType): IconElement[] {
     return MODULE_ICONS[type] || MODULE_ICONS.custom;
+}
+
+/**
+ * Create Fabric.js objects from an array of IconElements
+ * Returns an array of Fabric objects that can be grouped together
+ */
+function createIconObjects(elements: IconElement[], strokeColor: string): fabric.FabricObject[] {
+    const iconObjects: fabric.FabricObject[] = [];
+
+    for (const element of elements) {
+        const baseOptions = {
+            fill: element.fill || 'transparent',
+            stroke: strokeColor,
+            strokeWidth: element.strokeWidth ?? 2,
+            strokeUniform: true,
+            strokeLineCap: 'round' as const,
+            strokeLineJoin: 'round' as const,
+            selectable: false,
+            evented: false,
+        };
+
+        switch (element.type) {
+            case 'path':
+                if (element.d) {
+                    iconObjects.push(new fabric.Path(element.d, baseOptions));
+                }
+                break;
+            case 'circle':
+                if (element.cx !== undefined && element.cy !== undefined && element.r !== undefined) {
+                    iconObjects.push(new fabric.Circle({
+                        ...baseOptions,
+                        left: element.cx - element.r,
+                        top: element.cy - element.r,
+                        radius: element.r,
+                    }));
+                }
+                break;
+            case 'polyline':
+                if (element.points && element.points.length > 0) {
+                    iconObjects.push(new fabric.Polyline(
+                        element.points.map((point) => ({ x: point[0], y: point[1] })),
+                        {
+                            ...baseOptions,
+                            fill: 'transparent', // Polylines should not be filled
+                        }
+                    ));
+                }
+                break;
+        }
+    }
+
+    return iconObjects;
 }
 
 /**
@@ -115,35 +271,50 @@ export function createModuleObject(module: AnyModule): fabric.Group {
 
     // Create the icon if it fits
     if (showIcon) {
-        const iconPath = getModuleIconPath(module.type);
+        const iconElements = getModuleIconElements(module.type);
         // Scale factor to resize from 24x24 viewBox to desired icon size
         const scaleFactor = iconSize / 24;
 
-        const icon = new fabric.Path(iconPath, {
-            fill: 'transparent',
-            stroke: '#1f2937',
-            strokeWidth: 2 / scaleFactor, // Adjust stroke width for scaling
-            strokeLineCap: 'round',
-            strokeLineJoin: 'round',
-            originX: 'center',
-            originY: 'center',
-            left: module.size.width / 2,
-            top: module.size.height / 2,
-            scaleX: scaleFactor,
-            scaleY: scaleFactor,
-            selectable: false,
-            evented: false,
-        });
-        objects.push(icon);
+        // Create individual Fabric objects for each SVG element
+        const iconParts = createIconObjects(iconElements, '#1f2937');
+
+        if (iconParts.length > 0) {
+            // Group all icon parts together for proper positioning
+            const iconGroup = new fabric.Group(iconParts, {
+                originX: 'center',
+                originY: 'center',
+                selectable: false,
+                evented: false,
+            });
+
+            // Calculate the icon group's bounding box to center it properly
+            iconGroup.setCoords();
+
+            // Position the icon group at the center of the module and scale it
+            iconGroup.set({
+                left: module.size.width / 2,
+                top: module.size.height / 2,
+                scaleX: scaleFactor,
+                scaleY: scaleFactor,
+            });
+
+            // Recalculate coordinates after all changes
+            iconGroup.setCoords();
+            objects.push(iconGroup);
+        }
     }
 
-    // Create the group
+    // Create the group with center origin for rotation around center
+    // Position is stored as top-left, but we need to set left/top as center point
+    const centerX = module.position.x + module.size.width / 2;
+    const centerY = module.position.y + module.size.height / 2;
+    
     const group = new fabric.Group(objects, {
-        left: module.position.x,
-        top: module.position.y,
+        left: centerX,
+        top: centerY,
         angle: module.rotation,
-        originX: 'left',
-        originY: 'top',
+        originX: 'center',
+        originY: 'center',
         lockScalingFlip: true,
     });
 
@@ -227,19 +398,53 @@ export function createModuleObject(module: AnyModule): fabric.Group {
         }
     }
 
-    // Apply locked state
+    // Apply locked state - prevent transformation but allow selection
     if (module.locked) {
+        // Add dashed border for locked modules
+        rect.set({
+            strokeDashArray: [5, 5],
+            strokeWidth: 2,
+        });
+
+        // Add semi-transparent lock icon overlay in center
+        const lockIconGroup = createLockIcon();
+        
+        if (lockIconGroup) {
+            const lockIconSize = Math.min(minDimension * 0.4, 32); // Smaller than module icon
+            const lockScaleFactor = lockIconSize / 24;
+            
+            lockIconGroup.set({
+                left: module.size.width / 2,
+                top: module.size.height / 2,
+                scaleX: lockScaleFactor,
+                scaleY: lockScaleFactor,
+            });
+            lockIconGroup.setCoords();
+            objects.push(lockIconGroup);
+        }
+
         group.set({
-            selectable: false,
-            evented: false,
-            opacity: 0.6,
+            selectable: true, // Keep selectable for properties panel
+            evented: true,
+            // Prevent all transformations
+            lockMovementX: true,
+            lockMovementY: true,
+            lockRotation: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            // Visual indicator - 80-90% opacity
+            opacity: OPACITY_LOCKED,
         });
     }
 
-    // Apply visibility
+    // Apply visibility - semi-transparent ghost mode
     if (!module.visible) {
         group.set({
-            visible: false,
+            // Use semi-transparent ghost mode instead of fully hidden
+            opacity: OPACITY_HIDDEN,
+            // Keep it selectable and visible for interaction
+            selectable: true,
+            evented: true,
         });
     }
 
@@ -248,27 +453,199 @@ export function createModuleObject(module: AnyModule): fabric.Group {
 
 /**
  * Update an existing Fabric object with new module data
+ * 
+ * @param obj - Fabric Group object to update
+ * @param module - Module data with top-left position coordinates
+ * @throws Error if module data is invalid
  */
 export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
+    // Validate module data
+    if (!module.size.width || !module.size.height || 
+        module.size.width <= 0 || module.size.height <= 0 ||
+        !Number.isFinite(module.size.width) || !Number.isFinite(module.size.height)) {
+        const errorDetails = {
+            width: module.size.width,
+            height: module.size.height,
+            moduleId: module.id,
+            moduleType: module.type
+        };
+        console.warn('[updateModuleObject] Invalid module size:', errorDetails);
+        throw new Error(
+            `[updateModuleObject] Invalid module size: width=${module.size.width}, height=${module.size.height}. ` +
+            `Module ID: ${module.id}, Type: ${module.type}`
+        );
+    }
+    
+    if (!Number.isFinite(module.position.x) || !Number.isFinite(module.position.y)) {
+        const errorDetails = {
+            x: module.position.x,
+            y: module.position.y,
+            moduleId: module.id
+        };
+        console.warn('[updateModuleObject] Invalid module position:', errorDetails);
+        throw new Error(
+            `[updateModuleObject] Invalid module position: x=${module.position.x}, y=${module.position.y}. ` +
+            `Module ID: ${module.id}`
+        );
+    }
+    
+    // Convert top-left position to center position (since origin is center)
+    const centerX = module.position.x + module.size.width / 2;
+    const centerY = module.position.y + module.size.height / 2;
+    
     obj.set({
-        left: module.position.x,
-        top: module.position.y,
-        angle: module.rotation,
+        left: centerX,
+        top: centerY,
+        angle: module.rotation ?? 0,
     });
 
     // Update size by scaling the group
     const currentWidth = obj.width || 1;
     const currentHeight = obj.height || 1;
-    obj.set({
-        scaleX: module.size.width / currentWidth,
-        scaleY: module.size.height / currentHeight,
-    });
+    
+    // Validate current dimensions
+    if (currentWidth <= 0 || currentHeight <= 0 || 
+        !Number.isFinite(currentWidth) || !Number.isFinite(currentHeight)) {
+        console.warn('[updateModuleObject] Invalid current object dimensions:', {
+            width: currentWidth,
+            height: currentHeight,
+            moduleId: module.id
+        });
+        // Use module size directly as fallback
+        obj.set({
+            scaleX: 1,
+            scaleY: 1,
+        });
+    } else {
+        obj.set({
+            scaleX: module.size.width / currentWidth,
+            scaleY: module.size.height / currentHeight,
+        });
+    }
+
+    // Apply locked state - prevent transformation but allow selection
+    if (module.locked) {
+        // Update border to dashed for locked modules
+        const rectObj = obj.getObjects().find(o => o.type === 'rect') as fabric.Rect | undefined;
+        if (rectObj) {
+            rectObj.set({
+                strokeDashArray: [5, 5],
+                strokeWidth: 2,
+            });
+        }
+
+        // Add or update lock icon overlay if not already present
+        const existingLockIcon = obj.getObjects().find(o => {
+            if (hasDataProperty(o)) {
+                return o.data.isLockIcon === true;
+            }
+            // Fallback: check if it's a group at center position with lock-like structure
+            if (o.type === 'group' && o.left === 0 && o.top === 0) {
+                const group = o as fabric.Group;
+                const paths = group.getObjects().filter(obj => obj.type === 'path');
+                if (paths.length === 2) {
+                    // Likely a lock icon - mark it
+                    if (hasDataProperty(group)) {
+                        group.data.isLockIcon = true;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        });
+        
+        if (!existingLockIcon) {
+            const moduleWidth = obj.width || module.size.width;
+            const moduleHeight = obj.height || module.size.height;
+            const minDimension = Math.min(moduleWidth, moduleHeight);
+            const lockIconGroup = createLockIcon();
+            
+            if (lockIconGroup) {
+                const lockIconSize = Math.min(minDimension * 0.4, 32);
+                const lockScaleFactor = lockIconSize / 24;
+                
+                lockIconGroup.set({
+                    left: 0, // Center of group (which is at center origin)
+                    top: 0,
+                    scaleX: lockScaleFactor,
+                    scaleY: lockScaleFactor,
+                });
+                lockIconGroup.setCoords();
+                obj.add(lockIconGroup);
+                obj.setCoords();
+            }
+        }
+
+        obj.set({
+            selectable: true, // Keep selectable for properties panel
+            evented: true,
+            // Prevent all transformations
+            lockMovementX: true,
+            lockMovementY: true,
+            lockRotation: true,
+            lockScalingX: true,
+            lockScalingY: true,
+            // Visual indicator - 80-90% opacity
+            opacity: module.visible ? OPACITY_LOCKED : OPACITY_HIDDEN, // Combine with visibility
+        });
+    } else {
+        // Unlock if not locked
+        const rectObj = obj.getObjects().find(o => o.type === 'rect') as fabric.Rect | undefined;
+        if (rectObj) {
+            rectObj.set({
+                strokeDashArray: undefined, // Remove dashed border
+                strokeWidth: 1,
+            });
+        }
+
+        // Remove lock icon overlay
+        const lockIconObj = obj.getObjects().find(o => {
+            if (hasDataProperty(o)) {
+                return o.data.isLockIcon === true;
+            }
+            return false;
+        });
+        if (lockIconObj) {
+            obj.remove(lockIconObj);
+            obj.setCoords();
+        }
+
+        obj.set({
+            selectable: true,
+            evented: true,
+            lockMovementX: false,
+            lockMovementY: false,
+            lockRotation: false,
+            lockScalingX: false,
+            lockScalingY: false,
+            // Reset opacity if not locked (unless hidden)
+            opacity: module.visible ? 1 : OPACITY_HIDDEN,
+        });
+    }
+
+    // Update visibility (semi-transparent ghost mode)
+    // Only apply if not already handled by locked state
+    if (!module.visible && !module.locked) {
+        obj.set({
+            opacity: OPACITY_HIDDEN, // Ghost mode
+        });
+    } else if (!module.visible && module.locked) {
+        // Locked modules already have opacity set, but hidden locked should be more transparent
+        obj.set({
+            opacity: Math.min(obj.opacity || 1, OPACITY_HIDDEN), // Ensure hidden locked is very transparent
+        });
+    }
 
     obj.setCoords();
 }
 
 /**
  * Extract module changes from a Fabric object
+ * Converts from center-based coordinates (Fabric) to top-left coordinates (module storage)
+ * 
+ * @param obj - Fabric Group object with center origin
+ * @returns Module changes with top-left position coordinates
+ * @throws Error if object dimensions are invalid
  */
 export function extractModuleChanges(obj: fabric.Group): {
     position: { x: number; y: number };
@@ -277,13 +654,45 @@ export function extractModuleChanges(obj: fabric.Group): {
 } {
     const scaleX = obj.scaleX || 1;
     const scaleY = obj.scaleY || 1;
-    const width = (obj.width || 100) * scaleX;
-    const height = (obj.height || 100) * scaleY;
+    
+    // Validate scale values
+    if (!Number.isFinite(scaleX) || !Number.isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) {
+        const errorDetails = { scaleX, scaleY };
+        console.warn('[extractModuleChanges] Invalid scale values:', errorDetails);
+        throw new Error(`[extractModuleChanges] Invalid scale values: scaleX=${scaleX}, scaleY=${scaleY}`);
+    }
+    
+    const baseWidth = obj.width || 100;
+    const baseHeight = obj.height || 100;
+    const width = Math.max(1, baseWidth * scaleX);
+    const height = Math.max(1, baseHeight * scaleY);
+    
+    // Validate dimensions
+    if (!Number.isFinite(width) || !Number.isFinite(height)) {
+        const errorDetails = { width, height, baseWidth, baseHeight, scaleX, scaleY };
+        console.warn('[extractModuleChanges] Invalid dimensions:', errorDetails);
+        throw new Error(`[extractModuleChanges] Invalid dimensions: width=${width}, height=${height}`);
+    }
+    
+    // Convert from center coordinates to top-left coordinates
+    // obj.left and obj.top represent the center when origin is 'center'
+    const centerX = obj.left ?? 0;
+    const centerY = obj.top ?? 0;
+    
+    // Validate center coordinates
+    if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
+        const errorDetails = { centerX, centerY };
+        console.warn('[extractModuleChanges] Invalid center coordinates:', errorDetails);
+        throw new Error(`[extractModuleChanges] Invalid center coordinates: centerX=${centerX}, centerY=${centerY}`);
+    }
+    
+    const topLeftX = centerX - width / 2;
+    const topLeftY = centerY - height / 2;
 
     return {
         position: {
-            x: obj.left || 0,
-            y: obj.top || 0,
+            x: Math.round(Math.max(0, topLeftX)), // Prevent negative positions
+            y: Math.round(Math.max(0, topLeftY)), // Prevent negative positions
         },
         size: {
             width: Math.round(width),
@@ -314,20 +723,17 @@ const DEFAULT_MODULE_SIZES: Record<ModuleType, Size> = {
     custom: { width: 80, height: 80 },
 };
 
-// Counter for z-index uniqueness when rapid creation occurs
-let zIndexCounter = 0;
-let lastZIndexTimestamp = 0;
-
+/**
+ * Generate a unique z-index value
+ * Uses timestamp with random component to ensure uniqueness across instances
+ * This avoids global state issues in SSR or multiple instances
+ */
 function getUniqueZIndex(): number {
     const now = Date.now();
-    if (now === lastZIndexTimestamp) {
-        zIndexCounter++;
-    } else {
-        zIndexCounter = 0;
-        lastZIndexTimestamp = now;
-    }
-    // Combine timestamp with counter for guaranteed uniqueness
-    return now * 1000 + zIndexCounter;
+    // Use timestamp with random component for guaranteed uniqueness
+    // Random component (0-999) handles rapid creation within same millisecond
+    const randomComponent = Math.floor(Math.random() * 1000);
+    return now * 1000 + randomComponent;
 }
 
 /**

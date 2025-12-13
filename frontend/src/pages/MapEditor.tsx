@@ -12,7 +12,10 @@ import { useMapStore } from '@/stores/mapStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { createModuleObject, createNewModule, extractModuleChanges, getModuleId, isGridObject } from '@/utils/moduleFactory';
+import { createModuleObject, createNewModule, extractModuleChanges, getModuleId, isGridObject, updateModuleObject } from '@/utils/moduleFactory';
+
+// Import opacity constants for state checks
+const OPACITY_HIDDEN = 0.3;
 import { MoveCommand, TransformCommand, AddCommand, DeleteCommand } from '@/commands';
 import { useCommandHistory } from '@/hooks';
 import type { AnyModule, ModuleType, Position } from '@/types';
@@ -30,6 +33,9 @@ const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.1;
 const DEFAULT_GRID_SIZE = 20;
+const ZOOM_IN_FACTOR = 1.1;
+const ZOOM_OUT_FACTOR = 0.9;
+const FIT_TO_SCREEN_PADDING = 0.9; // Padding factor for fit-to-screen calculation
 
 const MapEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -58,7 +64,7 @@ const MapEditor: React.FC = () => {
     const [containerReady, setContainerReady] = useState(false);
 
     // Panel visibility state
-    const [showToolbox, _setShowToolbox] = useState(true);
+    const [showToolbox] = useState(true);
     const [showPropertiesPanel, setShowPropertiesPanel] = useState(false);
     const [showLayersPanel, setShowLayersPanel] = useState(false);
     const [showRulers, setShowRulers] = useState(false);
@@ -66,6 +72,12 @@ const MapEditor: React.FC = () => {
 
     // Ref to the HTML canvas element for export
     const htmlCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    
+    // Ref to track animation frame for cleanup
+    const rafIdRef = useRef<number | null>(null);
+    
+    // Guard to prevent concurrent rendering
+    const isRenderingRef = useRef(false);
 
     // Callback ref to detect when container mounts
     const containerRefCallback = useCallback((node: HTMLDivElement | null) => {
@@ -165,7 +177,6 @@ const MapEditor: React.FC = () => {
 
                 // Assign custom render to the existing control
                 originalMtr.render = customRotationRender;
-                console.log('[MapEditor] Successfully customized rotation handle color');
             } else {
                 console.warn('[MapEditor] Could not find defaultControls.mtr - controls:', defaultControls);
             }
@@ -175,22 +186,68 @@ const MapEditor: React.FC = () => {
 
         canvasRef.current = canvas;
 
+        // Disable double-click behavior on canvas
+        const handleDoubleClick = (e: fabric.TPointerEventInfo<MouseEvent>) => {
+            e.e.stopPropagation();
+            e.e.preventDefault();
+        };
+        canvas.on('mouse:dblclick', handleDoubleClick);
+
         // Handle selection changes - sync with editorStore
         const syncSelection = () => {
             const activeObjects = canvas.getActiveObjects();
-            const ids = activeObjects
-                .map(obj => getModuleId(obj))
-                .filter((id): id is string => id !== null);
-            setSelection(ids);
-            setSelectedCount(ids.length);
+            const validIds: string[] = [];
+            const lockedIds: string[] = [];
+            
+            activeObjects.forEach(obj => {
+                const moduleId = getModuleId(obj);
+                if (!moduleId) return;
+                
+                // Check if module is locked - prevent selection
+                const module = getModule(moduleId);
+                if (module?.locked) {
+                    lockedIds.push(moduleId);
+                } else {
+                    validIds.push(moduleId);
+                }
+            });
+            
+            // If any locked modules were selected, deselect them
+            if (lockedIds.length > 0) {
+                const lockedObjects = lockedIds
+                    .map(id => objectMapRef.current.get(id))
+                    .filter((obj): obj is fabric.Group => obj !== undefined);
+                
+                if (lockedObjects.length > 0) {
+                    // Remove locked objects from selection
+                    const remainingObjects = activeObjects.filter(obj => {
+                        const moduleId = getModuleId(obj);
+                        return moduleId && !lockedIds.includes(moduleId);
+                    });
+                    
+                    if (remainingObjects.length === 0) {
+                        canvas.discardActiveObject();
+                    } else if (remainingObjects.length === 1) {
+                        canvas.setActiveObject(remainingObjects[0]!);
+                    } else {
+                        const selection = new fabric.ActiveSelection(remainingObjects, { canvas });
+                        canvas.setActiveObject(selection);
+                    }
+                }
+            }
+            
+            setSelection(validIds);
+            setSelectedCount(validIds.length);
+        };
+
+        const handleSelectionCleared = () => {
+            setSelection([]);
+            setSelectedCount(0);
         };
 
         canvas.on('selection:created', syncSelection);
         canvas.on('selection:updated', syncSelection);
-        canvas.on('selection:cleared', () => {
-            setSelection([]);
-            setSelectedCount(0);
-        });
+        canvas.on('selection:cleared', handleSelectionCleared);
 
         // Handle object modification start
         // Bug 1 Fix: Capture transform start state before snap-to-grid modifies position
@@ -199,6 +256,13 @@ const MapEditor: React.FC = () => {
             if (!transformStartRef.current && e.target) {
                 const moduleId = getModuleId(e.target);
                 if (moduleId) {
+                    // Check if module is locked - prevent transformation
+                    const module = getModule(moduleId);
+                    if (module?.locked) {
+                        // Cancel the transformation
+                        e.target.setCoords();
+                        return;
+                    }
                     // Capture the ORIGINAL position before any modifications (like snap-to-grid)
                     const changes = extractModuleChanges(e.target as fabric.Group);
                     transformStartRef.current = {
@@ -214,10 +278,17 @@ const MapEditor: React.FC = () => {
         // Register with high priority (before other handlers)
         canvas.on('object:moving', handleTransformStart);
 
-        canvas.on('object:scaling', (e) => {
+        const handleObjectScaling = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
             if (!transformStartRef.current && e.target) {
                 const moduleId = getModuleId(e.target);
                 if (moduleId) {
+                    // Check if module is locked - prevent transformation
+                    const module = getModule(moduleId);
+                    if (module?.locked) {
+                        // Cancel the transformation
+                        e.target.setCoords();
+                        return;
+                    }
                     const changes = extractModuleChanges(e.target as fabric.Group);
                     transformStartRef.current = {
                         id: moduleId,
@@ -227,12 +298,19 @@ const MapEditor: React.FC = () => {
                     };
                 }
             }
-        });
+        };
 
-        canvas.on('object:rotating', (e) => {
+        const handleObjectRotating = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
             if (!transformStartRef.current && e.target) {
                 const moduleId = getModuleId(e.target);
                 if (moduleId) {
+                    // Check if module is locked - prevent transformation
+                    const module = getModule(moduleId);
+                    if (module?.locked) {
+                        // Cancel the transformation
+                        e.target.setCoords();
+                        return;
+                    }
                     const changes = extractModuleChanges(e.target as fabric.Group);
                     transformStartRef.current = {
                         id: moduleId,
@@ -242,52 +320,134 @@ const MapEditor: React.FC = () => {
                     };
                 }
             }
-        });
+        };
+
+        canvas.on('object:scaling', handleObjectScaling);
+        canvas.on('object:rotating', handleObjectRotating);
 
         // Handle object modification end
-        canvas.on('object:modified', (e) => {
+        const handleObjectModified = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
             if (!e.target || !transformStartRef.current) return;
 
-            const moduleId = getModuleId(e.target);
-            if (!moduleId) return;
+            try {
+                const moduleId = getModuleId(e.target);
+                if (!moduleId) return;
 
-            const startState = transformStartRef.current;
-            const changes = extractModuleChanges(e.target as fabric.Group);
+                // Preserve current selection before executing command
+                const activeObjects = canvas.getActiveObjects();
+                const selectedIds = activeObjects
+                    .map(obj => getModuleId(obj))
+                    .filter((id): id is string => id !== null);
 
-            // Use ref to access latest executeCommand function
-            const executeCommand = executeCommandRef.current;
+                const startState = transformStartRef.current;
+                const changes = extractModuleChanges(e.target as fabric.Group);
 
-            if (!executeCommand) return;
+                // Use ref to access latest executeCommand function
+                const executeCommand = executeCommandRef.current;
 
-            // Check if it was just a move or a full transform
-            const sizeChanged =
-                startState.size.width !== changes.size.width ||
-                startState.size.height !== changes.size.height;
-            const rotationChanged = startState.rotation !== changes.rotation;
+                if (!executeCommand) {
+                    console.warn('[MapEditor] executeCommand not available in object:modified handler');
+                    transformStartRef.current = null;
+                    return;
+                }
 
-            if (sizeChanged || rotationChanged) {
-                // Use TransformCommand for resize/rotate
-                executeCommand(new TransformCommand({
-                    id: moduleId,
-                    oldPosition: startState.position,
-                    newPosition: changes.position,
-                    oldSize: startState.size,
-                    newSize: changes.size,
-                    oldRotation: startState.rotation,
-                    newRotation: changes.rotation,
-                }));
-            } else {
-                // Use MoveCommand for just position changes
-                executeCommand(new MoveCommand([{
-                    id: moduleId,
-                    oldPosition: startState.position,
-                    newPosition: changes.position,
-                }]));
+                // Check if it was just a move or a full transform
+                const sizeChanged =
+                    startState.size.width !== changes.size.width ||
+                    startState.size.height !== changes.size.height;
+                const rotationChanged = startState.rotation !== changes.rotation;
+
+                if (sizeChanged || rotationChanged) {
+                    // Use TransformCommand for resize/rotate
+                    executeCommand(new TransformCommand({
+                        id: moduleId,
+                        oldPosition: startState.position,
+                        newPosition: changes.position,
+                        oldSize: startState.size,
+                        newSize: changes.size,
+                        oldRotation: startState.rotation,
+                        newRotation: changes.rotation,
+                    }));
+                } else {
+                    // Use MoveCommand for just position changes
+                    executeCommand(new MoveCommand([{
+                        id: moduleId,
+                        oldPosition: startState.position,
+                        newPosition: changes.position,
+                    }]));
+                }
+
+                transformStartRef.current = null;
+
+                // Restore selection after command execution
+                // Use requestAnimationFrame to ensure command has been processed
+                // Cancel any pending animation frame first
+                if (rafIdRef.current !== null) {
+                    cancelAnimationFrame(rafIdRef.current);
+                }
+                
+                rafIdRef.current = requestAnimationFrame(() => {
+                    rafIdRef.current = null;
+                    if (selectedIds.length > 0 && canvasRef.current) {
+                        const canvas = canvasRef.current;
+                        const objectsToSelect = selectedIds
+                            .map(id => {
+                                const obj = objectMapRef.current.get(id);
+                                return obj;
+                            })
+                            .filter((obj): obj is fabric.Group => obj !== undefined);
+
+                        if (objectsToSelect.length > 0) {
+                            if (objectsToSelect.length === 1) {
+                                const obj = objectsToSelect[0];
+                                if (obj) {
+                                    canvas.setActiveObject(obj);
+                                }
+                            } else {
+                                const selection = new fabric.ActiveSelection(objectsToSelect, { canvas });
+                                canvas.setActiveObject(selection);
+                            }
+                            canvas.requestRenderAll();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('[MapEditor] Error handling object modification:', error);
+                
+                // Error recovery: restore object to previous state
+                if (e.target && transformStartRef.current) {
+                    try {
+                        const startState = transformStartRef.current;
+                        const obj = e.target as fabric.Group;
+                        const currentWidth = obj.width || 1;
+                        const currentHeight = obj.height || 1;
+                        
+                        // Restore to center-based coordinates
+                        const centerX = startState.position.x + startState.size.width / 2;
+                        const centerY = startState.position.y + startState.size.height / 2;
+                        
+                        obj.set({
+                            left: centerX,
+                            top: centerY,
+                            scaleX: startState.size.width / currentWidth,
+                            scaleY: startState.size.height / currentHeight,
+                            angle: startState.rotation,
+                        });
+                        obj.setCoords();
+                        
+                        if (canvasRef.current) {
+                            canvasRef.current.requestRenderAll();
+                        }
+                    } catch (recoveryError) {
+                        console.error('[MapEditor] Error during recovery:', recoveryError);
+                    }
+                }
+                
+                transformStartRef.current = null; // Reset state on error
             }
+        };
 
-
-            transformStartRef.current = null;
-        });
+        canvas.on('object:modified', handleObjectModified);
 
         // Handle resize
         const handleResize = () => {
@@ -303,9 +463,25 @@ const MapEditor: React.FC = () => {
 
         return () => {
             window.removeEventListener('resize', handleResize);
+            // Cancel any pending animation frames
+            if (rafIdRef.current !== null) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = null;
+            }
+            // Remove all canvas event listeners
+            canvas.off('selection:created', syncSelection);
+            canvas.off('selection:updated', syncSelection);
+            canvas.off('selection:cleared', handleSelectionCleared);
+            canvas.off('object:moving', handleTransformStart);
+            canvas.off('object:scaling', handleObjectScaling);
+            canvas.off('object:rotating', handleObjectRotating);
+            canvas.off('object:modified', handleObjectModified);
+            canvas.off('mouse:dblclick', handleDoubleClick);
             canvas.dispose();
             canvasRef.current = null;
         };
+        // Note: executeCommandRef and setSelection are refs/functions that don't need to be in dependencies
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [containerReady]);
 
     // Handle mouse wheel zoom
@@ -318,14 +494,14 @@ const MapEditor: React.FC = () => {
             event.preventDefault();
 
             const delta = event.deltaY;
-            let newZoom = canvas.getZoom() * (delta > 0 ? 0.9 : 1.1);
+            let newZoom = canvas.getZoom() * (delta > 0 ? ZOOM_OUT_FACTOR : ZOOM_IN_FACTOR);
             newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
 
             const pointer = canvas.getViewportPoint(event);
             canvas.zoomToPoint(pointer, newZoom);
             setZoom(newZoom);
-            // Auto-disable pan mode when zooming to 100% or below
-            if (newZoom <= 1) {
+            // Auto-disable pan mode when zooming below 100%
+            if (newZoom < 1) {
                 setIsPanMode(false);
             }
         };
@@ -335,7 +511,7 @@ const MapEditor: React.FC = () => {
         return () => {
             canvas.off('mouse:wheel', handleWheel);
         };
-    }, []);
+    }, [setZoom, setIsPanMode]);
 
     // Handle pan with alt+drag, middle mouse, or pan mode
     useEffect(() => {
@@ -355,20 +531,27 @@ const MapEditor: React.FC = () => {
             // 2. Not holding Alt (which triggers pan)
             // 3. Left click only (button 0)
             if (activeTool === 'add' && moduleToAdd && !event.altKey && event.button === 0) {
-                const pointer = canvas.getPointer(event);
+                try {
+                    const pointer = canvas.getPointer(event);
 
-                const newModule = createNewModule(
-                    moduleToAdd,
-                    { x: pointer.x, y: pointer.y }
-                );
+                    const newModule = createNewModule(
+                        moduleToAdd,
+                        { x: pointer.x, y: pointer.y }
+                    );
 
-                // Execute Add Command
-                if (executeCommandRef.current) {
-                    executeCommandRef.current(new AddCommand([newModule]));
+                    // Execute Add Command
+                    const executeCommand = executeCommandRef.current;
+                    if (executeCommand) {
+                        executeCommand(new AddCommand([newModule]));
+                    } else {
+                        console.warn('[MapEditor] executeCommand not available in handleMouseDown');
+                    }
+
+                    // Reset tool
+                    setModuleToAdd(null);
+                } catch (error) {
+                    console.error('[MapEditor] Error adding module on click:', error);
                 }
-
-                // Reset tool
-                setModuleToAdd(null);
                 return;
             }
 
@@ -409,31 +592,69 @@ const MapEditor: React.FC = () => {
         canvas.defaultCursor = activeTool === 'add' ? 'crosshair' : 'default';
         canvas.hoverCursor = activeTool === 'add' ? 'crosshair' : 'move';
 
+        // Handle cursor change for locked modules
+        // Track current cursor state to avoid unnecessary re-renders
+        let currentCursor: string | null = null;
+        
+        const handleMouseOver = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
+            const target = opt.target;
+            if (!target) return;
+            
+            const moduleId = getModuleId(target);
+            if (moduleId) {
+                const module = getModule(moduleId);
+                if (module?.locked) {
+                    // Only update cursor if it's not already set
+                    if (currentCursor !== 'not-allowed') {
+                        canvas.defaultCursor = 'not-allowed';
+                        canvas.hoverCursor = 'not-allowed';
+                        currentCursor = 'not-allowed';
+                        canvas.renderAll();
+                    }
+                }
+            }
+        };
+
+        const handleMouseOut = () => {
+            // Only reset if cursor was changed
+            if (currentCursor === 'not-allowed') {
+                const newCursor = activeTool === 'add' ? 'crosshair' : 'default';
+                canvas.defaultCursor = newCursor;
+                canvas.hoverCursor = activeTool === 'add' ? 'crosshair' : 'move';
+                currentCursor = newCursor;
+                canvas.renderAll();
+            }
+        };
+
+        canvas.on('mouse:over', handleMouseOver);
+        canvas.on('mouse:out', handleMouseOut);
         canvas.on('mouse:down', handleMouseDown);
         canvas.on('mouse:move', handleMouseMove);
         canvas.on('mouse:up', handleMouseUp);
 
         return () => {
+            canvas.off('mouse:over', handleMouseOver);
+            canvas.off('mouse:out', handleMouseOut);
             canvas.off('mouse:down', handleMouseDown);
             canvas.off('mouse:move', handleMouseMove);
             canvas.off('mouse:up', handleMouseUp);
         };
+        // Note: executeCommandRef is intentionally excluded from dependencies
+        // as it's a ref that provides stable access to the latest executeCommand function
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPanMode, activeTool, moduleToAdd, setModuleToAdd]);
 
     // Load map data (mock for now)
     useEffect(() => {
-        console.log('[MapEditor] Load effect - id:', id, 'currentMap:', currentMap?.id);
         if (!id) {
             console.error('[MapEditor] No map ID provided in route');
             return;
         }
 
         if (!currentMap || currentMap.id !== id) {
-            console.log('[MapEditor] Loading map...');
             setLoading(true);
             // TODO: Replace with actual API call
             const timeoutId = setTimeout(() => {
-                console.log('[MapEditor] Setting map data');
 
                 if (id === 'new') {
                     // Initialize blank map
@@ -542,7 +763,6 @@ const MapEditor: React.FC = () => {
                         updatedAt: new Date(),
                     });
                 }
-                console.log('[MapEditor] Map set, stopping loading');
                 setLoading(false);
             }, 500);
 
@@ -556,37 +776,99 @@ const MapEditor: React.FC = () => {
     // Render modules to canvas when map loads
     useEffect(() => {
         const canvas = canvasRef.current;
+        // Prevent rendering if map is still loading or canvas not ready
+        if (!canvas || !currentMap || isLoading) return;
+        
+        // Prevent concurrent renders
+        if (isRenderingRef.current) return;
+        isRenderingRef.current = true;
+
+        try {
+            // Clear existing objects
+            canvas.clear();
+            canvas.backgroundColor = '#e5e7eb';
+            objectMapRef.current.clear();
+
+            // Add map background
+            const background = new fabric.Rect({
+                left: 0,
+                top: 0,
+                width: currentMap.imageSize.width,
+                height: currentMap.imageSize.height,
+                fill: '#f8f9fa',
+                stroke: '#dee2e6',
+                strokeWidth: 2,
+                selectable: false,
+                evented: false,
+            });
+            canvas.add(background);
+
+            // Sort modules by zIndex and add to canvas
+            const sortedModules = [...currentMap.modules].sort((a, b) => a.zIndex - b.zIndex);
+            for (const module of sortedModules) {
+                const obj = createModuleObject(module);
+                canvas.add(obj);
+                objectMapRef.current.set(module.id, obj);
+            }
+
+            canvas.requestRenderAll();
+        } catch (error) {
+            console.error('[MapEditor] Error rendering modules to canvas:', error);
+        } finally {
+            // Reset rendering flag after a frame to allow re-renders
+            requestAnimationFrame(() => {
+                isRenderingRef.current = false;
+            });
+        }
+    }, [currentMap, containerReady, isLoading]);
+
+    // Update canvas objects when module locked/visible state changes
+    // Only update modules that have actually changed locked/visible state
+    useEffect(() => {
+        const canvas = canvasRef.current;
         if (!canvas || !currentMap) return;
 
-        // Clear existing objects
-        canvas.clear();
-        canvas.backgroundColor = '#e5e7eb';
-        objectMapRef.current.clear();
+        // Track which modules need updating
+        const modulesToUpdate: Array<{ module: AnyModule; obj: fabric.Group }> = [];
+        let hasErrors = false;
 
-        // Add map background
-        const background = new fabric.Rect({
-            left: 0,
-            top: 0,
-            width: currentMap.imageSize.width,
-            height: currentMap.imageSize.height,
-            fill: '#f8f9fa',
-            stroke: '#dee2e6',
-            strokeWidth: 2,
-            selectable: false,
-            evented: false,
+        currentMap.modules.forEach((module) => {
+            const obj = objectMapRef.current.get(module.id);
+            if (!obj) return;
+
+            // Check if locked/visible state actually changed
+            const currentLocked = obj.lockMovementX === true;
+            const currentVisible = obj.opacity !== undefined && obj.opacity > OPACITY_HIDDEN;
+            
+            const shouldUpdate = 
+                currentLocked !== module.locked || 
+                currentVisible !== module.visible;
+
+            if (shouldUpdate) {
+                modulesToUpdate.push({ module, obj });
+            }
         });
-        canvas.add(background);
 
-        // Sort modules by zIndex and add to canvas
-        const sortedModules = [...currentMap.modules].sort((a, b) => a.zIndex - b.zIndex);
-        for (const module of sortedModules) {
-            const obj = createModuleObject(module);
-            canvas.add(obj);
-            objectMapRef.current.set(module.id, obj);
+        // Update only modules that changed
+        modulesToUpdate.forEach(({ module, obj }) => {
+            try {
+                updateModuleObject(obj, module);
+            } catch (error) {
+                console.error(`[MapEditor] Error updating module ${module.id}:`, error);
+                hasErrors = true;
+            }
+        });
+
+        if (hasErrors) {
+            console.warn('[MapEditor] Some modules failed to update. Check console for details.');
         }
 
-        canvas.requestRenderAll();
-    }, [currentMap, containerReady]);
+        if (modulesToUpdate.length > 0) {
+            canvas.requestRenderAll();
+        }
+        // Note: We only want to update when locked/visible state changes, not on every currentMap change
+        // The effect compares current state with module state to determine what needs updating
+    }, [currentMap]);
 
     // Draw grid
     useEffect(() => {
@@ -647,7 +929,6 @@ const MapEditor: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-
         const handleSnapToGrid = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
             if (!snapToGrid || !e.target) return;
 
@@ -666,12 +947,19 @@ const MapEditor: React.FC = () => {
         };
     }, [snapToGrid]);
 
-    // Save handler (defined before keyboard shortcuts for dependency order)
+    /**
+     * Save handler for the current map
+     * TODO: Implement actual save functionality
+     */
     const handleSave = useCallback(async () => {
-        console.log('Save map:', currentMap);
-    }, [currentMap]);
+        // TODO: Implement actual save functionality
+        // console.log('Save map:', currentMap);
+    }, []);
 
-    // Zoom controls
+    /**
+     * Zoom in by ZOOM_STEP
+     * Clamps zoom to MAX_ZOOM
+     */
     const handleZoomIn = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -680,17 +968,26 @@ const MapEditor: React.FC = () => {
         setZoom(newZoom);
     }, []);
 
+    /**
+     * Zoom out by ZOOM_STEP
+     * Clamps zoom to MIN_ZOOM
+     * Disables pan mode if zoom goes below 1
+     */
     const handleZoomOut = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const newZoom = Math.max(MIN_ZOOM, canvas.getZoom() - ZOOM_STEP);
         canvas.setZoom(newZoom);
         setZoom(newZoom);
-        if (newZoom <= 1) {
+        if (newZoom < 1) {
             setIsPanMode(false);
         }
     }, []);
 
+    /**
+     * Fit the entire map to screen with FIT_TO_SCREEN_PADDING padding
+     * Disables pan mode if resulting zoom is below 1
+     */
     const handleFitToScreen = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !currentMap || !containerRef.current) return;
@@ -702,12 +999,12 @@ const MapEditor: React.FC = () => {
 
         const scaleX = containerWidth / mapWidth;
         const scaleY = containerHeight / mapHeight;
-        const newZoom = Math.min(scaleX, scaleY) * 0.9;
+        const newZoom = Math.min(scaleX, scaleY) * FIT_TO_SCREEN_PADDING;
 
         canvas.setZoom(newZoom);
         canvas.setViewportTransform([newZoom, 0, 0, newZoom, 0, 0]);
         setZoom(newZoom);
-        if (newZoom <= 1) {
+        if (newZoom < 1) {
             setIsPanMode(false);
         }
         canvas.requestRenderAll();
@@ -734,7 +1031,10 @@ const MapEditor: React.FC = () => {
     }, [handleFitToScreen]);
 
 
-    // Back navigation
+    /**
+     * Navigate back to maps list or dashboard
+     * Shows confirmation dialog if there are unsaved changes
+     */
     const handleBack = useCallback(() => {
         const backPath = location.pathname.includes('/admin/') ? '/admin/maps' : '/dashboard';
 
@@ -782,7 +1082,7 @@ const MapEditor: React.FC = () => {
                 }
             } else if (e.key === 'f') {
                 handleToggleFullScreen();
-            } else if (e.key === 'h' && zoom > 1) {
+            } else if (e.key === 'h' && zoom >= 1) {
                 setIsPanMode(prev => !prev);
             } else if (e.key === '+' || e.key === '=') {
                 handleZoomIn();
@@ -809,7 +1109,6 @@ const MapEditor: React.FC = () => {
                         .filter((m): m is AnyModule => m !== undefined);
                     if (modules.length > 0) {
                         copyToClipboard(modules);
-                        console.log('[MapEditor] Copied', modules.length, 'module(s)');
                     }
                 }
             } else if (isCtrl && e.key === 'x') {
@@ -826,7 +1125,6 @@ const MapEditor: React.FC = () => {
                         executeCommand(new DeleteCommand(modules));
                         canvas.discardActiveObject();
                         canvas.requestRenderAll();
-                        console.log('[MapEditor] Cut', modules.length, 'module(s)');
                     }
                 }
             } else if (isCtrl && e.key === 'v') {
@@ -846,7 +1144,6 @@ const MapEditor: React.FC = () => {
                         updatedAt: new Date(),
                     }));
                     executeCommand(new AddCommand(newModules));
-                    console.log('[MapEditor] Pasted', newModules.length, 'module(s)');
                 }
             } else if (e.key === 'Delete' || e.key === 'Backspace') {
                 // Delete selected modules
@@ -861,7 +1158,6 @@ const MapEditor: React.FC = () => {
                         executeCommand(new DeleteCommand(modules));
                         canvas.discardActiveObject();
                         canvas.requestRenderAll();
-                        console.log('[MapEditor] Deleted', modules.length, 'module(s)');
                     }
                 }
             } else if (e.key === 'e' && isCtrl) {
@@ -873,30 +1169,67 @@ const MapEditor: React.FC = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
+        // Note: executeCommandRef, redoRef, and undoRef are refs that don't need to be in dependencies
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleSave, zoom, handleZoomIn, handleZoomOut, handleToggleFullScreen, selectedIds, getModule, clipboard, clipboardOffset, copyToClipboard, cutToClipboard]);
 
-    // Drag and Drop Handlers
+    /**
+     * Handle drag over event for module drop
+     * Prevents default to allow drop
+     */
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
     }, []);
 
+    /**
+     * Handle drop event for adding modules from toolbox
+     * Creates a new module at the drop position
+     */
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
-        const type = e.dataTransfer.getData('application/x-module-type') as ModuleType | '';
+        const type = e.dataTransfer.getData('application/x-module-type');
 
-        if (type && canvasRef.current && containerRef.current) {
-            const canvas = canvasRef.current;
-            const pointer = canvas.getPointer(e.nativeEvent);
+        // Validate module type
+        const validModuleTypes: ModuleType[] = [
+            'campsite', 'toilet', 'storage', 'building', 'parking',
+            'road', 'water_source', 'electricity', 'waste_disposal',
+            'recreation', 'custom'
+        ];
 
-            const newModule = createNewModule(
-                type as ModuleType,
-                { x: pointer.x, y: pointer.y }
-            );
-
-            executeCommandRef.current?.(new AddCommand([newModule]));
+        if (!type || !validModuleTypes.includes(type as ModuleType)) {
+            console.warn('[MapEditor] Invalid module type in drop:', type);
+            return;
         }
-    }, [createNewModule, executeCommandRef]);
+
+        if (canvasRef.current && containerRef.current) {
+            try {
+                const canvas = canvasRef.current;
+                const pointer = canvas.getPointer(e.nativeEvent);
+
+                const newModule = createNewModule(
+                    type as ModuleType,
+                    { x: pointer.x, y: pointer.y }
+                );
+
+                const executeCommand = executeCommandRef.current;
+                if (executeCommand) {
+                    executeCommand(new AddCommand([newModule]));
+                } else {
+                    console.warn('[MapEditor] executeCommand not available in handleDrop');
+                }
+
+                // Fix: Clear moduleToAdd after successful drop to prevent click-to-add after drag
+                // This ensures drag-and-drop and click-to-add don't interfere with each other
+                setModuleToAdd(null);
+            } catch (error) {
+                console.error('[MapEditor] Error handling drop:', error);
+            }
+        }
+        // Note: createNewModule is a function from store that doesn't need to be in dependencies
+        // executeCommandRef is a ref that doesn't need to be in dependencies
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [setModuleToAdd]);
 
     // Show loader when:
     // 1. isLoading is true (explicitly loading)
@@ -1018,12 +1351,12 @@ const MapEditor: React.FC = () => {
                             <Maximize2 className="w-4 h-4" />
                         </button>
                     </Tooltip>
-                    <Tooltip content={zoom > 1 ? `Pan Mode (H) - ${isPanMode ? 'On' : 'Off'}` : 'Pan Mode (zoom in to enable)'} placement="bottom">
+                    <Tooltip content={zoom >= 1 ? `Pan Mode (H) - ${isPanMode ? 'On' : 'Off'}` : 'Pan Mode (zoom in to enable)'} placement="bottom">
                         <button
                             onClick={() => setIsPanMode(!isPanMode)}
-                            disabled={zoom <= 1}
-                            title={zoom > 1 ? `Pan Mode (H) - ${isPanMode ? 'On' : 'Off'}` : 'Pan Mode (zoom in to enable)'}
-                            className={`p-2 rounded-md transition-colors ${isPanMode && zoom > 1
+                            disabled={zoom < 1}
+                            title={zoom >= 1 ? `Pan Mode (H) - ${isPanMode ? 'On' : 'Off'}` : 'Pan Mode (zoom in to enable)'}
+                            className={`p-2 rounded-md transition-colors ${isPanMode && zoom >= 1
                                 ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
                                 : 'hover:bg-white dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed'
                                 }`}
@@ -1155,7 +1488,28 @@ const MapEditor: React.FC = () => {
                 {showLayersPanel && (
                     <LayersPanel onClose={() => setShowLayersPanel(false)} />
                 )}
-                {showPropertiesPanel && (
+
+                {/* Properties Panel with Tab */}
+                {selectedCount > 0 && (
+                    showPropertiesPanel ? (
+                        <PropertiesPanel
+                            onClose={() => setShowPropertiesPanel(false)}
+                            executeCommand={executeCommand}
+                        />
+                    ) : (
+                        <button
+                            className="properties-panel-tab"
+                            onClick={() => setShowPropertiesPanel(true)}
+                            title="Open Properties Panel"
+                        >
+                            <Settings size={16} />
+                            <span>Properties</span>
+                        </button>
+                    )
+                )}
+
+                {/* Properties Panel when manually opened and no selection */}
+                {selectedCount === 0 && showPropertiesPanel && (
                     <PropertiesPanel
                         onClose={() => setShowPropertiesPanel(false)}
                         executeCommand={executeCommand}

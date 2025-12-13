@@ -70,37 +70,43 @@ export function useCommandHistory(
         onCommandExecuted?.();
     }, [maxHistorySize, onCommandExecuted]);
 
-    // Undo
+    // Undo - use functional updates to avoid stale closures
     const undo = useCallback(() => {
-        if (undoStack.length === 0) return;
-        
-        try {
-            const command = undoStack[undoStack.length - 1]!;
-            command.undo();
+        setUndoStack((prev) => {
+            if (prev.length === 0) return prev;
             
-            setUndoStack((prev) => prev.slice(0, -1));
-            setRedoStack((prev) => [...prev, command]);
-            onCommandExecuted?.();
-        } catch (error) {
-            console.error('[useCommandHistory] Error during undo:', error);
-        }
-    }, [undoStack.length, onCommandExecuted]);
+            try {
+                const command = prev[prev.length - 1]!;
+                command.undo();
+                
+                setRedoStack((redoPrev) => [...redoPrev, command]);
+                onCommandExecuted?.();
+                return prev.slice(0, -1);
+            } catch (error) {
+                console.error('[useCommandHistory] Error during undo:', error);
+                return prev;
+            }
+        });
+    }, [onCommandExecuted]);
 
-    // Redo
+    // Redo - use functional updates to avoid stale closures
     const redo = useCallback(() => {
-        if (redoStack.length === 0) return;
-        
-        try {
-            const command = redoStack[redoStack.length - 1]!;
-            command.execute();
+        setRedoStack((prev) => {
+            if (prev.length === 0) return prev;
             
-            setRedoStack((prev) => prev.slice(0, -1));
-            setUndoStack((prev) => [...prev, command]);
-            onCommandExecuted?.();
-        } catch (error) {
-            console.error('[useCommandHistory] Error during redo:', error);
-        }
-    }, [redoStack.length, onCommandExecuted]);
+            try {
+                const command = prev[prev.length - 1]!;
+                command.execute();
+                
+                setUndoStack((undoPrev) => [...undoPrev, command]);
+                onCommandExecuted?.();
+                return prev.slice(0, -1);
+            } catch (error) {
+                console.error('[useCommandHistory] Error during redo:', error);
+                return prev;
+            }
+        });
+    }, [onCommandExecuted]);
 
     // Update refs when functions change (for use in effects that need stable references)
     useEffect(() => {

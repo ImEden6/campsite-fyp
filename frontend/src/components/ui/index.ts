@@ -37,3 +37,12 @@ export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
 export { default as Switch } from './Switch';
+
+export { default as MultiSelectChips } from './MultiSelectChips';
+export type { MultiSelectChipsProps } from './MultiSelectChips';
+
+export { default as NumberStepper } from './NumberStepper';
+export type { NumberStepperProps } from './NumberStepper';
+
+export { default as FieldWithTooltip } from './FieldWithTooltip';
+export type { FieldWithTooltipProps } from './FieldWithTooltip';

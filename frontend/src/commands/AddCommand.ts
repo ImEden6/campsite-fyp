@@ -29,15 +29,24 @@ export class AddCommand implements Command {
     execute(): void {
         const { _addModule, getModule } = useMapStore.getState();
 
+        const skippedIds: string[] = [];
         for (const module of this.modules) {
             // Validate: check for duplicate IDs
             if (getModule(module.id)) {
+                skippedIds.push(module.id);
                 console.warn(
                     `[AddCommand] Module with ID ${module.id} already exists, skipping`
                 );
                 continue;
             }
             _addModule(module);
+        }
+
+        if (skippedIds.length > 0 && skippedIds.length === this.modules.length) {
+            // All modules were skipped - this is an error condition
+            throw new Error(
+                `[AddCommand] All modules already exist. IDs: ${skippedIds.join(', ')}`
+            );
         }
     }
 

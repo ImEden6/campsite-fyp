@@ -7,6 +7,7 @@
 import type { Command } from './Command';
 import type { AnyModule } from '@/types';
 import { useMapStore } from '@/stores/mapStore';
+import { useEditorStore } from '@/stores/editorStore';
 
 export interface PropertyChange {
     moduleId: string;
@@ -34,6 +35,7 @@ export class PropertyCommand implements Command {
 
     execute(): void {
         const { _updateModule, getModule } = useMapStore.getState();
+        const { lockedModuleIds, hiddenModuleIds } = useEditorStore.getState();
 
         for (const { moduleId, newProps } of this.changes) {
             // Validate: check module exists
@@ -44,15 +46,82 @@ export class PropertyCommand implements Command {
                 continue;
             }
             _updateModule(moduleId, newProps);
+
+            // Synchronize editorStore Sets with module data
+            const module = getModule(moduleId);
+            if (module) {
+                const newLocked = new Set(lockedModuleIds);
+                const newHidden = new Set(hiddenModuleIds);
+
+                // Sync locked state
+                if (module.locked && !newLocked.has(moduleId)) {
+                    newLocked.add(moduleId);
+                } else if (!module.locked && newLocked.has(moduleId)) {
+                    newLocked.delete(moduleId);
+                }
+
+                // Sync visible state (inverted: hidden = !visible)
+                if (!module.visible && !newHidden.has(moduleId)) {
+                    newHidden.add(moduleId);
+                } else if (module.visible && newHidden.has(moduleId)) {
+                    newHidden.delete(moduleId);
+                }
+
+                // Update editorStore if changes were made
+                if (newLocked.size !== lockedModuleIds.size || 
+                    Array.from(newLocked).some(id => !lockedModuleIds.has(id)) ||
+                    Array.from(lockedModuleIds).some(id => !newLocked.has(id))) {
+                    useEditorStore.setState({ lockedModuleIds: newLocked });
+                }
+                if (newHidden.size !== hiddenModuleIds.size ||
+                    Array.from(newHidden).some(id => !hiddenModuleIds.has(id)) ||
+                    Array.from(hiddenModuleIds).some(id => !newHidden.has(id))) {
+                    useEditorStore.setState({ hiddenModuleIds: newHidden });
+                }
+            }
         }
     }
 
     undo(): void {
-        const { _updateModule } = useMapStore.getState();
+        const { _updateModule, getModule } = useMapStore.getState();
+        const { lockedModuleIds, hiddenModuleIds } = useEditorStore.getState();
 
         // Apply old props in reverse order
         for (const { moduleId, oldProps } of [...this.changes].reverse()) {
             _updateModule(moduleId, oldProps);
+
+            // Synchronize editorStore Sets with module data after undo
+            const module = getModule(moduleId);
+            if (module) {
+                const newLocked = new Set(lockedModuleIds);
+                const newHidden = new Set(hiddenModuleIds);
+
+                // Sync locked state
+                if (module.locked && !newLocked.has(moduleId)) {
+                    newLocked.add(moduleId);
+                } else if (!module.locked && newLocked.has(moduleId)) {
+                    newLocked.delete(moduleId);
+                }
+
+                // Sync visible state (inverted: hidden = !visible)
+                if (!module.visible && !newHidden.has(moduleId)) {
+                    newHidden.add(moduleId);
+                } else if (module.visible && newHidden.has(moduleId)) {
+                    newHidden.delete(moduleId);
+                }
+
+                // Update editorStore if changes were made
+                if (newLocked.size !== lockedModuleIds.size || 
+                    Array.from(newLocked).some(id => !lockedModuleIds.has(id)) ||
+                    Array.from(lockedModuleIds).some(id => !newLocked.has(id))) {
+                    useEditorStore.setState({ lockedModuleIds: newLocked });
+                }
+                if (newHidden.size !== hiddenModuleIds.size ||
+                    Array.from(newHidden).some(id => !hiddenModuleIds.has(id)) ||
+                    Array.from(hiddenModuleIds).some(id => !newHidden.has(id))) {
+                    useEditorStore.setState({ hiddenModuleIds: newHidden });
+                }
+            }
         }
     }
 }
