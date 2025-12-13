@@ -437,20 +437,20 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
             )}
 
             {/* Special Requests */}
-            {!formData.specialRequests && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Special Requests (Optional)
-                </label>
-                <textarea
-                  value={formData.specialRequests}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateFormData('specialRequests', e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                  placeholder="Any special requests or requirements..."
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Special Requests (Optional)
+              </label>
+              <textarea
+                value={formData.specialRequests}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  updateFormData('specialRequests', e.target.value)
+                }
+                rows={3}
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
+                placeholder="Any special requests or requirements..."
+              />
+            </div>
 
             {errors.submit && (
               <div className="flex items-center gap-2 text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 p-3 rounded-lg">

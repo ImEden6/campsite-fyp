@@ -20,7 +20,7 @@ const CustomerBookingDetailPage: React.FC = () => {
   const [refundInfo, setRefundInfo] = useState<any>(null);
 
   const { data: booking, isLoading } = useQuery({
-    queryKey: queryKeys.bookings.byId(id!),
+    queryKey: queryKeys.bookings.detail(id!),
     queryFn: () => getBookingById(id!),
     enabled: !!id,
   });
@@ -28,8 +28,8 @@ const CustomerBookingDetailPage: React.FC = () => {
   const cancelMutation = useMutation({
     mutationFn: (reason?: string) => cancelBooking(id!, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.byId(id!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.myBookings });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.myBookings() });
       setShowCancelDialog(false);
     },
   });
@@ -255,10 +255,10 @@ const CustomerBookingDetailPage: React.FC = () => {
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           bookingId={booking.id}
-          amount={booking.totalAmount - booking.paidAmount}
+          amount={Math.round((booking.totalAmount - booking.paidAmount) * 100)}
           onSuccess={() => {
             setShowPaymentModal(false);
-            queryClient.invalidateQueries({ queryKey: queryKeys.bookings.byId(id!) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id!) });
           }}
         />
       )}

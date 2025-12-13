@@ -9,10 +9,8 @@ import { GuestBookingForm } from '@/features/bookings/components/GuestBookingFor
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { createGuestBooking, CreateGuestBookingData, getBookingById } from '@/services/api/bookings';
+import { getBookingById } from '@/services/api/bookings';
 import { PaymentModal } from '@/features/payments/components/PaymentModal';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/config/query-keys';
 
 interface GuestInfo {
   firstName: string;
@@ -44,7 +42,7 @@ const GuestBookingPage: React.FC = () => {
   const [paymentAmount, setPaymentAmount] = useState(0);
 
   const { data: site, isLoading } = useQuery({
-    queryKey: queryKeys.sites.byId(siteId!),
+    queryKey: queryKeys.sites.detail(siteId!),
     queryFn: async () => {
       try {
         return await getSiteById(siteId!);
@@ -58,20 +56,6 @@ const GuestBookingPage: React.FC = () => {
   const handleGuestInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStep('booking-form');
-  };
-
-
-  const handleBookingFormSubmit = async (bookingFormData: any) => {
-    // Convert booking form data to guest booking data
-    const guestBookingData: CreateGuestBookingData = {
-      ...bookingFormData,
-      firstName: guestInfo.firstName,
-      lastName: guestInfo.lastName,
-      email: guestInfo.email,
-      phone: guestInfo.phone,
-    };
-    
-    createGuestBookingMutation.mutate(guestBookingData);
   };
 
   // Fetch booking to get payment amount
@@ -263,7 +247,10 @@ const GuestBookingPage: React.FC = () => {
               setStep('booking-form');
             }}
             bookingId={bookingId}
-            amount={paymentAmount || (booking ? Math.round((booking.totalAmount - booking.paidAmount) * 100) : 0)}
+            amount={
+              paymentAmount ||
+              (booking ? Math.round((booking.totalAmount - booking.paidAmount) * 100) : 0)
+            }
             onSuccess={handlePaymentSuccess}
           />
         )}
