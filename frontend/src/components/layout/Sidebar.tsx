@@ -12,7 +12,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  User as UserIcon
+  User as UserIcon,
+  LogOut
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -42,6 +43,12 @@ const navigationItems: NavItem[] = [
     path: '/manage/check-in',
     label: 'Check-In',
     icon: UserIcon,
+    roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
+  },
+  {
+    path: '/manage/check-out',
+    label: 'Check-Out',
+    icon: LogOut,
     roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
   },
   {
