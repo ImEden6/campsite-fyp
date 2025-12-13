@@ -205,3 +205,59 @@ export const getBookingQRCode = async (id: string): Promise<string> => {
   const response = await get<ApiResponse<{ qrCode: string }>>(`/bookings/${id}/qr-code`);
   return response.data!.qrCode;
 };
+
+/**
+ * Guest Booking Functions
+ */
+
+export interface CreateGuestBookingData extends CreateBookingData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+export interface GuestBookingResponse {
+  booking: Booking;
+  accessToken: string;
+}
+
+/**
+ * Create a guest booking (no auth required)
+ */
+export const createGuestBooking = async (
+  bookingData: CreateGuestBookingData
+): Promise<GuestBookingResponse> => {
+  const response = await post<ApiResponse<GuestBookingResponse>>('/bookings/guest', bookingData);
+  return response.data!;
+};
+
+/**
+ * Get guest booking by reference number (with token or email verification)
+ */
+export const getGuestBooking = async (
+  bookingNumber: string,
+  token?: string,
+  email?: string
+): Promise<Booking> => {
+  const params: Record<string, string> = {};
+  if (token) params.token = token;
+  if (email) params.email = email;
+  
+  const response = await get<ApiResponse<Booking>>(`/bookings/guest/${bookingNumber}`, { params });
+  return response.data!;
+};
+
+/**
+ * Verify email for guest booking access
+ */
+export const verifyGuestBookingEmail = async (
+  bookingNumber: string,
+  email: string
+): Promise<{ token: string }> => {
+  const response = await post<ApiResponse<{ token: string }>>(
+    `/bookings/guest/${bookingNumber}/verify`,
+    { email }
+  );
+  return response.data!;
+};

@@ -1,10 +1,10 @@
 /**
  * SitesPage
- * Display and manage all campsite locations
+ * Display and manage all campsite locations with full CRUD operations
  */
 
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLazyFramerMotion } from '@/hooks/useLazyFramerMotion';
 import {
   MapPin,
@@ -22,29 +22,47 @@ import {
   Users,
   DollarSign,
   ChevronDown,
+  Plus,
+  Edit,
+  Trash2,
+  ArrowLeft,
 } from 'lucide-react';
-import { getSites } from '@/services/api/sites';
+import { getSites, createSite, updateSite, deleteSite, uploadSiteImages } from '@/services/api/sites';
 import { mockSites } from '@/services/api/mock-sites';
+import { queryKeys } from '@/config/query-keys';
 import { SiteType, SiteStatus } from '@/types';
 import type { Site } from '@/types';
+import { Button } from '@/components/ui/Button';
+import { SiteForm, SiteFormData } from '@/features/sites/components/SiteForm';
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
 
 type ViewMode = 'grid' | 'list';
+type PageMode = 'view' | 'create' | 'edit';
 type SortOption = 'name' | 'price' | 'capacity' | 'status';
 
 const SitesPage: React.FC = () => {
   const { motion } = useLazyFramerMotion();
   const MotionDiv = motion?.div || 'div';
 
+  const [pageMode, setPageMode] = useState<PageMode>('view');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<SiteType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<SiteStatus | 'all'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedSite, setSelectedSite] = useState<Site | null>(null);
+
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const { showToast } = useUIStore();
+
+  const isAdmin = user?.role === 'ADMIN';
 
   // Fetch sites with mock data fallback
   const { data: sites = [], isLoading } = useQuery({
-    queryKey: ['sites'],
+    queryKey: queryKeys.sites.all,
     queryFn: async () => {
       try {
         const apiSites = await getSites();
@@ -55,11 +73,109 @@ const SitesPage: React.FC = () => {
     },
   });
 
+  // Create site mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: SiteFormData) => {
+      const siteData: Partial<Site> = {
+        name: data.name,
+        type: data.type,
+        status: data.status,
+        capacity: data.capacity,
+        description: data.description,
+        basePrice: data.basePrice,
+        maxVehicles: data.maxVehicles,
+        maxTents: data.maxTents,
+        isPetFriendly: data.isPetFriendly,
+        hasElectricity: data.hasElectricity,
+        hasWater: data.hasWater,
+        hasSewer: data.hasSewer,
+        hasWifi: data.hasWifi,
+        amenities: data.amenities,
+        size: data.size,
+        location: data.location,
+        images: [],
+      };
+
+      const newSite = await createSite(siteData);
+
+      if (data.newImages.length > 0) {
+        const imageUrls = await uploadSiteImages(newSite.id, data.newImages);
+        return await updateSite(newSite.id, { images: imageUrls });
+      }
+
+      return newSite;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
+      showToast('Site created successfully', 'success');
+      setPageMode('view');
+      setSelectedSite(null);
+    },
+    onError: (error: unknown) => {
+      showToast(error instanceof Error ? error.message : 'Failed to create site', 'error');
+    },
+  });
+
+  // Update site mutation
+  const updateMutation = useMutation({
+    mutationFn: async (data: SiteFormData) => {
+      if (!selectedSite) throw new Error('No site selected');
+
+      let imageUrls = [...data.images];
+      if (data.newImages.length > 0) {
+        const newImageUrls = await uploadSiteImages(selectedSite.id, data.newImages);
+        imageUrls = [...imageUrls, ...newImageUrls];
+      }
+
+      const siteData: Partial<Site> = {
+        name: data.name,
+        type: data.type,
+        status: data.status,
+        capacity: data.capacity,
+        description: data.description,
+        basePrice: data.basePrice,
+        maxVehicles: data.maxVehicles,
+        maxTents: data.maxTents,
+        isPetFriendly: data.isPetFriendly,
+        hasElectricity: data.hasElectricity,
+        hasWater: data.hasWater,
+        hasSewer: data.hasSewer,
+        hasWifi: data.hasWifi,
+        amenities: data.amenities,
+        size: data.size,
+        location: data.location,
+        images: imageUrls,
+      };
+
+      return await updateSite(selectedSite.id, siteData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
+      showToast('Site updated successfully', 'success');
+      setPageMode('view');
+      setSelectedSite(null);
+    },
+    onError: (error: unknown) => {
+      showToast(error instanceof Error ? error.message : 'Failed to update site', 'error');
+    },
+  });
+
+  // Delete site mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteSite,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
+      showToast('Site deleted successfully', 'success');
+    },
+    onError: (error: unknown) => {
+      showToast(error instanceof Error ? error.message : 'Failed to delete site', 'error');
+    },
+  });
+
   // Filter and sort sites
   const filteredSites = useMemo(() => {
     let result = [...sites];
 
-    // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -70,17 +186,14 @@ const SitesPage: React.FC = () => {
       );
     }
 
-    // Type filter
     if (typeFilter !== 'all') {
       result = result.filter(site => site.type === typeFilter);
     }
 
-    // Status filter
     if (statusFilter !== 'all') {
       result = result.filter(site => site.status === statusFilter);
     }
 
-    // Sort
     result.sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -124,6 +237,35 @@ const SitesPage: React.FC = () => {
     tent: sites.filter(s => s.type === SiteType.TENT).length,
   };
 
+  const handleCreateSite = () => {
+    setSelectedSite(null);
+    setPageMode('create');
+  };
+
+  const handleEditSite = (site: Site) => {
+    setSelectedSite(site);
+    setPageMode('edit');
+  };
+
+  const handleDeleteSite = async (siteId: string) => {
+    if (window.confirm('Are you sure you want to delete this site?')) {
+      await deleteMutation.mutateAsync(siteId);
+    }
+  };
+
+  const handleSubmit = async (data: SiteFormData) => {
+    if (pageMode === 'create') {
+      await createMutation.mutateAsync(data);
+    } else if (pageMode === 'edit') {
+      await updateMutation.mutateAsync(data);
+    }
+  };
+
+  const handleCancel = () => {
+    setPageMode('view');
+    setSelectedSite(null);
+  };
+
   const SiteCard: React.FC<{ site: Site; index: number }> = ({ site, index }) => {
     const config = typeConfig[site.type];
     const status = statusConfig[site.status];
@@ -136,7 +278,7 @@ const SitesPage: React.FC = () => {
           animate: { opacity: 1, y: 0 },
           transition: { duration: 0.3, delay: index * 0.05 }
         } : {})}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-300 group relative"
       >
         {/* Image/Icon Header */}
         <div className={`h-32 ${config.bgColor} relative flex items-center justify-center`}>
@@ -151,6 +293,24 @@ const SitesPage: React.FC = () => {
               {status.label}
             </span>
           </div>
+          {isAdmin && (
+            <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => handleEditSite(site)}
+                className="p-1.5 bg-white dark:bg-gray-800 rounded-md shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors"
+                title="Edit site"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDeleteSite(site.id)}
+                className="p-1.5 bg-white dark:bg-gray-800 rounded-md shadow-md hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+                title="Delete site"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -214,7 +374,7 @@ const SitesPage: React.FC = () => {
           animate: { opacity: 1, x: 0 },
           transition: { duration: 0.2, delay: index * 0.03 }
         } : {})}
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow group"
       >
         <div className="flex items-center gap-4">
           <div className={`p-3 rounded-lg ${config.bgColor}`}>
@@ -248,6 +408,24 @@ const SitesPage: React.FC = () => {
               <DollarSign className="w-4 h-4" />
               <span>{site.basePrice}/night</span>
             </div>
+            {isAdmin && (
+              <div className="flex items-center gap-2 ml-4">
+                <button
+                  onClick={() => handleEditSite(site)}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                  title="Edit site"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteSite(site.id)}
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                  title="Delete site"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </MotionDiv>
@@ -258,23 +436,69 @@ const SitesPage: React.FC = () => {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading sites...</p>
         </div>
       </div>
     );
   }
 
+  // Show form view for create/edit
+  if (pageMode === 'create' || pageMode === 'edit') {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <Button
+          variant="ghost"
+          onClick={handleCancel}
+          className="mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-200"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Sites
+        </Button>
+
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {pageMode === 'create' ? 'Create New Site' : 'Edit Site'}
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {pageMode === 'create'
+              ? 'Add a new campsite to your inventory'
+              : 'Update site information and settings'}
+          </p>
+        </div>
+
+        <SiteForm
+          site={selectedSite || undefined}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isLoading={createMutation.isPending || updateMutation.isPending}
+        />
+      </div>
+    );
+  }
+
+  // Show main view
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Sites Management
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage and view all {stats.total} campsite locations
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Sites Management
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage and view all {stats.total} campsite locations
+          </p>
+        </div>
+        {isAdmin && (
+          <Button
+            onClick={handleCreateSite}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Site
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -284,23 +508,23 @@ const SitesPage: React.FC = () => {
           <p className="text-sm text-gray-600 dark:text-gray-400">Total Sites</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-green-600">{stats.available}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.available}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">Available</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-red-600">{stats.occupied}</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.occupied}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">Occupied</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-orange-600">{stats.cabins}</p>
+          <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.cabins}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">Cabins</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-blue-600">{stats.rv}</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.rv}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">RV Sites</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-green-600">{stats.tent}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.tent}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">Tent Sites</p>
         </div>
       </div>
@@ -310,13 +534,13 @@ const SitesPage: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search sites..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
             />
           </div>
 
@@ -410,7 +634,7 @@ const SitesPage: React.FC = () => {
       {/* Sites Grid/List */}
       {filteredSites.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <MapPin className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <MapPin className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
             No sites found
           </h3>

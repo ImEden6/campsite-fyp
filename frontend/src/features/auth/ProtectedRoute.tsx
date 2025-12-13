@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
-  redirectTo = '/login',
+  redirectTo,
 }) => {
   const location = useLocation();
   const { isAuthenticated, user, initialize } = useAuthStore();
@@ -22,12 +22,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     initialize();
   }, [initialize]);
 
+  // Determine redirect destination based on user role
+  const getRedirectTo = () => {
+    if (redirectTo) return redirectTo;
+    if (user?.role === UserRole.CUSTOMER) return '/customer/dashboard';
+    return '/login';
+  };
+
   // Check if user is authenticated
   if (!isAuthenticated || !user) {
     // Redirect to login with return URL
     return (
       <Navigate
-        to={redirectTo}
+        to={getRedirectTo()}
         state={{ from: location.pathname }}
         replace
       />

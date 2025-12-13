@@ -24,6 +24,9 @@ export const bookingKeys = {
   upcoming: (userId?: string) => [...bookingKeys.all, 'upcoming', userId] as const,
   history: (userId?: string) => [...bookingKeys.all, 'history', userId] as const,
   stats: (dateRange?: DateRange) => [...bookingKeys.all, 'stats', dateRange] as const,
+  myBookings: () => [...bookingKeys.all, 'my-bookings'] as const,
+  guest: (bookingNumber: string, token?: string) => 
+    [...bookingKeys.all, 'guest', bookingNumber, token] as const,
 };
 
 /**

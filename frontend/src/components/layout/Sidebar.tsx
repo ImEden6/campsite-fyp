@@ -13,7 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User as UserIcon,
-  LogOut
+  CheckCircle
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -48,7 +48,7 @@ const navigationItems: NavItem[] = [
   {
     path: '/manage/check-out',
     label: 'Check-Out',
-    icon: LogOut,
+    icon: CheckCircle,
     roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
   },
   {

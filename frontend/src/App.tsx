@@ -13,17 +13,43 @@ import { PageLoader } from '@/components/ui/PageLoader';
 const RoleBasedRedirect = () => {
   const { user } = useAuthStore();
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/" replace />;
 
-  // All authenticated users go to dashboard (staff/admin only system)
+  // Route based on user role
+  if (user.role === UserRole.CUSTOMER) {
+    return <Navigate to="/customer/dashboard" replace />;
+  }
+
+  // Staff/admin users go to staff dashboard
   return <Navigate to="/dashboard" replace />;
 };
 
 // Lazy load all pages for code splitting
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
+const CustomerLayout = lazy(() => import('@/components/layout/CustomerLayout'));
+const PublicLayout = lazy(() => import('@/components/layout/PublicLayout'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const UnauthorizedPage = lazy(() => import('@/pages/UnauthorizedPage'));
+
+// Public pages
+const HomePage = lazy(() => import('@/pages/HomePage'));
+const SiteBrowsePage = lazy(() => import('@/pages/SiteBrowsePage'));
+const SiteDetailPage = lazy(() => import('@/pages/SiteDetailPage'));
+
+// Guest booking pages
+const GuestBookingPage = lazy(() => import('@/pages/GuestBookingPage'));
+const GuestBookingDetailPage = lazy(() => import('@/pages/GuestBookingDetailPage'));
+const GuestBookingLookupPage = lazy(() => import('@/pages/GuestBookingLookupPage'));
+const GuestBookingConfirmPage = lazy(() => import('@/pages/GuestBookingConfirmPage'));
+
+// Customer pages
+const CustomerDashboardPage = lazy(() => import('@/pages/CustomerDashboardPage'));
+const CustomerBookingsPage = lazy(() => import('@/pages/CustomerBookingsPage'));
+const CustomerBookingDetailPage = lazy(() => import('@/pages/CustomerBookingDetailPage'));
+const CustomerBookingPage = lazy(() => import('@/pages/CustomerBookingPage'));
+const CustomerPaymentsPage = lazy(() => import('@/pages/CustomerPaymentsPage'));
+const CustomerProfilePage = lazy(() => import('@/pages/CustomerProfilePage'));
 
 // Lazy load non-critical pages for code splitting
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
@@ -128,7 +154,20 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Public routes (only accessible when NOT authenticated) */}
+            {/* Public routes with PublicLayout (no auth required) */}
+            <Route
+              element={
+                <PublicLayout>
+                  <Outlet />
+                </PublicLayout>
+              }
+            >
+              <Route path="/" element={<HomePage />} />
+              <Route path="/sites" element={<SiteBrowsePage />} />
+              <Route path="/sites/:id" element={<SiteDetailPage />} />
+            </Route>
+
+            {/* Public auth routes (only accessible when NOT authenticated) */}
             <Route
               path="/login"
               element={
@@ -154,13 +193,45 @@ function App() {
               }
             />
 
+            {/* Guest booking routes (no auth required, but with token verification) */}
+            <Route
+              element={
+                <PublicLayout>
+                  <Outlet />
+                </PublicLayout>
+              }
+            >
+              <Route path="/book/guest" element={<GuestBookingPage />} />
+              <Route path="/booking/:bookingNumber" element={<GuestBookingDetailPage />} />
+              <Route path="/booking/lookup" element={<GuestBookingLookupPage />} />
+              <Route path="/booking/confirm/:bookingNumber" element={<GuestBookingConfirmPage />} />
+            </Route>
+
             {/* Unauthorized page */}
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-            {/* Protected routes with AppLayout */}
+            {/* Customer routes with CustomerLayout */}
             <Route
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole={[UserRole.CUSTOMER]}>
+                  <CustomerLayout>
+                    <Outlet />
+                  </CustomerLayout>
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
+              <Route path="/customer/bookings" element={<CustomerBookingsPage />} />
+              <Route path="/customer/bookings/new" element={<CustomerBookingPage />} />
+              <Route path="/customer/bookings/:id" element={<CustomerBookingDetailPage />} />
+              <Route path="/customer/payments" element={<CustomerPaymentsPage />} />
+              <Route path="/customer/profile" element={<CustomerProfilePage />} />
+            </Route>
+
+            {/* Protected routes with AppLayout (Staff/Admin) */}
+            <Route
+              element={
+                <ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]}>
                   <AppLayout />
                 </ProtectedRoute>
               }
@@ -275,8 +346,8 @@ function App() {
               />
             </Route>
 
-            {/* Catch all - redirect to login */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* Catch all - redirect based on auth status */}
+            <Route path="*" element={<RoleBasedRedirect />} />
           </Routes>
         </Suspense>
       </div>
