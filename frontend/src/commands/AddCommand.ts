@@ -11,6 +11,10 @@ import { useMapStore } from '@/stores/mapStore';
 export class AddCommand implements Command {
     readonly name = 'Add Module';
     private readonly modules: AnyModule[];
+    // Track which modules were actually successfully added during execute()
+    // This is needed because execute() may skip duplicates, but undo() should
+    // only remove modules that were actually added
+    private successfullyAddedIds: string[] = [];
 
     /**
      * Create an add command
@@ -30,6 +34,8 @@ export class AddCommand implements Command {
         const { _addModule, getModule } = useMapStore.getState();
 
         const skippedIds: string[] = [];
+        this.successfullyAddedIds = []; // Reset tracking
+
         for (const module of this.modules) {
             // Validate: check for duplicate IDs
             if (getModule(module.id)) {
@@ -40,6 +46,8 @@ export class AddCommand implements Command {
                 continue;
             }
             _addModule(module);
+            // Track successfully added modules
+            this.successfullyAddedIds.push(module.id);
         }
 
         if (skippedIds.length > 0 && skippedIds.length === this.modules.length) {
@@ -52,6 +60,10 @@ export class AddCommand implements Command {
 
     undo(): void {
         const { _removeModules } = useMapStore.getState();
-        _removeModules(this.modules.map((m) => m.id));
+        // Only remove modules that were actually successfully added during execute()
+        // This prevents removing modules that were skipped due to duplicate IDs
+        if (this.successfullyAddedIds.length > 0) {
+            _removeModules(this.successfullyAddedIds);
+        }
     }
 }
