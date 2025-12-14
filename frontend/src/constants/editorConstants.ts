@@ -55,14 +55,14 @@ export const EDITOR_CONSTANTS = {
     TICK_SMALL: 10,
     TICK_MEDIUM: 50,
     TICK_LARGE: 100,
-    COLOR: '#1e1e2e',
-    TEXT_COLOR: '#cdd6f4',
-    TICK_COLOR: '#6c7086',
+    COLOR: 'oklch(0.243 0.03 283.9)',
+    TEXT_COLOR: 'oklch(0.879 0.043 272.3)',
+    TICK_COLOR: 'oklch(0.55 0.034 277.1)',
   },
 
   // Guide settings
   GUIDE: {
-    COLOR: '#00bcd4',
+    COLOR: 'oklch(0.729 0.126 210.8)',
     STROKE_WIDTH: 1,
     DASH_ARRAY: [5, 5],
     SNAP_THRESHOLD: 5,

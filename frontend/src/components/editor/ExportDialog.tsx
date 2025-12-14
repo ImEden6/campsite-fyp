@@ -79,7 +79,7 @@ export function ExportDialog({
                 // Otherwise, fill with white or copy the original background
                 if (includeBackground) {
                     // Draw a white background first (or could sample the original)
-                    exportCtx.fillStyle = '#ffffff';
+                    exportCtx.fillStyle = 'oklch(1 0 89.9)';
                     exportCtx.fillRect(0, 0, exportWidth, exportHeight);
                 }
                 // else: leave transparent (default for empty canvas)

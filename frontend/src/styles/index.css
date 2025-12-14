@@ -9,90 +9,90 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Brand Colors */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-  --color-primary-950: #082f49;
+  /* Brand Colors - oklch */
+  --color-primary-50: oklch(0.97 0.014 237);
+  --color-primary-100: oklch(0.94 0.028 237);
+  --color-primary-200: oklch(0.89 0.056 230);
+  --color-primary-300: oklch(0.82 0.094 221);
+  --color-primary-400: oklch(0.74 0.128 213);
+  --color-primary-500: oklch(0.65 0.143 210);
+  --color-primary-600: oklch(0.55 0.131 215);
+  --color-primary-700: oklch(0.47 0.109 220);
+  --color-primary-800: oklch(0.41 0.091 223);
+  --color-primary-900: oklch(0.36 0.075 227);
+  --color-primary-950: oklch(0.28 0.057 230);
 
-  --color-secondary-50: #fafaf9;
-  --color-secondary-100: #f5f5f4;
-  --color-secondary-200: #e7e5e4;
-  --color-secondary-300: #d6d3d1;
-  --color-secondary-400: #a8a29e;
-  --color-secondary-500: #78716c;
-  --color-secondary-600: #57534e;
-  --color-secondary-700: #44403c;
-  --color-secondary-800: #292524;
-  --color-secondary-850: #1f1e1d;
-  --color-secondary-900: #1c1917;
-  --color-secondary-950: #0c0a09;
+  --color-secondary-50: oklch(0.98 0.002 75);
+  --color-secondary-100: oklch(0.97 0.003 75);
+  --color-secondary-200: oklch(0.92 0.006 75);
+  --color-secondary-300: oklch(0.87 0.008 75);
+  --color-secondary-400: oklch(0.71 0.012 75);
+  --color-secondary-500: oklch(0.55 0.014 75);
+  --color-secondary-600: oklch(0.44 0.013 55);
+  --color-secondary-700: oklch(0.36 0.012 50);
+  --color-secondary-800: oklch(0.27 0.010 45);
+  --color-secondary-850: oklch(0.23 0.008 45);
+  --color-secondary-900: oklch(0.22 0.009 45);
+  --color-secondary-950: oklch(0.15 0.007 45);
 
   /* Gray scale with 850 */
-  --color-gray-850: #1a1d23;
+  --color-gray-850: oklch(0.24 0.014 260);
 
   /* Status Colors */
-  --color-success-50: #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-200: #bbf7d0;
-  --color-success-300: #86efac;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-  --color-success-800: #166534;
-  --color-success-900: #14532d;
-  --color-success-950: #052e16;
+  --color-success-50: oklch(0.98 0.024 145);
+  --color-success-100: oklch(0.95 0.048 145);
+  --color-success-200: oklch(0.91 0.080 145);
+  --color-success-300: oklch(0.87 0.120 145);
+  --color-success-400: oklch(0.79 0.170 145);
+  --color-success-500: oklch(0.72 0.190 145);
+  --color-success-600: oklch(0.60 0.160 145);
+  --color-success-700: oklch(0.52 0.130 145);
+  --color-success-800: oklch(0.45 0.108 145);
+  --color-success-900: oklch(0.39 0.088 145);
+  --color-success-950: oklch(0.27 0.060 145);
 
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-200: #fde68a;
-  --color-warning-300: #fcd34d;
-  --color-warning-400: #fbbf24;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
-  --color-warning-700: #b45309;
-  --color-warning-800: #92400e;
-  --color-warning-900: #78350f;
-  --color-warning-950: #451a03;
+  --color-warning-50: oklch(0.99 0.024 95);
+  --color-warning-100: oklch(0.96 0.058 95);
+  --color-warning-200: oklch(0.92 0.110 95);
+  --color-warning-300: oklch(0.88 0.155 90);
+  --color-warning-400: oklch(0.83 0.175 85);
+  --color-warning-500: oklch(0.77 0.180 75);
+  --color-warning-600: oklch(0.67 0.170 65);
+  --color-warning-700: oklch(0.56 0.145 55);
+  --color-warning-800: oklch(0.47 0.120 50);
+  --color-warning-900: oklch(0.42 0.100 45);
+  --color-warning-950: oklch(0.32 0.070 40);
 
-  --color-error-50: #fef2f2;
-  --color-error-100: #fee2e2;
-  --color-error-200: #fecaca;
-  --color-error-300: #fca5a5;
-  --color-error-400: #f87171;
-  --color-error-500: #ef4444;
-  --color-error-600: #dc2626;
-  --color-error-700: #b91c1c;
-  --color-error-800: #991b1b;
-  --color-error-900: #7f1d1d;
-  --color-error-950: #450a0a;
+  --color-error-50: oklch(0.97 0.016 20);
+  --color-error-100: oklch(0.94 0.032 20);
+  --color-error-200: oklch(0.89 0.053 20);
+  --color-error-300: oklch(0.81 0.095 20);
+  --color-error-400: oklch(0.70 0.150 25);
+  --color-error-500: oklch(0.63 0.200 25);
+  --color-error-600: oklch(0.55 0.200 25);
+  --color-error-700: oklch(0.47 0.175 25);
+  --color-error-800: oklch(0.42 0.150 25);
+  --color-error-900: oklch(0.38 0.125 25);
+  --color-error-950: oklch(0.27 0.085 25);
 
-  --color-info-50: #eff6ff;
-  --color-info-100: #dbeafe;
-  --color-info-200: #bfdbfe;
-  --color-info-300: #93c5fd;
-  --color-info-400: #60a5fa;
-  --color-info-500: #3b82f6;
-  --color-info-600: #2563eb;
-  --color-info-700: #1d4ed8;
-  --color-info-800: #1e40af;
-  --color-info-900: #1e3a8a;
-  --color-info-950: #172554;
+  --color-info-50: oklch(0.97 0.016 260);
+  --color-info-100: oklch(0.93 0.034 260);
+  --color-info-200: oklch(0.88 0.056 260);
+  --color-info-300: oklch(0.80 0.092 255);
+  --color-info-400: oklch(0.71 0.140 255);
+  --color-info-500: oklch(0.62 0.180 260);
+  --color-info-600: oklch(0.55 0.200 265);
+  --color-info-700: oklch(0.49 0.200 265);
+  --color-info-800: oklch(0.43 0.175 265);
+  --color-info-900: oklch(0.39 0.145 265);
+  --color-info-950: oklch(0.30 0.100 265);
 
   /* Booking Status Colors */
-  --color-booking-pending: #f59e0b;
-  --color-booking-confirmed: #22c55e;
-  --color-booking-checked-in: #3b82f6;
-  --color-booking-checked-out: #78716c;
-  --color-booking-cancelled: #ef4444;
+  --color-booking-pending: oklch(0.77 0.180 75);
+  --color-booking-confirmed: oklch(0.72 0.190 145);
+  --color-booking-checked-in: oklch(0.62 0.180 260);
+  --color-booking-checked-out: oklch(0.55 0.014 75);
+  --color-booking-cancelled: oklch(0.63 0.200 25);
 
   /* Font Families */
   --font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -107,9 +107,9 @@
   --radius-campsite: 0.5rem;
 
   /* Box Shadows */
-  --shadow-campsite: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-campsite-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-inner-campsite: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-campsite: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -1px oklch(0 0 0 / 0.06);
+  --shadow-campsite-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -2px oklch(0 0 0 / 0.05);
+  --shadow-inner-campsite: inset 0 2px 4px 0 oklch(0 0 0 / 0.06);
 
   /* Breakpoints */
   --breakpoint-xs: 475px;
@@ -125,20 +125,20 @@
   border-radius: 0.5rem;
   font-weight: 500;
   color: white;
-  background-color: rgb(37 99 235);
+  background-color: oklch(0.55 0.200 265);
   transition: background-color 0.2s;
 }
 
 .btn-primary:hover {
-  background-color: rgb(29 78 216);
+  background-color: oklch(0.49 0.200 265);
 }
 
 .dark .btn-primary {
-  background-color: rgb(59 130 246);
+  background-color: oklch(0.62 0.180 260);
 }
 
 .dark .btn-primary:hover {
-  background-color: rgb(37 99 235);
+  background-color: oklch(0.55 0.200 265);
 }
 
 .btn-outline {
@@ -148,24 +148,24 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  color: rgb(55 65 81);
+  color: oklch(0.45 0.015 260);
   background-color: white;
-  border: 1px solid rgb(209 213 219);
+  border: 1px solid oklch(0.87 0.006 260);
   transition: all 0.2s;
 }
 
 .btn-outline:hover {
-  background-color: rgb(249 250 251);
+  background-color: oklch(0.98 0.002 260);
 }
 
 .dark .btn-outline {
-  color: rgb(229 231 235);
-  background-color: rgb(31 41 55);
-  border-color: rgb(75 85 99);
+  color: oklch(0.93 0.006 260);
+  background-color: oklch(0.30 0.020 260);
+  border-color: oklch(0.45 0.015 260);
 }
 
 .dark .btn-outline:hover {
-  background-color: rgb(55 65 81);
+  background-color: oklch(0.45 0.015 260);
 }
 
 .btn-sm {
@@ -251,51 +251,51 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: rgb(243 244 246);
+  background-color: oklch(0.97 0.004 260);
 }
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-track {
-    background-color: rgb(17 24 39);
+    background-color: oklch(0.21 0.024 265);
   }
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(209 213 219);
+  background-color: oklch(0.87 0.006 260);
   border-radius: 9999px;
 }
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(55 65 81);
+    background-color: oklch(0.45 0.015 260);
   }
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(156 163 175);
+  background-color: oklch(0.71 0.010 260);
 }
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(75 85 99);
+    background-color: oklch(0.45 0.015 260);
   }
 }
 
 /* Focus Styles - Enhanced for accessibility */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px rgb(59 130 246);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px oklch(0.62 0.180 260);
 }
 
 /* Ensure focus is always visible for keyboard users */
 body.using-keyboard *:focus-visible {
-  box-shadow: 0 0 0 2px white, 0 0 0 4px rgb(59 130 246);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px oklch(0.62 0.180 260);
 }
 
 /* Selection Styles */
 ::selection {
-  background-color: rgb(191 219 254);
-  color: rgb(30 58 138);
+  background-color: oklch(0.89 0.056 260);
+  color: oklch(0.39 0.145 265);
 }
 
 /* Screen reader only content */
@@ -621,7 +621,7 @@ body.using-keyboard *:focus-visible {
   inset: 0;
   background: linear-gradient(90deg,
       transparent,
-      rgba(255, 255, 255, 0.3),
+      oklch(1 0 0 / 0.3),
       transparent);
   animation: shimmer 1.5s infinite;
 }
@@ -635,13 +635,13 @@ body.using-keyboard *:focus-visible {
 
   0%,
   100% {
-    border-color: rgb(96 165 250);
-    background-color: rgba(96, 165, 250, 0.05);
+    border-color: oklch(0.71 0.140 255);
+    background-color: oklch(0.71 0.140 255 / 0.05);
   }
 
   50% {
-    border-color: rgb(59 130 246);
-    background-color: rgba(59, 130, 246, 0.1);
+    border-color: oklch(0.62 0.180 260);
+    background-color: oklch(0.62 0.180 260 / 0.1);
   }
 }
 
@@ -670,7 +670,7 @@ body.using-keyboard *:focus-visible {
 
 .transform-handle:hover {
   transform: scale(1.2);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 2px 4px oklch(0 0 0 / 0.2));
 }
 
 .transform-handle:active {
@@ -684,7 +684,7 @@ body.using-keyboard *:focus-visible {
 
 .rotation-handle:hover {
   transform: scale(1.2);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 2px 4px oklch(0 0 0 / 0.2));
 }
 
 /* Info display (angle, size) animations */

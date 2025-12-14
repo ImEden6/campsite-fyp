@@ -3,18 +3,13 @@
  * Displays occupancy rates with heatmap visualization
  */
 
-import React, { useState } from 'react';
-// Deep imports for better tree-shaking
-import { LineChart } from 'recharts/es6/chart/LineChart';
-import { Line } from 'recharts/es6/cartesian/Line';
-import { XAxis } from 'recharts/es6/cartesian/XAxis';
-import { YAxis } from 'recharts/es6/cartesian/YAxis';
-import { CartesianGrid } from 'recharts/es6/cartesian/CartesianGrid';
-import { Tooltip } from 'recharts/es6/component/Tooltip';
-import { Legend } from 'recharts/es6/component/Legend';
-import { ResponsiveContainer } from 'recharts/es6/component/ResponsiveContainer';
+import React, { useState, useMemo } from 'react';
+import { Line } from 'react-chartjs-2';
+import type { ChartOptions, ChartData } from 'chart.js';
 import { Calendar, TrendingUp } from 'lucide-react';
 import type { OccupancyMetrics } from '@/services/api/analytics';
+import { getChartColors } from '@/utils/chartColors';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
 interface OccupancyChartProps {
   data: OccupancyMetrics;
@@ -32,22 +27,81 @@ const getOccupancyColor = (rate: number): string => {
 };
 
 const getOccupancyTextColor = (rate: number): string => {
-  if (rate >= 90) return 'text-red-700';
-  if (rate >= 75) return 'text-orange-700';
-  if (rate >= 50) return 'text-yellow-700';
-  if (rate >= 25) return 'text-green-700';
-  return 'text-blue-700';
+  if (rate >= 90) return 'text-red-700 dark:text-red-400';
+  if (rate >= 75) return 'text-orange-700 dark:text-orange-400';
+  if (rate >= 50) return 'text-yellow-700 dark:text-yellow-400';
+  if (rate >= 25) return 'text-green-700 dark:text-green-400';
+  return 'text-blue-700 dark:text-blue-400';
 };
 
 export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading }) => {
   const [viewType, setViewType] = useState<ViewType>('chart');
 
+  // Reactively detect dark mode
+  const isDark = useDarkMode();
+  const colors = getChartColors(isDark);
+
+  // Memoize chart options
+  const chartOptions = useMemo<ChartOptions<'line'>>(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { color: colors.text },
+      },
+      tooltip: {
+        backgroundColor: colors.background,
+        titleColor: colors.text,
+        bodyColor: colors.text,
+        borderColor: colors.border,
+        borderWidth: 1,
+        callbacks: {
+          label: (ctx) => `Occupancy: ${(ctx.parsed.y ?? 0).toFixed(1)}%`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: colors.textMuted },
+        grid: { color: colors.grid },
+      },
+      y: {
+        min: 0,
+        max: 100,
+        ticks: {
+          color: colors.textMuted,
+          callback: (value) => `${value}%`,
+        },
+        grid: { color: colors.grid },
+      },
+    },
+  }), [colors]);
+
+  // Prepare chart data
+  const chartData = useMemo<ChartData<'line'>>(() => ({
+    labels: data.timeSeries.map(d => {
+      const date = new Date(d.date);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }),
+    datasets: [{
+      label: 'Occupancy Rate',
+      data: data.timeSeries.map(d => d.occupancyRate),
+      borderColor: colors.primary,
+      backgroundColor: `${colors.primary}33`,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    }],
+  }), [data.timeSeries, colors.primary]);
+
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -61,11 +115,11 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
   const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Occupancy Rate</h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Occupancy Rate</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Overall: {formatPercentage(data.overall)}
           </p>
         </div>
@@ -73,8 +127,8 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
           <button
             onClick={() => setViewType('chart')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${viewType === 'chart'
-              ? 'bg-blue-100 text-blue-600'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-1" />
@@ -83,8 +137,8 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
           <button
             onClick={() => setViewType('heatmap')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${viewType === 'heatmap'
-              ? 'bg-blue-100 text-blue-600'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
           >
             <Calendar className="w-4 h-4 inline mr-1" />
@@ -95,53 +149,20 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
 
       {viewType === 'chart' && (
         <>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.timeSeries}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatDate}
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis
-                tickFormatter={formatPercentage}
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-                domain={[0, 100]}
-              />
-              <Tooltip
-                formatter={(value: number) => formatPercentage(value)}
-                labelFormatter={formatDate}
-                contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="occupancyRate"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Occupancy Rate"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="relative h-[300px]">
+            <Line data={chartData} options={chartOptions} />
+          </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             {data.byType.map((item) => (
-              <div key={item.siteType} className="border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">{item.siteType}</h4>
+              <div key={item.siteType} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">{item.siteType}</h4>
                 <div className="flex items-baseline gap-2">
                   <span className={`text-2xl font-bold ${getOccupancyTextColor(item.occupancyRate)}`}>
                     {formatPercentage(item.occupancyRate)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {item.occupiedSites} / {item.totalSites} sites occupied
                 </p>
               </div>
@@ -153,13 +174,13 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
       {viewType === 'heatmap' && (
         <div>
           <div className="grid grid-cols-7 gap-2 mb-4">
-            {data.timeSeries.slice(0, 35).map((day, index) => {
+            {data.timeSeries.slice(0, 35).map((day) => {
               const date = new Date(day.date);
               const dayOfMonth = date.getDate();
 
               return (
                 <div
-                  key={index}
+                  key={day.date}
                   className={`aspect-square rounded-lg ${getOccupancyColor(day.occupancyRate)} 
                     hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer relative group`}
                   title={`${formatDate(day.date)}: ${formatPercentage(day.occupancyRate)}`}
@@ -178,42 +199,42 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
             })}
           </div>
 
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Legend:</span>
+              <span className="text-gray-600 dark:text-gray-400">Legend:</span>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                  <span className="text-xs text-gray-600">0-25%</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">0-25%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-green-500 rounded"></div>
-                  <span className="text-xs text-gray-600">25-50%</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">25-50%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                  <span className="text-xs text-gray-600">50-75%</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">50-75%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                  <span className="text-xs text-gray-600">75-90%</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">75-90%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-xs text-gray-600">90-100%</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">90-100%</span>
                 </div>
               </div>
             </div>
           </div>
 
           {data.peakDays.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Peak Occupancy Days</h4>
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Peak Occupancy Days</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {data.peakDays.slice(0, 3).map((peak, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                    <span className="text-sm text-gray-900">{formatDate(peak.date)}</span>
-                    <span className="text-sm font-semibold text-red-700">
+                  <div key={index} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(peak.date)}</span>
+                    <span className="text-sm font-semibold text-red-700 dark:text-red-400">
                       {formatPercentage(peak.occupancyRate)}
                     </span>
                   </div>

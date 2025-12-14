@@ -25,8 +25,11 @@ const GuestBookingLookupPage: React.FC = () => {
 
       // Navigate to booking detail with token
       navigate(`/booking/${bookingNumber}?token=${token}`);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Booking not found. Please check your booking number and email.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error
+        ? err.message
+        : (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Booking not found. Please check your booking number and email.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

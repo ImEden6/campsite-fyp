@@ -3,7 +3,7 @@
  * Property editor for building modules with operating hours and services
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import type { BuildingModule } from '@/types';
 import { PropertySection } from './PropertySection';
 import { NumberStepper, MultiSelectChips, Select } from '@/components/ui';
@@ -47,9 +47,15 @@ export const BuildingProperties: React.FC<BuildingPropertiesProps> = ({
 }) => {
     const { metadata } = module;
 
-    // Parse operating hours
-    const openTime = parseTimeString(metadata.operatingHours.open) || { hours: 9, minutes: 0 };
-    const closeTime = parseTimeString(metadata.operatingHours.close) || { hours: 17, minutes: 0 };
+    // Parse operating hours (memoized to prevent dependency changes)
+    const openTime = useMemo(() =>
+        parseTimeString(metadata.operatingHours.open) || { hours: 9, minutes: 0 },
+        [metadata.operatingHours.open]
+    );
+    const closeTime = useMemo(() =>
+        parseTimeString(metadata.operatingHours.close) || { hours: 17, minutes: 0 },
+        [metadata.operatingHours.close]
+    );
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});

@@ -3,37 +3,127 @@
  * Displays customer analytics and demographics
  */
 
-import React from 'react';
-// Deep imports for better tree-shaking
-import { BarChart } from 'recharts/es6/chart/BarChart';
-import { LineChart } from 'recharts/es6/chart/LineChart';
-import { PieChart } from 'recharts/es6/chart/PieChart';
-import { Bar } from 'recharts/es6/cartesian/Bar';
-import { Line } from 'recharts/es6/cartesian/Line';
-import { XAxis } from 'recharts/es6/cartesian/XAxis';
-import { YAxis } from 'recharts/es6/cartesian/YAxis';
-import { CartesianGrid } from 'recharts/es6/cartesian/CartesianGrid';
-import { Tooltip } from 'recharts/es6/component/Tooltip';
-import { ResponsiveContainer } from 'recharts/es6/component/ResponsiveContainer';
-import { Pie } from 'recharts/es6/polar/Pie';
-import { Cell } from 'recharts/es6/component/Cell';
+import React, { useMemo } from 'react';
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import type { ChartOptions, ChartData } from 'chart.js';
 import { Users, TrendingUp, DollarSign, Repeat } from 'lucide-react';
 import type { CustomerInsights as CustomerInsightsType } from '@/services/api/analytics';
+import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
 interface CustomerInsightsProps {
   data: CustomerInsightsType;
   loading?: boolean;
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-
 export const CustomerInsights: React.FC<CustomerInsightsProps> = ({ data, loading }) => {
+  // Reactively detect dark mode
+  const isDark = useDarkMode();
+  const colors = getChartColors(isDark);
+
+  // Memoize chart options
+  const barOptions = useMemo<ChartOptions<'bar'>>(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: colors.background,
+        titleColor: colors.text,
+        bodyColor: colors.text,
+        borderColor: colors.border,
+        borderWidth: 1,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: colors.textMuted },
+        grid: { color: colors.grid },
+      },
+      y: {
+        ticks: { color: colors.textMuted },
+        grid: { color: colors.grid },
+      },
+    },
+  }), [colors]);
+
+  const pieOptions = useMemo<ChartOptions<'pie'>>(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: colors.background,
+        titleColor: colors.text,
+        bodyColor: colors.text,
+        borderColor: colors.border,
+        borderWidth: 1,
+      },
+    },
+  }), [colors]);
+
+  const lineOptions = useMemo<ChartOptions<'line'>>(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: colors.background,
+        titleColor: colors.text,
+        bodyColor: colors.text,
+        borderColor: colors.border,
+        borderWidth: 1,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: colors.textMuted },
+        grid: { color: colors.grid },
+      },
+      y: {
+        ticks: { color: colors.textMuted },
+        grid: { color: colors.grid },
+      },
+    },
+  }), [colors]);
+
+  // Prepare chart data
+  const ageData = useMemo<ChartData<'bar'>>(() => ({
+    labels: data.demographics.ageGroups.map(d => d.range),
+    datasets: [{
+      data: data.demographics.ageGroups.map(d => d.count),
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+    }],
+  }), [data.demographics.ageGroups, colors.primary]);
+
+  const locationData = useMemo<ChartData<'pie'>>(() => ({
+    labels: data.demographics.locations.slice(0, 5).map(d => d.state),
+    datasets: [{
+      data: data.demographics.locations.slice(0, 5).map(d => d.count),
+      backgroundColor: CHART_COLORS,
+      borderWidth: 0,
+    }],
+  }), [data.demographics.locations]);
+
+  const seasonalData = useMemo<ChartData<'line'>>(() => ({
+    labels: data.bookingPatterns.seasonalTrends.map(d => d.month),
+    datasets: [{
+      data: data.bookingPatterns.seasonalTrends.map(d => d.bookings),
+      borderColor: colors.primary,
+      backgroundColor: `${colors.primary}33`,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+    }],
+  }), [data.bookingPatterns.seasonalTrends, colors.primary]);
+
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -44,41 +134,41 @@ export const CustomerInsights: React.FC<CustomerInsightsProps> = ({ data, loadin
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Customer Insights</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Customer Insights</h3>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Users className="w-5 h-5 text-blue-600" />
-            <span className="text-sm text-gray-600">Total Customers</span>
+            <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Total Customers</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{data.totalCustomers.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{data.totalCustomers.toLocaleString()}</p>
         </div>
 
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-green-600" />
-            <span className="text-sm text-gray-600">New Customers</span>
+            <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">New Customers</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{data.newCustomers.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{data.newCustomers.toLocaleString()}</p>
         </div>
 
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Repeat className="w-5 h-5 text-purple-600" />
-            <span className="text-sm text-gray-600">Retention Rate</span>
+            <Repeat className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Retention Rate</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{data.retentionRate.toFixed(1)}%</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{data.retentionRate.toFixed(1)}%</p>
         </div>
 
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-5 h-5 text-orange-600" />
-            <span className="text-sm text-gray-600">Avg Lifetime Value</span>
+            <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Avg Lifetime Value</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{formatCurrency(data.averageLifetimeValue)}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(data.averageLifetimeValue)}</p>
         </div>
       </div>
 
@@ -86,82 +176,52 @@ export const CustomerInsights: React.FC<CustomerInsightsProps> = ({ data, loadin
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Age Groups */}
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 mb-4">Age Distribution</h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={data.demographics.ageGroups}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="range" stroke="#6b7280" style={{ fontSize: '12px' }} />
-              <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                }}
-              />
-              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Age Distribution</h4>
+          <div className="relative h-[250px]">
+            <Bar data={ageData} options={barOptions} />
+          </div>
         </div>
 
         {/* Guest Origins */}
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 mb-4">Guest Origins</h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={data.demographics.locations.slice(0, 5)}
-                dataKey="count"
-                nameKey="state"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                label={(entry: unknown) => {
-                  const data = entry as { state: string; percentage: number };
-                  return `${data.state}: ${data.percentage.toFixed(1)}%`;
-                }}
-              >
-                {data.demographics.locations.slice(0, 5).map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Guest Origins</h4>
+          <div className="relative h-[250px]">
+            <Pie data={locationData} options={pieOptions} />
+          </div>
         </div>
       </div>
 
       {/* Booking Patterns Section */}
-      <div className="border-t border-gray-200 pt-6">
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Booking Patterns</h4>
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Booking Patterns</h4>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Preferred Site Types */}
           <div>
-            <h5 className="text-xs font-medium text-gray-600 mb-3">Preferred Site Types</h5>
+            <h5 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">Preferred Site Types</h5>
             <div className="space-y-3">
               {data.bookingPatterns.preferredSiteTypes.map((item, index) => (
                 <div key={item.type}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-900">{item.type}</span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{item.type}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {item.count} ({item.percentage.toFixed(1)}%)
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all"
                       style={{
                         width: `${item.percentage}%`,
-                        backgroundColor: COLORS[index % COLORS.length],
+                        backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
                       }}
                     />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-900">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm text-gray-900 dark:text-gray-100">
                 <span className="font-medium">Average Stay:</span>{' '}
                 {data.bookingPatterns.averageStayDuration.toFixed(1)} nights
               </p>
@@ -170,46 +230,28 @@ export const CustomerInsights: React.FC<CustomerInsightsProps> = ({ data, loadin
 
           {/* Seasonal Trends */}
           <div>
-            <h5 className="text-xs font-medium text-gray-600 mb-3">Seasonal Trends</h5>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={data.bookingPatterns.seasonalTrends}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" style={{ fontSize: '11px' }} />
-                <YAxis stroke="#6b7280" style={{ fontSize: '11px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="bookings"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ fill: '#3b82f6', r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <h5 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-3">Seasonal Trends</h5>
+            <div className="relative h-[200px]">
+              <Line data={seasonalData} options={lineOptions} />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Customer Segments */}
-      <div className="border-t border-gray-200 pt-6 mt-6">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-green-50 rounded-lg">
-            <h5 className="text-sm font-semibold text-green-900 mb-2">New Customers</h5>
-            <p className="text-2xl font-bold text-green-700">{data.newCustomers.toLocaleString()}</p>
-            <p className="text-xs text-green-600 mt-1">
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <h5 className="text-sm font-semibold text-green-900 dark:text-green-300 mb-2">New Customers</h5>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-400">{data.newCustomers.toLocaleString()}</p>
+            <p className="text-xs text-green-600 dark:text-green-500 mt-1">
               {((data.newCustomers / data.totalCustomers) * 100).toFixed(1)}% of total
             </p>
           </div>
-          <div className="p-4 bg-purple-50 rounded-lg">
-            <h5 className="text-sm font-semibold text-purple-900 mb-2">Returning Customers</h5>
-            <p className="text-2xl font-bold text-purple-700">{data.returningCustomers.toLocaleString()}</p>
-            <p className="text-xs text-purple-600 mt-1">
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <h5 className="text-sm font-semibold text-purple-900 dark:text-purple-300 mb-2">Returning Customers</h5>
+            <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{data.returningCustomers.toLocaleString()}</p>
+            <p className="text-xs text-purple-600 dark:text-purple-500 mt-1">
               {((data.returningCustomers / data.totalCustomers) * 100).toFixed(1)}% of total
             </p>
           </div>

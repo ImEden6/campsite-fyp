@@ -6,6 +6,7 @@ import App from './App';
 import { queryClient } from '@/config/react-query';
 import { ErrorBoundaryWithFeedback } from '@/components/ErrorBoundaryWithFeedback';
 import '@styles/index.css';
+import '@/utils/chartSetup'; // Register Chart.js components globally
 
 // Import test utility in dev mode - uses dynamic imports so won't affect bundle
 if (import.meta.env.DEV) {

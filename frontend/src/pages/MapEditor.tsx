@@ -127,17 +127,17 @@ const MapEditor: React.FC = () => {
             height: container.offsetHeight,
             selection: true,
             preserveObjectStacking: true,
-            backgroundColor: '#e5e7eb',
+            backgroundColor: 'oklch(0.928 0.006 264.5)',
         });
 
         // Configure default control appearance
         fabric.FabricObject.prototype.set({
             cornerStyle: 'circle',
-            cornerColor: '#000000ff',
-            cornerStrokeColor: '#000000ff',
+            cornerColor: 'oklch(0 0 0)',
+            cornerStrokeColor: 'oklch(0 0 0)',
             cornerSize: 10,
             transparentCorners: false,
-            borderColor: '#000000ff',
+            borderColor: 'oklch(0 0 0)',
             borderScaleFactor: 2,
         });
 
@@ -163,8 +163,8 @@ const MapEditor: React.FC = () => {
                     ctx.translate(left, top);
 
                     // Draw purple rotation handle
-                    ctx.fillStyle = '#9333ea';
-                    ctx.strokeStyle = '#7e22ce';
+                    ctx.fillStyle = 'oklch(0.558 0.252 302.3)';
+                    ctx.strokeStyle = 'oklch(0.496 0.237 301.9)';
                     ctx.lineWidth = 2;
 
                     ctx.beginPath();
@@ -786,7 +786,7 @@ const MapEditor: React.FC = () => {
         try {
             // Clear existing objects
             canvas.clear();
-            canvas.backgroundColor = '#e5e7eb';
+            canvas.backgroundColor = 'oklch(0.928 0.006 264.5)';
             objectMapRef.current.clear();
 
             // Add map background
@@ -795,8 +795,8 @@ const MapEditor: React.FC = () => {
                 top: 0,
                 width: currentMap.imageSize.width,
                 height: currentMap.imageSize.height,
-                fill: '#f8f9fa',
-                stroke: '#dee2e6',
+                fill: 'oklch(0.982 0.002 247.8)',
+                stroke: 'oklch(0.911 0.007 247.9)',
                 strokeWidth: 2,
                 selectable: false,
                 evented: false,
@@ -891,7 +891,7 @@ const MapEditor: React.FC = () => {
         // Create grid lines
         for (let x = 0; x <= width; x += gridSize) {
             const line = new fabric.Line([x, 0, x, height], {
-                stroke: '#d1d5db',
+                stroke: 'oklch(0.872 0.009 258.3)',
                 strokeWidth: x % (gridSize * 5) === 0 ? 1 : 0.5,
                 selectable: false,
                 evented: false,
@@ -903,7 +903,7 @@ const MapEditor: React.FC = () => {
 
         for (let y = 0; y <= height; y += gridSize) {
             const line = new fabric.Line([0, y, width, y], {
-                stroke: '#d1d5db',
+                stroke: 'oklch(0.872 0.009 258.3)',
                 strokeWidth: y % (gridSize * 5) === 0 ? 1 : 0.5,
                 selectable: false,
                 evented: false,

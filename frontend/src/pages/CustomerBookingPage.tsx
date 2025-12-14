@@ -82,7 +82,7 @@ const CustomerBookingPage: React.FC = () => {
             {error instanceof Error ? error.message : 'An unexpected error occurred'}
           </p>
           <button
-            onClick={() => navigate('/customer/sites')}
+            onClick={() => navigate('/sites')}
             className="text-blue-600 dark:text-blue-400 hover:underline"
           >
             Back to Sites
@@ -100,7 +100,7 @@ const CustomerBookingPage: React.FC = () => {
             Site not found
           </p>
           <button
-            onClick={() => navigate('/customer/sites')}
+            onClick={() => navigate('/sites')}
             className="text-blue-600 dark:text-blue-400 hover:underline"
           >
             Back to Sites

@@ -28,57 +28,57 @@ export interface ModuleIconConfig {
 export const MODULE_ICONS: Record<ModuleType, ModuleIconConfig> = {
     campsite: {
         icon: Tent,
-        color: '#22c55e', // green-500
+        color: 'oklch(0.723 0.192 149.6)', // green-500
         label: 'Campsite',
     },
     toilet: {
         icon: Bath,
-        color: '#3b82f6', // blue-500
+        color: 'oklch(0.623 0.188 259.8)', // blue-500
         label: 'Toilet',
     },
     storage: {
         icon: Archive,
-        color: '#f59e0b', // amber-500
+        color: 'oklch(0.769 0.165 70.1)', // amber-500
         label: 'Storage',
     },
     building: {
         icon: Building,
-        color: '#8b5cf6', // violet-500
+        color: 'oklch(0.606 0.219 292.7)', // violet-500
         label: 'Building',
     },
     parking: {
         icon: Car,
-        color: '#6366f1', // indigo-500
+        color: 'oklch(0.585 0.204 277.1)', // indigo-500
         label: 'Parking',
     },
     road: {
         icon: Route,
-        color: '#64748b', // slate-500
+        color: 'oklch(0.554 0.041 257.4)', // slate-500
         label: 'Road',
     },
     water_source: {
         icon: Droplets,
-        color: '#06b6d4', // cyan-500
+        color: 'oklch(0.715 0.126 215.2)', // cyan-500
         label: 'Water Source',
     },
     electricity: {
         icon: Zap,
-        color: '#eab308', // yellow-500
+        color: 'oklch(0.795 0.162 86)', // yellow-500
         label: 'Electricity',
     },
     waste_disposal: {
         icon: Trash2,
-        color: '#84cc16', // lime-500
+        color: 'oklch(0.768 0.204 130.8)', // lime-500
         label: 'Waste Disposal',
     },
     recreation: {
         icon: TreePine,
-        color: '#14b8a6', // teal-500
+        color: 'oklch(0.704 0.123 182.5)', // teal-500
         label: 'Recreation',
     },
     custom: {
         icon: Puzzle,
-        color: '#ec4899', // pink-500
+        color: 'oklch(0.656 0.212 354.3)', // pink-500
         label: 'Custom',
     },
 };

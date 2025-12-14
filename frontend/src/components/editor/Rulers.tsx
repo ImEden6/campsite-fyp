@@ -7,10 +7,9 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useEditorStore } from '@/stores';
 
-// ============================================================================
+// ======
 // TYPES
-// ============================================================================
-
+// ======
 interface RulersProps {
     canvasWidth: number;
     canvasHeight: number;
@@ -27,18 +26,18 @@ interface RulerProps {
     onGuideCreate: (position: number) => void;
 }
 
-// ============================================================================
+// ======
 // CONSTANTS
-// ============================================================================
+// ======
 
 const RULER_SIZE = 20; // pixels
 const TICK_SMALL = 10;
 const TICK_MEDIUM = 50;
 const TICK_LARGE = 100;
 
-// ============================================================================
+// ======
 // SINGLE RULER COMPONENT
-// ============================================================================
+// ======
 
 function Ruler({
     orientation,
@@ -71,12 +70,12 @@ function Ruler({
         ctx.scale(dpr, dpr);
 
         // Clear
-        ctx.fillStyle = 'var(--ruler-bg, #1e1e2e)';
+        ctx.fillStyle = 'var(--ruler-bg, oklch(0.243 0.03 283.9))';
         ctx.fillRect(0, 0, canvasLength, canvasWidth);
 
         // Draw ticks
-        ctx.fillStyle = 'var(--ruler-text, #cdd6f4)';
-        ctx.strokeStyle = 'var(--ruler-tick, #6c7086)';
+        ctx.fillStyle = 'var(--ruler-text, oklch(0.879 0.043 272.3))';
+        ctx.strokeStyle = 'var(--ruler-tick, oklch(0.55 0.034 277.1))';
         ctx.font = '10px system-ui';
         ctx.textAlign = 'center';
 
@@ -126,7 +125,7 @@ function Ruler({
 
         // Draw drag indicator
         if (isDragging && dragPosition !== null) {
-            ctx.strokeStyle = 'var(--guide-color, #00bcd4)';
+            ctx.strokeStyle = 'var(--guide-color, oklch(0.729 0.126 210.8))';
             ctx.lineWidth = 2;
             ctx.beginPath();
             if (isHorizontal) {
@@ -236,7 +235,7 @@ export function Rulers({
                     left: 0,
                     width: RULER_SIZE,
                     height: RULER_SIZE,
-                    backgroundColor: 'var(--ruler-bg, #1e1e2e)',
+                    backgroundColor: 'var(--ruler-bg, oklch(0.243 0.03 283.9))',
                     zIndex: 100,
                 }}
             />
@@ -284,5 +283,6 @@ export function Rulers({
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { RULER_SIZE };
 export default Rulers;

@@ -55,7 +55,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
             body {
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               padding: 40px;
-              background: #f9fafb;
+              background: oklch(0.985 0.002 247.8);
             }
             .receipt {
               max-width: 800px;
@@ -63,32 +63,32 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               background: white;
               padding: 40px;
               border-radius: 8px;
-              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+              box-shadow: 0 1px 3px oklch(0 0 0 / 0.1);
             }
             .header {
               text-align: center;
               margin-bottom: 40px;
               padding-bottom: 20px;
-              border-bottom: 2px solid #e5e7eb;
+              border-bottom: 2px solid oklch(0.928 0.006 264.5);
             }
             .header h1 {
               font-size: 32px;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               margin-bottom: 8px;
             }
             .header p {
-              color: #6b7280;
+              color: oklch(0.551 0.023 264.4);
               font-size: 14px;
             }
             .booking-info {
-              background: #f3f4f6;
+              background: oklch(0.967 0.003 264.5);
               padding: 20px;
               border-radius: 6px;
               margin-bottom: 30px;
             }
             .booking-info h2 {
               font-size: 18px;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               margin-bottom: 15px;
             }
             .info-grid {
@@ -102,14 +102,14 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
             }
             .info-label {
               font-size: 12px;
-              color: #6b7280;
+              color: oklch(0.551 0.023 264.4);
               text-transform: uppercase;
               letter-spacing: 0.5px;
               margin-bottom: 4px;
             }
             .info-value {
               font-size: 14px;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               font-weight: 500;
             }
             .section {
@@ -117,10 +117,10 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
             }
             .section h3 {
               font-size: 16px;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               margin-bottom: 15px;
               padding-bottom: 10px;
-              border-bottom: 1px solid #e5e7eb;
+              border-bottom: 1px solid oklch(0.928 0.006 264.5);
             }
             .line-items {
               margin-bottom: 20px;
@@ -129,7 +129,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               display: flex;
               justify-content: space-between;
               padding: 12px 0;
-              border-bottom: 1px solid #f3f4f6;
+              border-bottom: 1px solid oklch(0.967 0.003 264.5);
             }
             .line-item:last-child {
               border-bottom: none;
@@ -139,23 +139,23 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
             }
             .line-item-title {
               font-size: 14px;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               font-weight: 500;
             }
             .line-item-details {
               font-size: 12px;
-              color: #6b7280;
+              color: oklch(0.551 0.023 264.4);
               margin-top: 4px;
             }
             .line-item-amount {
               font-size: 14px;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               font-weight: 500;
               text-align: right;
               min-width: 100px;
             }
             .totals {
-              background: #f9fafb;
+              background: oklch(0.985 0.002 247.8);
               padding: 20px;
               border-radius: 6px;
               margin-top: 20px;
@@ -169,28 +169,28 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
             .total-row.grand-total {
               font-size: 18px;
               font-weight: 700;
-              color: #1f2937;
+              color: oklch(0.278 0.03 256.8);
               padding-top: 15px;
               margin-top: 15px;
-              border-top: 2px solid #e5e7eb;
+              border-top: 2px solid oklch(0.928 0.006 264.5);
             }
             .payment-info {
-              background: #dbeafe;
+              background: oklch(0.932 0.032 255.6);
               padding: 15px;
               border-radius: 6px;
               margin-top: 20px;
             }
             .payment-info p {
               font-size: 13px;
-              color: #1e40af;
+              color: oklch(0.424 0.181 265.6);
               margin: 4px 0;
             }
             .footer {
               margin-top: 40px;
               padding-top: 20px;
-              border-top: 1px solid #e5e7eb;
+              border-top: 1px solid oklch(0.928 0.006 264.5);
               text-align: center;
-              color: #6b7280;
+              color: oklch(0.551 0.023 264.4);
               font-size: 12px;
             }
             .status-badge {
@@ -202,16 +202,16 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               text-transform: uppercase;
             }
             .status-confirmed {
-              background: #d1fae5;
-              color: #065f46;
+              background: oklch(0.95 0.051 163.1);
+              color: oklch(0.432 0.086 166.9);
             }
             .status-paid {
-              background: #d1fae5;
-              color: #065f46;
+              background: oklch(0.95 0.051 163.1);
+              color: oklch(0.432 0.086 166.9);
             }
             .status-partial {
-              background: #fef3c7;
-              color: #92400e;
+              background: oklch(0.962 0.058 95.6);
+              color: oklch(0.473 0.125 46.2);
             }
             @media print {
               body {
@@ -313,7 +313,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
                   <span>$${booking.taxAmount.toFixed(2)}</span>
                 </div>
                 ${booking.discountAmount > 0 ? `
-                  <div class="total-row" style="color: #059669;">
+                  <div class="total-row" style="color: oklch(0.596 0.127 163.2);">
                     <span>Discount</span>
                     <span>-$${booking.discountAmount.toFixed(2)}</span>
                   </div>
@@ -342,7 +342,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
             ${booking.specialRequests ? `
               <div class="section">
                 <h3>Special Requests</h3>
-                <p style="color: #4b5563; font-size: 14px;">${booking.specialRequests}</p>
+                <p style="color: oklch(0.446 0.026 256.8); font-size: 14px;">${booking.specialRequests}</p>
               </div>
             ` : ''}
 

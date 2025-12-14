@@ -26,7 +26,7 @@ export interface SnapResult {
 // CONSTANTS
 // ============================================================================
 
-const GUIDE_COLOR = '#00bcd4'; // Cyan
+const GUIDE_COLOR = 'oklch(0.729 0.126 210.8)'; // Cyan
 const GUIDE_STROKE_WIDTH = 1;
 const GUIDE_DASH_ARRAY = [5, 5];
 

@@ -28,7 +28,7 @@ function createLockIcon(): fabric.Group | null {
         { type: 'path', d: 'M6 10V8a6 6 0 0 1 12 0v2' },
         { type: 'path', d: 'M8 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z' },
     ];
-    const lockIconParts = createIconObjects(lockIconElements, '#6b7280');
+    const lockIconParts = createIconObjects(lockIconElements, 'oklch(0.551 0.023 264.4)');
     
     if (lockIconParts.length === 0) return null;
     
@@ -71,17 +71,17 @@ export function isGridObject(obj: fabric.FabricObject): boolean {
 
 // Module type color mapping
 const MODULE_COLORS: Record<ModuleType, string> = {
-    campsite: '#4ade80',      // green
-    toilet: '#60a5fa',        // blue
-    storage: '#a78bfa',       // purple
-    building: '#f97316',      // orange
-    parking: '#6b7280',       // gray
-    road: '#78716c',          // stone
-    water_source: '#22d3ee',  // cyan
-    electricity: '#facc15',   // yellow
-    waste_disposal: '#ef4444', // red
-    recreation: '#ec4899',    // pink
-    custom: '#8b5cf6',        // violet
+    campsite: 'oklch(0.8 0.182 151.7)',      // green
+    toilet: 'oklch(0.714 0.143 254.6)',        // blue
+    storage: 'oklch(0.709 0.159 293.5)',       // purple
+    building: 'oklch(0.705 0.187 47.6)',      // orange
+    parking: 'oklch(0.551 0.023 264.4)',       // gray
+    road: 'oklch(0.553 0.012 58.1)',          // stone
+    water_source: 'oklch(0.797 0.134 211.5)',  // cyan
+    electricity: 'oklch(0.861 0.173 91.9)',   // yellow
+    waste_disposal: 'oklch(0.637 0.208 25.3)', // red
+    recreation: 'oklch(0.656 0.212 354.3)',    // pink
+    custom: 'oklch(0.606 0.219 292.7)',        // violet
 };
 
 // Opacity constants for module states
@@ -254,7 +254,7 @@ export function createModuleObject(module: AnyModule): fabric.Group {
         width: module.size.width,
         height: module.size.height,
         fill: color,
-        stroke: '#374151',
+        stroke: 'oklch(0.373 0.031 259.7)',
         strokeWidth: 1,
         rx: 4,
         ry: 4,
@@ -276,7 +276,7 @@ export function createModuleObject(module: AnyModule): fabric.Group {
         const scaleFactor = iconSize / 24;
 
         // Create individual Fabric objects for each SVG element
-        const iconParts = createIconObjects(iconElements, '#1f2937');
+        const iconParts = createIconObjects(iconElements, 'oklch(0.278 0.03 256.8)');
 
         if (iconParts.length > 0) {
             // Group all icon parts together for proper positioning
@@ -347,8 +347,8 @@ export function createModuleObject(module: AnyModule): fabric.Group {
                 ctx.translate(left, top);
 
                 // Draw purple rotation handle
-                ctx.fillStyle = '#9333ea';
-                ctx.strokeStyle = '#7e22ce';
+                ctx.fillStyle = 'oklch(0.558 0.252 302.3)';
+                ctx.strokeStyle = 'oklch(0.496 0.237 301.9)';
                 ctx.lineWidth = 2;
 
                 ctx.beginPath();
@@ -368,8 +368,8 @@ export function createModuleObject(module: AnyModule): fabric.Group {
         ctx.translate(left, top);
 
         // Draw black scaling handle with white border for contrast
-        ctx.fillStyle = '#000000';
-        ctx.strokeStyle = '#ffffff';
+        ctx.fillStyle = 'oklch(0 0 0)';
+        ctx.strokeStyle = 'oklch(1 0 89.9)';
         ctx.lineWidth = 1.5;
 
         ctx.beginPath();

@@ -461,14 +461,14 @@ export const CURRENCY_FORMATS = {
 };
 
 export const THEME_COLORS = {
-  PRIMARY: '#1976d2',
-  SECONDARY: '#dc004e',
-  SUCCESS: '#4caf50',
-  WARNING: '#ff9800',
-  ERROR: '#f44336',
-  INFO: '#2196f3',
-  BACKGROUND: '#fafafa',
-  SURFACE: '#ffffff',
-  TEXT_PRIMARY: '#212121',
-  TEXT_SECONDARY: '#757575',
+  PRIMARY: 'oklch(0.565 0.163 253.3)',
+  SECONDARY: 'oklch(0.569 0.228 13.5)',
+  SUCCESS: 'oklch(0.673 0.162 144.2)',
+  WARNING: 'oklch(0.77 0.174 64.1)',
+  ERROR: 'oklch(0.643 0.215 28.8)',
+  INFO: 'oklch(0.658 0.169 248.8)',
+  BACKGROUND: 'oklch(0.985 0 89.9)',
+  SURFACE: 'oklch(1 0 89.9)',
+  TEXT_PRIMARY: 'oklch(0.248 0 89.9)',
+  TEXT_SECONDARY: 'oklch(0.562 0 89.9)',
 };

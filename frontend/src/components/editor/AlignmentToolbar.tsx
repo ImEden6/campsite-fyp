@@ -43,13 +43,8 @@ export function AlignmentToolbar({ executeCommand }: AlignmentToolbarProps) {
         .map((id) => getModule(id))
         .filter((m): m is AnyModule => m !== undefined);
 
-    // Only show for multi-select
-    if (selectedModules.length < 2) {
-        return null;
-    }
-
     // Calculate bounds of all selected modules
-    const getBounds = () => {
+    const getBounds = useCallback(() => {
         const bounds = {
             minX: Infinity,
             minY: Infinity,
@@ -70,7 +65,7 @@ export function AlignmentToolbar({ executeCommand }: AlignmentToolbarProps) {
         bounds.centerY = (bounds.minY + bounds.maxY) / 2;
 
         return bounds;
-    };
+    }, [selectedModules]);
 
     // Align modules
     const handleAlign = useCallback(
@@ -119,7 +114,7 @@ export function AlignmentToolbar({ executeCommand }: AlignmentToolbarProps) {
                 executeCommand(new PropertyCommand(changes));
             }
         },
-        [selectedModules, executeCommand]
+        [selectedModules, executeCommand, getBounds]
     );
 
     // Distribute modules evenly
@@ -199,6 +194,11 @@ export function AlignmentToolbar({ executeCommand }: AlignmentToolbarProps) {
         },
         [selectedModules, executeCommand]
     );
+
+    // Only show for multi-select (early return AFTER hooks)
+    if (selectedModules.length < 2) {
+        return null;
+    }
 
     return (
         <div className="alignment-toolbar">

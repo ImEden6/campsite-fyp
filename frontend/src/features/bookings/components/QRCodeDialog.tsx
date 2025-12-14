@@ -81,11 +81,11 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
               h1 {
                 font-size: 24px;
                 margin-bottom: 10px;
-                color: #1f2937;
+                color: oklch(0.278 0.03 256.8);
               }
               .booking-number {
                 font-size: 18px;
-                color: #6b7280;
+                color: oklch(0.551 0.023 264.4);
                 margin-bottom: 20px;
               }
               img {
@@ -96,7 +96,7 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
               .info {
                 margin-top: 20px;
                 padding: 15px;
-                background: #f3f4f6;
+                background: oklch(0.967 0.003 264.5);
                 border-radius: 8px;
                 text-align: left;
               }
@@ -108,18 +108,18 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
               }
               .label {
                 font-weight: 600;
-                color: #4b5563;
+                color: oklch(0.446 0.026 256.8);
               }
               .value {
-                color: #1f2937;
+                color: oklch(0.278 0.03 256.8);
               }
               .instructions {
                 margin-top: 20px;
                 padding: 15px;
-                background: #dbeafe;
+                background: oklch(0.932 0.032 255.6);
                 border-radius: 8px;
                 font-size: 14px;
-                color: #1e40af;
+                color: oklch(0.424 0.181 265.6);
               }
               @media print {
                 body {

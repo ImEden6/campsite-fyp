@@ -607,24 +607,24 @@ export const businessUtils = {
 
   getBookingStatusColor(status: string): string {
     switch (status) {
-      case 'PENDING': return '#ff9800';
-      case 'CONFIRMED': return '#4caf50';
-      case 'CHECKED_IN': return '#2196f3';
-      case 'CHECKED_OUT': return '#9e9e9e';
-      case 'CANCELLED': return '#f44336';
-      case 'NO_SHOW': return '#795548';
-      default: return '#9e9e9e';
+      case 'PENDING': return 'oklch(0.77 0.174 64.1)';
+      case 'CONFIRMED': return 'oklch(0.673 0.162 144.2)';
+      case 'CHECKED_IN': return 'oklch(0.658 0.169 248.8)';
+      case 'CHECKED_OUT': return 'oklch(0.699 0 89.9)';
+      case 'CANCELLED': return 'oklch(0.643 0.215 28.8)';
+      case 'NO_SHOW': return 'oklch(0.485 0.053 40.7)';
+      default: return 'oklch(0.699 0 89.9)';
     }
   },
 
   getPaymentStatusColor(status: string): string {
     switch (status) {
-      case 'PENDING': return '#ff9800';
-      case 'PAID': return '#4caf50';
-      case 'PARTIAL': return '#ffeb3b';
-      case 'REFUNDED': return '#9c27b0';
-      case 'FAILED': return '#f44336';
-      default: return '#9e9e9e';
+      case 'PENDING': return 'oklch(0.77 0.174 64.1)';
+      case 'PAID': return 'oklch(0.673 0.162 144.2)';
+      case 'PARTIAL': return 'oklch(0.928 0.18 102.5)';
+      case 'REFUNDED': return 'oklch(0.517 0.215 321.2)';
+      case 'FAILED': return 'oklch(0.643 0.215 28.8)';
+      default: return 'oklch(0.699 0 89.9)';
     }
   },
 
