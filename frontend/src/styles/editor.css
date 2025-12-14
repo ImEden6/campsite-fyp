@@ -145,6 +145,7 @@
     z-index: 50;
     overflow-y: auto;
     animation: slideInRight 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideInRight {
@@ -1743,7 +1744,19 @@
 
 /* Toast notification slide in */
 .toast-notification {
-    animation: slideInRight 0.3s ease-out;
+    animation: toastSlideIn 0.3s ease-out;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* Error message shake */
