@@ -1,14 +1,27 @@
 import { Payment, PaymentStatus, PaymentMethod } from '../types/payment.types';
 
-// Helper to get relative dates for demo
+// Helper to get relative dates for demo (called dynamically, not at module load)
 const getDaysAgo = (days: number): string => {
     const date = new Date();
     date.setDate(date.getDate() - days);
     return date.toISOString();
 };
 
-// Static demo payment history - shows recent payment activity
-const demoPaymentHistory: Payment[] = [
+// Demo payment templates with relative day offsets (dates computed dynamically)
+interface DemoPaymentTemplate {
+    id: string;
+    bookingId: string;
+    amount: number;
+    currency: string;
+    status: PaymentStatus;
+    method: PaymentMethod;
+    description: string;
+    createdDaysAgo: number;
+    updatedDaysAgo: number;
+    stripePaymentIntentId: string;
+}
+
+const demoPaymentTemplates: DemoPaymentTemplate[] = [
     {
         id: 'pay_demo_001',
         bookingId: 'demo-booking-001',
@@ -16,9 +29,9 @@ const demoPaymentHistory: Payment[] = [
         currency: 'MYR',
         status: PaymentStatus.SUCCEEDED,
         method: PaymentMethod.CARD,
-        description: 'Lakeside Cabin A - Weekend Stay (Dec 20-22)',
-        createdAt: getDaysAgo(3),
-        updatedAt: getDaysAgo(3),
+        description: 'Lakeside Cabin A - Weekend Stay',
+        createdDaysAgo: 3,
+        updatedDaysAgo: 3,
         stripePaymentIntentId: 'pi_demo_001'
     },
     {
@@ -28,9 +41,9 @@ const demoPaymentHistory: Payment[] = [
         currency: 'MYR',
         status: PaymentStatus.SUCCEEDED,
         method: PaymentMethod.CARD,
-        description: 'Premium RV Spot 1 - 2 Nights (Dec 18-20)',
-        createdAt: getDaysAgo(5),
-        updatedAt: getDaysAgo(5),
+        description: 'Premium RV Spot 1 - 2 Nights',
+        createdDaysAgo: 5,
+        updatedDaysAgo: 5,
         stripePaymentIntentId: 'pi_demo_002'
     },
     {
@@ -40,9 +53,9 @@ const demoPaymentHistory: Payment[] = [
         currency: 'MYR',
         status: PaymentStatus.SUCCEEDED,
         method: PaymentMethod.CARD,
-        description: 'Forest Tent Site A - 2 Nights (Dec 15-17)',
-        createdAt: getDaysAgo(8),
-        updatedAt: getDaysAgo(8),
+        description: 'Forest Tent Site A - 2 Nights',
+        createdDaysAgo: 8,
+        updatedDaysAgo: 8,
         stripePaymentIntentId: 'pi_demo_003'
     },
     {
@@ -52,9 +65,9 @@ const demoPaymentHistory: Payment[] = [
         currency: 'MYR',
         status: PaymentStatus.SUCCEEDED,
         method: PaymentMethod.CARD,
-        description: 'Mountain View Cabin - 2 Nights (Dec 10-12)',
-        createdAt: getDaysAgo(13),
-        updatedAt: getDaysAgo(13),
+        description: 'Mountain View Cabin - 2 Nights',
+        createdDaysAgo: 13,
+        updatedDaysAgo: 13,
         stripePaymentIntentId: 'pi_demo_004'
     },
     {
@@ -65,11 +78,29 @@ const demoPaymentHistory: Payment[] = [
         status: PaymentStatus.REFUNDED,
         method: PaymentMethod.CARD,
         description: 'Cancelled - Meadow Tent Site (Refunded)',
-        createdAt: getDaysAgo(20),
-        updatedAt: getDaysAgo(18),
+        createdDaysAgo: 20,
+        updatedDaysAgo: 18,
         stripePaymentIntentId: 'pi_demo_005'
     }
 ];
+
+/**
+ * Generate demo payment history with fresh dates (computed on each call)
+ */
+const getDemoPaymentHistory = (): Payment[] => {
+    return demoPaymentTemplates.map(template => ({
+        id: template.id,
+        bookingId: template.bookingId,
+        amount: template.amount,
+        currency: template.currency,
+        status: template.status,
+        method: template.method,
+        description: template.description,
+        createdAt: getDaysAgo(template.createdDaysAgo),
+        updatedAt: getDaysAgo(template.updatedDaysAgo),
+        stripePaymentIntentId: template.stripePaymentIntentId
+    }));
+};
 
 // In-memory store for payments made during demo session
 const sessionPayments: Payment[] = [];
@@ -128,7 +159,7 @@ export const clearSessionPayments = (): void => {
  * Get payments for a specific booking
  */
 export const getMockBookingPayments = (bookingId: string): Payment[] => {
-    const allPayments = [...sessionPayments, ...demoPaymentHistory];
+    const allPayments = [...sessionPayments, ...getDemoPaymentHistory()];
     return allPayments
         .filter(p => p.bookingId === bookingId)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -138,6 +169,6 @@ export const getMockBookingPayments = (bookingId: string): Payment[] => {
  * Get full payment history (session payments + demo history)
  */
 export const getMockPaymentHistory = (): Payment[] => {
-    const allPayments = [...sessionPayments, ...demoPaymentHistory];
+    const allPayments = [...sessionPayments, ...getDemoPaymentHistory()];
     return allPayments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
