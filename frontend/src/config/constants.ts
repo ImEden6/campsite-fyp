@@ -130,7 +130,9 @@ export const STORAGE_KEYS = {
 // Routes
 export const ROUTES = {
   HOME: '/',
-  LOGIN: '/login',
+  LOGIN: '/customer/login',
+  ADMIN_LOGIN: '/admin/login',
+
   REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',
   DASHBOARD: '/dashboard',

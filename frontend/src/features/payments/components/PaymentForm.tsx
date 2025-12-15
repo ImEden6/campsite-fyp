@@ -7,6 +7,7 @@ import {
 import Button from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { Loader2 } from 'lucide-react';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface PaymentFormProps {
   amount: number;
@@ -72,7 +73,7 @@ export const PaymentForm = ({
             Total Amount
           </span>
           <span className="text-2xl font-bold text-gray-900">
-            ${(amount / 100).toFixed(2)}
+            {CURRENCY_SYMBOL}{(amount / 100).toFixed(2)}
           </span>
         </div>
       </div>
@@ -114,7 +115,7 @@ export const PaymentForm = ({
               Processing...
             </>
           ) : (
-            `Pay $${(amount / 100).toFixed(2)}`
+            `Pay ${CURRENCY_SYMBOL}${(amount / 100).toFixed(2)}`
           )}
         </Button>
       </div>

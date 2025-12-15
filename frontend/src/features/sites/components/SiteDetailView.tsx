@@ -21,6 +21,7 @@ import type { Site } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface SiteDetailViewProps {
   site: Site;
@@ -103,11 +104,10 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`relative h-20 rounded-lg overflow-hidden border-2 transition ${
-                          index === selectedImageIndex
+                        className={`relative h-20 rounded-lg overflow-hidden border-2 transition ${index === selectedImageIndex
                             ? 'border-blue-600'
                             : 'border-transparent hover:border-gray-300'
-                        }`}
+                          }`}
                       >
                         <img
                           src={image}
@@ -133,7 +133,7 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="text-sm text-blue-600 font-medium">Price per night</div>
                 <div className="text-3xl font-bold text-blue-900 mt-1">
-                  ${site.basePrice}
+                  {CURRENCY_SYMBOL}{site.basePrice}
                 </div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
@@ -298,9 +298,8 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`w-3 h-3 rounded-full transition ${
-                      index === selectedImageIndex ? 'bg-white' : 'bg-white/50'
-                    }`}
+                    className={`w-3 h-3 rounded-full transition ${index === selectedImageIndex ? 'bg-white' : 'bg-white/50'
+                      }`}
                     aria-label={`View image ${index + 1}`}
                   />
                 ))}

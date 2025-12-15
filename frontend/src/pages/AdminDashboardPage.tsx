@@ -30,6 +30,7 @@ import { mockDashboardMetrics } from '@/services/api/mockAnalyticsData';
 import { mockSites } from '@/services/api/mock-sites';
 import { SiteType, SiteStatus } from '@/types';
 import type { Site } from '@/types';
+import { formatCurrency, CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface MapBoxProps {
   type: SiteType;
@@ -143,7 +144,7 @@ const MapBox: React.FC<MapBoxProps> = ({
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Capacity: {site.capacity} | ${site.basePrice}/night
+                    Capacity: {site.capacity} | {CURRENCY_SYMBOL}{site.basePrice}/night
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -219,7 +220,7 @@ export const AdminDashboardPage: React.FC = () => {
   const stats = [
     {
       name: 'Total Revenue',
-      value: `$${analyticsMetrics.totalRevenue.toLocaleString()}`,
+      value: formatCurrency(analyticsMetrics.totalRevenue, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
       icon: DollarSign,
       color: 'bg-blue-500',
       subtext: `${analyticsMetrics.revenueChange >= 0 ? '+' : ''}${analyticsMetrics.revenueChange.toFixed(1)}% from last period`,

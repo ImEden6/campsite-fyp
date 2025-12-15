@@ -7,21 +7,22 @@ interface EnvConfig {
   // API Configuration
   apiUrl: string;
   wsUrl: string;
-  
+
   // Application Configuration
   appName: string;
   appVersion: string;
   environment: string;
-  
+
   // Third-party Services
   stripePublicKey: string;
   googleMapsApiKey?: string;
   sentryDsn?: string;
-  
+
   // Feature Flags
   enablePWA: boolean;
   enableAnalytics: boolean;
-  
+  useMockPayments: boolean;
+
   // Development
   isDevelopment: boolean;
   isProduction: boolean;
@@ -47,45 +48,60 @@ const ensureSecureUrl = (url: string, isProduction: boolean): string => {
     // Allow HTTP/WS in development
     return url;
   }
-  
+
   // In production, enforce HTTPS/WSS
   if (url.startsWith('http://')) {
     console.warn(`[Env] Converting HTTP to HTTPS for production: ${url}`);
     return url.replace('http://', 'https://');
   }
-  
+
   if (url.startsWith('ws://')) {
     console.warn(`[Env] Converting WS to WSS for production: ${url}`);
     return url.replace('ws://', 'wss://');
   }
-  
+
   return url;
 };
 
 // Get raw environment values
-const rawApiUrl = getEnvVar('VITE_API_URL', 'http://localhost:5000/api/v1');
-const rawWsUrl = getEnvVar('VITE_WS_URL', 'ws://localhost:5000');
+const isTest = import.meta.env.MODE === 'test';
 const isProduction = import.meta.env.PROD;
+
+// Check if running on localhost (for local preview builds that need proxy)
+const isLocalhost = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// Use relative URLs when:
+// - In test mode: use MSW mock URL
+// - On localhost: use proxy to avoid CORS (even for production builds)
+// - Otherwise: use full URL from environment variables
+const rawApiUrl = isTest 
+  ? 'http://localhost:5000/api/v1' 
+  : isLocalhost 
+    ? '/api/v1'  // Relative URL for Vite proxy (avoids CORS)
+    : getEnvVar('VITE_API_URL', 'http://localhost:5000/api/v1');
+const rawWsUrl = isTest ? 'ws://localhost:5000' : getEnvVar('VITE_WS_URL', 'ws://localhost:5000');
 
 export const env: EnvConfig = {
   // API Configuration - enforce HTTPS in production
   apiUrl: ensureSecureUrl(rawApiUrl, isProduction),
   wsUrl: ensureSecureUrl(rawWsUrl, isProduction),
-  
+
   // Application Configuration
   appName: getEnvVar('VITE_APP_NAME', 'Campsite Management System'),
   appVersion: getEnvVar('VITE_APP_VERSION', '1.0.0'),
   environment: getEnvVar('VITE_ENV', 'development'),
-  
+
   // Third-party Services
   stripePublicKey: getEnvVar('VITE_STRIPE_PUBLIC_KEY'),
   googleMapsApiKey: getEnvVar('VITE_GOOGLE_MAPS_API_KEY'),
   sentryDsn: getEnvVar('VITE_SENTRY_DSN'),
-  
+
   // Feature Flags
   enablePWA: getBooleanEnvVar('VITE_ENABLE_PWA', true),
   enableAnalytics: getBooleanEnvVar('VITE_ENABLE_ANALYTICS', false),
-  
+  useMockPayments: getBooleanEnvVar('VITE_USE_MOCK_PAYMENTS', false),
+
   // Development
   isDevelopment: import.meta.env.DEV,
   isProduction: isProduction,
@@ -98,16 +114,16 @@ const validateEnv = () => {
     { key: 'apiUrl', value: env.apiUrl },
     { key: 'appName', value: env.appName },
   ];
-  
+
   const missing = requiredVars.filter(({ value }) => !value);
-  
+
   if (missing.length > 0) {
     console.error(
       'Missing required environment variables:',
       missing.map(({ key }) => key).join(', ')
     );
   }
-  
+
   // Warn if using HTTP in production (shouldn't happen with ensureSecureUrl, but just in case)
   if (env.isProduction) {
     if (env.apiUrl.startsWith('http://')) {

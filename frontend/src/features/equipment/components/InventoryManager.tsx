@@ -21,6 +21,7 @@ import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/hooks/useToast';
+import { formatCurrency } from '@/utils/currency';
 
 interface InventoryManagerProps {
   onSelectEquipment?: (equipment: Equipment) => void;
@@ -83,10 +84,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return formatCurrency(price);
   };
 
   const getLowStockWarning = (equipment: Equipment) => {
@@ -559,8 +557,8 @@ const EquipmentFormModal: React.FC<EquipmentFormModalProps> = ({
             {createMutation.isPending || updateMutation.isPending
               ? 'Saving...'
               : equipment
-              ? 'Update'
-              : 'Create'}
+                ? 'Update'
+                : 'Create'}
           </Button>
           {equipment && (
             <Button

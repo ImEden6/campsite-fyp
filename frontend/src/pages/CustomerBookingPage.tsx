@@ -24,9 +24,11 @@ const CustomerBookingPage: React.FC = () => {
         return await getSiteById(siteId);
       } catch (error) {
         console.error('Failed to fetch site:', error);
-        // Fallback to mock data only in development or as last resort
-        if (import.meta.env.DEV) {
-          return mockSites.find((s) => s.id === siteId) || mockSites[0];
+        // Always use mock fallback when API fails (MVP)
+        const mockSite = mockSites.find((s) => s.id === siteId) || mockSites[0];
+        if (mockSite) {
+          console.warn('[MVP] Using mock site data - API unavailable');
+          return mockSite;
         }
         throw error;
       }

@@ -32,9 +32,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
   onChange,
   maxVehicles,
 }) => {
-  const [editingIndex, setEditingIndex] = useState<number | null>(
-    vehicles.length === 0 ? 0 : null
-  );
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const handleAdd = () => {
     if (vehicles.length < maxVehicles) {
@@ -73,7 +71,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Make *
                   </label>
                   <Input
@@ -85,7 +83,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Model *
                   </label>
                   <Input
@@ -97,7 +95,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Year *
                   </label>
                   <Input
@@ -125,7 +123,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     License Plate *
                   </label>
                   <Input
@@ -137,20 +135,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    State *
-                  </label>
-                  <Input
-                    type="text"
-                    value={vehicle.state}
-                    onChange={(e) => handleUpdate(index, 'state', e.target.value.toUpperCase())}
-                    placeholder="CA"
-                    maxLength={2}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Color *
                   </label>
                   <Input
@@ -175,11 +160,11 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
           ) : (
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 dark:text-gray-100">
                   {vehicle.year} {vehicle.make} {vehicle.model}
                 </p>
-                <p className="text-sm text-gray-600">
-                  {vehicle.licensePlate} ({vehicle.state}) • {vehicle.type} • {vehicle.color}
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {vehicle.licensePlate} - {vehicle.type} - {vehicle.color}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -203,11 +188,12 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
       )}
 
       {vehicles.length === 0 && editingIndex === null && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           <p>No vehicles added yet</p>
-          <Button variant="primary" onClick={handleAdd} className="mt-4">
+          <p className="text-sm mt-1">You can skip this step if you're not bringing a vehicle</p>
+          <Button variant="outline" onClick={handleAdd} className="mt-4">
             <Plus size={16} />
-            Add Your First Vehicle
+            Add a Vehicle
           </Button>
         </div>
       )}

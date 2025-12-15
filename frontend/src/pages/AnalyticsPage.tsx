@@ -36,6 +36,7 @@ import {
   DateRangeFilter,
   type DateRange,
 } from '@/features/analytics';
+import { formatCurrency } from '@/utils/currency';
 
 // Lazy load heavy chart components
 const RevenueChart = lazy(() =>
@@ -104,8 +105,8 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
     );
   }
 
-  const formatCurrency = (value: number) =>
-    `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const formatCurrencyValue = (value: number) =>
+    formatCurrency(value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -183,7 +184,7 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  {formatCurrency(site.revenue)}
+                  {formatCurrencyValue(site.revenue)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {site.bookings}
@@ -374,7 +375,7 @@ const AnalyticsPage: React.FC = () => {
                 <p className="text-blue-100 text-xs">Occupancy</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">${metrics.averageBookingValue.toFixed(0)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(metrics.averageBookingValue, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                 <p className="text-blue-100 text-xs">Avg Booking</p>
               </div>
             </div>

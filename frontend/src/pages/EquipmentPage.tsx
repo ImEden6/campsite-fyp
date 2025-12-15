@@ -4,6 +4,7 @@ import { Package, Tent, Waves, Flame, Loader2 } from 'lucide-react';
 import { getEquipment } from '@/services/api/equipment';
 import { queryKeys } from '@/config/query-keys';
 import type { Equipment } from '@/types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 // Icon mapping for equipment categories
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -41,7 +42,7 @@ const EquipmentPage: React.FC = () => {
   // Transform equipment data with display properties
   const equipment: EquipmentWithDisplay[] = useMemo(() => {
     if (!data?.data) return [];
-    
+
     return data.data.map((item: Equipment) => ({
       ...item,
       icon: CATEGORY_ICONS[item.category] || DEFAULT_ICON,
@@ -56,12 +57,12 @@ const EquipmentPage: React.FC = () => {
     () => equipment.reduce((sum, e) => sum + (e.quantity || 0), 0),
     [equipment]
   );
-  
+
   const totalAvailable = useMemo(
     () => equipment.reduce((sum, e) => sum + e.available, 0),
     [equipment]
   );
-  
+
   const categoryCount = useMemo(
     () => new Set(equipment.map((e) => e.category)).size,
     [equipment]
@@ -185,10 +186,10 @@ const EquipmentPage: React.FC = () => {
           const quantity = item.quantity || 0;
           const available = item.available;
           const availabilityPercentage = quantity > 0 ? (available / quantity) * 100 : 0;
-          
+
           return (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700"
               role="article"
               aria-label={`Equipment: ${item.name}`}
@@ -209,7 +210,7 @@ const EquipmentPage: React.FC = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Total Quantity:</span>
@@ -221,18 +222,18 @@ const EquipmentPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Daily Rate:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">${(item.dailyRate || 0).toFixed(2)}</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{(item.dailyRate || 0).toFixed(2)}</span>
                 </div>
                 {item.weeklyRate && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Weekly Rate:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">${item.weeklyRate.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.weeklyRate.toFixed(2)}</span>
                   </div>
                 )}
                 {item.deposit && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Deposit:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">${item.deposit.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.deposit.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -240,7 +241,7 @@ const EquipmentPage: React.FC = () => {
               {quantity > 0 && (
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={available} aria-valuemin={0} aria-valuemax={quantity}>
-                    <div 
+                    <div
                       className="bg-green-500 h-2 rounded-full transition-all"
                       style={{ width: `${availabilityPercentage}%` }}
                     ></div>

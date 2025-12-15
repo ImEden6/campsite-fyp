@@ -4,6 +4,7 @@
  */
 
 import { Booking, BookingStatus, PaymentStatus, SiteType, SiteStatus, MeasurementUnit, VehicleType } from '@/types';
+import { getAllMockBookings } from './mockBookingStore';
 
 /**
  * Mock Bookings Collection
@@ -138,14 +139,17 @@ export const mockBookings: Booking[] = [
 /**
  * Get all mock bookings for a customer
  */
-export const getMockMyBookings = (): Booking[] => mockBookings;
+export const getMockMyBookings = (): Booking[] => {
+    return [...getAllMockBookings(), ...mockBookings];
+};
 
 /**
  * Get upcoming mock bookings (future check-in dates)
  */
 export const getMockUpcomingBookings = (): Booking[] => {
     const now = new Date();
-    return mockBookings.filter(
+    const allBookings = [...getAllMockBookings(), ...mockBookings];
+    return allBookings.filter(
         (b) => new Date(b.checkInDate) > now && b.status !== BookingStatus.CANCELLED
     );
 };
@@ -155,7 +159,8 @@ export const getMockUpcomingBookings = (): Booking[] => {
  */
 export const getMockBookingHistory = (): Booking[] => {
     const now = new Date();
-    return mockBookings.filter(
+    const allBookings = [...getAllMockBookings(), ...mockBookings];
+    return allBookings.filter(
         (b) => new Date(b.checkOutDate) < now || b.status === BookingStatus.CHECKED_OUT
     );
 };

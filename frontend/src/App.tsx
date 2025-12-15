@@ -28,7 +28,8 @@ const RoleBasedRedirect = () => {
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const CustomerLayout = lazy(() => import('@/components/layout/CustomerLayout'));
 const PublicLayout = lazy(() => import('@/components/layout/PublicLayout'));
-const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const CustomerLoginPage = lazy(() => import('@/pages/CustomerLoginPage'));
+const AdminLoginPage = lazy(() => import('@/pages/AdminLoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const UnauthorizedPage = lazy(() => import('@/pages/UnauthorizedPage'));
 
@@ -105,8 +106,8 @@ function App() {
       console.log('[App] Session expired, redirecting to login');
       // Clear auth state
       useAuthStore.getState().logout();
-      // Redirect to login
-      navigate('/login', { replace: true });
+      // Redirect to customer login by default
+      navigate('/customer/login', { replace: true });
     };
 
     window.addEventListener('auth:session-expired', handleSessionExpired);
@@ -191,12 +192,25 @@ function App() {
 
             {/* Public auth routes (only accessible when NOT authenticated) */}
             <Route
-              path="/login"
+              path="/customer/login"
               element={
                 <PublicRoute>
-                  <LoginPage />
+                  <CustomerLoginPage />
                 </PublicRoute>
               }
+            />
+            <Route
+              path="/admin/login"
+              element={
+                <PublicRoute>
+                  <AdminLoginPage />
+                </PublicRoute>
+              }
+            />
+            {/* Backward compatibility redirect */}
+            <Route
+              path="/login"
+              element={<Navigate to="/customer/login" replace />}
             />
             <Route
               path="/register"

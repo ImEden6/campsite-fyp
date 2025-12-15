@@ -10,6 +10,7 @@ import { TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import type { RevenueMetrics } from '@/services/api/analytics';
 import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
 import { useDarkMode } from '@/hooks/useDarkMode';
+import { formatCurrency as formatMYR } from '@/utils/currency';
 
 interface RevenueChartProps {
   data: RevenueMetrics;
@@ -41,7 +42,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
         borderColor: colors.border,
         borderWidth: 1,
         callbacks: {
-          label: (ctx) => `Revenue: $${(ctx.parsed.y ?? 0).toLocaleString()}`,
+          label: (ctx) => `Revenue: ${formatMYR(ctx.parsed.y ?? 0)}`,
         },
       },
     },
@@ -53,7 +54,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
       y: {
         ticks: {
           color: colors.textMuted,
-          callback: (value) => `$${Number(value).toLocaleString()}`,
+          callback: (value) => formatMYR(Number(value)),
         },
         grid: { color: colors.grid },
       },
@@ -75,7 +76,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
         borderColor: colors.border,
         borderWidth: 1,
         callbacks: {
-          label: (ctx) => `Revenue: $${(ctx.parsed.y ?? 0).toLocaleString()}`,
+          label: (ctx) => `Revenue: ${formatMYR(ctx.parsed.y ?? 0)}`,
         },
       },
     },
@@ -87,7 +88,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
       y: {
         ticks: {
           color: colors.textMuted,
-          callback: (value) => `$${Number(value).toLocaleString()}`,
+          callback: (value) => formatMYR(Number(value)),
         },
         grid: { color: colors.grid },
       },
@@ -99,7 +100,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, // We render our own legend
+        display: false, // render our own legend
       },
       tooltip: {
         backgroundColor: colors.background,
@@ -110,14 +111,14 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
         callbacks: {
           label: (ctx) => {
             const value = ctx.parsed as number;
-            return `$${value.toLocaleString()}`;
+            return formatMYR(value);
           },
         },
       },
     },
   }), [colors]);
 
-  // Prepare chart data - use separate typed data for line and bar
+  // Prepare chart data, use separate typed data for line and bar
   const lineData = useMemo<ChartData<'line'>>(() => ({
     labels: data.timeSeries.map(d => {
       const date = new Date(d.date);
@@ -126,12 +127,26 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
     datasets: [{
       label: 'Revenue',
       data: data.timeSeries.map(d => d.revenue),
-      borderColor: colors.primary,
-      backgroundColor: `${colors.primary}33`,
+      borderColor: colors.success,
+      backgroundColor: (context) => {
+        const chart = context.chart;
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return colors.success;
+        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        gradient.addColorStop(0, 'oklch(0.72 0.190 145 / 0.1)');
+        gradient.addColorStop(0.5, 'oklch(0.77 0.180 75 / 0.4)');
+        gradient.addColorStop(1, 'oklch(0.62 0.180 260 / 0.6)');
+        return gradient;
+      },
       fill: true,
       tension: 0.4,
+      pointBackgroundColor: CHART_COLORS.slice(0, data.timeSeries.length),
+      pointBorderColor: isDark ? 'oklch(0.30 0.020 260)' : 'oklch(1 0 0)',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
     }],
-  }), [data.timeSeries, colors.primary]);
+  }), [data.timeSeries, colors.success, isDark]);
 
   const barData = useMemo<ChartData<'bar'>>(() => ({
     labels: data.timeSeries.map(d => {
@@ -141,10 +156,14 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
     datasets: [{
       label: 'Revenue',
       data: data.timeSeries.map(d => d.revenue),
-      backgroundColor: colors.primary,
+      backgroundColor: data.timeSeries.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
       borderRadius: 8,
+      hoverBackgroundColor: data.timeSeries.map((_, i) => {
+        const baseColor = CHART_COLORS[i % CHART_COLORS.length] ?? CHART_COLORS[0]!;
+        return baseColor.replace(')', ' / 0.8)');
+      }),
     }],
-  }), [data.timeSeries, colors.primary]);
+  }), [data.timeSeries]);
 
   const pieData = useMemo<ChartData<'pie'>>(() => ({
     labels: data.byType.map(d => d.siteType),
@@ -167,7 +186,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, loading }) => 
   }
 
   const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return formatMYR(value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   };
 
   return (

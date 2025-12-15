@@ -12,6 +12,7 @@ import {
   useDownloadReceipt,
 } from '../hooks/usePayments';
 import { Payment, PaymentStatus } from '../types/payment.types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface PaymentHistoryProps {
   bookingId?: string;
@@ -140,11 +141,11 @@ export const PaymentHistory = ({
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-lg font-semibold text-gray-900">
-                      ${(payment.amount / 100).toFixed(2)}
+                      {CURRENCY_SYMBOL}{(payment.amount / 100).toFixed(2)}
                     </p>
                     {payment.refundedAmount && payment.refundedAmount > 0 && (
                       <p className="text-xs text-gray-500">
-                        Refunded: ${(payment.refundedAmount / 100).toFixed(2)}
+                        Refunded: {CURRENCY_SYMBOL}{(payment.refundedAmount / 100).toFixed(2)}
                       </p>
                     )}
                   </div>

@@ -6,6 +6,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Users, Calendar, Percent } from 'lucide-react';
 import type { DashboardMetrics as DashboardMetricsType } from '@/services/api/analytics';
+import { formatCurrency } from '@/utils/currency';
 
 interface DashboardMetricsProps {
   metrics: DashboardMetricsType;
@@ -22,41 +23,40 @@ interface MetricCardProps {
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, format = 'number' }) => {
   const isPositive = change >= 0;
-  const formattedValue = typeof value === 'number' 
-    ? format === 'currency' 
-      ? `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const formattedValue = typeof value === 'number'
+    ? format === 'currency'
+      ? formatCurrency(value)
       : format === 'percentage'
-      ? `${value.toFixed(1)}%`
-      : value.toLocaleString()
+        ? `${value.toFixed(1)}%`
+        : value.toLocaleString()
     : value;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
-        <div className="p-3 bg-blue-50 rounded-lg">
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
           {icon}
         </div>
-        <div className={`flex items-center text-sm font-medium ${
-          isPositive ? 'text-green-600' : 'text-red-600'
-        }`}>
+        <div className={`flex items-center text-sm font-medium ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+          }`}>
           {isPositive ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
           {Math.abs(change).toFixed(1)}%
         </div>
       </div>
-      <h3 className="text-gray-600 text-sm font-medium mb-1">{title}</h3>
-      <p className="text-2xl font-bold text-gray-900">{formattedValue}</p>
+      <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">{title}</h3>
+      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formattedValue}</p>
     </div>
   );
 };
 
 const SkeletonCard: React.FC = () => (
-  <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
     <div className="flex items-center justify-between mb-4">
-      <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-      <div className="w-16 h-5 bg-gray-200 rounded"></div>
+      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+      <div className="w-16 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
     </div>
-    <div className="w-24 h-4 bg-gray-200 rounded mb-2"></div>
-    <div className="w-32 h-8 bg-gray-200 rounded"></div>
+    <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+    <div className="w-32 h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
   </div>
 );
 

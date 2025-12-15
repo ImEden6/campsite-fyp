@@ -7,6 +7,7 @@ import React from 'react';
 import type { Equipment } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { formatCurrency } from '@/utils/currency';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -41,10 +42,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return formatCurrency(price);
   };
 
   return (
@@ -74,7 +72,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
             </svg>
           </div>
         )}
-        
+
         {/* Status Badge */}
         <div className="absolute top-2 right-2">
           <Badge variant={getStatusColor(equipment.status)}>

@@ -161,7 +161,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        navigate('/login');
+        navigate('/customer/login');
       }, 2000);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
@@ -179,7 +179,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               'flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium',
               currentStep >= step
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-600'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
             )}
           >
             {step}
@@ -188,7 +188,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <div
               className={cn(
                 'mx-2 h-1 w-12',
-                currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
+                currentStep > step ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               )}
             />
           )}
@@ -201,14 +201,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     return (
       <div className="w-full max-w-md text-center">
         <div className="mb-6 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-500/20">
+            <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
           </div>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
           Registration successful!
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Your account has been created. Redirecting to login...
         </p>
       </div>
@@ -229,7 +229,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Global error message */}
         {error && (
-          <div className="flex items-start gap-3 rounded-md bg-red-50 p-4 text-sm text-red-800">
+          <div className="flex items-start gap-3 rounded-md bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 p-4 text-sm text-red-800 dark:text-red-200">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <div>
               <p className="font-medium">Registration failed</p>
@@ -330,27 +330,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Step 3: Review and confirm */}
         {currentStep === 3 && (
           <div className="space-y-4">
-            <div className="rounded-lg bg-gray-50 p-4">
-              <h3 className="mb-3 font-medium text-gray-900">Review your information</h3>
+            <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+              <h3 className="mb-3 font-medium text-gray-900 dark:text-gray-100">Review your information</h3>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">Email:</dt>
-                  <dd className="font-medium text-gray-900">{formData.email}</dd>
+                  <dt className="text-gray-600 dark:text-gray-400">Email:</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100">{formData.email}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">Name:</dt>
-                  <dd className="font-medium text-gray-900">
+                  <dt className="text-gray-600 dark:text-gray-400">Name:</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100">
                     {formData.firstName} {formData.lastName}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">Phone:</dt>
-                  <dd className="font-medium text-gray-900">{formData.phone}</dd>
+                  <dt className="text-gray-600 dark:text-gray-400">Phone:</dt>
+                  <dd className="font-medium text-gray-900 dark:text-gray-100">{formData.phone}</dd>
                 </div>
               </dl>
             </div>
 
-            <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 p-4 text-sm text-blue-800 dark:text-blue-200">
               <p>
                 By creating an account, you agree to our Terms of Service and Privacy Policy.
               </p>
@@ -397,11 +397,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         </div>
 
         {/* Login link */}
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
           <Link
-            to="/login"
-            className="font-medium text-blue-600 hover:text-blue-500"
+            to="/customer/login"
+            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
           >
             Sign in
           </Link>

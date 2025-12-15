@@ -10,6 +10,7 @@ import { SiteCard } from './SiteCard';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Input } from '@/components/ui/Input';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface SiteAvailabilityGridProps {
   sites: Site[];
@@ -182,7 +183,7 @@ export const SiteAvailabilityGrid: React.FC<SiteAvailabilityGridProps> = ({
               </label>
               <Input
                 type="number"
-                placeholder="$0"
+                placeholder={`${CURRENCY_SYMBOL}0`}
                 value={filters.minPrice}
                 onChange={(e) => handleFilterChange('minPrice', e.target.value)}
                 min="0"
@@ -196,7 +197,7 @@ export const SiteAvailabilityGrid: React.FC<SiteAvailabilityGridProps> = ({
               </label>
               <Input
                 type="number"
-                placeholder="$1000"
+                placeholder={`${CURRENCY_SYMBOL}1000`}
                 value={filters.maxPrice}
                 onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
                 min="0"

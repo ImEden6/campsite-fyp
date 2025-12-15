@@ -385,7 +385,7 @@ const SiteDetailPage: React.FC = () => {
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
                 Or{' '}
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/customer/login')}
                   className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   login

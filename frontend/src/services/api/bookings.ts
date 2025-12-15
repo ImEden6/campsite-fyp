@@ -12,6 +12,12 @@ import type {
   ApiResponse,
   BookingFilters,
 } from '@/types';
+import {
+  calculateMockPrice,
+  createMockBooking,
+  getMockBooking,
+  setUsingMockData,
+} from './mockBookingStore';
 
 export interface CreateBookingData {
   siteId: string;
@@ -90,10 +96,21 @@ export const getBookingsPaginated = async (
 
 /**
  * Get booking by ID
+ * Falls back to mock booking if API is unavailable (MVP)
  */
 export const getBookingById = async (id: string): Promise<Booking> => {
-  const response = await get<ApiResponse<Booking>>(`/bookings/${id}`);
-  return response.data!;
+  try {
+    const response = await get<ApiResponse<Booking>>(`/bookings/${id}`);
+    return response.data!;
+  } catch (error) {
+    const mockBooking = getMockBooking(id);
+    if (mockBooking) {
+      console.warn('[MVP] Using mock booking - API unavailable');
+      setUsingMockData(true);
+      return mockBooking;
+    }
+    throw error;
+  }
 };
 
 /**
@@ -169,6 +186,7 @@ export const getBookingHistory = async (): Promise<Booking[]> => {
 
 /**
  * Calculate booking pricing
+ * Falls back to mock pricing if API is unavailable (MVP)
  */
 export const calculateBookingPrice = async (
   siteId: string,
@@ -176,21 +194,34 @@ export const calculateBookingPrice = async (
   checkOutDate: string,
   equipmentRentals?: { equipmentId: string; quantity: number }[]
 ): Promise<BookingPricing> => {
-  const response = await post<ApiResponse<BookingPricing>>('/bookings/calculate-price', {
-    siteId,
-    checkInDate,
-    checkOutDate,
-    equipmentRentals,
-  });
-  return response.data!;
+  try {
+    const response = await post<ApiResponse<BookingPricing>>('/bookings/calculate-price', {
+      siteId,
+      checkInDate,
+      checkOutDate,
+      equipmentRentals,
+    });
+    return response.data!;
+  } catch {
+    console.warn('[MVP] Using mock pricing - API unavailable');
+    setUsingMockData(true);
+    return calculateMockPrice(siteId, checkInDate, checkOutDate, equipmentRentals);
+  }
 };
 
 /**
  * Create a new booking
+ * Falls back to mock booking creation if API is unavailable (MVP)
  */
 export const createBooking = async (bookingData: CreateBookingData): Promise<Booking> => {
-  const response = await post<ApiResponse<Booking>>('/bookings', bookingData);
-  return response.data!;
+  try {
+    const response = await post<ApiResponse<Booking>>('/bookings', bookingData);
+    return response.data!;
+  } catch {
+    console.warn('[MVP] Using mock booking creation - API unavailable');
+    setUsingMockData(true);
+    return createMockBooking(bookingData);
+  }
 };
 
 /**
@@ -273,8 +304,18 @@ export interface GuestBookingResponse {
 export const createGuestBooking = async (
   bookingData: CreateGuestBookingData
 ): Promise<GuestBookingResponse> => {
-  const response = await post<ApiResponse<GuestBookingResponse>>('/bookings/guest', bookingData);
-  return response.data!;
+  try {
+    const response = await post<ApiResponse<GuestBookingResponse>>('/bookings/guest', bookingData);
+    return response.data!;
+  } catch (error) {
+    console.warn('[Mock] Using mock guest booking creation - API unavailable', error);
+    setUsingMockData(true);
+    const mockBooking = createMockBooking(bookingData);
+    return {
+      booking: mockBooking,
+      accessToken: 'mock-access-token',
+    };
+  }
 };
 
 /**

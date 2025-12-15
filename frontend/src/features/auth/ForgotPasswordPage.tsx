@@ -95,7 +95,7 @@ const ForgotPasswordPage: React.FC = () => {
               Try another email
             </Button>
 
-            <Link to="/login">
+            <Link to="/customer/login">
               <Button
                 variant="outline"
                 size="lg"
@@ -160,7 +160,7 @@ const ForgotPasswordPage: React.FC = () => {
           </Button>
 
           {/* Back to login link */}
-          <Link to="/login">
+          <Link to="/customer/login">
             <Button
               type="button"
               variant="ghost"

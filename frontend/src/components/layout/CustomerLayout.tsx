@@ -13,6 +13,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { SkipNavigation } from '@/components/accessibility';
 import ToastContainer from './ToastContainer';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
 
 const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <SkipNavigation />
+      <OfflineBanner />
 
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">

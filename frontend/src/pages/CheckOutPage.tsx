@@ -11,6 +11,7 @@ import { getBookings, checkOutBooking } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { Booking, BookingStatus } from '@/types';
 import { format, parseISO, differenceInDays } from 'date-fns';
+import { formatCurrency } from '@/utils/currency';
 
 const CheckOutPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,11 +24,11 @@ const CheckOutPage: React.FC = () => {
 
   // Search for checked-in bookings
   const { data: bookings = [], isLoading: searchLoading } = useQuery({
-    queryKey: queryKeys.bookings.list({ 
+    queryKey: queryKeys.bookings.list({
       searchTerm,
       status: [BookingStatus.CHECKED_IN],
     }),
-    queryFn: () => getBookings({ 
+    queryFn: () => getBookings({
       searchTerm,
       status: [BookingStatus.CHECKED_IN],
     }),
@@ -80,12 +81,12 @@ const CheckOutPage: React.FC = () => {
         finalTotal: 0,
       };
     }
-    
+
     const totalPaid = selectedBooking.paidAmount;
     const totalDue = selectedBooking.totalAmount;
     const balance = totalDue - totalPaid;
     const finalTotal = balance + additionalCharges;
-    
+
     return {
       totalPaid,
       totalDue,
@@ -130,35 +131,34 @@ const CheckOutPage: React.FC = () => {
             className="cursor-pointer"
             onClick={() => handleSelectBooking(booking)}
           >
-            <Card className={`p-4 hover:shadow-md transition-shadow ${
-              selectedBooking?.id === booking.id ? 'ring-2 ring-blue-500' : ''
-            }`}>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold">
-                    {booking.user?.firstName} {booking.user?.lastName}
-                  </h4>
-                  <Badge variant="success">{booking.bookingNumber}</Badge>
+            <Card className={`p-4 hover:shadow-md transition-shadow ${selectedBooking?.id === booking.id ? 'ring-2 ring-blue-500' : ''
+              }`}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">
+                      {booking.user?.firstName} {booking.user?.lastName}
+                    </h4>
+                    <Badge variant="success">{booking.bookingNumber}</Badge>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {booking.site?.name || `Site ${booking.siteId}`}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Checked in: {booking.checkInTime ? format(new Date(booking.checkInTime), 'MMM d, h:mm a') : 'N/A'}
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {booking.site?.name || `Site ${booking.siteId}`}
-                </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Checked in: {booking.checkInTime ? format(new Date(booking.checkInTime), 'MMM d, h:mm a') : 'N/A'}
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">
+                    {differenceInDays(
+                      booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate),
+                      booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate)
+                    )}{' '}
+                    nights
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-gray-500">
-                  {differenceInDays(
-                    booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate),
-                    booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate)
-                  )}{' '}
-                  nights
-                </div>
-              </div>
-            </div>
-          </Card>
+            </Card>
           </div>
         ))}
       </div>
@@ -175,7 +175,7 @@ const CheckOutPage: React.FC = () => {
       <div className="space-y-6">
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Booking Details</h3>
-          
+
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <div className="text-sm text-gray-500">Guest Name</div>
@@ -223,7 +223,7 @@ const CheckOutPage: React.FC = () => {
                     <span>
                       {rental.equipment?.name} x{rental.quantity}
                     </span>
-                    <span className="font-medium">${rental.totalAmount.toFixed(2)}</span>
+                    <span className="font-medium">{formatCurrency(rental.totalAmount)}</span>
                   </div>
                 ))}
               </div>
@@ -233,7 +233,7 @@ const CheckOutPage: React.FC = () => {
 
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Additional Charges</h3>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Charge Amount</label>
@@ -266,30 +266,30 @@ const CheckOutPage: React.FC = () => {
 
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Final Charges</h3>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Original Total</span>
-              <span className="font-medium">${charges.totalDue.toFixed(2)}</span>
+              <span className="font-medium">{formatCurrency(charges.totalDue)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Amount Paid</span>
-              <span className="font-medium text-green-600">-${charges.totalPaid.toFixed(2)}</span>
+              <span className="font-medium text-green-600">-{formatCurrency(charges.totalPaid)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Balance Due</span>
-              <span className="font-medium">${charges.balance.toFixed(2)}</span>
+              <span className="font-medium">{formatCurrency(charges.balance)}</span>
             </div>
             {additionalCharges > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Additional Charges</span>
-                <span className="font-medium text-orange-600">+${charges.additionalCharges.toFixed(2)}</span>
+                <span className="font-medium text-orange-600">+{formatCurrency(charges.additionalCharges)}</span>
               </div>
             )}
             <div className="border-t pt-3 flex justify-between">
               <span className="font-semibold">Final Total</span>
               <span className={`font-bold text-lg ${hasBalance ? 'text-red-600' : 'text-green-600'}`}>
-                ${charges.finalTotal.toFixed(2)}
+                {formatCurrency(charges.finalTotal)}
               </span>
             </div>
           </div>
@@ -298,7 +298,7 @@ const CheckOutPage: React.FC = () => {
             <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
               <div className="text-sm text-yellow-800">
-                <strong>Payment Required:</strong> Guest has an outstanding balance of ${charges.finalTotal.toFixed(2)} that needs to be collected before check-out.
+                <strong>Payment Required:</strong> Guest has an outstanding balance of {formatCurrency(charges.finalTotal)} that needs to be collected before check-out.
               </div>
             </div>
           )}
@@ -337,9 +337,9 @@ const CheckOutPage: React.FC = () => {
           {charges.finalTotal > 0 && (
             <div className="mb-6 p-4 bg-white rounded-lg">
               <div className="text-sm text-gray-600 mb-2">Final Charges</div>
-              <div className="text-2xl font-bold text-gray-900">${charges.finalTotal.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCurrency(charges.finalTotal)}</div>
               <div className="text-sm text-gray-600 mt-1">
-                {additionalCharges > 0 && `Includes $${additionalCharges.toFixed(2)} in additional charges`}
+                {additionalCharges > 0 && `Includes ${formatCurrency(additionalCharges)} in additional charges`}
               </div>
             </div>
           )}

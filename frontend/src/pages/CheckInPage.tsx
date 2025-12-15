@@ -11,6 +11,7 @@ import { getBookings, checkInBooking, getBookingQRCode } from '@/services/api/bo
 import { queryKeys } from '@/config/query-keys';
 import { Booking, BookingStatus } from '@/types';
 import { format } from 'date-fns';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 const CheckInPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,11 +23,11 @@ const CheckInPage: React.FC = () => {
 
   // Search for bookings
   const { data: bookings = [], isLoading: searchLoading } = useQuery({
-    queryKey: queryKeys.bookings.list({ 
+    queryKey: queryKeys.bookings.list({
       searchTerm,
       status: [BookingStatus.CONFIRMED],
     }),
-    queryFn: () => getBookings({ 
+    queryFn: () => getBookings({
       searchTerm,
       status: [BookingStatus.CONFIRMED],
     }),
@@ -110,35 +111,34 @@ const CheckInPage: React.FC = () => {
             className="cursor-pointer"
             onClick={() => handleSelectBooking(booking)}
           >
-            <Card className={`p-4 hover:shadow-md transition-shadow ${
-              selectedBooking?.id === booking.id ? 'ring-2 ring-blue-500' : ''
-            }`}>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold">
-                    {booking.user?.firstName} {booking.user?.lastName}
-                  </h4>
-                  <Badge variant="info">{booking.bookingNumber}</Badge>
-                </div>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {booking.site?.name || `Site ${booking.siteId}`}
+            <Card className={`p-4 hover:shadow-md transition-shadow ${selectedBooking?.id === booking.id ? 'ring-2 ring-blue-500' : ''
+              }`}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">
+                      {booking.user?.firstName} {booking.user?.lastName}
+                    </h4>
+                    <Badge variant="info">{booking.bookingNumber}</Badge>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {format(booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate), 'MMM d, yyyy h:mm a')}
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      {booking.site?.name || `Site ${booking.siteId}`}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {format(booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate), 'MMM d, yyyy h:mm a')}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">
+                    {booking.guests.adults} adults, {booking.guests.children} children
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-gray-500">
-                  {booking.guests.adults} adults, {booking.guests.children} children
-                </div>
-              </div>
-            </div>
-          </Card>
+            </Card>
           </div>
         ))}
       </div>
@@ -151,7 +151,7 @@ const CheckInPage: React.FC = () => {
     return (
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Booking Details</h3>
-        
+
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
             <div className="text-sm text-gray-500">Guest Name</div>
@@ -194,7 +194,7 @@ const CheckInPage: React.FC = () => {
           </div>
           <div>
             <div className="text-sm text-gray-500">Total Amount</div>
-            <div className="font-medium">${selectedBooking.totalAmount.toFixed(2)}</div>
+            <div className="font-medium">{CURRENCY_SYMBOL}{selectedBooking.totalAmount.toFixed(2)}</div>
           </div>
         </div>
 

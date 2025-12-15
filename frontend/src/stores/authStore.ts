@@ -6,10 +6,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User, AuthTokens, LoginCredentials, LoginResponse } from '@/types';
-import { 
-  saveAuthTokens, 
-  clearAuthTokens, 
-  setUserData, 
+import {
+  saveAuthTokens,
+  clearAuthTokens,
+  setUserData,
   getUserData,
   getAuthToken,
   getRefreshToken
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthStore>()(
       initialize: () => {
         const token = getAuthToken();
         const user = getUserData<User>();
-        
+
         if (token && user) {
           // Validate token format (basic check)
           try {
@@ -143,7 +143,7 @@ export const useAuthStore = create<AuthStore>()(
               clearAuthTokens();
               return;
             }
-            
+
             // Decode payload to check expiration
             const payloadPart = parts[1];
             if (!payloadPart) {
@@ -154,21 +154,21 @@ export const useAuthStore = create<AuthStore>()(
             const payload = JSON.parse(atob(payloadPart));
             const expiresAt = payload.exp * 1000; // Convert to milliseconds
             const now = Date.now();
-            
+
             if (expiresAt < now) {
               console.warn('[AuthStore] Token expired, clearing auth');
               clearAuthTokens();
               window.dispatchEvent(new CustomEvent('auth:session-expired'));
               return;
             }
-            
+
             console.log('[AuthStore] Token valid, expires in', Math.round((expiresAt - now) / 1000 / 60), 'minutes');
           } catch (error) {
             console.error('[AuthStore] Error validating token:', error);
             clearAuthTokens();
             return;
           }
-          
+
           set({
             user,
             tokens: {
@@ -178,7 +178,7 @@ export const useAuthStore = create<AuthStore>()(
             },
             isAuthenticated: true,
           });
-          
+
           // Set user context in Sentry
           setUserContext({
             id: user.id,
@@ -191,10 +191,10 @@ export const useAuthStore = create<AuthStore>()(
       // Login action
       login: async (credentials: LoginCredentials) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           let response: LoginResponse;
-          
+
           // Use mock auth if enabled or backend is unavailable
           if (shouldUseMockAuth()) {
             console.log('Using mock authentication');
@@ -205,29 +205,29 @@ export const useAuthStore = create<AuthStore>()(
             console.log('[AuthStore] API Response:', apiResponse);
             response = parseLoginResponse(apiResponse);
           }
-          
+
           console.log('[AuthStore] Parsed response:', response);
           const { user, tokens } = response;
           console.log('[AuthStore] User:', user);
           console.log('[AuthStore] Tokens:', tokens);
-          
+
           // Validate response structure
           if (!user || !tokens || !tokens.accessToken) {
             console.error('[AuthStore] Missing user or tokens!', { user, tokens });
             throw new Error('Invalid response from server. Please ensure the backend API is running and properly configured.');
           }
-          
+
           // Save tokens to localStorage
           saveAuthTokens(tokens);
           setUserData(user);
-          
+
           // Set user context in Sentry
           setUserContext({
             id: user.id,
             email: user.email,
             role: user.role,
           });
-          
+
           set({
             user,
             tokens,
@@ -271,10 +271,10 @@ export const useAuthStore = create<AuthStore>()(
       logout: () => {
         // Clear tokens from storage
         clearAuthTokens();
-        
+
         // Clear user context in Sentry
         clearUserContext();
-        
+
         // Reset state
         set({
           user: null,
@@ -282,7 +282,7 @@ export const useAuthStore = create<AuthStore>()(
           isAuthenticated: false,
           error: null,
         });
-        
+
         // Dispatch logout event for other parts of the app
         window.dispatchEvent(new CustomEvent('auth:logout'));
       },
@@ -290,27 +290,27 @@ export const useAuthStore = create<AuthStore>()(
       // Refresh token action
       refreshToken: async () => {
         const { tokens } = get();
-        
+
         if (!tokens?.refreshToken) {
           get().logout();
           return;
         }
-        
+
         try {
           const response = await post<{ accessToken: string; expiresIn: number }>(
             '/auth/refresh',
             { refreshToken: tokens.refreshToken }
           );
-          
+
           const newTokens: AuthTokens = {
             accessToken: response.accessToken,
             refreshToken: tokens.refreshToken,
             expiresIn: response.expiresIn,
           };
-          
+
           // Save new access token
           saveAuthTokens(newTokens);
-          
+
           set({ tokens: newTokens });
         } catch (error) {
           console.error('Token refresh failed:', error);
@@ -321,19 +321,19 @@ export const useAuthStore = create<AuthStore>()(
       // Update user profile
       updateProfile: async (data: Partial<User>) => {
         const { user } = get();
-        
+
         if (!user) {
           throw new Error('No user logged in');
         }
-        
+
         set({ isLoading: true, error: null });
-        
+
         try {
           const response = await post<User>(`/users/${user.id}`, data);
-          
+
           // Update user in storage
           setUserData(response);
-          
+
           set({
             user: response,
             isLoading: false,
@@ -343,8 +343,8 @@ export const useAuthStore = create<AuthStore>()(
             error instanceof Error
               ? error.message
               : typeof error === 'string' && error.trim()
-              ? error
-              : 'Profile update failed';
+                ? error
+                : 'Profile update failed';
           set({
             isLoading: false,
             error: errorMessage,
@@ -385,8 +385,4 @@ export const useAuthStore = create<AuthStore>()(
 );
 
 // Listen for session expired events
-if (typeof window !== 'undefined') {
-  window.addEventListener('auth:session-expired', () => {
-    useAuthStore.getState().logout();
-  });
-}
+

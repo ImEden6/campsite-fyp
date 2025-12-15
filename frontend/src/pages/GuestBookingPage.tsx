@@ -135,62 +135,50 @@ const GuestBookingPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   First Name *
                 </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <Input
-                    type="text"
-                    required
-                    value={guestInfo.firstName}
-                    onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
-                    className="pl-10"
-                  />
-                </div>
+                <Input
+                  type="text"
+                  required
+                  value={guestInfo.firstName}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
+                  icon={<User className="text-gray-400 w-5 h-5" />}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Last Name *
                 </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <Input
-                    type="text"
-                    required
-                    value={guestInfo.lastName}
-                    onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
-                    className="pl-10"
-                  />
-                </div>
+                <Input
+                  type="text"
+                  required
+                  value={guestInfo.lastName}
+                  onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
+                  icon={<User className="text-gray-400 w-5 h-5" />}
+                />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address *
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="email"
-                  required
-                  value={guestInfo.email}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                type="email"
+                required
+                value={guestInfo.email}
+                onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
+                icon={<Mail className="text-gray-400 w-5 h-5" />}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Phone Number *
               </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="tel"
-                  required
-                  value={guestInfo.phone}
-                  onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                type="tel"
+                required
+                value={guestInfo.phone}
+                onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+                icon={<Phone className="text-gray-400 w-5 h-5" />}
+              />
             </div>
             <div className="flex items-center space-x-2">
               <input

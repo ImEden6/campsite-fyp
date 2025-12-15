@@ -11,6 +11,7 @@ import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
 import { PaymentModal } from '@/features/payments/components/PaymentModal';
 import { useUIStore } from '@/stores/uiStore';
 import { format } from 'date-fns';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 const CustomerBookingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -94,7 +95,7 @@ const CustomerBookingDetailPage: React.FC = () => {
   const needsPayment = booking.paymentStatus === PaymentStatus.PENDING || booking.paymentStatus === PaymentStatus.PARTIAL;
   const nights = Math.ceil(
     (new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime()) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   );
 
   return (
@@ -201,32 +202,32 @@ const CustomerBookingDetailPage: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
                 <span className="text-gray-900 dark:text-gray-100">
-                  ${(booking.totalAmount - booking.taxAmount).toFixed(2)}
+                  {CURRENCY_SYMBOL}{(booking.totalAmount - booking.taxAmount).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Tax</span>
                 <span className="text-gray-900 dark:text-gray-100">
-                  ${booking.taxAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.taxAmount.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">Total</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  ${booking.totalAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                 <span className="text-gray-600 dark:text-gray-400">Paid</span>
                 <span className="text-gray-900 dark:text-gray-100">
-                  ${booking.paidAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}
                 </span>
               </div>
               {booking.paidAmount < booking.totalAmount && (
                 <div className="flex justify-between text-red-600 dark:text-red-400">
                   <span>Balance Due</span>
                   <span className="font-semibold">
-                    ${(booking.totalAmount - booking.paidAmount).toFixed(2)}
+                    {CURRENCY_SYMBOL}{(booking.totalAmount - booking.paidAmount).toFixed(2)}
                   </span>
                 </div>
               )}
@@ -245,10 +246,10 @@ const CustomerBookingDetailPage: React.FC = () => {
             {refundInfo && (
               <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Refund Amount:</strong> ${refundInfo.refundAmount.toFixed(2)}
+                  <strong>Refund Amount:</strong> {CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Cancellation Fee:</strong> ${refundInfo.cancellationFee.toFixed(2)}
+                  <strong>Cancellation Fee:</strong> {CURRENCY_SYMBOL}{refundInfo.cancellationFee.toFixed(2)}
                 </p>
               </div>
             )}

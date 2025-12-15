@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { useProcessRefund } from '../hooks/usePayments';
 import { Payment } from '../types/payment.types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface RefundDialogProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export const RefundDialog = ({
         return;
       }
       if (amount > maxRefundDollars) {
-        setError(`Amount cannot exceed $${maxRefundDollars.toFixed(2)}`);
+        setError(`Amount cannot exceed ${CURRENCY_SYMBOL}${maxRefundDollars.toFixed(2)}`);
         return;
       }
       refundAmount = Math.round(amount * 100);
@@ -67,7 +68,7 @@ export const RefundDialog = ({
           const error = err as { response?: { data?: { message?: string } } };
           setError(
             error.response?.data?.message ||
-              'Failed to process refund. Please try again.'
+            'Failed to process refund. Please try again.'
           );
         },
       }
@@ -109,21 +110,21 @@ export const RefundDialog = ({
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Original Amount:</span>
             <span className="font-medium">
-              ${(payment.amount / 100).toFixed(2)}
+              {CURRENCY_SYMBOL}{(payment.amount / 100).toFixed(2)}
             </span>
           </div>
           {payment.refundedAmount && payment.refundedAmount > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Already Refunded:</span>
               <span className="font-medium text-red-600">
-                -${(payment.refundedAmount / 100).toFixed(2)}
+                -{CURRENCY_SYMBOL}{(payment.refundedAmount / 100).toFixed(2)}
               </span>
             </div>
           )}
           <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
             <span className="text-gray-600">Available to Refund:</span>
             <span className="font-semibold">
-              ${maxRefundDollars.toFixed(2)}
+              {CURRENCY_SYMBOL}{maxRefundDollars.toFixed(2)}
             </span>
           </div>
         </div>
@@ -144,7 +145,7 @@ export const RefundDialog = ({
                   className="mr-2"
                 />
                 <span className="text-sm">
-                  Full Refund (${maxRefundDollars.toFixed(2)})
+                  Full Refund ({CURRENCY_SYMBOL}{maxRefundDollars.toFixed(2)})
                 </span>
               </label>
               <label className="flex items-center">

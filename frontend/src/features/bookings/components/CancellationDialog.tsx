@@ -12,6 +12,7 @@ import { cancelBooking, calculateCancellationRefund } from '@/services/api/booki
 import { queryKeys } from '@/config/query-keys';
 import { useToast } from '@/hooks/useToast';
 import type { Booking } from '@/types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface CancellationDialogProps {
   booking: Booking;
@@ -141,25 +142,25 @@ export const CancellationDialog: React.FC<CancellationDialogProps> = ({
               <div className="flex justify-between">
                 <span className="text-blue-800">Original Amount:</span>
                 <span className="font-medium text-blue-900">
-                  ${booking.totalAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-blue-800">Paid Amount:</span>
                 <span className="font-medium text-blue-900">
-                  ${booking.paidAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}
                 </span>
               </div>
               {refundInfo.cancellationFee > 0 && (
                 <div className="flex justify-between text-red-600">
                   <span>Cancellation Fee:</span>
-                  <span className="font-medium">-${refundInfo.cancellationFee.toFixed(2)}</span>
+                  <span className="font-medium">-{CURRENCY_SYMBOL}{refundInfo.cancellationFee.toFixed(2)}</span>
                 </div>
               )}
               <div className="pt-2 border-t border-blue-300 flex justify-between">
                 <span className="font-semibold text-blue-900">Refund Amount:</span>
                 <span className="font-bold text-blue-900 text-lg">
-                  ${refundInfo.refundAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between text-xs">
@@ -212,7 +213,7 @@ export const CancellationDialog: React.FC<CancellationDialogProps> = ({
             I understand that this booking will be cancelled and{' '}
             {refundInfo && refundInfo.refundAmount > 0 ? (
               <span className="font-semibold">
-                a refund of ${refundInfo.refundAmount.toFixed(2)} will be processed
+                a refund of {CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)} will be processed
               </span>
             ) : (
               <span className="font-semibold">no refund will be issued</span>

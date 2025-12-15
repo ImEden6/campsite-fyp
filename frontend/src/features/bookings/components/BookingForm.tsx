@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Calendar, Car, Package, DollarSign, AlertCircle } from 'lucide-react';
+import { Calendar, Car, Package, DollarSign, AlertCircle, Users } from 'lucide-react';
 import type { Site, Vehicle } from '@/types';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input'
@@ -15,6 +15,7 @@ import type { CreateBookingData } from '@/services/api/bookings';
 import { VehicleInput } from './VehicleInput';
 import { EquipmentSelector } from './EquipmentSelector';
 import { PricingBreakdown } from './PricingBreakdown';
+import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
 
 interface BookingFormProps {
     site: Site;
@@ -31,6 +32,7 @@ interface FormData {
     adults: number;
     children: number;
     pets: number;
+    guestDetails: GuestDetail[];
     vehicles: Omit<Vehicle, 'id'>[];
     equipmentRentals: { equipmentId: string; quantity: number }[];
     specialRequests: string;
@@ -42,6 +44,7 @@ const initialFormData: FormData = {
     adults: 2,
     children: 0,
     pets: 0,
+    guestDetails: [],
     vehicles: [],
     equipmentRentals: [],
     specialRequests: '',
@@ -111,9 +114,24 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         }
 
         if (step === 2) {
-            if (formData.vehicles.length === 0) {
-                newErrors.vehicles = 'At least one vehicle is required';
+            // Validate guest details - all guests must have names
+            const totalGuests = formData.adults + formData.children;
+            if (formData.guestDetails.length !== totalGuests) {
+                newErrors.guestDetails = 'Please provide details for all guests';
+            } else {
+                formData.guestDetails.forEach((guest, index) => {
+                    if (!guest.firstName.trim()) {
+                        newErrors[`guest_${index}_firstName`] = 'First name is required';
+                    }
+                    if (!guest.lastName.trim()) {
+                        newErrors[`guest_${index}_lastName`] = 'Last name is required';
+                    }
+                });
             }
+        }
+
+        if (step === 3) {
+            // Vehicles are optional, only validate max if some are added
             if (formData.vehicles.length > site.maxVehicles) {
                 newErrors.vehicles = `Maximum ${site.maxVehicles} vehicles allowed`;
             }
@@ -125,7 +143,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
     const handleNext = () => {
         if (validateStep(currentStep)) {
-            setCurrentStep((prev) => Math.min(prev + 1, 4));
+            setCurrentStep((prev) => Math.min(prev + 1, 5));
         }
     };
 
@@ -174,36 +192,34 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                 <div className="flex items-center justify-between">
                     {[
                         { num: 1, label: 'Dates', icon: Calendar },
-                        { num: 2, label: 'Vehicles', icon: Car },
-                        { num: 3, label: 'Equipment', icon: Package },
-                        { num: 4, label: 'Review', icon: DollarSign },
+                        { num: 2, label: 'Guests', icon: Users },
+                        { num: 3, label: 'Vehicles', icon: Car },
+                        { num: 4, label: 'Equipment', icon: Package },
+                        { num: 5, label: 'Review', icon: DollarSign },
                     ].map((step, index) => (
                         <div key={step.num} className="flex items-center flex-1">
                             <div className="flex flex-col items-center flex-1">
                                 <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
-                                        currentStep >= step.num
-                                            ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md'
-                                            : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                                    }`}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${currentStep >= step.num
+                                        ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md'
+                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                                        }`}
                                 >
                                     {step.num}
                                 </div>
-                                <div className={`text-xs mt-2 text-center font-medium transition-colors ${
-                                    currentStep >= step.num
-                                        ? 'text-gray-900 dark:text-gray-100'
-                                        : 'text-gray-600 dark:text-gray-400'
-                                }`}>
+                                <div className={`text-xs mt-2 text-center font-medium transition-colors ${currentStep >= step.num
+                                    ? 'text-gray-900 dark:text-gray-100'
+                                    : 'text-gray-600 dark:text-gray-400'
+                                    }`}>
                                     {step.label}
                                 </div>
                             </div>
-                            {index < 3 && (
+                            {index < 4 && (
                                 <div
-                                    className={`h-1 flex-1 mx-2 rounded transition-all duration-200 ${
-                                        currentStep > step.num 
-                                            ? 'bg-blue-600 dark:bg-blue-500' 
-                                            : 'bg-gray-200 dark:bg-gray-700'
-                                    }`}
+                                    className={`h-1 flex-1 mx-2 rounded transition-all duration-200 ${currentStep > step.num
+                                        ? 'bg-blue-600 dark:bg-blue-500'
+                                        : 'bg-gray-200 dark:bg-gray-700'
+                                        }`}
                                 />
                             )}
                         </div>
@@ -321,13 +337,41 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     </div>
                 )}
 
-                {/* Step 2: Vehicles */}
+                {/* Step 2: Guest Details */}
                 {currentStep === 2 && (
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <Car size={20} className="text-blue-600 dark:text-blue-400" />
-                            Vehicle Information
+                            <Users size={20} className="text-blue-600 dark:text-blue-400" />
+                            Guest Information
                         </h2>
+
+                        <GuestDetailsInput
+                            adults={formData.adults}
+                            children={formData.children}
+                            guestDetails={formData.guestDetails}
+                            onChange={(guests) => updateFormData('guestDetails', guests)}
+                            errors={errors}
+                        />
+
+                        {errors.guestDetails && (
+                            <div className="flex items-center gap-2 text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 p-3 rounded-lg">
+                                <AlertCircle size={20} />
+                                <p className="text-sm font-medium">{errors.guestDetails}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Step 3: Vehicles */}
+                {currentStep === 3 && (
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <Car size={20} className="text-blue-600 dark:text-blue-400" />
+                            Vehicle Information (Optional)
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            Add your vehicle details if arriving by car, RV, or motorcycle
+                        </p>
 
                         <VehicleInput
                             vehicles={formData.vehicles}
@@ -350,8 +394,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     </div>
                 )}
 
-                {/* Step 3: Equipment */}
-                {currentStep === 3 && (
+                {/* Step 4: Equipment */}
+                {currentStep === 4 && (
                     <div className="space-y-4">
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -372,8 +416,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     </div>
                 )}
 
-                {/* Step 4: Review */}
-                {currentStep === 4 && (
+                {/* Step 5: Review */}
+                {currentStep === 5 && (
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                             <DollarSign size={20} className="text-blue-600 dark:text-blue-400" />
@@ -399,22 +443,40 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
                             <div className="border-b border-gray-200 dark:border-gray-600 pb-3">
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Guests</h3>
-                                <p className="text-sm text-gray-900 dark:text-white">
+                                <p className="text-sm text-gray-900 dark:text-white mb-2">
                                     {formData.adults} Adult{formData.adults !== 1 ? 's' : ''}
                                     {formData.children > 0 && `, ${formData.children} Child${formData.children !== 1 ? 'ren' : ''}`}
                                     {formData.pets > 0 && `, ${formData.pets} Pet${formData.pets !== 1 ? 's' : ''}`}
                                 </p>
+                                {formData.guestDetails.length > 0 && (
+                                    <div className="space-y-1 mt-2">
+                                        {formData.guestDetails.filter(g => !g.isChild).map((guest, index) => (
+                                            <p key={`adult-${index}`} className="text-sm text-gray-700 dark:text-gray-300">
+                                                {index === 0 ? '★' : '•'} {guest.firstName} {guest.lastName} {index === 0 && <span className="text-xs text-blue-600 dark:text-blue-400">(Primary)</span>}
+                                            </p>
+                                        ))}
+                                        {formData.guestDetails.filter(g => g.isChild).map((guest, index) => (
+                                            <p key={`child-${index}`} className="text-sm text-gray-700 dark:text-gray-300">
+                                                • {guest.firstName} {guest.lastName} <span className="text-xs text-purple-600 dark:text-purple-400">(Child{guest.age ? `, ${guest.age}` : ''})</span>
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
-                            <div className={formData.equipmentRentals.length > 0 ? 'border-b border-gray-200 dark:border-gray-600 pb-3' : 'pb-3'}>
+                            <div className={formData.equipmentRentals.length > 0 || formData.specialRequests ? 'border-b border-gray-200 dark:border-gray-600 pb-3' : 'pb-3'}>
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Vehicles</h3>
-                                <div className="space-y-1">
-                                    {formData.vehicles.map((vehicle, index) => (
-                                        <p key={index} className="text-sm text-gray-900 dark:text-white">
-                                            • {vehicle.year} {vehicle.make} {vehicle.model} <span className="text-gray-600 dark:text-gray-300">({vehicle.type})</span>
-                                        </p>
-                                    ))}
-                                </div>
+                                {formData.vehicles.length > 0 ? (
+                                    <div className="space-y-1">
+                                        {formData.vehicles.map((vehicle, index) => (
+                                            <p key={index} className="text-sm text-gray-900 dark:text-white">
+                                                • {vehicle.year} {vehicle.make} {vehicle.model} <span className="text-gray-600 dark:text-gray-300">({vehicle.type})</span>
+                                            </p>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">No vehicles added</p>
+                                )}
                             </div>
 
                             {formData.equipmentRentals.length > 0 && (
@@ -478,7 +540,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     </div>
 
                     <div className="flex gap-2">
-                        {currentStep < 4 ? (
+                        {currentStep < 5 ? (
                             <Button variant="primary" onClick={handleNext}>
                                 Next
                             </Button>

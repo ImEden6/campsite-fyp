@@ -9,6 +9,7 @@ import type { Site } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface SiteCardProps {
   site: Site;
@@ -133,7 +134,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              ${site.basePrice}
+              {CURRENCY_SYMBOL}{site.basePrice}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">per night</div>
           </div>

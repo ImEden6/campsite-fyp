@@ -57,7 +57,7 @@ const mockUsers: Record<string, { user: User; password: string }> = {
     user: {
       id: '2',
       email: 'customer@campsite.com',
-      firstName: 'John',
+      firstName: 'Chris',
       lastName: 'Customer',
       role: UserRole.CUSTOMER,
       isActive: true,

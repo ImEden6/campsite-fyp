@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { SiteCard } from './SiteCard';
 import { Card } from '@/components/ui/Card';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface SiteListProps {
   sites: Site[];
@@ -215,7 +216,7 @@ export const SiteList: React.FC<SiteListProps> = ({
                 </label>
                 <Input
                   type="number"
-                  placeholder="$0"
+                  placeholder={`${CURRENCY_SYMBOL}0`}
                   value={filters.minPrice}
                   onChange={(e) => handleFilterChange('minPrice', e.target.value)}
                   min="0"
@@ -229,7 +230,7 @@ export const SiteList: React.FC<SiteListProps> = ({
                 </label>
                 <Input
                   type="number"
-                  placeholder="$500"
+                  placeholder={`${CURRENCY_SYMBOL}500`}
                   value={filters.maxPrice}
                   onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
                   min="0"

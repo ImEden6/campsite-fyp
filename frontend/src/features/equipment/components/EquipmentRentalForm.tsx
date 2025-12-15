@@ -15,6 +15,7 @@ import { queryKeys } from '@/config/query-keys';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/hooks/useToast';
+import { formatCurrency } from '@/utils/currency';
 
 interface EquipmentRentalFormProps {
   equipmentId: string;
@@ -60,7 +61,7 @@ export const EquipmentRentalForm: React.FC<EquipmentRentalFormProps> = ({
     if (equipment && quantity > 0 && startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       if (end > start) {
         calculateRentalPrice(equipmentId, quantity, start, end)
           .then((response) => {
@@ -127,10 +128,7 @@ export const EquipmentRentalForm: React.FC<EquipmentRentalFormProps> = ({
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return formatCurrency(price);
   };
 
   if (!equipment) {
@@ -206,7 +204,7 @@ export const EquipmentRentalForm: React.FC<EquipmentRentalFormProps> = ({
       {pricing && (
         <div className="bg-blue-50 rounded-lg p-4 space-y-2">
           <h4 className="font-semibold text-gray-900 mb-3">Pricing Summary</h4>
-          
+
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Rental Period:</span>
             <span className="font-medium text-gray-900">

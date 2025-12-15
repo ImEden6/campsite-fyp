@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  User as UserIcon, 
-  LogOut, 
+import {
+  User as UserIcon,
+  LogOut,
   Settings,
   Moon,
   Sun,
@@ -17,7 +17,7 @@ const Header: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { theme, toggleTheme } = useUIStore();
-  
+
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +40,7 @@ const Header: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/customer/login');
   };
 
   if (!user) {
@@ -68,20 +68,18 @@ const Header: React.FC = () => {
           >
             <div className="relative w-5 h-5">
               {/* Sun icon - visible in dark mode */}
-              <Sun 
-                className={`w-5 h-5 text-gray-600 dark:text-gray-300 absolute inset-0 transition-all duration-300 ${
-                  theme === 'dark' 
-                    ? 'rotate-0 scale-100 opacity-100' 
+              <Sun
+                className={`w-5 h-5 text-gray-600 dark:text-gray-300 absolute inset-0 transition-all duration-300 ${theme === 'dark'
+                    ? 'rotate-0 scale-100 opacity-100'
                     : 'rotate-90 scale-0 opacity-0'
-                }`}
+                  }`}
               />
               {/* Moon icon - visible in light mode */}
-              <Moon 
-                className={`w-5 h-5 text-gray-600 dark:text-gray-300 absolute inset-0 transition-all duration-300 ${
-                  theme === 'light' 
-                    ? 'rotate-0 scale-100 opacity-100' 
+              <Moon
+                className={`w-5 h-5 text-gray-600 dark:text-gray-300 absolute inset-0 transition-all duration-300 ${theme === 'light'
+                    ? 'rotate-0 scale-100 opacity-100'
                     : '-rotate-90 scale-0 opacity-0'
-                }`}
+                  }`}
               />
             </div>
           </button>
@@ -98,8 +96,8 @@ const Header: React.FC = () => {
             >
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 {user.avatar ? (
-                  <img 
-                    src={user.avatar} 
+                  <img
+                    src={user.avatar}
                     alt={user.firstName}
                     className="w-full h-full rounded-full object-cover"
                   />

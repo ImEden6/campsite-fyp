@@ -20,6 +20,7 @@ import { Card } from '@/components/ui/Card';
 import { QRCodeDialog } from './QRCodeDialog';
 import { ReceiptDownloadDialog } from './ReceiptDownloadDialog';
 import type { Booking } from '@/types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface BookingDetailViewProps {
   booking: Booking;
@@ -279,10 +280,10 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                       <div>
                         <p className="font-medium text-gray-900">{rental.equipment?.name}</p>
                         <p className="text-sm text-gray-600">
-                          Quantity: {rental.quantity} • ${rental.dailyRate}/day
+                          Quantity: {rental.quantity} • {CURRENCY_SYMBOL}{rental.dailyRate}/day
                         </p>
                       </div>
-                      <p className="font-semibold text-gray-900">${rental.totalAmount.toFixed(2)}</p>
+                      <p className="font-semibold text-gray-900">{CURRENCY_SYMBOL}{rental.totalAmount.toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
@@ -301,31 +302,31 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="text-gray-900">
-                    ${(booking.totalAmount - booking.taxAmount).toFixed(2)}
+                    {CURRENCY_SYMBOL}{(booking.totalAmount - booking.taxAmount).toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">${booking.taxAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">{CURRENCY_SYMBOL}{booking.taxAmount.toFixed(2)}</span>
                 </div>
                 {booking.discountAmount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Discount</span>
-                    <span>-${booking.discountAmount.toFixed(2)}</span>
+                    <span>-{CURRENCY_SYMBOL}{booking.discountAmount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="pt-2 border-t border-gray-200 flex justify-between">
                   <span className="font-semibold text-gray-900">Total Amount</span>
-                  <span className="font-bold text-gray-900">${booking.totalAmount.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">{CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Paid Amount</span>
-                  <span className="text-gray-900">${booking.paidAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">{CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}</span>
                 </div>
                 {booking.paidAmount < booking.totalAmount && (
                   <div className="flex justify-between text-sm font-semibold text-orange-600">
                     <span>Balance Due</span>
-                    <span>${(booking.totalAmount - booking.paidAmount).toFixed(2)}</span>
+                    <span>{CURRENCY_SYMBOL}{(booking.totalAmount - booking.paidAmount).toFixed(2)}</span>
                   </div>
                 )}
               </div>

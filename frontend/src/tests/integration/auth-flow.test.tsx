@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '../utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import LoginPage from '@/pages/LoginPage';
+import CustomerLoginPage from '@/pages/CustomerLoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import { mockUser, mockAuthTokens } from '../utils/mock-data';
 
@@ -43,7 +43,7 @@ afterAll(() => {
 describe('Authentication Flow', () => {
   it('should login successfully with valid credentials', async () => {
     const user = userEvent.setup();
-    render(<LoginPage />);
+    render(<CustomerLoginPage />);
 
     // Fill in login form
     const emailInput = screen.getByLabelText(/email/i);
@@ -74,7 +74,7 @@ describe('Authentication Flow', () => {
     );
 
     const user = userEvent.setup();
-    render(<LoginPage />);
+    render(<CustomerLoginPage />);
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);

@@ -5,15 +5,17 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar } from 'lucide-react';
+import { Calendar, Users } from 'lucide-react';
 import { Button, Input, Select, Card } from '@/components/ui';
 import { VehicleInput, EquipmentSelector, PricingBreakdown } from './';
+import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
 import { getSites } from '@/services/api/sites';
 import { mockSites } from '@/services/api/mock-sites';
 import { calculateBookingPrice, createBooking } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, Vehicle, SiteStatus } from '@/types';
 import type { CreateBookingData, BookingPricing } from '@/services/api/bookings';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 export interface ManualBookingFormProps {
   onSuccess?: (bookingId: string) => void;
@@ -31,6 +33,7 @@ interface ManualFormState {
   checkInDate: string;
   checkOutDate: string;
   guests: GuestsState;
+  guestDetails: GuestDetail[];
   vehicles: Omit<Vehicle, 'id'>[];
   specialRequests: string;
   equipmentRentals: { equipmentId: string; quantity: number }[];
@@ -48,6 +51,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
       children: 0,
       pets: 0,
     },
+    guestDetails: [],
     vehicles: [],
     specialRequests: '',
     equipmentRentals: [],
@@ -147,6 +151,10 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
     setFormData((prev) => ({ ...prev, guests: updater(prev.guests) }));
   };
 
+  const handleGuestDetailsChange = (guestDetails: GuestDetail[]) => {
+    setFormData((prev) => ({ ...prev, guestDetails }));
+  };
+
   const updateFormField = <K extends keyof ManualFormState>(field: K, value: ManualFormState[K]) => {
     setFormData((prev) => {
       const next = { ...prev, [field]: value } as ManualFormState;
@@ -174,7 +182,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
                 { value: '', label: 'Select a site' },
                 ...sites.map((site) => ({
                   value: site.id,
-                  label: `${site.name} - ${site.type} ($${site.basePrice}/night)`,
+                  label: `${site.name} - ${site.type} (${CURRENCY_SYMBOL}${site.basePrice}/night)`,
                 })),
               ]}
             />
@@ -279,9 +287,23 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
         </div>
       </Card>
 
+      {/* Guest Details */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Users size={20} className="text-blue-600 dark:text-blue-400" />
+          Guest Information
+        </h3>
+        <GuestDetailsInput
+          adults={formData.guests.adults}
+          children={formData.guests.children}
+          guestDetails={formData.guestDetails}
+          onChange={handleGuestDetailsChange}
+        />
+      </Card>
+
       {/* Vehicles */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Vehicles</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Vehicles (Optional)</h3>
         <VehicleInput
           vehicles={formData.vehicles}
           onChange={handleVehiclesChange}

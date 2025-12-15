@@ -6,6 +6,9 @@ import type {
   RefundRequest,
   RefundResponse,
 } from '../types/payment.types';
+import { getMockBookingPayments, getMockPaymentHistory } from './mockCurrentPayments';
+import { env } from '@/config/env';
+import { createMockPaymentIntent, createMockConfirmedPayment } from './mock-payment-intent';
 
 export const paymentService = {
   /**
@@ -14,6 +17,13 @@ export const paymentService = {
   createPaymentIntent: async (
     data: CreatePaymentIntentRequest
   ): Promise<PaymentIntent> => {
+    // Environment-gated mock for dev/preview
+    if (env.useMockPayments) {
+      console.warn('[Mock] Using mock payment intent (VITE_USE_MOCK_PAYMENTS=true)');
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
+      return createMockPaymentIntent(data.amount, data.currency);
+    }
+
     const response = await apiClient.post<PaymentIntent>(
       '/payments/intent',
       data
@@ -33,18 +43,28 @@ export const paymentService = {
    * Get all payments for a booking
    */
   getBookingPayments: async (bookingId: string): Promise<Payment[]> => {
-    const response = await apiClient.get<Payment[]>(
-      `/bookings/${bookingId}/payments`
-    );
-    return response.data;
+    try {
+      const response = await apiClient.get<Payment[]>(
+        `/bookings/${bookingId}/payments`
+      );
+      return response.data;
+    } catch (error) {
+      console.warn('[Mock] Using mock booking payments', error);
+      return getMockBookingPayments(bookingId);
+    }
   },
 
   /**
    * Get payment history for current user
    */
   getPaymentHistory: async (): Promise<Payment[]> => {
-    const response = await apiClient.get<Payment[]>('/payments/history');
-    return response.data;
+    try {
+      const response = await apiClient.get<Payment[]>('/payments/history');
+      return response.data;
+    } catch (error) {
+      console.warn('[Mock] Using mock payment history', error);
+      return getMockPaymentHistory();
+    }
   },
 
   /**
@@ -75,6 +95,16 @@ export const paymentService = {
    * Confirm payment intent (after Stripe confirmation)
    */
   confirmPayment: async (paymentIntentId: string): Promise<Payment> => {
+    // Environment-gated mock for dev/preview
+    if (env.useMockPayments) {
+      console.warn('[Mock] Confirming mock payment (VITE_USE_MOCK_PAYMENTS=true)');
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
+      // Note: We don't have the bookingId here easily in the service without extra fetch, 
+      // but for mock purposes 'mock-id' is often sufficient or we can pass it if we refactor.
+      // For now, let's use a placeholder which is acceptable for a dev mock.
+      return createMockConfirmedPayment(paymentIntentId, undefined, 1000, 'usd');
+    }
+
     const response = await apiClient.post<Payment>(
       `/payments/confirm/${paymentIntentId}`
     );

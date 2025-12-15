@@ -6,6 +6,7 @@ import { verifyGuestBookingEmail, getGuestBooking } from '@/services/api/booking
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { format } from 'date-fns';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 const GuestBookingDetailPage: React.FC = () => {
   const { bookingNumber } = useParams<{ bookingNumber: string }>();
@@ -181,13 +182,13 @@ const GuestBookingDetailPage: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Total</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  ${booking.totalAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Paid</span>
                 <span className="text-gray-900 dark:text-gray-100">
-                  ${booking.paidAmount.toFixed(2)}
+                  {CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}
                 </span>
               </div>
             </div>

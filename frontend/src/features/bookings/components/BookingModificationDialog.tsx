@@ -15,6 +15,7 @@ import { checkSiteAvailability } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
 import { useToast } from '@/hooks/useToast';
 import type { Booking } from '@/types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface BookingModificationDialogProps {
   booking: Booking;
@@ -31,7 +32,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
 }) => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  
+
   const [checkInDate, setCheckInDate] = useState<Date>(new Date(booking.checkInDate));
   const [checkOutDate, setCheckOutDate] = useState<Date>(new Date(booking.checkOutDate));
   const [adults, setAdults] = useState(booking.guests.adults);
@@ -91,7 +92,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
   }, [booking.equipmentRentals, booking.id, booking.siteId, checkInDate, checkOutDate]);
 
   // Check if dates have changed
-  const datesChanged = 
+  const datesChanged =
     checkInDate.getTime() !== new Date(booking.checkInDate).getTime() ||
     checkOutDate.getTime() !== new Date(booking.checkOutDate).getTime();
 
@@ -141,8 +142,8 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
     updateMutation.mutate();
   };
 
-  const priceDifference = newPricing 
-    ? newPricing.totalAmount - booking.totalAmount 
+  const priceDifference = newPricing
+    ? newPricing.totalAmount - booking.totalAmount
     : 0;
 
   return (
@@ -170,7 +171,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
               {booking.guests.adults} adults, {booking.guests.children} children
             </div>
             <div>
-              <span className="font-medium">Total:</span> ${booking.totalAmount.toFixed(2)}
+              <span className="font-medium">Total:</span> {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
             </div>
           </div>
         </div>
@@ -229,13 +230,13 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
                 <div className="space-y-2 text-sm text-green-800">
                   <div className="flex justify-between">
                     <span>New Total:</span>
-                    <span className="font-semibold">${newPricing.totalAmount.toFixed(2)}</span>
+                    <span className="font-semibold">{CURRENCY_SYMBOL}{newPricing.totalAmount.toFixed(2)}</span>
                   </div>
                   {priceDifference !== 0 && (
                     <div className="flex justify-between">
                       <span>Price Difference:</span>
                       <span className={`font-semibold ${priceDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {priceDifference > 0 ? '+' : ''}${priceDifference.toFixed(2)}
+                        {priceDifference > 0 ? '+' : ''}{CURRENCY_SYMBOL}{priceDifference.toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -246,7 +247,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
                   )}
                   {priceDifference < 0 && (
                     <p className="text-xs mt-2">
-                      A refund of ${Math.abs(priceDifference).toFixed(2)} will be processed.
+                      A refund of {CURRENCY_SYMBOL}{Math.abs(priceDifference).toFixed(2)} will be processed.
                     </p>
                   )}
                 </div>

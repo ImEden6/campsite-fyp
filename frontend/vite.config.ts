@@ -247,7 +247,7 @@ export default defineConfig(({ mode }) => {
       // Bundle visualizer - generates stats.html for bundle analysis
       visualizer({
         filename: 'dist/stats.html',
-        open: true,
+        open: false,
         gzipSize: true,
         brotliSize: true,
       }),
@@ -278,9 +278,10 @@ export default defineConfig(({ mode }) => {
       open: false,
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'http://localhost:5000',
+          target: env.VITE_API_URL || 'https://camprock.com',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          secure: true,
+          // Don't rewrite path - keep /api in the URL since the backend expects /api/v1/...
         },
         '/socket.io': {
           target: env.VITE_WS_URL || 'ws://localhost:5000',
@@ -421,6 +422,19 @@ export default defineConfig(({ mode }) => {
     preview: {
       port: 5173,
       host: true,
+      proxy: {
+        '/api': {
+          target: env.VITE_API_URL || 'https://camprock.com',
+          changeOrigin: true,
+          secure: true,
+          // Don't rewrite path - keep /api in the URL since the backend expects /api/v1/...
+        },
+        '/socket.io': {
+          target: env.VITE_WS_URL || 'ws://localhost:5000',
+          ws: true,
+          changeOrigin: true,
+        },
+      },
     },
 
     // Test configuration

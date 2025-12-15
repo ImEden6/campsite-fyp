@@ -4,10 +4,12 @@ import { Alert } from '@/components/ui/Alert';
 import { Loader2, CreditCard } from 'lucide-react';
 import { useCreatePaymentIntent } from '../hooks/usePayments';
 import { PageLoader } from '@/components/ui/PageLoader';
+import { env } from '@/config/env';
 
-// Lazy load heavy Stripe components
+// Lazy load heavy Stripe components (only used when not in mock mode)
 const StripeProvider = lazy(() => import('./StripeProvider').then(m => ({ default: m.StripeProvider })));
 const PaymentForm = lazy(() => import('./PaymentForm').then(m => ({ default: m.PaymentForm })));
+const MockPaymentForm = lazy(() => import('./MockPaymentForm').then(m => ({ default: m.MockPaymentForm })));
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -30,7 +32,7 @@ export const PaymentModal = ({
   const createPaymentIntent = useCreatePaymentIntent();
 
   useEffect(() => {
-    if (isOpen && !clientSecret) {
+    if (isOpen && !clientSecret && !createPaymentIntent.isPending) {
       createPaymentIntent.mutate(
         {
           bookingId,
@@ -45,7 +47,8 @@ export const PaymentModal = ({
         }
       );
     }
-  }, [isOpen, bookingId, amount, description, clientSecret, createPaymentIntent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mutate is stable, we only want to trigger on isOpen/clientSecret changes
+  }, [isOpen, bookingId, amount, description, clientSecret]);
 
   const handleSuccess = () => {
     if (onSuccess) {
@@ -100,14 +103,24 @@ export const PaymentModal = ({
 
         {clientSecret && (
           <Suspense fallback={<div className="flex items-center justify-center py-8"><PageLoader /></div>}>
-            <StripeProvider clientSecret={clientSecret}>
-              <PaymentForm
+            {env.useMockPayments ? (
+              <MockPaymentForm
                 amount={amount}
                 bookingId={bookingId}
+                clientSecret={clientSecret}
                 onSuccess={handleSuccess}
                 onCancel={handleClose}
               />
-            </StripeProvider>
+            ) : (
+              <StripeProvider clientSecret={clientSecret}>
+                <PaymentForm
+                  amount={amount}
+                  bookingId={bookingId}
+                  onSuccess={handleSuccess}
+                  onCancel={handleClose}
+                />
+              </StripeProvider>
+            )}
           </Suspense>
         )}
       </div>

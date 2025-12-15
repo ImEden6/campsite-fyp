@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import type { Booking } from '@/types';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface ReceiptDownloadDialogProps {
   booking: Booking;
@@ -289,16 +290,16 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
                     <div class="line-item-details">${calculateNights()} nights</div>
                   </div>
                   <div class="line-item-amount">
-                    $${(booking.totalAmount - booking.taxAmount - (booking.equipmentRentals?.reduce((sum, er) => sum + er.totalAmount, 0) || 0)).toFixed(2)}
+                    ${CURRENCY_SYMBOL}${(booking.totalAmount - booking.taxAmount - (booking.equipmentRentals?.reduce((sum, er) => sum + er.totalAmount, 0) || 0)).toFixed(2)}
                   </div>
                 </div>
                 ${booking.equipmentRentals && booking.equipmentRentals.length > 0 ? booking.equipmentRentals.map(rental => `
                   <div class="line-item">
                     <div class="line-item-description">
                       <div class="line-item-title">${rental.equipment?.name || 'Equipment'}</div>
-                      <div class="line-item-details">Quantity: ${rental.quantity} × $${rental.dailyRate.toFixed(2)}/day</div>
+                      <div class="line-item-details">Quantity: ${rental.quantity} × ${CURRENCY_SYMBOL}${rental.dailyRate.toFixed(2)}/day</div>
                     </div>
-                    <div class="line-item-amount">$${rental.totalAmount.toFixed(2)}</div>
+                    <div class="line-item-amount">${CURRENCY_SYMBOL}${rental.totalAmount.toFixed(2)}</div>
                   </div>
                 `).join('') : ''}
               </div>
@@ -306,21 +307,21 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               <div class="totals">
                 <div class="total-row">
                   <span>Subtotal</span>
-                  <span>$${(booking.totalAmount - booking.taxAmount).toFixed(2)}</span>
+                  <span>${CURRENCY_SYMBOL}${(booking.totalAmount - booking.taxAmount).toFixed(2)}</span>
                 </div>
                 <div class="total-row">
                   <span>Tax</span>
-                  <span>$${booking.taxAmount.toFixed(2)}</span>
+                  <span>${CURRENCY_SYMBOL}${booking.taxAmount.toFixed(2)}</span>
                 </div>
                 ${booking.discountAmount > 0 ? `
                   <div class="total-row" style="color: oklch(0.596 0.127 163.2);">
                     <span>Discount</span>
-                    <span>-$${booking.discountAmount.toFixed(2)}</span>
+                    <span>-${CURRENCY_SYMBOL}${booking.discountAmount.toFixed(2)}</span>
                   </div>
                 ` : ''}
                 <div class="total-row grand-total">
                   <span>Total Amount</span>
-                  <span>$${booking.totalAmount.toFixed(2)}</span>
+                  <span>${CURRENCY_SYMBOL}${booking.totalAmount.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -329,12 +330,12 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               <h3>Payment Information</h3>
               <div class="payment-info">
                 <p><strong>Payment Status:</strong> <span class="status-badge status-${booking.paymentStatus.toLowerCase()}">${booking.paymentStatus}</span></p>
-                <p><strong>Amount Paid:</strong> $${booking.paidAmount.toFixed(2)}</p>
+                <p><strong>Amount Paid:</strong> ${CURRENCY_SYMBOL}${booking.paidAmount.toFixed(2)}</p>
                 ${booking.paidAmount < booking.totalAmount ? `
-                  <p><strong>Balance Due:</strong> $${(booking.totalAmount - booking.paidAmount).toFixed(2)}</p>
+                  <p><strong>Balance Due:</strong> ${CURRENCY_SYMBOL}${(booking.totalAmount - booking.paidAmount).toFixed(2)}</p>
                 ` : ''}
                 ${booking.depositAmount > 0 ? `
-                  <p><strong>Deposit:</strong> $${booking.depositAmount.toFixed(2)}</p>
+                  <p><strong>Deposit:</strong> ${CURRENCY_SYMBOL}${booking.depositAmount.toFixed(2)}</p>
                 ` : ''}
               </div>
             </div>
@@ -362,7 +363,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
     try {
       // Generate HTML receipt
       const receiptHTML = generateReceiptHTML();
-      
+
       // Create a blob and download
       const blob = new Blob([receiptHTML], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
@@ -386,7 +387,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
     try {
       const receiptHTML = generateReceiptHTML();
       const printWindow = window.open('', '_blank');
-      
+
       if (!printWindow) {
         showToast('Please allow popups to print receipt', 'warning');
         return;
@@ -432,7 +433,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               <h4 className="font-semibold text-gray-900 mb-1">Receipt Details</h4>
               <div className="space-y-1 text-sm text-gray-600">
                 <p>Booking: #{booking.bookingNumber}</p>
-                <p>Total Amount: ${booking.totalAmount.toFixed(2)}</p>
+                <p>Total Amount: {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}</p>
                 <p>Payment Status: {booking.paymentStatus}</p>
                 <p>Date: {new Date().toLocaleDateString()}</p>
               </div>
@@ -443,7 +444,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
         {/* Download Options */}
         <div className="space-y-3">
           <h4 className="font-semibold text-gray-900">Download Options</h4>
-          
+
           <Button
             variant="outline"
             className="w-full justify-start"
@@ -495,8 +496,8 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
         {/* Info Note */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-sm text-blue-800">
-            <strong>Note:</strong> The receipt will include all booking details, charges, 
-            and payment information. You can save it for your records or print it for 
+            <strong>Note:</strong> The receipt will include all booking details, charges,
+            and payment information. You can save it for your records or print it for
             check-in purposes.
           </p>
         </div>

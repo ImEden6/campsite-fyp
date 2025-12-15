@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { queryKeys } from '@/config/query-keys';
 import { getAvailableEquipment, type EquipmentWithAvailability } from '@/services/api/equipment';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface EquipmentSelectorProps {
   checkInDate: string;
@@ -171,11 +172,11 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
                 <div className="flex items-center justify-between mt-4">
                   <div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                      ${item.dailyRate}/night
+                      {CURRENCY_SYMBOL}{item.dailyRate}/night
                     </div>
                     {quantity > 0 && (
                       <div className="text-sm text-blue-600 dark:text-blue-400">
-                        Total: ${totalCost} ({nights} nights)
+                        Total: {CURRENCY_SYMBOL}{totalCost} ({nights} nights)
                       </div>
                     )}
                   </div>

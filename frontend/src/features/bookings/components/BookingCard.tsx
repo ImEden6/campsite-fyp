@@ -8,6 +8,7 @@ import type { Booking } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface BookingCardProps {
   booking: Booking;
@@ -130,7 +131,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
           </div>
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <DollarSign size={16} />
-            <span>${booking.totalAmount.toFixed(2)}</span>
+            <span>{CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}</span>
           </div>
         </div>
 
@@ -138,7 +139,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         {booking.paymentStatus === 'PARTIAL' && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-300">
-              <strong>Balance Due:</strong> $
+              <strong>Balance Due:</strong> {CURRENCY_SYMBOL}
               {(booking.totalAmount - booking.paidAmount).toFixed(2)}
             </p>
           </div>

@@ -15,6 +15,7 @@ import { queryKeys } from '@/config/query-keys';
 import { useBookingStore } from '@/stores/bookingStore';
 import { Booking, BookingStatus } from '@/types';
 import type { CalendarView } from '@/features/bookings/components/BookingCalendar';
+import { formatCurrency } from '@/utils/currency';
 
 type ViewMode = 'calendar' | 'list';
 
@@ -164,10 +165,10 @@ const BookingManagementPage: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      ${booking.totalAmount.toFixed(2)}
+                      {formatCurrency(booking.totalAmount)}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.paymentStatus === 'PAID' ? 'Paid' : `$${booking.paidAmount.toFixed(2)} paid`}
+                      {booking.paymentStatus === 'PAID' ? 'Paid' : `${formatCurrency(booking.paidAmount)} paid`}
                     </div>
                   </div>
                 </div>
@@ -208,11 +209,10 @@ const BookingManagementPage: React.FC = () => {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-1 text-sm rounded transition-colors ${
-                        currentPage === pageNum
-                          ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
-                      }`}
+                      className={`px-3 py-1 text-sm rounded transition-colors ${currentPage === pageNum
+                        ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
+                        }`}
                     >
                       {pageNum}
                     </button>
@@ -251,22 +251,20 @@ const BookingManagementPage: React.FC = () => {
         <div className="flex gap-2 flex-wrap">
           <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
             <button
-              className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${
-                viewMode === 'calendar'
-                  ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${viewMode === 'calendar'
+                ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
               onClick={() => setViewMode('calendar')}
             >
               <CalendarIcon className="w-4 h-4" />
               Calendar
             </button>
             <button
-              className={`px-4 py-2 text-sm flex items-center gap-2 border-l border-gray-300 dark:border-gray-600 transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-blue-500 dark:bg-blue-600 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className={`px-4 py-2 text-sm flex items-center gap-2 border-l border-gray-300 dark:border-gray-600 transition-colors ${viewMode === 'list'
+                ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
               onClick={() => setViewMode('list')}
             >
               <List className="w-4 h-4" />

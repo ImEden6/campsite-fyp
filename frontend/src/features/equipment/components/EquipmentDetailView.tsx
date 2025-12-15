@@ -11,6 +11,7 @@ import type { Equipment } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { formatCurrency } from '@/utils/currency';
 
 interface EquipmentDetailViewProps {
   equipmentId: string;
@@ -54,10 +55,7 @@ export const EquipmentDetailView: React.FC<EquipmentDetailViewProps> = ({
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return formatCurrency(price);
   };
 
   return (
@@ -112,11 +110,10 @@ export const EquipmentDetailView: React.FC<EquipmentDetailViewProps> = ({
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImageIndex === index
-                        ? 'border-blue-600'
-                        : 'border-gray-300'
-                    }`}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === index
+                      ? 'border-blue-600'
+                      : 'border-gray-300'
+                      }`}
                   >
                     <img
                       src={image}

@@ -8,7 +8,7 @@ import { Line } from 'react-chartjs-2';
 import type { ChartOptions, ChartData } from 'chart.js';
 import { Calendar, TrendingUp } from 'lucide-react';
 import type { OccupancyMetrics } from '@/services/api/analytics';
-import { getChartColors } from '@/utils/chartColors';
+import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
 import { useDarkMode } from '@/hooks/useDarkMode';
 
 interface OccupancyChartProps {
@@ -87,14 +87,26 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
     datasets: [{
       label: 'Occupancy Rate',
       data: data.timeSeries.map(d => d.occupancyRate),
-      borderColor: colors.primary,
-      backgroundColor: `${colors.primary}33`,
+      borderColor: colors.warning,
+      backgroundColor: (context) => {
+        const chart = context.chart;
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return colors.warning;
+        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        gradient.addColorStop(0, 'oklch(0.62 0.180 260 / 0.1)');
+        gradient.addColorStop(0.5, 'oklch(0.72 0.190 145 / 0.4)');
+        gradient.addColorStop(1, 'oklch(0.77 0.180 75 / 0.6)');
+        return gradient;
+      },
       fill: true,
       tension: 0.4,
+      pointBackgroundColor: CHART_COLORS.slice(0, data.timeSeries.length),
+      pointBorderColor: isDark ? 'oklch(0.30 0.020 260)' : 'oklch(1 0 0)',
+      pointBorderWidth: 2,
       pointRadius: 4,
       pointHoverRadius: 6,
     }],
-  }), [data.timeSeries, colors.primary]);
+  }), [data.timeSeries, colors.warning, isDark]);
 
   if (loading) {
     return (

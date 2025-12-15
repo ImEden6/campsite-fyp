@@ -22,11 +22,26 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     initialize();
   }, [initialize]);
 
-  // Determine redirect destination based on user role
+  // Determine redirect destination based on user role or required role
   const getRedirectTo = () => {
     if (redirectTo) return redirectTo;
+
+    // If not authenticated, decide where to send them based on what they are trying to access
+    if (!isAuthenticated) {
+      // If the route requires admin/staff/manager roles, send to admin login
+      if (requiredRole) {
+        const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+        const adminRoles = [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF];
+        if (roles.some(r => adminRoles.includes(r))) {
+          return '/admin/login';
+        }
+      }
+      return '/customer/login';
+    }
+
+    // If authenticated but wrong role (handled below), or just default fallback
     if (user?.role === UserRole.CUSTOMER) return '/customer/dashboard';
-    return '/login';
+    return '/dashboard';
   };
 
   // Check if user is authenticated

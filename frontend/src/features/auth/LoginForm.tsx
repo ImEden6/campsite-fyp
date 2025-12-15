@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { UserRole } from '@/types';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
 interface LoginFormProps {
   onSuccess?: () => void;
-  redirectTo?: string;
+  title?: string;
+  description?: string;
+  type?: 'customer' | 'admin';
+  alternativeLoginLink?: {
+    text: string;
+    path: string;
+  };
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, redirectTo = '/dashboard' }) => {
+const LoginForm: React.FC<LoginFormProps> = ({
+  onSuccess,
+  title = 'Staff/Customer Login',
+  description = 'Sign in to access the campsite management system',
+  type = 'customer',
+  alternativeLoginLink
+}) => {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError } = useAuthStore();
 
@@ -86,20 +99,37 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, redirectTo = '/dashboa
         onSuccess();
       }
 
-      // Navigate to redirect path
-      navigate(redirectTo);
+      // Get user from store to check role
+      const user = useAuthStore.getState().user;
+
+      // Force redirect based on role
+      if (user?.role === UserRole.CUSTOMER) {
+        navigate('/customer/login', { replace: true });
+        // Actually, logic said /customer/dashboard. Let's correct that based on the plan.
+        navigate('/customer/dashboard', { replace: true });
+      } else {
+        // Staff/Admin/Manager
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       // Error is handled by the store
       console.error('Login failed:', err);
     }
   };
 
+  const isAdmin = type === 'admin';
+
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Staff Login</h1>
+        {isAdmin && (
+          <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold uppercase tracking-wider">
+            Admin Portal
+          </div>
+        )}
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{title}</h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Sign in to access the campsite management system
+          {description}
         </p>
       </div>
 
@@ -167,15 +197,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, redirectTo = '/dashboa
         {/* Submit button */}
         <Button
           type="submit"
-          variant="primary"
+          variant={isAdmin ? 'primary' : 'primary'}
           size="lg"
           loading={isLoading}
-          className="w-full"
+          className={`w-full ${isAdmin ? 'bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600' : ''}`}
         >
           {isLoading ? 'Signing in...' : 'Sign in'}
         </Button>
 
-
+        {/* Alternative login link */}
+        {alternativeLoginLink && (
+          <div className="mt-6 text-center">
+            <Link
+              to={alternativeLoginLink.path}
+              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            >
+              {alternativeLoginLink.text}
+              <ArrowRight className="ml-1 h-3 w-3" />
+            </Link>
+          </div>
+        )}
       </form>
     </div>
   );

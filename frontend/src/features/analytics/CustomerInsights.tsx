@@ -10,6 +10,7 @@ import { Users, TrendingUp, DollarSign, Repeat } from 'lucide-react';
 import type { CustomerInsights as CustomerInsightsType } from '@/services/api/analytics';
 import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
 import { useDarkMode } from '@/hooks/useDarkMode';
+import { formatCurrency as formatMYR } from '@/utils/currency';
 
 interface CustomerInsightsProps {
   data: CustomerInsightsType;
@@ -130,7 +131,7 @@ export const CustomerInsights: React.FC<CustomerInsightsProps> = ({ data, loadin
   }
 
   const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return formatMYR(value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   };
 
   return (

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/hooks/useToast';
+import { formatCurrency } from '@/utils/currency';
 
 interface EquipmentCheckInOutProps {
   bookingId: string;
@@ -169,10 +170,7 @@ export const EquipmentCheckInOut: React.FC<EquipmentCheckInOutProps> = ({
   const rentals = data?.data || [];
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    return formatCurrency(price);
   };
 
   if (isLoading) {

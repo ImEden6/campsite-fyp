@@ -10,9 +10,12 @@ import * as fabric from 'fabric';
 import { ArrowLeft, Save, Undo2, Redo2, ZoomIn, ZoomOut, Maximize2, Grid3X3, Magnet, Hand, Layers, Settings, Download, Ruler } from 'lucide-react';
 import { useMapStore } from '@/stores/mapStore';
 import { useEditorStore } from '@/stores/editorStore';
+import { useMapOverridesStore } from '@/stores/mapOverridesStore';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { createModuleObject, createNewModule, extractModuleChanges, getModuleId, isGridObject, updateModuleObject } from '@/utils/moduleFactory';
+import { generateMapFromSites, getSiteIdFromModuleId } from '@/utils/generateModulesFromSites';
+import { mockSites } from '@/services/api/mock-sites';
 
 // Import opacity constants for state checks
 const OPACITY_HIDDEN = 0.3;
@@ -72,10 +75,10 @@ const MapEditor: React.FC = () => {
 
     // Ref to the HTML canvas element for export
     const htmlCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    
+
     // Ref to track animation frame for cleanup
     const rafIdRef = useRef<number | null>(null);
-    
+
     // Guard to prevent concurrent rendering
     const isRenderingRef = useRef(false);
 
@@ -89,6 +92,21 @@ const MapEditor: React.FC = () => {
 
     // Store state
     const { currentMap, isLoading, isDirty, setMap, setLoading, markDirty, getModule } = useMapStore();
+
+    // Map overrides store for persisting position/size changes
+    const { setSiteOverride } = useMapOverridesStore();
+
+    // Debounced save ref - save position changes after 300ms of no activity
+    const debouncedSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const saveOverrideDebounced = useCallback((siteId: string, override: { position: { x: number; y: number }; size: { width: number; height: number }; rotation: number }) => {
+        if (debouncedSaveRef.current) {
+            clearTimeout(debouncedSaveRef.current);
+        }
+        debouncedSaveRef.current = setTimeout(() => {
+            setSiteOverride(siteId, override);
+            debouncedSaveRef.current = null;
+        }, 300);
+    }, [setSiteOverride]);
 
     // Editor store state for selection sync and clipboard
     const {
@@ -142,7 +160,7 @@ const MapEditor: React.FC = () => {
         });
 
         // Customizing rotation control specifically
-        // In Fabric.js v6, we need to modify the control directly on the prototype
+        // need to modify the control directly on the prototype
         // and ensure the custom render is used
         try {
             const defaultControls = fabric.FabricObject.prototype.controls;
@@ -198,11 +216,11 @@ const MapEditor: React.FC = () => {
             const activeObjects = canvas.getActiveObjects();
             const validIds: string[] = [];
             const lockedIds: string[] = [];
-            
+
             activeObjects.forEach(obj => {
                 const moduleId = getModuleId(obj);
                 if (!moduleId) return;
-                
+
                 // Check if module is locked - prevent selection
                 const module = getModule(moduleId);
                 if (module?.locked) {
@@ -211,20 +229,20 @@ const MapEditor: React.FC = () => {
                     validIds.push(moduleId);
                 }
             });
-            
+
             // If any locked modules were selected, deselect them
             if (lockedIds.length > 0) {
                 const lockedObjects = lockedIds
                     .map(id => objectMapRef.current.get(id))
                     .filter((obj): obj is fabric.Group => obj !== undefined);
-                
+
                 if (lockedObjects.length > 0) {
                     // Remove locked objects from selection
                     const remainingObjects = activeObjects.filter(obj => {
                         const moduleId = getModuleId(obj);
                         return moduleId && !lockedIds.includes(moduleId);
                     });
-                    
+
                     if (remainingObjects.length === 0) {
                         canvas.discardActiveObject();
                     } else if (remainingObjects.length === 1) {
@@ -235,7 +253,7 @@ const MapEditor: React.FC = () => {
                     }
                 }
             }
-            
+
             setSelection(validIds);
             setSelectedCount(validIds.length);
         };
@@ -377,6 +395,16 @@ const MapEditor: React.FC = () => {
                     }]));
                 }
 
+                // Persist position/size changes for site-linked modules
+                const siteId = getSiteIdFromModuleId(moduleId);
+                if (siteId) {
+                    saveOverrideDebounced(siteId, {
+                        position: changes.position,
+                        size: changes.size,
+                        rotation: changes.rotation,
+                    });
+                }
+
                 transformStartRef.current = null;
 
                 // Restore selection after command execution
@@ -385,7 +413,7 @@ const MapEditor: React.FC = () => {
                 if (rafIdRef.current !== null) {
                     cancelAnimationFrame(rafIdRef.current);
                 }
-                
+
                 rafIdRef.current = requestAnimationFrame(() => {
                     rafIdRef.current = null;
                     if (selectedIds.length > 0 && canvasRef.current) {
@@ -413,7 +441,7 @@ const MapEditor: React.FC = () => {
                 });
             } catch (error) {
                 console.error('[MapEditor] Error handling object modification:', error);
-                
+
                 // Error recovery: restore object to previous state
                 if (e.target && transformStartRef.current) {
                     try {
@@ -421,11 +449,11 @@ const MapEditor: React.FC = () => {
                         const obj = e.target as fabric.Group;
                         const currentWidth = obj.width || 1;
                         const currentHeight = obj.height || 1;
-                        
+
                         // Restore to center-based coordinates
                         const centerX = startState.position.x + startState.size.width / 2;
                         const centerY = startState.position.y + startState.size.height / 2;
-                        
+
                         obj.set({
                             left: centerX,
                             top: centerY,
@@ -434,7 +462,7 @@ const MapEditor: React.FC = () => {
                             angle: startState.rotation,
                         });
                         obj.setCoords();
-                        
+
                         if (canvasRef.current) {
                             canvasRef.current.requestRenderAll();
                         }
@@ -442,7 +470,7 @@ const MapEditor: React.FC = () => {
                         console.error('[MapEditor] Error during recovery:', recoveryError);
                     }
                 }
-                
+
                 transformStartRef.current = null; // Reset state on error
             }
         };
@@ -527,7 +555,7 @@ const MapEditor: React.FC = () => {
 
             // Handle Add Tool Click
             // Only add if:
-            // 1. Tool is 'add' and we have a module to add
+            // 1. Tool is 'add' and have a module to add
             // 2. Not holding Alt (which triggers pan)
             // 3. Left click only (button 0)
             if (activeTool === 'add' && moduleToAdd && !event.altKey && event.button === 0) {
@@ -595,11 +623,11 @@ const MapEditor: React.FC = () => {
         // Handle cursor change for locked modules
         // Track current cursor state to avoid unnecessary re-renders
         let currentCursor: string | null = null;
-        
+
         const handleMouseOver = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
             const target = opt.target;
             if (!target) return;
-            
+
             const moduleId = getModuleId(target);
             if (moduleId) {
                 const module = getModule(moduleId);
@@ -680,87 +708,12 @@ const MapEditor: React.FC = () => {
                         updatedAt: new Date(),
                     });
                 } else {
-                    // Load sample map (mock)
+                    // Generate map from sites with stored overrides
+                    const generatedMap = generateMapFromSites(mockSites);
+                    // Use the route ID for the map
                     setMap({
+                        ...generatedMap,
                         id,
-                        name: 'Sample Campsite',
-                        description: 'A sample campsite map',
-                        imageUrl: '',
-                        imageSize: { width: 1920, height: 1080 },
-                        scale: 1, // Changed from 10 to 1 for better default view
-                        bounds: { minX: 0, minY: 0, maxX: 1920, maxY: 1080 },
-                        modules: [
-                            {
-                                id: 'module-1',
-                                type: 'campsite',
-                                position: { x: 100, y: 100 },
-                                size: { width: 120, height: 80 },
-                                rotation: 0,
-                                zIndex: 1,
-                                locked: false,
-                                visible: true,
-                                metadata: {
-                                    name: 'Site A1',
-                                    capacity: 4,
-                                    amenities: ['fire_pit'],
-                                    pricing: { basePrice: 35, seasonalMultiplier: 1 },
-                                    accessibility: false,
-                                    electricHookup: true,
-                                    waterHookup: true,
-                                    sewerHookup: false,
-                                },
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                            },
-                            {
-                                id: 'module-2',
-                                type: 'toilet',
-                                position: { x: 300, y: 150 },
-                                size: { width: 80, height: 80 },
-                                rotation: 0,
-                                zIndex: 2,
-                                locked: false,
-                                visible: true,
-                                metadata: {
-                                    name: 'Restroom A',
-                                    capacity: 10,
-                                    facilities: ['male', 'female', 'accessible'],
-                                    maintenanceSchedule: 'daily',
-                                    accessible: true,
-                                },
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                            },
-                            {
-                                id: 'module-3',
-                                type: 'parking',
-                                position: { x: 500, y: 100 },
-                                size: { width: 200, height: 100 },
-                                rotation: 0,
-                                zIndex: 1,
-                                locked: false,
-                                visible: true,
-                                metadata: {
-                                    name: 'Parking Lot A',
-                                    capacity: 20,
-                                    vehicleTypes: ['car', 'rv'],
-                                    accessible: true,
-                                },
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                            },
-                        ] as AnyModule[],
-                        metadata: {
-                            address: '123 Camp Road',
-                            coordinates: { latitude: 0, longitude: 0 },
-                            timezone: 'UTC',
-                            capacity: 100,
-                            amenities: [],
-                            rules: [],
-                            emergencyContacts: [],
-                        },
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
                     });
                 }
                 setLoading(false);
@@ -778,7 +731,7 @@ const MapEditor: React.FC = () => {
         const canvas = canvasRef.current;
         // Prevent rendering if map is still loading or canvas not ready
         if (!canvas || !currentMap || isLoading) return;
-        
+
         // Prevent concurrent renders
         if (isRenderingRef.current) return;
         isRenderingRef.current = true;
@@ -839,9 +792,9 @@ const MapEditor: React.FC = () => {
             // Check if locked/visible state actually changed
             const currentLocked = obj.lockMovementX === true;
             const currentVisible = obj.opacity !== undefined && obj.opacity > OPACITY_HIDDEN;
-            
-            const shouldUpdate = 
-                currentLocked !== module.locked || 
+
+            const shouldUpdate =
+                currentLocked !== module.locked ||
                 currentVisible !== module.visible;
 
             if (shouldUpdate) {
@@ -866,7 +819,7 @@ const MapEditor: React.FC = () => {
         if (modulesToUpdate.length > 0) {
             canvas.requestRenderAll();
         }
-        // Note: We only want to update when locked/visible state changes, not on every currentMap change
+        // Note: only to update when locked/visible state changes, not on every currentMap change
         // The effect compares current state with module state to determine what needs updating
     }, [currentMap]);
 
@@ -1017,8 +970,8 @@ const MapEditor: React.FC = () => {
         if (!document.fullscreenElement) {
             try {
                 await containerRef.current.requestFullscreen();
-                // We'll handle the resize via the already registered window resize listener
-                // but we might want to force a fit-to-screen after a short delay to allow transition
+                // handle the resize via the already registered window resize listener
+                // but might want to force a fit-to-screen after a short delay to allow transition
                 setTimeout(handleFitToScreen, 100);
             } catch (err) {
                 console.error("Error attempting to enable full-screen mode:", err);
@@ -1233,7 +1186,7 @@ const MapEditor: React.FC = () => {
 
     // Show loader when:
     // 1. isLoading is true (explicitly loading)
-    // 2. We have an id but no currentMap yet (initial load state - the load effect will handle it)
+    // 2. have an id but no currentMap yet (initial load state - the load effect will handle it)
     const shouldShowLoader = isLoading || (id && (!currentMap || currentMap.id !== id));
 
     if (shouldShowLoader) {

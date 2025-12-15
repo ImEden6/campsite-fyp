@@ -458,6 +458,12 @@ export const CURRENCY_FORMATS = {
     separator: ',',
     decimal: '.',
   },
+  MYR: {
+    symbol: 'RM',
+    decimals: 2,
+    separator: ',',
+    decimal: '.',
+  },
 };
 
 export const THEME_COLORS = {

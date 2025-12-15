@@ -8,6 +8,7 @@ import {
   PaymentModal,
   PaymentHistory,
 } from '@/features/payments';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 export const PaymentPage = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -53,7 +54,7 @@ export const PaymentPage = () => {
                   Booking ID: {bookingId || 'N/A'}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ${(mockBookingAmount / 100).toFixed(2)}
+                  {CURRENCY_SYMBOL}{(mockBookingAmount / 100).toFixed(2)}
                 </p>
               </div>
               <Button
