@@ -169,7 +169,7 @@ export const createMockBooking = (bookingData: CreateBookingData): Booking => {
         checkInDate: new Date(bookingData.checkInDate),
         checkOutDate: new Date(bookingData.checkOutDate),
         guests: bookingData.guests,
-        vehicles: bookingData.vehicles.map((v, i): Vehicle => ({
+        vehicles: (bookingData.vehicles || []).map((v, i): Vehicle => ({
             id: `v-${i}`,
             type: v.type as VehicleType,
             licensePlate: v.licensePlate,

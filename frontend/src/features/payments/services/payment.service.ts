@@ -21,7 +21,12 @@ export const paymentService = {
     if (env.useMockPayments) {
       console.warn('[Mock] Using mock payment intent (VITE_USE_MOCK_PAYMENTS=true)');
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
-      return createMockPaymentIntent(data.amount, data.currency);
+      return createMockPaymentIntent(
+        data.amount, 
+        data.currency || 'usd',
+        data.bookingId,
+        data.description
+      );
     }
 
     const response = await apiClient.post<PaymentIntent>(
@@ -47,6 +52,10 @@ export const paymentService = {
       const response = await apiClient.get<Payment[]>(
         `/bookings/${bookingId}/payments`
       );
+      // Validate response is an array
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response: expected array of payments');
+      }
       return response.data;
     } catch (error) {
       console.warn('[Mock] Using mock booking payments', error);
@@ -60,6 +69,10 @@ export const paymentService = {
   getPaymentHistory: async (): Promise<Payment[]> => {
     try {
       const response = await apiClient.get<Payment[]>('/payments/history');
+      // Validate response is an array
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response: expected array of payments');
+      }
       return response.data;
     } catch (error) {
       console.warn('[Mock] Using mock payment history', error);

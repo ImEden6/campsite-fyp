@@ -1,11 +1,17 @@
 import { Payment, PaymentIntent, PaymentStatus, PaymentMethod } from '../types/payment.types';
+import { addMockPayment } from './mockCurrentPayments';
 
 // In-memory store for mock payment intents (to preserve amount/currency for confirmation)
 // Entries are cleaned up after retrieval to prevent memory leaks
-const mockPaymentIntentStore = new Map<string, { amount: number; currency: string }>();
+const mockPaymentIntentStore = new Map<string, { amount: number; currency: string; bookingId?: string; description?: string }>();
 const MAX_STORE_SIZE = 100; // Safety limit for unclaimed intents
 
-export const createMockPaymentIntent = (amount: number, currency: string): PaymentIntent => {
+export const createMockPaymentIntent = (
+    amount: number, 
+    currency: string,
+    bookingId?: string,
+    description?: string
+): PaymentIntent => {
     const id = `pi_mock_${crypto.randomUUID()}`;
     
     // Cleanup: if store exceeds max size, remove oldest entries
@@ -15,7 +21,7 @@ export const createMockPaymentIntent = (amount: number, currency: string): Payme
     }
     
     // Store the payment intent data for later retrieval during confirmation
-    mockPaymentIntentStore.set(id, { amount, currency });
+    mockPaymentIntentStore.set(id, { amount, currency, bookingId, description });
     return {
         id,
         amount,
@@ -29,10 +35,16 @@ export const createMockPaymentIntent = (amount: number, currency: string): Payme
 };
 
 /**
- * Retrieve and consume stored mock payment intent data
- * Entry is deleted after retrieval since payment intents are only confirmed once
+ * Retrieve stored mock payment intent data (without consuming it)
  */
-export const getMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string } | undefined => {
+export const getMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string; bookingId?: string; description?: string } | undefined => {
+    return mockPaymentIntentStore.get(paymentIntentId);
+};
+
+/**
+ * Consume and delete mock payment intent data after confirmation
+ */
+const consumeMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string; bookingId?: string; description?: string } | undefined => {
     const data = mockPaymentIntentStore.get(paymentIntentId);
     if (data) {
         mockPaymentIntentStore.delete(paymentIntentId); // Cleanup after use
@@ -46,16 +58,24 @@ export const createMockConfirmedPayment = (
     amount: number,
     currency: string
 ): Payment => {
-    return {
+    // Get stored intent data for description
+    const intentData = consumeMockPaymentIntentData(paymentIntentId);
+    
+    const payment: Payment = {
         id: `pay_mock_${crypto.randomUUID()}`,
-        bookingId: bookingId || 'unknown',
+        bookingId: bookingId || intentData?.bookingId || 'unknown',
         amount: amount,
         currency: currency,
         status: PaymentStatus.SUCCEEDED,
         method: PaymentMethod.CARD,
-        description: 'Mock Payment Confirmation',
+        description: intentData?.description || 'Booking Payment',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         stripePaymentIntentId: paymentIntentId,
     };
+    
+    // Add to mock payment history so it shows up in payment history view
+    addMockPayment(payment);
+    
+    return payment;
 };

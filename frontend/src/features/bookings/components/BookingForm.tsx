@@ -16,6 +16,7 @@ import { VehicleInput } from './VehicleInput';
 import { EquipmentSelector } from './EquipmentSelector';
 import { PricingBreakdown } from './PricingBreakdown';
 import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
+import { useAuthStore } from '@/stores/authStore';
 
 interface BookingFormProps {
     site: Site;
@@ -58,6 +59,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     onSuccess,
     onCancel,
 }) => {
+    const { user } = useAuthStore();
+    
     const [formData, setFormData] = useState<FormData>({
         ...initialFormData,
         checkInDate: initialCheckInDate,
@@ -350,6 +353,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                             children={formData.children}
                             guestDetails={formData.guestDetails}
                             onChange={(guests) => updateFormData('guestDetails', guests)}
+                            primaryGuestInfo={user ? { firstName: user.firstName, lastName: user.lastName } : undefined}
                             errors={errors}
                         />
 

@@ -80,7 +80,7 @@ export const PaymentHistory = ({
     );
   }
 
-  if (!payments || payments.length === 0) {
+  if (!payments || !Array.isArray(payments) || payments.length === 0) {
     return (
       <Card>
         <CardHeader>

@@ -19,7 +19,7 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
-    "preview:local": "cross-env VITE_USE_MOCK_PAYMENTS=true vite build --mode production && vite preview",
+    "preview:local": "cross-env VITE_USE_MOCK_PAYMENTS=true VITE_USE_MOCK_AUTH=true vite build --mode production && vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

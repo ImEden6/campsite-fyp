@@ -101,7 +101,10 @@ export const getBookingsPaginated = async (
 export const getBookingById = async (id: string): Promise<Booking> => {
   try {
     const response = await get<ApiResponse<Booking>>(`/bookings/${id}`);
-    return response.data!;
+    if (!response.data) {
+      throw new Error(`Booking not found: ${id}`);
+    }
+    return response.data;
   } catch (error) {
     const mockBooking = getMockBooking(id);
     if (mockBooking) {
@@ -201,7 +204,10 @@ export const calculateBookingPrice = async (
       checkOutDate,
       equipmentRentals,
     });
-    return response.data!;
+    if (!response.data) {
+      throw new Error('Failed to calculate pricing');
+    }
+    return response.data;
   } catch {
     console.warn('[MVP] Using mock pricing - API unavailable');
     setUsingMockData(true);
@@ -216,7 +222,10 @@ export const calculateBookingPrice = async (
 export const createBooking = async (bookingData: CreateBookingData): Promise<Booking> => {
   try {
     const response = await post<ApiResponse<Booking>>('/bookings', bookingData);
-    return response.data!;
+    if (!response.data) {
+      throw new Error('Failed to create booking');
+    }
+    return response.data;
   } catch {
     console.warn('[MVP] Using mock booking creation - API unavailable');
     setUsingMockData(true);
@@ -232,7 +241,10 @@ export const updateBooking = async (
   bookingData: UpdateBookingData
 ): Promise<Booking> => {
   const response = await put<ApiResponse<Booking>>(`/bookings/${id}`, bookingData);
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Failed to update booking: ${id}`);
+  }
+  return response.data;
 };
 
 /**
@@ -240,7 +252,10 @@ export const updateBooking = async (
  */
 export const cancelBooking = async (id: string, reason?: string): Promise<Booking> => {
   const response = await post<ApiResponse<Booking>>(`/bookings/${id}/cancel`, { reason });
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Failed to cancel booking: ${id}`);
+  }
+  return response.data;
 };
 
 export interface CancellationRefund {
@@ -255,7 +270,10 @@ export interface CancellationRefund {
  */
 export const calculateCancellationRefund = async (id: string): Promise<CancellationRefund> => {
   const response = await get<ApiResponse<CancellationRefund>>(`/bookings/${id}/refund-calculation`);
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Failed to calculate refund for booking: ${id}`);
+  }
+  return response.data;
 };
 
 /**
@@ -263,7 +281,10 @@ export const calculateCancellationRefund = async (id: string): Promise<Cancellat
  */
 export const checkInBooking = async (id: string): Promise<Booking> => {
   const response = await post<ApiResponse<Booking>>(`/bookings/${id}/check-in`);
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Failed to check-in booking: ${id}`);
+  }
+  return response.data;
 };
 
 /**
@@ -271,7 +292,10 @@ export const checkInBooking = async (id: string): Promise<Booking> => {
  */
 export const checkOutBooking = async (id: string): Promise<Booking> => {
   const response = await post<ApiResponse<Booking>>(`/bookings/${id}/check-out`);
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Failed to check-out booking: ${id}`);
+  }
+  return response.data;
 };
 
 /**
@@ -279,7 +303,10 @@ export const checkOutBooking = async (id: string): Promise<Booking> => {
  */
 export const getBookingQRCode = async (id: string): Promise<string> => {
   const response = await get<ApiResponse<{ qrCode: string }>>(`/bookings/${id}/qr-code`);
-  return response.data!.qrCode;
+  if (!response.data?.qrCode) {
+    throw new Error(`Failed to get QR code for booking: ${id}`);
+  }
+  return response.data.qrCode;
 };
 
 /**
@@ -306,7 +333,10 @@ export const createGuestBooking = async (
 ): Promise<GuestBookingResponse> => {
   try {
     const response = await post<ApiResponse<GuestBookingResponse>>('/bookings/guest', bookingData);
-    return response.data!;
+    if (!response.data) {
+      throw new Error('Failed to create guest booking');
+    }
+    return response.data;
   } catch (error) {
     console.warn('[Mock] Using mock guest booking creation - API unavailable', error);
     setUsingMockData(true);
@@ -331,7 +361,10 @@ export const getGuestBooking = async (
   if (email) params.email = email;
 
   const response = await get<ApiResponse<Booking>>(`/bookings/guest/${bookingNumber}`, { params });
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Booking not found: ${bookingNumber}`);
+  }
+  return response.data;
 };
 
 /**
@@ -345,5 +378,8 @@ export const verifyGuestBookingEmail = async (
     `/bookings/guest/${bookingNumber}/verify`,
     { email }
   );
-  return response.data!;
+  if (!response.data?.token) {
+    throw new Error('Failed to verify email');
+  }
+  return response.data;
 };
