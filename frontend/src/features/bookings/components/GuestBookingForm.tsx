@@ -460,7 +460,7 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
                     ))}
                     {formData.guestDetails.filter(g => g.isChild).map((guest, index) => (
                       <p key={`child-${index}`} className="text-sm text-gray-700 dark:text-gray-300">
-                        \u2022 {guest.firstName} {guest.lastName} <span className="text-xs text-purple-600 dark:text-purple-400">(Child{guest.age ? `, ${guest.age}` : ''})</span>
+                        {'\u2022'} {guest.firstName} {guest.lastName} <span className="text-xs text-purple-600 dark:text-purple-400">(Child{guest.age ? `, ${guest.age}` : ''})</span>
                       </p>
                     ))}
                   </div>

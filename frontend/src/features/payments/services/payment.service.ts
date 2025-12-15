@@ -8,7 +8,7 @@ import type {
 } from '../types/payment.types';
 import { getMockBookingPayments, getMockPaymentHistory } from './mockCurrentPayments';
 import { env } from '@/config/env';
-import { createMockPaymentIntent, createMockConfirmedPayment } from './mock-payment-intent';
+import { createMockPaymentIntent, createMockConfirmedPayment, getMockPaymentIntentData } from './mock-payment-intent';
 
 export const paymentService = {
   /**
@@ -99,10 +99,13 @@ export const paymentService = {
     if (env.useMockPayments) {
       console.warn('[Mock] Confirming mock payment (VITE_USE_MOCK_PAYMENTS=true)');
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
-      // Note: We don't have the bookingId here easily in the service without extra fetch, 
-      // but for mock purposes 'mock-id' is often sufficient or we can pass it if we refactor.
-      // For now, let's use a placeholder which is acceptable for a dev mock.
-      return createMockConfirmedPayment(paymentIntentId, undefined, 1000, 'usd');
+      
+      // Retrieve the original amount/currency from the stored mock payment intent
+      const intentData = getMockPaymentIntentData(paymentIntentId);
+      const amount = intentData?.amount ?? 0;
+      const currency = intentData?.currency ?? 'usd';
+      
+      return createMockConfirmedPayment(paymentIntentId, undefined, amount, currency);
     }
 
     const response = await apiClient.post<Payment>(

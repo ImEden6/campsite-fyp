@@ -104,8 +104,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
       // Force redirect based on role
       if (user?.role === UserRole.CUSTOMER) {
-        navigate('/customer/login', { replace: true });
-        // Actually, logic said /customer/dashboard. Let's correct that based on the plan.
         navigate('/customer/dashboard', { replace: true });
       } else {
         // Staff/Admin/Manager

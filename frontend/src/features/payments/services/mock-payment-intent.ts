@@ -1,14 +1,27 @@
 import { Payment, PaymentIntent, PaymentStatus, PaymentMethod } from '../types/payment.types';
 
+// In-memory store for mock payment intents (to preserve amount/currency for confirmation)
+const mockPaymentIntentStore = new Map<string, { amount: number; currency: string }>();
+
 export const createMockPaymentIntent = (amount: number, currency: string): PaymentIntent => {
+    const id = `pi_mock_${crypto.randomUUID()}`;
+    // Store the payment intent data for later retrieval during confirmation
+    mockPaymentIntentStore.set(id, { amount, currency });
     return {
-        id: `pi_mock_${crypto.randomUUID()}`,
+        id,
         amount,
         currency,
         clientSecret: `seti_mock_${crypto.randomUUID()}_secret_${crypto.randomUUID()}`,
         status: 'requires_payment_method',
         created: Date.now(),
     };
+};
+
+/**
+ * Retrieve stored mock payment intent data
+ */
+export const getMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string } | undefined => {
+    return mockPaymentIntentStore.get(paymentIntentId);
 };
 
 export const createMockConfirmedPayment = (
