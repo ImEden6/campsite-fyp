@@ -58,8 +58,8 @@ export const PaymentHistory = ({
       <Card>
         <CardBody>
           <div className="flex items-center justify-center py-8">
-            <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
-            <span className="ml-3 text-gray-600">Loading payments...</span>
+            <RefreshCw className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading payments...</span>
           </div>
         </CardBody>
       </Card>
@@ -88,8 +88,8 @@ export const PaymentHistory = ({
         </CardHeader>
         <CardBody>
           <div className="text-center py-8">
-            <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-600">No payments found</p>
+            <CreditCard className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-600 dark:text-gray-400">No payments found</p>
           </div>
         </CardBody>
       </Card>
@@ -118,21 +118,21 @@ export const PaymentHistory = ({
             {payments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <PaymentStatusBadge status={payment.status} />
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {format(new Date(payment.createdAt), 'MMM dd, yyyy')}
                     </span>
                   </div>
                   {payment.description && (
-                    <p className="text-sm text-gray-600 mb-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
                       {payment.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span>ID: {payment.id.slice(0, 8)}...</span>
                     <span className="uppercase">{payment.method}</span>
                   </div>
@@ -140,11 +140,11 @@ export const PaymentHistory = ({
 
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                       {CURRENCY_SYMBOL}{(payment.amount / 100).toFixed(2)}
                     </p>
                     {payment.refundedAmount && payment.refundedAmount > 0 && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Refunded: {CURRENCY_SYMBOL}{(payment.refundedAmount / 100).toFixed(2)}
                       </p>
                     )}
