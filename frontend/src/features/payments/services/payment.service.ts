@@ -113,12 +113,13 @@ export const paymentService = {
       console.warn('[Mock] Confirming mock payment (VITE_USE_MOCK_PAYMENTS=true)');
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
       
-      // Retrieve the original amount/currency from the stored mock payment intent
+      // Retrieve the original amount/currency/bookingId from the stored mock payment intent
       const intentData = getMockPaymentIntentData(paymentIntentId);
       const amount = intentData?.amount ?? 0;
       const currency = intentData?.currency ?? 'usd';
+      const bookingId = intentData?.bookingId;
       
-      return createMockConfirmedPayment(paymentIntentId, undefined, amount, currency);
+      return createMockConfirmedPayment(paymentIntentId, bookingId, amount, currency);
     }
 
     const response = await apiClient.post<Payment>(
