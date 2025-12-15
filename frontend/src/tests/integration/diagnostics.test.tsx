@@ -7,7 +7,7 @@ import { setupServer } from 'msw/node';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as router from 'react-router-dom';
-import * as query from '@tanstack/react-query';
+
 
 // --- MSW Setup ---
 const server = setupServer(

@@ -38,6 +38,7 @@ export interface PaymentIntent {
   amount: number;
   currency: string;
   status: string;
+  created: number;
 }
 
 export interface CreatePaymentIntentRequest {

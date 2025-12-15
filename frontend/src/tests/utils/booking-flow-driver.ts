@@ -90,7 +90,7 @@ export class BookingFlowDriver {
         await this.clickNext();
     }
 
-    async fillGuestDetails(adults: number) {
+    async fillGuestDetails(_adults: number) {
         await this.assertOnStep(/guest information/i);
 
         // Fill in guest names for additional adults if required

@@ -7,6 +7,7 @@ import { useConfirmPayment } from '../hooks/usePayments';
 
 interface MockPaymentFormProps {
   amount: number;
+  // bookingId is currently unused in the mock flow but kept for API parity
   bookingId: string;
   clientSecret: string;
   onSuccess: () => void;
@@ -19,7 +20,8 @@ interface MockPaymentFormProps {
  */
 export const MockPaymentForm = ({
   amount,
-  bookingId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  bookingId: _bookingId,
   clientSecret,
   onSuccess,
   onCancel,
@@ -43,11 +45,13 @@ export const MockPaymentForm = ({
       // Extract payment intent ID from client secret
       const paymentIntentId = clientSecret.split('_secret_')[0];
 
+      if (!paymentIntentId) throw new Error('Invalid client secret');
+
       // Confirm the mock payment
       await confirmPayment.mutateAsync(paymentIntentId);
 
       onSuccess();
-    } catch (err) {
+    } catch {
       setError('Mock payment failed. Please try again.');
       setProcessing(false);
     }
