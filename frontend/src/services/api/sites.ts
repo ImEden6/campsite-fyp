@@ -60,7 +60,10 @@ export const getSitesPaginated = async (
  */
 export const getSiteById = async (id: string): Promise<Site> => {
   const response = await get<ApiResponse<Site>>(`/sites/${id}`);
-  return response.data!;
+  if (!response.data) {
+    throw new Error(`Site not found: ${id}`);
+  }
+  return response.data;
 };
 
 /**
