@@ -23,7 +23,7 @@ export const paymentService = {
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
       return createMockPaymentIntent(
         data.amount, 
-        data.currency || 'usd',
+        data.currency || 'myr',
         data.bookingId,
         data.description
       );
@@ -48,6 +48,13 @@ export const paymentService = {
    * Get all payments for a booking
    */
   getBookingPayments: async (bookingId: string): Promise<Payment[]> => {
+    // In mock-payments mode, always use local mock store and skip real API
+    if (env.useMockPayments) {
+      console.warn('[Mock] Using mock booking payments (VITE_USE_MOCK_PAYMENTS=true)');
+      await new Promise(resolve => setTimeout(resolve, 400)); // Simulate network delay
+      return getMockBookingPayments(bookingId);
+    }
+
     try {
       const response = await apiClient.get<Payment[]>(
         `/bookings/${bookingId}/payments`
@@ -67,6 +74,13 @@ export const paymentService = {
    * Get payment history for current user
    */
   getPaymentHistory: async (): Promise<Payment[]> => {
+    // In mock-payments mode, always use local mock history and skip real API
+    if (env.useMockPayments) {
+      console.warn('[Mock] Using mock payment history (VITE_USE_MOCK_PAYMENTS=true)');
+      await new Promise(resolve => setTimeout(resolve, 400)); // Simulate network delay
+      return getMockPaymentHistory();
+    }
+
     try {
       const response = await apiClient.get<Payment[]>('/payments/history');
       // Validate response is an array
@@ -116,7 +130,7 @@ export const paymentService = {
       // Retrieve the original amount/currency/bookingId from the stored mock payment intent
       const intentData = getMockPaymentIntentData(paymentIntentId);
       const amount = intentData?.amount ?? 0;
-      const currency = intentData?.currency ?? 'usd';
+      const currency = intentData?.currency ?? 'myr';
       const bookingId = intentData?.bookingId;
       
       return createMockConfirmedPayment(paymentIntentId, bookingId, amount, currency);

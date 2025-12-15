@@ -2,6 +2,15 @@ import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Ensure the TS parser resolves the correct tsconfig when ESLint is run from the repo root
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Point the TS parser at the actual package root that contains tsconfig.json
+const tsconfigRootDir = __dirname
 
 export default [
   // Global ignores - files and directories that should not be linted
@@ -24,6 +33,7 @@ export default [
   ...tseslint.configs.recommended,
 
   // Project-specific configuration for TypeScript and React files
+  // This must come after recommended configs to override parser options
   {
     files: ['**/*.{ts,tsx}'],
     
@@ -33,6 +43,9 @@ export default [
       sourceType: 'module',
       parser: tseslint.parser,
       parserOptions: {
+        // Explicitly set tsconfigRootDir to prevent auto-detection conflicts
+        tsconfigRootDir,
+        project: ['./tsconfig.json'],
         ecmaFeatures: {
           jsx: true
         }

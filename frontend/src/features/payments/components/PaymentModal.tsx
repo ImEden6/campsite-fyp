@@ -37,7 +37,7 @@ export const PaymentModal = ({
         {
           bookingId,
           amount,
-          currency: 'usd',
+          currency: 'myr',
           description,
         },
         {

@@ -1,4 +1,6 @@
-// Constants for Campsite Management System
+/**
+ * Constants for Campsite Management System
+ */
 
 export const API_ENDPOINTS = {
   // Authentication
