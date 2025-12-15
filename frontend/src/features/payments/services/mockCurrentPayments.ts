@@ -82,10 +82,19 @@ const loadPersistedPayments = (): Payment[] => {
     try {
         const stored = localStorage.getItem(DEMO_PAYMENTS_KEY);
         if (stored) {
-            return JSON.parse(stored);
+            const parsed = JSON.parse(stored);
+            // Validate parsed data is actually an array
+            if (!Array.isArray(parsed)) {
+                console.warn('[MockPayments] Invalid stored payments data (not an array), clearing');
+                localStorage.removeItem(DEMO_PAYMENTS_KEY);
+                return [];
+            }
+            return parsed;
         }
     } catch (e) {
         console.warn('[MockPayments] Failed to load persisted payments:', e);
+        // Clear corrupted data
+        localStorage.removeItem(DEMO_PAYMENTS_KEY);
     }
     return [];
 };
