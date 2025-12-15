@@ -11,7 +11,9 @@ export const createMockPaymentIntent = (amount: number, currency: string): Payme
         id,
         amount,
         currency,
-        clientSecret: `seti_mock_${crypto.randomUUID()}_secret_${crypto.randomUUID()}`,
+        // Use the same id in clientSecret so it can be extracted correctly
+        // Format: {payment_intent_id}_secret_{random} (matches Stripe's format)
+        clientSecret: `${id}_secret_${crypto.randomUUID()}`,
         status: 'requires_payment_method',
         created: Date.now(),
     };
