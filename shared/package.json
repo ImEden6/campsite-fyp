@@ -2,8 +2,15 @@
   "name": "@campsite-management/shared",
   "version": "1.0.0",
   "description": "Shared types, schemas, and utilities for campsite management system",
-  "type": "module",
+  "type": "commonjs",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "vite": "./index.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",

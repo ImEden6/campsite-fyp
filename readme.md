@@ -4,6 +4,27 @@ A full-stack campsite management platform for booking, site management, equipmen
 
 ## Quick Start
 
+### Option 1: Docker (Recommended)
+
+```bash
+# Build the images first
+docker-compose build
+
+# Start all services
+docker-compose up -d
+
+# Initialize database (Required for first run)
+docker-compose exec backend npm run db:setup
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Option 2: Local Development
+
 ```bash
 # Install all dependencies
 npm run install:all
@@ -156,17 +177,7 @@ Simulates payments with test card `4242 4242 4242 4242`.
 
 ---
 
-## Docker
 
-```bash
-# Start all services
-docker-compose up -d
-
-# Start specific service
-docker-compose up -d postgres redis
-```
-
----
 
 ## Scripts Reference
 

@@ -1,14 +1,11 @@
-/*
-  Global Styles - Tailwind v4
-  ---- the *main* stylesheet with tailwind imports and custom styles
- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@import "tailwindcss";
 @import "./editor.css";
 
-@variant dark (&:where(.dark, .dark *));
-
-@theme {
+@layer base {
+  :root {
   /* Brand Colors - oklch */
   --color-primary-50: oklch(0.97 0.014 237);
   --color-primary-100: oklch(0.94 0.028 237);
@@ -114,6 +111,7 @@
   /* Breakpoints */
   --breakpoint-xs: 475px;
   --breakpoint-3xl: 1920px;
+  }
 }
 
 /* Button Components */

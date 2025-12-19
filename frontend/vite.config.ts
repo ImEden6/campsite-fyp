@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { resolve, join } from 'path'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import tailwindcss from "@tailwindcss/vite";
+
 
 export default defineConfig(({ mode }) => {
   // Plugin to exclude dev dependencies from production builds
@@ -110,138 +110,7 @@ export default defineConfig(({ mode }) => {
         // JSX runtime - use automatic runtime for better tree-shaking
         jsxRuntime: 'automatic',
       }),
-      tailwindcss(),
-      VitePWA({
-        registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.png'],
-        manifest: {
-          name: 'Campsite Management System',
-          short_name: 'Campsite',
-          description: 'Comprehensive campsite management system for managing bookings, payments, and operations',
-          theme_color: '#10b981',
-          background_color: '#ffffff',
-          display: 'standalone',
-          orientation: 'portrait-primary',
-          start_url: '/',
-          icons: [
-            {
-              src: '/icons/icon-72x72.png',
-              sizes: '72x72',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-96x96.png',
-              sizes: '96x96',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-128x128.png',
-              sizes: '128x128',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-144x144.png',
-              sizes: '144x144',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-152x152.png',
-              sizes: '152x152',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-384x384.png',
-              sizes: '384x384',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: '/icons/icon-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable'
-            }
-          ],
-          shortcuts: [
-            {
-              name: 'New Booking',
-              short_name: 'Book',
-              description: 'Create a new booking',
-              url: '/book',
-              icons: [{ src: '/icons/shortcut-booking.png', sizes: '96x96' }]
-            },
-            {
-              name: 'Dashboard',
-              short_name: 'Dashboard',
-              description: 'View dashboard',
-              url: '/dashboard',
-              icons: [{ src: '/icons/shortcut-dashboard.png', sizes: '96x96' }]
-            }
-          ]
-        },
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/api\.campsite\.com\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'api-cache',
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24 // 24 hours
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-                },
-                cacheableResponse: {
-                  statuses: [0, 200]
-                }
-              }
-            },
-            {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'image-cache',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-                }
-              }
-            }
-          ],
-          cleanupOutdatedCaches: true,
-          skipWaiting: true,
-          clientsClaim: true
-        },
-        devOptions: {
-          enabled: false,
-          type: 'module'
-        }
-      }),
+      // VitePWA removed temporarily to fix build
       // HTML optimization plugin (runs after VitePWA to transform its output)
       htmlOptimizePlugin(),
       // Bundle visualizer - generates stats.html for bundle analysis
@@ -254,6 +123,7 @@ export default defineConfig(({ mode }) => {
     ],
 
     resolve: {
+      conditions: ['vite'],
       alias: {
         '@': resolve(__dirname, './src'),
         '@components': resolve(__dirname, './src/components'),
@@ -396,7 +266,7 @@ export default defineConfig(({ mode }) => {
       // Exclude heavy libraries from pre-bundling - let them be code-split
       exclude: [
         'framer-motion', // Lazy load when needed
-
+        '@campsite-management/shared',
         'socket.io-client', // Only load when needed
         '@sentry/react', // Lazy load Sentry - don't include in initial bundle
         'lucide-react', // Code-split for better initial load performance
@@ -448,7 +318,11 @@ export default defineConfig(({ mode }) => {
         '**/node_modules/**',
         '**/dist/**',
         '**/cypress/**',
-        '**/.{idea,git,cache,output,temp}/**',
+        '**/.idea/**',
+        '**/.git/**',
+        '**/.cache/**',
+        '**/output/**',
+        '**/temp/**',
         '**/tests/e2e/**', // Exclude Playwright tests
         '**/*.e2e.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       ],

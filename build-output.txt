@@ -1,0 +1,268 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.15kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:alpine
+#2 DONE 1.2s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 2.5s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder  1/11] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#6 DONE 0.1s
+
+#7 [production 1/5] FROM docker.io/library/nginx:alpine@sha256:fd9f8ce722ab13edb2e47ebdd16b843939280457bf1567a6cd155203f9ce98d8
+#7 resolve docker.io/library/nginx:alpine@sha256:fd9f8ce722ab13edb2e47ebdd16b843939280457bf1567a6cd155203f9ce98d8
+#7 resolve docker.io/library/nginx:alpine@sha256:fd9f8ce722ab13edb2e47ebdd16b843939280457bf1567a6cd155203f9ce98d8 0.1s done
+#7 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 7.52MB 4.9s
+#5 ...
+
+#6 [builder  1/11] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 sha256:fd1849a5c548bc65ee47a64498951bda5d40e87d08efe9dca69b5c8cdedc7a52 443B / 443B 0.7s done
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 42.78MB / 42.78MB 5.6s done
+#6 sha256:cb3325e64457574e24f92246e3da3376946e473d636209e1390eac47b50b26a3 1.26MB / 1.26MB 1.4s done
+#6 extracting sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 2.3s done
+#6 extracting sha256:cb3325e64457574e24f92246e3da3376946e473d636209e1390eac47b50b26a3 0.1s done
+#6 extracting sha256:fd1849a5c548bc65ee47a64498951bda5d40e87d08efe9dca69b5c8cdedc7a52 0.1s done
+#6 DONE 8.5s
+
+#5 [internal] load build context
+#5 ...
+
+#8 [builder  2/11] WORKDIR /app
+#8 DONE 1.4s
+
+#5 [internal] load build context
+#5 transferring context: 21.77MB 10.0s
+#5 ...
+
+#9 [production 2/5] RUN apk add --no-cache curl &&   adduser -S -D -H -u 1001 -s /sbin/nologin appuser &&   mkdir -p /var/run/nginx &&   chown -R appuser:root /usr/share/nginx/html   /var/cache/nginx   /var/log/nginx   /var/run/nginx &&   chmod -R g+w /var/cache/nginx /var/log/nginx /var/run/nginx &&   rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+#9 ...
+
+#5 [internal] load build context
+#5 transferring context: 27.60MB 15.1s
+#5 transferring context: 31.98MB 20.1s
+#5 transferring context: 41.08MB 25.1s
+#5 transferring context: 46.77MB 30.1s
+#5 ...
+
+#9 [production 2/5] RUN apk add --no-cache curl &&   adduser -S -D -H -u 1001 -s /sbin/nologin appuser &&   mkdir -p /var/run/nginx &&   chown -R appuser:root /usr/share/nginx/html   /var/cache/nginx   /var/log/nginx   /var/run/nginx &&   chmod -R g+w /var/cache/nginx /var/log/nginx /var/run/nginx &&   rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+#9 34.31 OK: 50.8 MiB in 71 packages
+#9 DONE 34.8s
+
+#5 [internal] load build context
+#5 transferring context: 48.48MB 35.2s
+#5 transferring context: 59.07MB 40.3s
+#5 transferring context: 65.13MB 45.3s
+#5 transferring context: 69.36MB 50.3s
+#5 transferring context: 73.74MB 55.4s
+#5 transferring context: 77.54MB 60.4s
+#5 transferring context: 83.38MB 65.5s
+#5 transferring context: 88.57MB 70.6s
+#5 transferring context: 97.15MB 75.6s
+#5 transferring context: 108.70MB 80.7s
+#5 transferring context: 118.86MB 85.8s
+#5 transferring context: 130.30MB 89.4s done
+#5 DONE 89.5s
+
+#10 [production 3/5] COPY docker/nginx.conf /etc/nginx/nginx.conf
+#10 ...
+
+#11 [builder  3/11] COPY package*.json ./
+#11 DONE 0.9s
+
+#10 [production 3/5] COPY docker/nginx.conf /etc/nginx/nginx.conf
+#10 DONE 0.9s
+
+#12 [production 4/5] RUN sed -i 's/listen 80;/listen 5137;/' /etc/nginx/nginx.conf
+#12 ...
+
+#13 [builder  4/11] COPY frontend/package*.json ./frontend/
+#13 DONE 0.2s
+
+#14 [builder  5/11] COPY shared/package*.json ./shared/
+#14 DONE 0.1s
+
+#12 [production 4/5] RUN sed -i 's/listen 80;/listen 5137;/' /etc/nginx/nginx.conf
+#12 DONE 0.4s
+
+#15 [builder  6/11] COPY backend/package*.json ./backend/
+#15 DONE 0.1s
+
+#16 [builder  7/11] COPY tests/package*.json ./tests/
+#16 DONE 0.1s
+
+#17 [builder  8/11] RUN npm ci
+#17 13.75 npm warn deprecated supertest@6.3.4: Please upgrade to supertest v7.1.3+, see release notes at https://github.com/forwardemail/supertest/releases/tag/v7.1.3 - maintenance is supported by Forward Email @ https://forwardemail.net
+#17 14.73 npm warn deprecated superagent@8.1.2: Please upgrade to superagent v10.2.2+, see release notes at https://github.com/forwardemail/superagent/releases/tag/v10.2.2 - maintenance is supported by Forward Email @ https://forwardemail.net
+#17 15.02 npm warn deprecated multer@1.4.5-lts.2: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
+#17 15.58 npm warn deprecated lodash.get@4.4.2: This package is deprecated. Use the optional chaining (?.) operator instead.
+#17 15.58 npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+#17 16.65 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#17 19.30 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#17 22.81 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#17 38.28 npm warn deprecated glob@7.1.6: Glob versions prior to v9 are no longer supported
+#17 41.27 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#17 42.18 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#17 43.33 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#17 44.03 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#17 130.3 
+#17 130.3 added 1747 packages, and audited 1752 packages in 2m
+#17 130.3 
+#17 130.3 244 packages are looking for funding
+#17 130.3   run `npm fund` for details
+#17 130.3 
+#17 130.3 found 0 vulnerabilities
+#17 130.3 npm notice
+#17 130.3 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#17 130.3 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#17 130.3 npm notice To update run: npm install -g npm@11.7.0
+#17 130.3 npm notice
+#17 DONE 130.6s
+
+#18 [builder  9/11] COPY shared/ ./shared/
+#18 DONE 0.9s
+
+#19 [builder 10/11] COPY frontend/ ./frontend/
+#19 DONE 5.1s
+
+#20 [builder 11/11] RUN npm run build -w @campsite-management/frontend &&   rm -rf shared/src frontend/src &&   rm -rf node_modules/.cache
+#20 0.583 
+#20 0.583 > @campsite-management/frontend@1.0.0 build
+#20 0.583 > vite build --mode production
+#20 0.583 
+#20 0.877 vite v6.4.1 building for production...
+#20 1.232 transforming...
+#20 5.209 [vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+#20 5.209 3  |  @tailwind utilities;
+#20 5.209 4  |  
+#20 5.209 5  |  @import "./editor.css";
+#20 5.209    |  ^^^^^^^^^^^^^^^^^^^^^^^
+#20 5.209 6  |  
+#20 5.209 7  |  @layer base {
+#20 10.30 Γ£ô 3111 modules transformed.
+#20 11.33 rendering chunks...
+#20 25.56 computing gzip size...
+#20 25.59 dist/index.html                                         5.26 kB Γöé gzip:   1.51 kB
+#20 25.59 dist/assets/index--xfZSUAF.css                         78.81 kB Γöé gzip:  12.97 kB
+#20 25.59 dist/assets/js/endOfMonth-AaEyYycs.js                   0.23 kB Γöé gzip:   0.19 kB
+#20 25.59 dist/assets/js/useToast-CsFD5OtO.js                     0.29 kB Γöé gzip:   0.21 kB
+#20 25.59 dist/assets/js/currency-CfiU9iuO.js                     0.36 kB Γöé gzip:   0.21 kB
+#20 25.59 dist/assets/js/RegisterPage-DdA3gQ6k.js                 0.48 kB Γöé gzip:   0.33 kB
+#20 25.59 dist/assets/js/ThemeToggle-BN3ICzEA.js                  0.55 kB Γöé gzip:   0.36 kB
+#20 25.59 dist/assets/js/useLazyFramerMotion-Yx8_rQ9Q.js          0.58 kB Γöé gzip:   0.37 kB
+#20 25.59 dist/assets/js/bundle-monitor-BRpaSgn8.js               0.62 kB Γöé gzip:   0.42 kB
+#20 25.59 dist/assets/js/AdminLoginPage-DxXn_HyP.js               0.65 kB Γöé gzip:   0.43 kB
+#20 25.59 dist/assets/js/CustomerLoginPage-qkYSxlOL.js            0.65 kB Γöé gzip:   0.44 kB
+#20 25.59 dist/assets/js/sites-DOsiGH-v.js                        0.73 kB Γöé gzip:   0.42 kB
+#20 25.59 dist/assets/js/ProfilePage-BDsZk8Vg.js                  0.80 kB Γöé gzip:   0.45 kB
+#20 25.59 dist/assets/js/CustomerPaymentsPage-BS32e43i.js         0.89 kB Γöé gzip:   0.49 kB
+#20 25.59 dist/assets/js/OfflineIndicator-CZI8sr6O.js             0.90 kB Γöé gzip:   0.50 kB
+#20 25.59 dist/assets/js/usePWA-BhOpNGaH.js                       1.00 kB Γöé gzip:   0.50 kB
+#20 25.59 dist/assets/js/PWAUpdatePrompt-Bx5aHWr-.js              1.05 kB Γöé gzip:   0.57 kB
+#20 25.59 dist/assets/js/NotificationsPage-CB5iYuj4.js            1.24 kB Γöé gzip:   0.63 kB
+#20 25.59 dist/assets/js/query-keys-DhRGyI3C.js                   1.36 kB Γöé gzip:   0.45 kB
+#20 25.59 dist/assets/js/UnauthorizedPage-CqY88Aan.js             1.37 kB Γöé gzip:   0.65 kB
+#20 25.59 dist/assets/js/Badge-CBovA5V1.js                        1.42 kB Γöé gzip:   0.70 kB
+#20 25.59 dist/assets/js/resourceHints-TTbK9PsC.js                1.42 kB Γöé gzip:   0.56 kB
+#20 25.59 dist/assets/js/equipment-LmuqRkAV.js                    1.44 kB Γöé gzip:   0.59 kB
+#20 25.59 dist/assets/js/Switch-M8Fqy-vG.js                       1.48 kB Γöé gzip:   0.72 kB
+#20 25.59 dist/assets/js/MapsListPage-DwpjSGOO.js                 1.53 kB Γöé gzip:   0.64 kB
+#20 25.59 dist/assets/js/GuestBookingConfirmPage-7o0H25Ga.js      1.85 kB Γöé gzip:   0.78 kB
+#20 25.59 dist/assets/js/GuestBookingLookupPage-C81ApWl8.js       2.05 kB Γöé gzip:   0.94 kB
+#20 25.59 dist/assets/js/useMutation--eIGv_2U.js                  2.10 kB Γöé gzip:   0.90 kB
+#20 25.59 dist/assets/js/PaymentForm-B-MQBw4t.js                  2.12 kB Γöé gzip:   1.10 kB
+#20 25.59 dist/assets/js/CustomerProfilePage-Cynh0f7b.js          2.28 kB Γöé gzip:   0.84 kB
+#20 25.59 dist/assets/js/accessibility-ZzljlIG7.js                2.35 kB Γöé gzip:   1.04 kB
+#20 25.59 dist/assets/js/StripeProvider-Dr-dcxBf.js               2.45 kB Γöé gzip:   1.21 kB
+#20 25.59 dist/assets/js/PWAInstallPrompt-iQP1WFP-.js             2.57 kB Γöé gzip:   1.05 kB
+#20 25.59 dist/assets/js/ToastContainer-D0eSZLXQ.js               2.63 kB Γöé gzip:   1.04 kB
+#20 25.59 dist/assets/js/mockBookingStore-Cfk_uJdd.js             2.64 kB Γöé gzip:   1.30 kB
+#20 25.59 dist/assets/js/PaymentModal-Dp3NIW0j.js                 2.84 kB Γöé gzip:   1.19 kB
+#20 25.59 dist/assets/js/KeyboardShortcutsDialog-BKDZ3oJG.js      3.23 kB Γöé gzip:   1.07 kB
+#20 25.59 dist/assets/js/mock-bookings-DICmbaxa.js                3.53 kB Γöé gzip:   1.31 kB
+#20 25.59 dist/assets/js/index-3X8B8nFv.js                        3.56 kB Γöé gzip:   1.37 kB
+#20 25.59 dist/assets/js/bookings-mWESNzZe.js                     3.71 kB Γöé gzip:   1.10 kB
+#20 25.59 dist/assets/js/Select-Cr9HDhUE.js                       3.79 kB Γöé gzip:   1.49 kB
+#20 25.59 dist/assets/js/MockPaymentForm-o6pxrar5.js              3.90 kB Γöé gzip:   1.40 kB
+#20 25.59 dist/assets/js/CustomerBookingsPage-ZF8bU6LK.js         3.92 kB Γöé gzip:   1.38 kB
+#20 25.59 dist/assets/js/LoginForm-BcuF_0pz.js                    3.95 kB Γöé gzip:   1.65 kB
+#20 25.59 dist/assets/js/PublicLayout-DIH2qsHO.js                 4.18 kB Γöé gzip:   1.04 kB
+#20 25.59 dist/assets/js/BookingCard-CJ3YKmT2.js                  4.37 kB Γöé gzip:   1.31 kB
+#20 25.59 dist/assets/js/SiteCard-CPh_BxMN.js                     4.95 kB Γöé gzip:   1.47 kB
+#20 25.59 dist/assets/js/CustomerLayout-Bhde4PRk.js               5.06 kB Γöé gzip:   1.56 kB
+#20 25.59 dist/assets/js/Modal-DNWrnoCA.js                        5.11 kB Γöé gzip:   1.72 kB
+#20 25.59 dist/assets/js/PerformanceDashboard-6eqi5tWT.js         5.67 kB Γöé gzip:   1.49 kB
+#20 25.59 dist/assets/js/CustomerDashboardPage-DS_hDRs8.js        5.73 kB Γöé gzip:   1.44 kB
+#20 25.59 dist/assets/js/UserProfile-Dr-HgNnS.js                  5.82 kB Γöé gzip:   2.22 kB
+#20 25.59 dist/assets/js/GuestBookingDetailPage-B_fonCM3.js       5.86 kB Γöé gzip:   1.65 kB
+#20 25.59 dist/assets/js/usePayments-BGWJIT7Z.js                  6.05 kB Γöé gzip:   2.26 kB
+#20 25.59 dist/assets/js/mock-equipment-C6b4fgTc.js               6.20 kB Γöé gzip:   1.79 kB
+#20 25.59 dist/assets/js/mockAnalyticsData-DQxtIyEA.js            6.36 kB Γöé gzip:   2.00 kB
+#20 25.59 dist/assets/js/RegisterForm-C1TxAlqQ.js                 7.13 kB Γöé gzip:   2.26 kB
+#20 25.59 dist/assets/js/en-US-Ck8DUv8w.js                        7.49 kB Γöé gzip:   2.60 kB
+#20 25.59 dist/assets/js/CheckInPage-DsRoOCYT.js                  7.52 kB Γöé gzip:   2.33 kB
+#20 25.59 dist/assets/js/PaymentHistory-DIvxPtep.js               7.84 kB Γöé gzip:   2.52 kB
+#20 25.59 dist/assets/js/NotificationList-CEcCWhz2.js             8.19 kB Γöé gzip:   2.81 kB
+#20 25.59 dist/assets/js/EquipmentPage-7pWN3OP2.js                8.26 kB Γöé gzip:   1.89 kB
+#20 25.59 dist/assets/js/CustomerBookingDetailPage-hUGX82no.js    8.38 kB Γöé gzip:   2.23 kB
+#20 25.59 dist/assets/js/performance-D2U1le_y.js                  8.54 kB Γöé gzip:   3.35 kB
+#20 25.59 dist/assets/js/mock-sites-DkBeD-d2.js                   8.66 kB Γöé gzip:   2.32 kB
+#20 25.59 dist/assets/js/useQuery-DB_XBs8m.js                     8.66 kB Γöé gzip:   3.13 kB
+#20 25.59 dist/assets/js/AdminDashboardPage-BMbzopPQ.js           9.25 kB Γöé gzip:   2.83 kB
+#20 25.59 dist/assets/js/SiteBrowsePage-BxhTtI11.js               9.45 kB Γöé gzip:   2.71 kB
+#20 25.59 dist/assets/js/SiteDetailPage-Dq1eymwG.js               9.56 kB Γöé gzip:   2.50 kB
+#20 25.59 dist/assets/js/react-stripe.esm-B9lJFqbd.js            10.09 kB Γöé gzip:   3.90 kB
+#20 25.59 dist/assets/js/editorStore-BR1qQjd1.js                 11.24 kB Γöé gzip:   3.51 kB
+#20 25.59 dist/assets/js/format-I9ydWxvy.js                      11.62 kB Γöé gzip:   3.24 kB
+#20 25.59 dist/assets/js/AppLayout-CijrvSxS.js                   12.72 kB Γöé gzip:   3.62 kB
+#20 25.59 dist/assets/js/CheckOutPage-TWfwRT2K.js                12.90 kB Γöé gzip:   4.14 kB
+#20 25.59 dist/assets/js/GuestDetailsInput-CbRBb8dy.js           16.18 kB Γöé gzip:   3.94 kB
+#20 25.59 dist/assets/js/HomePage-DgoVHcGM.js                    16.55 kB Γöé gzip:   4.78 kB
+#20 25.59 dist/assets/js/AnalyticsPage-CWqiAkB2.js               16.87 kB Γöé gzip:   3.72 kB
+#20 25.59 dist/assets/js/CustomerBookingPage-_KZFMzP5.js         16.87 kB Γöé gzip:   4.16 kB
+#20 25.59 dist/assets/js/GuestBookingPage-gOKOZwOj.js            18.88 kB Γöé gzip:   4.73 kB
+#20 25.59 dist/assets/js/UserManagementPage-BOFvTwnY.js          21.28 kB Γöé gzip:   4.82 kB
+#20 25.59 dist/assets/js/icons-DvD4xvob.js                       28.91 kB Γöé gzip:   9.56 kB
+#20 25.59 dist/assets/js/SitesPage-C78rWp2l.js                   33.65 kB Γöé gzip:   7.43 kB
+#20 25.59 dist/assets/js/index-DM0vundy.js                       35.15 kB Γöé gzip:   6.65 kB
+#20 25.59 dist/assets/js/WebSocketService-DYBvuukN.js            44.76 kB Γöé gzip:  13.51 kB
+#20 25.59 dist/assets/js/BookingManagementPage-Be3HNUSx.js       58.91 kB Γöé gzip:  12.16 kB
+#20 25.59 dist/assets/js/SettingsPage-BL2GshaP.js                69.37 kB Γöé gzip:  18.09 kB
+#20 25.59 dist/assets/js/animations-B8PaKoWP.js                 156.15 kB Γöé gzip:  51.07 kB
+#20 25.59 dist/assets/js/index-6qd8joQW.js                      168.99 kB Γöé gzip:  55.04 kB
+#20 25.59 dist/assets/js/MapEditor-3cv9kOga.js                  366.45 kB Γöé gzip: 106.74 kB
+#20 25.59 dist/assets/js/react-vendor-9k7jn7FZ.js               368.95 kB Γöé gzip: 123.65 kB
+#20 25.60 Γ£ô built in 24.69s
+#20 DONE 26.6s
+
+#21 [production 5/5] COPY --from=builder --chown=appuser:root /app/frontend/dist /usr/share/nginx/html
+#21 DONE 0.2s
+
+#22 exporting to image
+#22 exporting layers
+#22 exporting layers 0.4s done
+#22 exporting manifest sha256:24bafaebc2f3c326bfe96a439859c787515e39602caecb2d11ab30b1233115d9 0.0s done
+#22 exporting config sha256:d842de3a158efc2db7710cb836b0816249d4602ca03033df6bfa9967b9b254cb 0.0s done
+#22 exporting attestation manifest sha256:3ed39fe088ac9342052845b4330932a8c8fcfd6ff21460e0e25bfd10421ad76b
+#22 exporting attestation manifest sha256:3ed39fe088ac9342052845b4330932a8c8fcfd6ff21460e0e25bfd10421ad76b 0.1s done
+#22 exporting manifest list sha256:34f4d31b0e3e2f1395cac2a884c629a16c58a8255fce5808266b2dec272e7646 0.0s done
+#22 naming to docker.io/library/frontend-test:latest 0.0s done
+#22 unpacking to docker.io/library/frontend-test:latest
+#22 unpacking to docker.io/library/frontend-test:latest 0.2s done
+#22 DONE 0.8s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/n26e0cyi0o6h1qakynompvis4

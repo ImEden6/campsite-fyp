@@ -4,7 +4,7 @@
 # =============================================================================
 # Stage 1: Dependencies - Cached layer for npm packages
 # =============================================================================
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS deps
 
 # Set working directory
 WORKDIR /app
@@ -22,22 +22,21 @@ RUN npm ci
 # =============================================================================
 # Stage 2: Builder - Compile the application
 # =============================================================================
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
-COPY --from=deps /app/shared/node_modules ./shared/node_modules
-# Note: Root npm ci might hoist everything to root node_modules, checking...
-
-# Copy all package files again for reference
+# Install dependencies directly to ensure correctness
+# Copy all package files (dependencies)
 COPY package*.json ./
 COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
 COPY tests/package*.json ./tests/
+
+# Install dependencies directly to ensure correctness
+RUN npm ci
 
 # Copy source files for built packages
 COPY shared/ ./shared/
@@ -45,8 +44,7 @@ COPY frontend/ ./frontend/
 
 # Build shared first, then frontend using workspace commands
 # We use the specific package names defined in their package.json files
-RUN npm run build -w @campsite-management/shared && \
-  npm run build -w @campsite-management/frontend && \
+RUN npm run build -w @campsite-management/frontend && \
   # Remove source files and dev dependencies after build
   rm -rf shared/src frontend/src && \
   rm -rf node_modules/.cache

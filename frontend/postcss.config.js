@@ -2,6 +2,7 @@
 // configures the postcss plugins for the frontend
 export default {
   plugins: {
-    '@tailwindcss/postcss': {},
+    tailwindcss: {},
+    autoprefixer: {},
   },
 }
