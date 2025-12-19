@@ -1,26 +1,73 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, authorize } from '@/middleware/auth';
+import { paymentRateLimit } from '@/middleware/security';
+import { validateBody, createPaymentIntentSchema, CreatePaymentIntentInput } from '@/middleware/validate';
 import paymentService from '@/services/payment.service';
+import cacheService from '@/services/cache.service';
+import { getPrismaClient } from '@/database';
+import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 
 const router = Router();
+const prisma = getPrismaClient();
+
+// Idempotency key TTL (1 hour)
+const IDEMPOTENCY_TTL = 3600;
 
 /**
  * POST /payments/intent
  * Create a payment intent
+ * Middleware order: rate limiter -> validation -> controller
  */
-router.post('/intent', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/intent', authenticate, paymentRateLimit, validateBody(createPaymentIntentSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { amount, currency, bookingId, description } = req.body;
+        const { bookingId, amount, idempotencyKey } = req.body as CreatePaymentIntentInput;
         const userId = req.user!.id;
+
+        // Security: Verify booking exists and belongs to user
+        const booking = await prisma.booking.findUnique({
+            where: { id: bookingId },
+        });
+
+        if (!booking) {
+            throw new ApiError(404, 'Booking not found');
+        }
+
+        if (booking.userId !== userId && req.user!.role === 'CUSTOMER') {
+            throw new ApiError(403, 'Not authorized to pay for this booking');
+        }
+
+        // Security: Re-check amount bounds server-side
+        if (amount < 0.50 || amount > 999999.99) {
+            throw new ApiError(400, 'Amount must be between $0.50 and $999,999.99');
+        }
+
+        // Idempotency: Return cached result if key provided
+        if (idempotencyKey) {
+            const idempotencyResource = `payment:idempotency:${idempotencyKey}`;
+            const existing = await cacheService.safeGet<object>(idempotencyResource);
+            if (existing) {
+                logger.info('Returning idempotent payment intent', { idempotencyKey });
+                return res.json({
+                    success: true,
+                    data: existing,
+                    idempotent: true,
+                });
+            }
+        }
 
         const result = await paymentService.createPaymentIntent(
             amount,
-            currency || 'myr',
+            'myr',
             bookingId,
-            description,
+            `Payment for booking ${booking.bookingNumber}`,
             userId
         );
+
+        // Cache result with idempotency key
+        if (idempotencyKey) {
+            await cacheService.safeSet(`payment:idempotency:${idempotencyKey}`, result, IDEMPOTENCY_TTL);
+        }
 
         res.json({
             success: true,

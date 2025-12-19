@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
@@ -45,31 +44,9 @@ const io = new Server(server, {
   }
 });
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in headers
-  legacyHeaders: false,
-});
-
-// Stricter rate limiting for auth endpoints (prevent brute force)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per 15 minutes
-  message: { error: 'Too many login attempts, please try again later' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Rate limiting for booking creation
-const bookingLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20, // 20 booking creations per minute
-  message: { error: 'Too many booking requests, please slow down' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Rate limiting - using generalRateLimit from security.ts
+// Specific rate limiters are now applied at route level in each route file
+import { generalRateLimit } from './middleware/security';
 
 // Sentry request handler
 if (errorTracker.isEnabled() && 'getRequestHandler' in errorTracker) {
@@ -84,7 +61,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
-app.use(limiter);
+app.use(generalRateLimit); // General rate limit for all routes
 app.use(express.json({
   limit: '10mb',
   verify: (req: any, res, buf) => {
@@ -94,14 +71,11 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// ... (existing code)
-
-// Apply stricter rate limiting to auth endpoints
-app.use('/api/v1/auth/login', authLimiter);
-app.use('/api/v1/auth/register', authLimiter);
-
-// Apply booking rate limiting
-app.use('/api/v1/bookings', bookingLimiter);
+// Rate limiting is now applied at route level:
+// - authRateLimit on /auth/login and /auth/register
+// - registerRateLimit on /auth/register  
+// - paymentRateLimit on /payments/intent
+// - bookingRateLimit defined in security.ts for booking creation
 
 // API routes
 app.use('/api/v1/auth', authRoutes);

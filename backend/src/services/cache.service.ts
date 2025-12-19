@@ -1,12 +1,14 @@
 // Cache Service using Redis
 
 import Redis from 'ioredis';
+import crypto from 'crypto';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 
 export class CacheService {
   private redis: Redis;
   private isConnected: boolean = false;
+  private serviceName: string = 'campsite';
 
   constructor() {
     const redisOptions: any = {
@@ -15,14 +17,33 @@ export class CacheService {
       maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
       lazyConnect: true,
     };
-    
+
     if (config.redis.password) {
       redisOptions.password = config.redis.password;
     }
-    
+
     this.redis = new Redis(redisOptions);
 
     this.setupEventHandlers();
+  }
+
+  // ============================================================
+  // Key Namespacing: <env>:<service>:<resource>
+  // ============================================================
+
+  private getNamespacedKey(resource: string): string {
+    const env = config.server.nodeEnv;
+    return `${env}:${this.serviceName}:${resource}`;
+  }
+
+  // Hash query params for cache key (prevents key pollution)
+  static hashQuery(query: object): string {
+    return crypto.createHash('md5').update(JSON.stringify(query)).digest('hex').slice(0, 8);
+  }
+
+  // Feature flag check
+  private isCachingEnabled(): boolean {
+    return config.features?.enableCaching !== false;
   }
 
   // Extract host from Redis URL
@@ -105,7 +126,7 @@ export class CacheService {
       }
 
       const serializedValue = JSON.stringify(value);
-      
+
       if (ttl) {
         await this.redis.setex(key, ttl, serializedValue);
       } else {
@@ -127,7 +148,7 @@ export class CacheService {
       }
 
       const value = await this.redis.get(key);
-      
+
       if (value === null) {
         logger.cacheMiss(key);
         return null;
@@ -285,9 +306,9 @@ export class CacheService {
         await Promise.all(keys.map(key => this.expire(key, ttl)));
       }
 
-      logger.debug('Cache mset operation completed', { 
-        keyCount: Object.keys(keyValuePairs).length, 
-        ttl 
+      logger.debug('Cache mset operation completed', {
+        keyCount: Object.keys(keyValuePairs).length,
+        ttl
       });
     } catch (error) {
       logger.error('Cache mset operation failed', error, { keyValuePairs, ttl });
@@ -333,7 +354,7 @@ export class CacheService {
       if (keys.length > 0) {
         await this.deleteMany(keys);
       }
-      
+
       logger.info('Cache pattern cleared', { pattern, keyCount: keys.length });
     } catch (error) {
       logger.error('Cache flush pattern operation failed', error, { pattern });
@@ -515,7 +536,7 @@ export class CacheService {
 
       const hash = await this.redis.hgetall(key);
       const result: Record<string, T> = {};
-      
+
       for (const [field, value] of Object.entries(hash)) {
         try {
           result[field] = JSON.parse(value);
@@ -523,7 +544,7 @@ export class CacheService {
           result[field] = value as T;
         }
       }
-      
+
       return result;
     } catch (error) {
       logger.error('Cache hgetall operation failed', error, { key });
@@ -531,7 +552,132 @@ export class CacheService {
     }
   }
 
-  // Cache helper methods for common patterns
+  // ============================================================
+  // Cache Helper Methods
+  // ============================================================
+
+  /**
+   * Get from cache with namespace prefix
+   * Fail-open: returns null on any error
+   */
+  async safeGet<T>(resource: string): Promise<T | null> {
+    if (!this.isCachingEnabled()) return null;
+
+    try {
+      const key = this.getNamespacedKey(resource);
+      return await this.get<T>(key);
+    } catch (error) {
+      logger.warn('Cache safeGet failed, failing open', { resource, error });
+      return null;
+    }
+  }
+
+  /**
+   * Set to cache with namespace prefix
+   * Fail-open: silently fails on error
+   */
+  async safeSet(resource: string, value: any, ttl?: number): Promise<void> {
+    if (!this.isCachingEnabled()) return;
+
+    try {
+      const key = this.getNamespacedKey(resource);
+      await this.set(key, value, ttl);
+    } catch (error) {
+      logger.warn('Cache safeSet failed, failing open', { resource, error });
+    }
+  }
+
+  /**
+   * Delete from cache with namespace prefix
+   */
+  async safeDelete(resource: string): Promise<void> {
+    if (!this.isCachingEnabled()) return;
+
+    try {
+      const key = this.getNamespacedKey(resource);
+      await this.delete(key);
+    } catch (error) {
+      logger.warn('Cache safeDelete failed, failing open', { resource, error });
+    }
+  }
+
+  /**
+   * Flush all keys matching a pattern with namespace prefix
+   */
+  async safeFlushPattern(resourcePattern: string): Promise<void> {
+    if (!this.isCachingEnabled()) return;
+
+    try {
+      const pattern = this.getNamespacedKey(resourcePattern);
+      await this.flushPattern(pattern);
+    } catch (error) {
+      logger.warn('Cache safeFlushPattern failed, failing open', { resourcePattern, error });
+    }
+  }
+
+  /**
+   * Get with soft/hard TTL for stampede prevention
+   * - softTtl: Time after which background refresh starts (seconds)
+   * - hardTtl: Absolute cache expiry (seconds)
+   * Returns stale data while refreshing in background
+   */
+  async getWithSoftTtl<T>(
+    resource: string,
+    fetchFn: () => Promise<T>,
+    softTtlSeconds: number,
+    hardTtlSeconds: number,
+  ): Promise<T> {
+    if (!this.isCachingEnabled()) {
+      return await fetchFn();
+    }
+
+    const key = this.getNamespacedKey(resource);
+
+    try {
+      const cached = await this.get<{ data: T; softExpiry: number }>(key);
+
+      if (cached) {
+        if (Date.now() < cached.softExpiry) {
+          // Fresh cache - log hit
+          return cached.data;
+        }
+        // Soft-expired: return stale, refresh in background
+        this.refreshInBackground(key, fetchFn, softTtlSeconds, hardTtlSeconds);
+        return cached.data;
+      }
+    } catch (error) {
+      logger.warn('Cache getWithSoftTtl read failed, fetching fresh', { resource, error });
+    }
+
+    // Cache miss - fetch and cache
+    const fresh = await fetchFn();
+    try {
+      await this.set(key, { data: fresh, softExpiry: Date.now() + softTtlSeconds * 1000 }, hardTtlSeconds);
+    } catch (error) {
+      logger.warn('Cache getWithSoftTtl write failed, failing open', { resource, error });
+    }
+    return fresh;
+  }
+
+  /**
+   * Background refresh for soft-expired cache entries
+   */
+  private async refreshInBackground<T>(
+    key: string,
+    fetchFn: () => Promise<T>,
+    softTtlSeconds: number,
+    hardTtlSeconds: number,
+  ): Promise<void> {
+    // Fire and forget - don't await
+    fetchFn()
+      .then((fresh) => {
+        this.set(key, { data: fresh, softExpiry: Date.now() + softTtlSeconds * 1000 }, hardTtlSeconds);
+      })
+      .catch((error) => {
+        logger.warn('Cache background refresh failed', { key, error });
+      });
+  }
+
   async remember<T>(key: string, callback: () => Promise<T>, ttl?: number): Promise<T> {
     const cached = await this.get<T>(key);
     if (cached !== null) {
@@ -553,7 +699,7 @@ export class CacheService {
       const start = Date.now();
       await this.redis.ping();
       const latency = Date.now() - start;
-      
+
       return {
         status: 'healthy',
         latency,

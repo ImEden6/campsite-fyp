@@ -94,7 +94,7 @@ export const transaction = async <T>(
 // Database metrics
 export const getDatabaseMetrics = async () => {
   const client = getPrismaClient();
-  
+
   try {
     const [
       userCount,

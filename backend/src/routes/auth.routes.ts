@@ -3,6 +3,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import authService from '@/services/auth.service';
 import { authenticate } from '@/middleware/auth';
+import { authRateLimit, registerRateLimit } from '@/middleware/security';
+import { validateBody, loginSchema, registerSchema, refreshTokenSchema, LoginInput, RegisterInput } from '@/middleware/validate';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 
@@ -11,14 +13,11 @@ const router = Router();
 /**
  * POST /auth/login
  * Login user
+ * Middleware order: rate limiter -> validation -> controller
  */
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', authRateLimit, validateBody(loginSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw new ApiError(400, 'Email and password are required');
-    }
+    const { email, password } = req.body as LoginInput;
 
     const result = await authService.login({ email, password });
 
@@ -44,14 +43,11 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 /**
  * POST /auth/register
  * Register new user
+ * Middleware order: rate limiter -> validation -> controller
  */
-router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/register', registerRateLimit, validateBody(registerSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, firstName, lastName, phone, role } = req.body;
-
-    if (!email || !password || !firstName || !lastName) {
-      throw new ApiError(400, 'Email, password, first name, and last name are required');
-    }
+    const { email, password, firstName, lastName, phone, role } = req.body as RegisterInput;
 
     const result = await authService.register({
       email,
@@ -81,13 +77,9 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
  * POST /auth/refresh
  * Refresh access token
  */
-router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/refresh', validateBody(refreshTokenSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      throw new ApiError(400, 'Refresh token is required');
-    }
 
     const result = await authService.refreshToken(refreshToken);
 

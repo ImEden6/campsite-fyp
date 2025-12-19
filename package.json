@@ -15,6 +15,12 @@
     "type-check:frontend": "npm run type-check -w @campsite-management/frontend",
     "type-check:backend": "npm run type-check -w @campsite-management/backend",
     "test": "npm run test --workspaces --if-present",
+    "test:backend": "npm run test -w @campsite-management/backend",
+    "test:backend:unit": "npm run test:unit -w @campsite-management/backend",
+    "test:backend:int": "npm run test:int -w @campsite-management/backend",
+    "test:frontend": "npm run test -w @campsite-management/frontend",
+    "test:e2e": "npm run test:e2e -w @campsite-management/frontend",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
     "db:generate": "npm run db:generate -w @campsite-management/backend",
     "docker:up": "docker-compose up --build",
     "docker:down": "docker-compose down"

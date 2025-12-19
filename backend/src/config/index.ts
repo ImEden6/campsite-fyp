@@ -193,6 +193,9 @@ export const config = {
     enableAuditLogging: process.env.ENABLE_AUDIT_LOGGING !== 'false',
     enableSocketIO: process.env.ENABLE_SOCKET_IO !== 'false',
     enableSwagger: process.env.ENABLE_SWAGGER !== 'false',
+    // Disable caching and rate limiting in test env to avoid flakiness
+    enableCaching: process.env.NODE_ENV !== 'test' && process.env.ENABLE_CACHING !== 'false',
+    enableRateLimiting: process.env.NODE_ENV !== 'test' && process.env.ENABLE_RATE_LIMITING !== 'false',
   },
 
   // Caching configuration

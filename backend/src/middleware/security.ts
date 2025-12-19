@@ -3,21 +3,65 @@
 import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import crypto from 'crypto';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 import { RateLimitError } from '@/utils/errors';
 
-// Rate limiting configurations
-export const createRateLimit = (windowMs: number, max: number, message?: string) => {
+// ============================================================
+// Rate Limiting Key Generator
+// Order: userId -> IP (only if trust proxy set, never trust X-Forwarded-For directly)
+// ============================================================
+
+const getClientIdentifier = (req: Request): string => {
+  // Authenticated user takes priority
+  if (req.user?.id) {
+    return `user:${req.user.id}`;
+  }
+  // Use req.ip which respects trust proxy setting
+  return `ip:${req.ip || 'unknown'}`;
+};
+
+// Hash the key for logging (avoid logging raw IPs/user IDs)
+const hashKey = (key: string): string => {
+  return crypto.createHash('sha256').update(key).digest('hex').slice(0, 12);
+};
+
+// ============================================================
+// Rate Limiting Factory
+// ============================================================
+
+interface RateLimitOptions {
+  windowMs: number;
+  max: number;
+  message?: string;
+  skipSuccessfulRequests?: boolean;
+  limiterName: string;
+}
+
+export const createRateLimit = (opts: RateLimitOptions) => {
+  // Check feature flag
+  if (config.features?.enableRateLimiting === false) {
+    return (req: Request, res: Response, next: NextFunction) => next();
+  }
+
   return rateLimit({
-    windowMs,
-    max,
-    message: message || 'Too many requests',
+    windowMs: opts.windowMs,
+    max: opts.max,
+    message: opts.message || 'Too many requests',
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: getClientIdentifier,
+    skipSuccessfulRequests: opts.skipSuccessfulRequests ?? false,
     handler: (req: Request, res: Response, next: NextFunction) => {
-      logger.rateLimitHit(req.ip || 'unknown', req.path, max);
-      next(new RateLimitError(message || 'Too many requests'));
+      const key = getClientIdentifier(req);
+      logger.warn('Rate limit exceeded', {
+        limiter: opts.limiterName,
+        endpoint: req.path,
+        method: req.method,
+        keyHash: hashKey(key),
+      });
+      next(new RateLimitError(opts.message || 'Too many requests'));
     },
     skip: (req: Request) => {
       // Skip rate limiting for admin users in development
@@ -29,54 +73,67 @@ export const createRateLimit = (windowMs: number, max: number, message?: string)
   });
 };
 
-// General rate limiting
-export const generalRateLimit = createRateLimit(
-  config.security.rateLimitWindowMs,
-  config.security.rateLimitMax,
-  'Too many requests from this IP, please try again later'
-);
+// ============================================================
+// Predefined Rate Limiters
+// ============================================================
 
-// Strict rate limiting for authentication endpoints
-export const authRateLimit = createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  5, // 5 attempts
-  'Too many authentication attempts, please try again later'
-);
+// General rate limiting
+export const generalRateLimit = createRateLimit({
+  windowMs: config.security.rateLimitWindowMs,
+  max: config.security.rateLimitMax,
+  message: 'Too many requests from this IP, please try again later',
+  limiterName: 'general',
+});
+
+// Strict rate limiting for login (skip successful to prevent lockout)
+export const authRateLimit = createRateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts
+  message: 'Too many authentication attempts, please try again later',
+  skipSuccessfulRequests: true,
+  limiterName: 'auth',
+});
 
 // Rate limiting for registration
-export const registerRateLimit = createRateLimit(
-  60 * 60 * 1000, // 1 hour
-  3, // 3 attempts
-  'Too many registration attempts, please try again later'
-);
+export const registerRateLimit = createRateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 attempts
+  message: 'Too many registration attempts, please try again later',
+  limiterName: 'register',
+});
 
-// Rate limiting for password reset
-export const passwordResetRateLimit = createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  3, // 3 attempts
-  'Too many password reset attempts, please try again later'
-);
+// Rate limiting for password reset (skip successful)
+export const passwordResetRateLimit = createRateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // 3 attempts
+  message: 'Too many password reset attempts, please try again later',
+  skipSuccessfulRequests: true,
+  limiterName: 'password_reset',
+});
 
 // Rate limiting for file uploads
-export const uploadRateLimit = createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  10, // 10 uploads
-  'Too many file uploads, please try again later'
-);
+export const uploadRateLimit = createRateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 uploads
+  message: 'Too many file uploads, please try again later',
+  limiterName: 'upload',
+});
 
 // Rate limiting for payment processing
-export const paymentRateLimit = createRateLimit(
-  5 * 60 * 1000, // 5 minutes
-  10, // 10 payments
-  'Too many payment attempts, please try again later'
-);
+export const paymentRateLimit = createRateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10, // 10 payments
+  message: 'Too many payment attempts, please try again later',
+  limiterName: 'payment',
+});
 
 // Rate limiting for booking creation
-export const bookingRateLimit = createRateLimit(
-  10 * 60 * 1000, // 10 minutes
-  5, // 5 bookings
-  'Too many booking attempts, please try again later'
-);
+export const bookingRateLimit = createRateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 5, // 5 bookings
+  message: 'Too many booking attempts, please try again later',
+  limiterName: 'booking',
+});
 
 // Helmet security configuration
 export const helmetConfig = helmet({
