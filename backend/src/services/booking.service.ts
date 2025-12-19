@@ -4,8 +4,9 @@ import { PrismaClient, Equipment, EquipmentStatus, GuestType, Prisma, Booking } 
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
+import { getPrismaClient } from '@/database';
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 export interface EquipmentAvailabilityQuery {
   startDate: Date;
@@ -73,7 +74,7 @@ export class BookingService {
         // Query equipment with availability check
         const equipment = await prisma.equipment.findMany({
           where: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             ...(equipmentType && { category: equipmentType as any }),
             status: EquipmentStatus.AVAILABLE,
           },
@@ -145,7 +146,7 @@ export class BookingService {
           }));
 
           // Remove rentals from the returned object
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
           const { rentals, ...equipmentData } = item;
 
           return {
@@ -232,7 +233,7 @@ export class BookingService {
     if (primaryGuest.type !== GuestType.ADULT) throw new ApiError(400, 'PRIMARY_MUST_BE_ADULT: Primary guest must be an adult');
 
     // 4. Transaction: Verify Site & Create
-    return await prisma.$transaction(async (tx) => {
+    const booking = await prisma.$transaction(async (tx) => {
       // Check Site
       const site = await tx.site.findUnique({ where: { id: siteId } });
       if (!site) throw new ApiError(404, 'Site not found');
@@ -286,6 +287,20 @@ export class BookingService {
         include: { guests: true }
       });
     });
+
+    // Invalidate caches after successful transaction
+    await this.invalidateBookingCaches();
+
+    return booking;
+  }
+
+  /**
+   * Invalidate booking-related caches
+   */
+  private async invalidateBookingCaches(): Promise<void> {
+    await cacheService.flushPattern('equipment:availability:*');
+    await cacheService.flushPattern('sites:list:*');
+    logger.info('Booking-related caches invalidated');
   }
 
   /**

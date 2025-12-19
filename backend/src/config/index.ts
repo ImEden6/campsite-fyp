@@ -51,7 +51,7 @@ export const config = {
     expiresIn: process.env.JWT_EXPIRES_IN || '24h',
     refreshSecret: process.env.JWT_REFRESH_SECRET!,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-    algorithm: 'HS256' as 'HS256',
+    algorithm: 'HS256' as const,
   },
 
   // Redis configuration
@@ -64,8 +64,8 @@ export const config = {
 
   // Email configuration
   email: {
-    provider: (process.env.EMAIL_PROVIDER?.toLowerCase() as 'sendgrid' | 'smtp' | 'mock') || 
-              (process.env.NODE_ENV === 'development' ? 'mock' : 'smtp'),
+    provider: (process.env.EMAIL_PROVIDER?.toLowerCase() as 'sendgrid' | 'smtp' | 'mock') ||
+      (process.env.NODE_ENV === 'development' ? 'mock' : 'smtp'),
     service: process.env.EMAIL_SERVICE || 'gmail',
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT || '587', 10),
@@ -95,7 +95,7 @@ export const config = {
     secretKey: process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder',
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-    apiVersion: '2023-10-16' as '2023-10-16',
+    apiVersion: '2023-10-16' as const,
   },
 
   // File upload configuration
@@ -116,7 +116,7 @@ export const config = {
   weather: {
     apiKey: process.env.WEATHER_API_KEY,
     apiUrl: process.env.WEATHER_API_URL || 'https://api.openweathermap.org/data/2.5',
-    units: 'imperial' as 'imperial',
+    units: 'imperial' as const,
     updateInterval: parseInt(process.env.WEATHER_UPDATE_INTERVAL || '600000', 10), // 10 minutes
   },
 
@@ -166,7 +166,7 @@ export const config = {
       removeOnFail: parseInt(process.env.JOBS_REMOVE_ON_FAIL || '50', 10),
       attempts: parseInt(process.env.JOBS_ATTEMPTS || '3', 10),
       backoff: {
-        type: 'exponential' as 'exponential',
+        type: 'exponential' as const,
         delay: parseInt(process.env.JOBS_BACKOFF_DELAY || '2000', 10),
       },
     },

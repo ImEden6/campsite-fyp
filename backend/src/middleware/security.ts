@@ -176,7 +176,7 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction): 
     if (typeof obj === 'object') {
       const sanitized: any = {};
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           sanitized[key] = sanitizeObject(obj[key]);
         }
       }
@@ -302,10 +302,10 @@ export const requestSizeLimit = (maxSize: number = 10 * 1024 * 1024) => {
 // SQL injection detection middleware
 export const sqlInjectionDetection = (req: Request, res: Response, next: NextFunction): void => {
   const sqlPatterns = [
-    /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-    /((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/i,
-    /\w*((\%27)|(\'))((\%6F)|o|(\%4F))((\%72)|r|(\%52))/i,
-    /((\%27)|(\'))union/i,
+    /(%27)|(')|(--)|(%23)|(#)/i,
+    /((%3D)|(=))[^\n]*((%27)|(')|(--)|(%3B)|(;))/i,
+    /\w*((%27)|('))((%6F)|o|(%4F))((%72)|r|(%52))/i,
+    /((%27)|('))union/i,
     /exec(\s|\+)+(s|x)p\w+/i,
     /union([^a-z]|$)/i,
     /select.*from/i,

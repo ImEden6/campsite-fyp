@@ -1,9 +1,26 @@
 
-import { PrismaClient, Site, SiteStatus, SiteType } from '@prisma/client';
+import { Site, SiteStatus, SiteType } from '@prisma/client';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
+import { getPrismaClient } from '@/database';
+import cacheService from '@/services/cache.service';
+import crypto from 'crypto';
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
+
+// Cache TTL constants
+const SITE_CACHE_TTL = 3600; // 1 hour for static site data
+
+// Generate stable cache key from filters (sorted keys for consistency)
+function generateCacheKey(prefix: string, params: Record<string, any>): string {
+    const sortedParams = Object.keys(params)
+        .filter(key => params[key] !== undefined)
+        .sort()
+        .reduce((acc, key) => ({ ...acc, [key]: params[key] }), {});
+
+    const hash = crypto.createHash('md5').update(JSON.stringify(sortedParams)).digest('hex');
+    return `${prefix}:${hash}`;
+}
 
 export class SiteService {
     async getAllSites(filters?: {
@@ -13,30 +30,51 @@ export class SiteService {
         maxPrice?: number;
         minCapacity?: number;
     }): Promise<Site[]> {
-        const { type, status, minPrice, maxPrice, minCapacity } = filters || {};
+        const cacheKey = generateCacheKey('sites:list', filters || {});
 
-        return prisma.site.findMany({
-            where: {
-                ...(type && { type }),
-                ...(status && { status }),
-                ...(minCapacity && { capacity: { gte: minCapacity } }),
-                ...(minPrice || maxPrice
-                    ? {
-                        basePrice: {
-                            ...(minPrice && { gte: minPrice }),
-                            ...(maxPrice && { lte: maxPrice }),
-                        },
-                    }
-                    : {}),
-            },
-            orderBy: { name: 'asc' },
-        });
+        return cacheService.remember(cacheKey, async () => {
+            const { type, status, minPrice, maxPrice, minCapacity } = filters || {};
+
+            const sites = await prisma.site.findMany({
+                where: {
+                    ...(type && { type }),
+                    ...(status && { status }),
+                    ...(minCapacity && { capacity: { gte: minCapacity } }),
+                    ...(minPrice || maxPrice
+                        ? {
+                            basePrice: {
+                                ...(minPrice && { gte: minPrice }),
+                                ...(maxPrice && { lte: maxPrice }),
+                            },
+                        }
+                        : {}),
+                },
+                orderBy: { name: 'asc' },
+            });
+
+            logger.info('Sites fetched from database (cache miss)', {
+                count: sites.length,
+                filters
+            });
+
+            return sites;
+        }, SITE_CACHE_TTL);
     }
 
     async getSiteById(id: string): Promise<Site | null> {
-        return prisma.site.findUnique({
-            where: { id },
-        });
+        const cacheKey = `site:${id}`;
+
+        return cacheService.remember(cacheKey, async () => {
+            const site = await prisma.site.findUnique({
+                where: { id },
+            });
+
+            if (site) {
+                logger.info('Site fetched from database (cache miss)', { siteId: id });
+            }
+
+            return site;
+        }, SITE_CACHE_TTL);
     }
 
     async createSite(data: Omit<Site, 'id' | 'createdAt' | 'updatedAt'>): Promise<Site> {
@@ -44,6 +82,10 @@ export class SiteService {
             const site = await prisma.site.create({
                 data,
             });
+
+            // Invalidate cache after successful creation
+            await this.invalidateSiteCache();
+
             logger.info(`Site created: ${site.id}`);
             return site;
         } catch (error: any) {
@@ -60,6 +102,10 @@ export class SiteService {
                 where: { id },
                 data,
             });
+
+            // Invalidate cache after successful update
+            await this.invalidateSiteCache(id);
+
             logger.info(`Site updated: ${site.id}`);
             return site;
         } catch (error: any) {
@@ -78,6 +124,10 @@ export class SiteService {
             await prisma.site.delete({
                 where: { id },
             });
+
+            // Invalidate cache after successful deletion
+            await this.invalidateSiteCache(id);
+
             logger.info(`Site deleted: ${id}`);
         } catch (error: any) {
             if (error.code === 'P2025') {
@@ -89,6 +139,19 @@ export class SiteService {
             }
             throw error;
         }
+    }
+
+    // Invalidate site-related caches
+    private async invalidateSiteCache(siteId?: string): Promise<void> {
+        // Always clear list caches
+        await cacheService.flushPattern('sites:list:*');
+
+        // Clear specific site cache if provided
+        if (siteId) {
+            await cacheService.delete(`site:${siteId}`);
+        }
+
+        logger.info('Site cache invalidated', { siteId });
     }
 }
 

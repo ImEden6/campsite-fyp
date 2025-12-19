@@ -9,9 +9,15 @@
     "preview": "npm run preview -w @campsite-management/frontend",
     "preview:local": "npm run preview:local -w @campsite-management/frontend",
     "lint": "npm run lint --workspaces --if-present",
+    "lint:frontend": "npm run lint -w @campsite-management/frontend",
+    "lint:backend": "npm run lint -w @campsite-management/backend",
     "type-check": "npm run type-check --workspaces --if-present",
+    "type-check:frontend": "npm run type-check -w @campsite-management/frontend",
+    "type-check:backend": "npm run type-check -w @campsite-management/backend",
     "test": "npm run test --workspaces --if-present",
-    "db:generate": "npm run db:generate -w @campsite-management/backend"
+    "db:generate": "npm run db:generate -w @campsite-management/backend",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down"
   },
   "workspaces": [
     "frontend",

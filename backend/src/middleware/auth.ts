@@ -13,6 +13,7 @@ type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
 const prisma = new PrismaClient();
 
 // Extend Express Request type to include user and API key info
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -33,6 +34,7 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 // JWT payload interface
 interface JWTPayload {
@@ -51,14 +53,14 @@ export const authenticate = async (
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       logger.authFailure('', 'Missing or invalid authorization header', req.get('User-Agent'), req.ip);
       throw new ApiError(401, 'Authentication required');
     }
 
     const token = authHeader.substring(7);
-    
+
     if (!token) {
       logger.authFailure('', 'Missing token', req.get('User-Agent'), req.ip);
       throw new ApiError(401, 'Authentication required');
@@ -66,7 +68,7 @@ export const authenticate = async (
 
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
-    
+
     // Check if user exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -98,7 +100,7 @@ export const authenticate = async (
 
     // Attach user to request
     req.user = user;
-    
+
     logger.authSuccess(user.id, req.get('User-Agent'), req.ip);
     next();
   } catch (error) {
@@ -106,12 +108,12 @@ export const authenticate = async (
       logger.authFailure('', 'Token expired', req.get('User-Agent'), req.ip);
       return next(new ApiError(401, 'Token expired'));
     }
-    
+
     if (error instanceof jwt.JsonWebTokenError) {
       logger.authFailure('', 'Invalid token', req.get('User-Agent'), req.ip);
       return next(new ApiError(401, 'Invalid token'));
     }
-    
+
     next(error);
   }
 };
@@ -124,19 +126,19 @@ export const optionalAuthenticate = async (
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next();
     }
 
     const token = authHeader.substring(7);
-    
+
     if (!token) {
       return next();
     }
 
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -177,7 +179,7 @@ export const authorize = (...allowedRoles: UserRole[]) => {
         endpoint: req.path,
         method: req.method,
       }, req.user.id, req.ip);
-      
+
       return next(new ApiError(403, 'Insufficient permissions'));
     }
 
@@ -212,7 +214,7 @@ export const authorizeMinimumRole = (minimumRole: UserRole) => {
         endpoint: req.path,
         method: req.method,
       }, req.user.id, req.ip);
-      
+
       return next(new ApiError(403, 'Insufficient permissions'));
     }
 
@@ -233,7 +235,7 @@ export const authorizeOwnership = (resourceUserIdParam: string = 'userId') => {
     }
 
     const resourceUserId = req.params[resourceUserIdParam] || req.body[resourceUserIdParam];
-    
+
     if (!resourceUserId) {
       return next(new ApiError(400, 'Resource user ID not provided'));
     }
@@ -245,7 +247,7 @@ export const authorizeOwnership = (resourceUserIdParam: string = 'userId') => {
         endpoint: req.path,
         method: req.method,
       }, req.user.id, req.ip);
-      
+
       return next(new ApiError(403, 'Access denied'));
     }
 
@@ -264,14 +266,14 @@ export const authorizeCustom = (
 
     try {
       const isAuthorized = await authCallback(req.user, req);
-      
+
       if (!isAuthorized) {
         logger.securityAlert('Custom authorization failed', {
           userId: req.user.id,
           endpoint: req.path,
           method: req.method,
         }, req.user.id, req.ip);
-        
+
         return next(new ApiError(403, 'Access denied'));
       }
 
@@ -349,26 +351,26 @@ export const validateApiKey = async (
 ): Promise<void> => {
   try {
     const apiKey = req.headers['x-api-key'] as string;
-    
+
     if (!apiKey) {
       logger.securityAlert('Missing API key', {
         endpoint: req.path,
         method: req.method,
       }, undefined, req.ip);
-      
+
       return next(new ApiError(401, 'API key required'));
     }
 
     // Validate the API key
     const validation = await apiKeyService.validateApiKey(apiKey);
-    
+
     if (!validation.valid) {
       logger.securityAlert('Invalid API key', {
         endpoint: req.path,
         method: req.method,
         error: validation.error,
       }, undefined, req.ip);
-      
+
       return next(new ApiError(401, validation.error || 'Invalid API key'));
     }
 
@@ -380,7 +382,7 @@ export const validateApiKey = async (
 
     if (!withinLimit) {
       logger.rateLimitHit(req.ip || 'unknown', req.path, validation.rateLimit!);
-      
+
       return next(new ApiError(429, 'Rate limit exceeded'));
     }
 
@@ -464,12 +466,12 @@ export const requireApiKeyPermission = (...requiredPermissions: string[]) => {
         endpoint: req.path,
         method: req.method,
       }, undefined, req.ip);
-      
+
       return next(new ApiError(401, 'API key required'));
     }
 
     const hasPermission = requiredPermissions.some(permission =>
-      req.apiKey!.permissions.includes(permission) || 
+      req.apiKey!.permissions.includes(permission) ||
       req.apiKey!.permissions.includes('*')
     );
 
@@ -481,7 +483,7 @@ export const requireApiKeyPermission = (...requiredPermissions: string[]) => {
         endpoint: req.path,
         method: req.method,
       }, undefined, req.ip);
-      
+
       return next(new ApiError(403, 'Insufficient permissions'));
     }
 

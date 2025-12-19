@@ -21,6 +21,7 @@ import { errorHandler } from './utils/errors';
 import { authMiddleware } from './middleware/auth';
 import { securityMiddleware } from './middleware/security';
 import { initializeErrorTracking, getErrorTracker } from './services/error-tracking';
+import { startCleanupJobs, stopCleanupJobs } from './jobs/cleanup';
 
 // Import routes (these will be created later)
 import authRoutes from './routes/auth.routes';
@@ -47,7 +48,27 @@ const io = new Server(server, {
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in headers
+  legacyHeaders: false,
+});
+
+// Stricter rate limiting for auth endpoints (prevent brute force)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per 15 minutes
+  message: { error: 'Too many login attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting for booking creation
+const bookingLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 booking creations per minute
+  message: { error: 'Too many booking requests, please slow down' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Sentry request handler
@@ -74,6 +95,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 // ... (existing code)
+
+// Apply stricter rate limiting to auth endpoints
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/auth/register', authLimiter);
+
+// Apply booking rate limiting
+app.use('/api/v1/bookings', bookingLimiter);
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -121,6 +149,9 @@ async function startServer() {
     // Connect to database
     await connectDatabase();
 
+    // Start cleanup jobs
+    startCleanupJobs();
+
     // Start server
     server.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
@@ -136,6 +167,7 @@ async function startServer() {
 // Handle graceful shutdown
 process.on('SIGINT', () => {
   logger.info('Received SIGINT, shutting down gracefully...');
+  stopCleanupJobs();
   server.close(() => {
     logger.info('Server closed');
     process.exit(0);
@@ -144,6 +176,7 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
   logger.info('Received SIGTERM, shutting down gracefully...');
+  stopCleanupJobs();
   server.close(() => {
     logger.info('Server closed');
     process.exit(0);

@@ -6,20 +6,21 @@ import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { config } from '@/config';
 import logger from '@/utils/logger';
-import { 
-  AuthenticationError, 
-  ValidationError, 
-  ConflictError, 
+import {
+  AuthenticationError,
+  ValidationError,
+  ConflictError,
   NotFoundError,
-  BusinessLogicError 
+  BusinessLogicError
 } from '@/utils/errors';
 import { CacheService } from './cache.service';
 import { emailService } from './email';
+import { getPrismaClient } from '@/database';
 
 type User = any; // Will be properly typed by Prisma
 type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 const cacheService = new CacheService();
 
 export interface AuthTokens {
@@ -111,7 +112,7 @@ export class AuthService {
   // Store refresh token
   private async storeRefreshToken(userId: string, refreshToken: string): Promise<void> {
     const expiresAt = new Date(Date.now() + this.getTokenExpirationTime(config.jwt.refreshExpiresIn) * 1000);
-    
+
     await prisma.userSession.create({
       data: {
         userId,
@@ -126,7 +127,7 @@ export class AuthService {
   private async validateRefreshToken(refreshToken: string): Promise<User | null> {
     try {
       const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as any;
-      
+
       const session = await prisma.userSession.findFirst({
         where: {
           refreshToken,
@@ -212,9 +213,9 @@ export class AuthService {
         await emailService.sendVerificationEmail(user.email, verificationToken, user.firstName);
       } catch (emailError) {
         // Log error but don't block registration
-        logger.error('Failed to send verification email', { 
-          email: user.email, 
-          error: emailError 
+        logger.error('Failed to send verification email', {
+          email: user.email,
+          error: emailError
         });
         // User can still resend verification email later
       }
@@ -228,8 +229,8 @@ export class AuthService {
 
     return {
       user: this.sanitizeUser(user),
-      message: config.development.skipEmailVerification 
-        ? 'Registration successful' 
+      message: config.development.skipEmailVerification
+        ? 'Registration successful'
         : 'Registration successful. Please check your email to verify your account.',
     };
   }
@@ -396,9 +397,9 @@ export class AuthService {
       logger.info('Verification email resent', { userId: user.id });
     } catch (emailError) {
       // Log error but return success message to avoid revealing email issues
-      logger.error('Failed to resend verification email', { 
-        email: user.email, 
-        error: emailError 
+      logger.error('Failed to resend verification email', {
+        email: user.email,
+        error: emailError
       });
     }
 
@@ -432,9 +433,9 @@ export class AuthService {
       logger.info('Password reset requested', { userId: user.id });
     } catch (emailError) {
       // Log error but don't reveal email issues for security
-      logger.error('Failed to send password reset email', { 
-        email: user.email, 
-        error: emailError 
+      logger.error('Failed to send password reset email', {
+        email: user.email,
+        error: emailError
       });
     }
 

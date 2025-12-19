@@ -1,14 +1,20 @@
 // Booking Routes
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { authenticate, authorize, authorizeBookingOwnership } from '@/middleware/auth';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 import bookingService from '@/services/booking.service';
+import { getPrismaClient } from '@/database';
+import {
+  validateBody,
+  createBookingSchema,
+  updateBookingSchema,
+  updateGuestsSchema
+} from '@/middleware/validate';
 
 const router = Router();
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 /**
  * GET /bookings
@@ -59,7 +65,18 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
 
     const bookings = await prisma.booking.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        bookingNumber: true,
+        checkInDate: true,
+        checkOutDate: true,
+        status: true,
+        paymentStatus: true,
+        totalAmount: true,
+        adultGuests: true,
+        childGuests: true,
+        petGuests: true,
+        createdAt: true,
         user: {
           select: {
             id: true,
@@ -77,11 +94,11 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
             basePrice: true,
           },
         },
-        vehicles: true,
-        guests: true,
-        equipmentRentals: {
-          include: {
-            equipment: true,
+        _count: {
+          select: {
+            guests: true,
+            vehicles: true,
+            equipmentRentals: true,
           },
         },
       },
@@ -98,7 +115,10 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
         children: booking.childGuests,
         pets: booking.petGuests,
       },
-      guestDetails: booking.guests,
+      // Use counts from _count for list view
+      guestCount: booking._count.guests,
+      vehicleCount: booking._count.vehicles,
+      equipmentRentalCount: booking._count.equipmentRentals,
     }));
 
     logger.info('Bookings retrieved', {
@@ -168,7 +188,18 @@ router.get('/paginated', authenticate, async (req: Request, res: Response, next:
     const [bookings, total] = await Promise.all([
       prisma.booking.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          bookingNumber: true,
+          checkInDate: true,
+          checkOutDate: true,
+          status: true,
+          paymentStatus: true,
+          totalAmount: true,
+          adultGuests: true,
+          childGuests: true,
+          petGuests: true,
+          createdAt: true,
           user: {
             select: {
               id: true,
@@ -186,11 +217,11 @@ router.get('/paginated', authenticate, async (req: Request, res: Response, next:
               basePrice: true,
             },
           },
-          vehicles: true,
-          guests: true,
-          equipmentRentals: {
-            include: {
-              equipment: true,
+          _count: {
+            select: {
+              guests: true,
+              vehicles: true,
+              equipmentRentals: true,
             },
           },
         },
@@ -210,6 +241,9 @@ router.get('/paginated', authenticate, async (req: Request, res: Response, next:
         children: booking.childGuests,
         pets: booking.petGuests,
       },
+      guestCount: booking._count.guests,
+      vehicleCount: booking._count.vehicles,
+      equipmentRentalCount: booking._count.equipmentRentals,
     }));
 
     res.json({
@@ -513,7 +547,7 @@ router.get('/:id/payments', authenticate, async (req: Request, res: Response, ne
  * POST /bookings
  * Create a new booking
  */
-router.post('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', authenticate, validateBody(createBookingSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const booking = await bookingService.createBooking({
       ...req.body,
@@ -533,7 +567,7 @@ router.post('/', authenticate, async (req: Request, res: Response, next: NextFun
  * PUT /bookings/:id
  * Update booking (Dates, Guests, etc.)
  */
-router.put('/:id', authenticate, authorizeBookingOwnership, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', authenticate, authorizeBookingOwnership, validateBody(updateBookingSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const booking = await bookingService.updateBooking(id as string, req.body);
@@ -551,7 +585,7 @@ router.put('/:id', authenticate, authorizeBookingOwnership, async (req: Request,
  * PUT /bookings/:id/guests
  * Update booking guest list
  */
-router.put('/:id/guests', authenticate, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/guests', authenticate, authorize('ADMIN', 'MANAGER', 'STAFF'), validateBody(updateGuestsSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const { guests } = req.body;

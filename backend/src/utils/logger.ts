@@ -76,8 +76,9 @@ transports.push(
 
 // Rotating file transport for production
 if (config.server.nodeEnv === 'production') {
+   
   const DailyRotateFile = require('winston-daily-rotate-file');
-  
+
   transports.push(
     new DailyRotateFile({
       filename: path.join(process.cwd(), 'logs', 'application-%DATE%.log'),
@@ -111,7 +112,7 @@ export const loggerMethods = {
         },
         metadata,
       });
-      
+
       // Send to error tracking service
       try {
         import('../services/error-tracking').then(({ getErrorTracker }) => {

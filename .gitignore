@@ -3,7 +3,7 @@ node_modules/
 *.pnp
 .pnp.js
 
-# Production
+# Production builds
 dist/
 build/
 .next/
@@ -13,12 +13,6 @@ out/
 coverage/
 .nyc_output/
 test-results/
-
-# Misc
-.DS_Store
-*.pem
-*.key
-*.cert
 
 # Logs
 logs/
@@ -30,10 +24,34 @@ lerna-debug.log*
 
 # Environment variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+
+# Backend specific
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/logs/
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/test-results/
+backend/playwright-report/
+backend/playwright/.auth/
+backend/tests/e2e/.auth/
+backend/result.json
+backend/result.jsonCheck
+backend/eslint-output.txt
+backend/lint_error.txt
+backend/.restart
+
+# Frontend specific
+frontend/.vite/
+frontend/node_modules/.vite/
+frontend/node_modules/.cache/
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright/.auth/
+frontend/tests/e2e/.auth/
 
 # IDE
 .vscode/*
@@ -44,35 +62,25 @@ lerna-debug.log*
 *.swp
 *.swo
 *~
-.DS_Store
-
-
-# Playwright
-frontend/test-results/
-frontend/playwright-report/
-frontend/playwright/.auth/
-frontend/tests/e2e/.auth/
-
-# Vite
-frontend/.vite/
-
-# Build cache
-frontend/node_modules/.vite/
-frontend/node_modules/.cache/
 
 # OS
+.DS_Store
 Thumbs.db
 .AppleDouble
 .LSOverride
 
-# Optional npm cache directory
-.npm
+# Secrets & Keys
+*.pem
+*.key
+*.cert
 
-# Optional eslint cache
+# Optional caches
+.npm
 .eslintcache
 
 # Temporary files
 *.tmp
 *.temp
 
+# Agent/AI files
 .agent/*

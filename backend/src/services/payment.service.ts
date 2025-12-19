@@ -208,12 +208,13 @@ class PaymentService {
             );
 
             switch (event.type) {
-                case 'payment_intent.succeeded':
+                case 'payment_intent.succeeded': {
                     const paymentIntent = event.data.object as Stripe.PaymentIntent;
                     logger.info('Webhook: Payment succeeded', { id: paymentIntent.id });
                     await this.confirmPayment(paymentIntent.id);
                     break;
-                case 'payment_intent.payment_failed':
+                }
+                case 'payment_intent.payment_failed': {
                     const failedIntent = event.data.object as Stripe.PaymentIntent;
                     logger.warn('Webhook: Payment failed', { id: failedIntent.id });
                     await prisma.payment.updateMany({
@@ -221,6 +222,7 @@ class PaymentService {
                         data: { status: PaymentStatus.FAILED },
                     });
                     break;
+                }
             }
         } catch (error: any) {
             logger.error(`Webhook Error: ${error.message}`);

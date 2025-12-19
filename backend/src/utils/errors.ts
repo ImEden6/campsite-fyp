@@ -131,11 +131,12 @@ export const handleZodError = (error: ZodError): ValidationError => {
 // Handle Prisma errors
 export const handlePrismaError = (error: PrismaClientKnownRequestError): ApiError => {
   switch (error.code) {
-    case 'P2002':
+    case 'P2002': {
       // Unique constraint violation
       const target = error.meta?.target as string[];
       const field = target?.[0] || 'field';
       return new ConflictError(`${field} already exists`);
+    }
 
     case 'P2025':
       // Record not found
@@ -164,15 +165,15 @@ export const handleJWTError = (error: Error): ApiError => {
   if (error.name === 'TokenExpiredError') {
     return new AuthenticationError('Token expired');
   }
-  
+
   if (error.name === 'JsonWebTokenError') {
     return new AuthenticationError('Invalid token');
   }
-  
+
   if (error.name === 'NotBeforeError') {
     return new AuthenticationError('Token not active');
   }
-  
+
   return new AuthenticationError('Token validation failed');
 };
 
@@ -185,7 +186,7 @@ export const handleMulterError = (error: any): ApiError => {
       code: 'FILE_TOO_LARGE',
     }]);
   }
-  
+
   if (error.code === 'LIMIT_FILE_COUNT') {
     return new ValidationError([{
       field: 'files',
@@ -193,7 +194,7 @@ export const handleMulterError = (error: any): ApiError => {
       code: 'TOO_MANY_FILES',
     }]);
   }
-  
+
   if (error.code === 'LIMIT_UNEXPECTED_FILE') {
     return new ValidationError([{
       field: 'file',
@@ -201,7 +202,7 @@ export const handleMulterError = (error: any): ApiError => {
       code: 'UNEXPECTED_FILE',
     }]);
   }
-  
+
   return new ValidationError([{
     field: 'file',
     message: 'File upload failed',
@@ -214,26 +215,26 @@ export const handleStripeError = (error: any): ApiError => {
   switch (error.type) {
     case 'StripeCardError':
       return new PaymentError('Card was declined', 'CARD_DECLINED');
-    
+
     case 'StripeRateLimitError':
       return new RateLimitError('Too many requests to Stripe');
-    
+
     case 'StripeInvalidRequestError':
       return new ValidationError([{
         field: 'payment',
         message: 'Invalid payment request',
         code: 'INVALID_PAYMENT',
       }]);
-    
+
     case 'StripeAPIError':
       return new ExternalServiceError('Stripe', 'Payment service unavailable');
-    
+
     case 'StripeConnectionError':
       return new ExternalServiceError('Stripe', 'Payment service connection failed');
-    
+
     case 'StripeAuthenticationError':
       return new ExternalServiceError('Stripe', 'Payment service authentication failed');
-    
+
     default:
       return new PaymentError('Payment processing failed');
   }
@@ -329,7 +330,7 @@ export const notFoundHandler = (req: Request, res: Response, next: NextFunction)
 };
 
 // Async error wrapper
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any> | any) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
