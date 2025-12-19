@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { resolve, join } from 'path'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
+import tailwindcss from "@tailwindcss/vite";
 
 
 export default defineConfig(({ mode }) => {
@@ -110,6 +111,7 @@ export default defineConfig(({ mode }) => {
         // JSX runtime - use automatic runtime for better tree-shaking
         jsxRuntime: 'automatic',
       }),
+      tailwindcss(),
       // VitePWA removed temporarily to fix build
       // HTML optimization plugin (runs after VitePWA to transform its output)
       htmlOptimizePlugin(),

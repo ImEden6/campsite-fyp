@@ -36,7 +36,8 @@ COPY backend/package*.json ./backend/
 COPY tests/package*.json ./tests/
 
 # Install dependencies directly to ensure correctness
-RUN npm ci
+# Attempt to force install the native binary for Alpine/musl as requested
+RUN npm ci && npm install lightningcss-linux-x64-musl --save-optional
 
 # Copy source files for built packages
 COPY shared/ ./shared/
