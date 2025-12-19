@@ -1,310 +1,185 @@
-# Campsite Management System - Project Overview
+# Campsite Management System
 
-## Introduction
-This project is a comprehensive **Campsite Management System** designed to handle various aspects of campsite operations for staff, administrators, and customers. It features booking management, site management, equipment rentals, and user administration with a modern frontend built with React and a shared library for types and schemas.
+A full-stack campsite management platform for booking, site management, equipment rentals, and operations.
 
-## Technology Stack
+## Quick Start
 
-### Frontend (`/frontend`)
-- **Framework**: React 18 with Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS, clsx, tailwind-merge
-- **State Management**: Zustand, React Query (@tanstack/react-query)
-- **Routing**: React Router DOM
-- **UI Components**: Framer Motion (animations), Lucide React (icons)
-- **Forms**: React Hook Form, Zod
-- **Visualization**: Recharts, Chart.js (react-chartjs-2), Fabric.js (interactive maps/canvas)
-- **Monitoring**: Sentry (@sentry/react)
-- **Testing**: Vitest (unit), Playwright (E2E), React Testing Library
-- **Utilities**: date-fns, axios, socket.io-client
+```bash
+# Install all dependencies
+npm run install:all
 
-### Shared (`/shared`)
-- **Purpose**: Shared TypeScript types, Zod schemas, and utility functions used across the project.
-- **Dependencies**: Zod
+# Start development servers
+npm run dev           # Frontend only
+npm run dev:backend   # Backend only
+npm run dev:all       # Both (if configured)
+```
+
+**Default URLs:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS |
+| **Backend** | Node.js, Express, Prisma ORM |
+| **Database** | PostgreSQL |
+| **Cache** | Redis |
+| **Auth** | JWT, bcrypt |
+| **Payments** | Stripe |
+
+---
 
 ## Project Structure
 
-- **`frontend/`**: Contains the React application.
-  - **`src/features/`**: Modular feature-based architecture.
-    - `analytics`: Reporting and data visualization.
-    - `auth`: Authentication logic (Login, Register) for staff and customers.
-    - `bookings`: Booking management workflows, calendar, and guest booking forms.
-    - `equipment`: Equipment inventory and rental management.
-    - `payments`: Payment processing integration.
-    - `sites`: Campsite management and browsing.
-    - `users`: User profiles and management.
-  - **`src/pages/`**: Application routes/pages.
-    - **Admin/Staff**: `AdminDashboardPage`, `MapEditor`, `BookingManagementPage`, `CheckInPage`.
-    - **Customer**: `CustomerDashboardPage`, `CustomerBookingPage`, `CustomerProfilePage`.
-    - **Guest**: `GuestBookingPage`, `GuestBookingLookupPage`.
-  - **`src/components/`**: Reusable UI components.
-  - **`src/stores/`**: Global state stores.
-
-- **`shared/`**: Common code shared between frontend and potentially backend (if added later).
-
-## Key Features
-
-1.  **Dashboard & Portals**:
-    - **Admin Dashboard**: Central hub for campsite management.
-    - **Staff Interface**: Tools for managing bookings and operations.
-    - **Customer Portal**: Dedicated interface for customers to view bookings, make payments, and manage their profile.
-
-2.  **Site Management**:
-    - **Map Editor**: Interactive tool to design campsite layouts (uses Fabric.js).
-    - **Site Browsing**: List and view available campsites.
-
-3.  **Booking Management**:
-    - Staff-managed booking workflows.
-    - Calendar view.
-    - Check-in and check-out processes.
-
-4.  **Guest Services**:
-    - **Public Booking**: Guest-facing booking engine for non-registered users.
-    - **Booking Lookup**: Retrieve booking details using booking reference.
-    - **Account Creation**: Option to create an account during guest checkout.
-
-5.  **Equipment Management**:
-    - Catalog and rental system for equipment.
-
-6.  **User Administration**:
-    - User management, profiles, and settings.
-    - Role-based access (Admin, Manager, Staff, Customer).
-
-7.  **Analytics**:
-    - Reports and visual data analysis.
-
-## Getting Started
-
-### Prerequisites
-- Node.js
-- npm
-
-### Installation
-Run the following command in the root directory to install dependencies for all workspaces:
-```bash
-npm run install:all
+```
+campsite-fyp/
+├── frontend/          # React application
+│   ├── src/
+│   │   ├── features/  # Feature modules (auth, bookings, sites, etc.)
+│   │   ├── pages/     # Route pages
+│   │   ├── components/# Shared UI components
+│   │   └── stores/    # Global state (Zustand)
+│   └── ...
+├── backend/           # Express API
+│   ├── src/
+│   │   ├── routes/    # API endpoints
+│   │   ├── services/  # Business logic
+│   │   ├── middleware/# Auth, validation, rate limiting
+│   │   └── jobs/      # Scheduled tasks
+│   └── prisma/        # Database schema & migrations
+├── shared/            # Shared types & schemas
+└── docker/            # Docker configuration
 ```
 
-### Development
-To start the frontend development server:
-```bash
-npm run dev
+---
+
+## Features
+
+### For Staff/Admin
+- Dashboard with analytics
+- Booking management & calendar
+- Site management with interactive map editor
+- Equipment inventory & rentals
+- User administration (roles: Admin, Manager, Staff, Customer)
+- Check-in/check-out workflows
+
+### For Customers
+- Browse and book campsites
+- View booking history
+- Make payments
+- Manage profile
+
+### For Guests (No Account)
+- Public booking flow
+- Booking lookup by reference
+- Option to create account during checkout
+
+---
+
+## Environment Setup
+
+### Frontend (`frontend/.env`)
+```env
+VITE_API_URL=http://localhost:5000/api/v1
+VITE_USE_MOCK_AUTH=false
+VITE_USE_MOCK_PAYMENTS=false
+VITE_STRIPE_PUBLIC_KEY=pk_test_xxxxx
 ```
-(This runs `cd frontend && npm run dev`)
 
-### Building
-To build the project:
-```bash
-npm run build
-npm run preview
+### Backend (`backend/.env`)
+```env
+DATABASE_URL=postgresql://user:pass@localhost:5432/campsite_db
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key
+STRIPE_SECRET_KEY=sk_test_xxxxx
 ```
 
-### Testing
-- **Type Check**: `npm run type-check`
-- **Lint**: `npm run lint`
+See `.env.example` files for full configuration options.
 
-## Test Login Credentials
+---
 
-The application uses mock authentication for development. The following test accounts are available:
+## Test Accounts
 
-### Admin Account
-- **Email**: `admin@campsite.com`
-- **Password**: `admin123`
-- **Role**: Admin
-- **Name**: Admin User
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@campsite.com | Admin123! |
+| Manager | manager@campsite.com | Manager123! |
+| Staff | staff@campsite.com | Staff123! |
+| Customer | customer@campsite.com | Customer123! |
 
-### Manager Account
-- **Email**: `manager@campsite.com`
-- **Password**: `manager123`
-- **Role**: Manager
-- **Name**: Mike Manager
+---
 
-### Staff Account
-- **Email**: `staff@campsite.com`
-- **Password**: `staff123`
-- **Role**: Staff
-- **Name**: Sarah Staff
+## Database Commands
 
-### Customer Account
-- **Email**: `customer@campsite.com`
-- **Password**: `customer123`
-- **Role**: Customer
-- **Name**: Chris Customer
-
-**Note**: These credentials are for development/testing purposes only. 
-
-### Enabling Mock Authentication
-
-Mock authentication can be enabled in development, preview, and production builds by setting the `VITE_USE_MOCK_AUTH` environment variable to `true`.
-
-**For Development:**
-- Create a `.env` file in the `frontend/` directory with:
-  ```
-  VITE_USE_MOCK_AUTH=true
-  ```
-
-**For Preview/Production Builds:**
-- Set the environment variable before building:
-  ```bash
-  # Windows (PowerShell)
-  $env:VITE_USE_MOCK_AUTH="true"; npm run build
-  
-  # Windows (CMD)
-  set VITE_USE_MOCK_AUTH=true && npm run build
-  
-  # Linux/Mac
-  VITE_USE_MOCK_AUTH=true npm run build
-  ```
-- Then run preview:
-  ```bash
-  npm run preview
-  ```
-
-**Important**: Mock authentication is only for testing/demo purposes. In production, ensure you have a proper backend API configured.
-
-## Payment System
-
-The application includes a payment system for booking transactions. It supports both **mock payments** (for demos/development) and **real Stripe integration** (for production).
-
-### Mock Payments (Demo Mode - $0 Cost)
-
-Mock payments simulate the entire payment flow without any real transactions or Stripe account required. Perfect for demos and development.
-
-**Enable mock payments:**
 ```bash
-# Create frontend/.env or set environment variable
+cd backend
+
+npx prisma migrate dev      # Run migrations
+npx prisma db seed          # Seed test data
+npx prisma studio           # Open database GUI
+npx prisma generate         # Regenerate client
+```
+
+---
+
+## API Overview
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/v1/auth/login` | User login |
+| `POST /api/v1/auth/register` | User registration |
+| `GET /api/v1/campsites` | List all sites |
+| `GET /api/v1/bookings` | List bookings (filtered by role) |
+| `POST /api/v1/bookings` | Create booking |
+| `POST /api/v1/payments/intent` | Create payment intent |
+
+Rate limits: 100 req/15min (global), 5 req/15min (auth), 20 req/min (bookings)
+
+---
+
+## Payments
+
+### Mock Mode (Development)
+```env
 VITE_USE_MOCK_PAYMENTS=true
 ```
+Simulates payments with test card `4242 4242 4242 4242`.
 
-**Or use the convenience script:**
+### Stripe Integration (Production)
+1. Get API keys from [Stripe Dashboard](https://stripe.com)
+2. Configure `VITE_STRIPE_PUBLIC_KEY` and `STRIPE_SECRET_KEY`
+3. Set `VITE_USE_MOCK_PAYMENTS=false`
+
+---
+
+## Docker
+
 ```bash
-cd frontend
-npm run preview:local  # Builds with mock payments and starts preview server
+# Start all services
+docker-compose up -d
+
+# Start specific service
+docker-compose up -d postgres redis
 ```
 
-**What mock mode does:**
-- Displays a simulated card form with pre-filled test card (4242 4242 4242 4242)
-- Shows a clear "Mock Payment Mode" badge
-- Simulates payment processing delay
-- Creates mock payment records in the system
-- No real money is ever charged
+---
 
-### Real Stripe Integration (Production)
+## Scripts Reference
 
-When you're ready to accept real payments, you'll need to:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start frontend dev server |
+| `npm run build` | Build for production |
+| `npm run test` | Run tests |
+| `npm run lint` | Lint code |
+| `npm run type-check` | TypeScript check |
 
-#### 1. Set up Stripe Account
-- Create a [Stripe account](https://stripe.com)
-- Get your API keys from the Stripe Dashboard
+---
 
-#### 2. Configure Environment Variables
+## License
 
-**Frontend (`frontend/.env`):**
-```env
-VITE_USE_MOCK_PAYMENTS=false
-VITE_STRIPE_PUBLIC_KEY=pk_test_xxxxx  # or pk_live_xxxxx for production
-VITE_API_URL=https://your-backend.com/api/v1
-```
-
-**Backend (when you build it):**
-```env
-STRIPE_SECRET_KEY=sk_test_xxxxx  # or sk_live_xxxxx for production
-STRIPE_WEBHOOK_SECRET=whsec_xxxxx
-```
-
-#### 3. Backend Implementation Required
-
-The following API endpoints need to be implemented in your backend:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/payments/intent` | POST | Create a Stripe PaymentIntent |
-| `/payments/confirm/:id` | POST | Confirm payment after Stripe processes it |
-| `/payments/:id` | GET | Get payment details |
-| `/bookings/:id/payments` | GET | Get payments for a booking |
-| `/payments/history` | GET | Get user's payment history |
-| `/payments/:id/refund` | POST | Process a refund |
-
-**Example backend payment intent creation (Node.js/Express):**
-```javascript
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
-app.post('/api/v1/payments/intent', async (req, res) => {
-  const { amount, currency, bookingId, description } = req.body;
-  
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount,           // Amount in cents (e.g., 5000 = $50.00)
-    currency,         // 'usd', 'eur', etc.
-    metadata: { bookingId },
-    description,
-  });
-  
-  res.json({
-    id: paymentIntent.id,
-    clientSecret: paymentIntent.client_secret,
-    amount: paymentIntent.amount,
-    currency: paymentIntent.currency,
-    status: paymentIntent.status,
-  });
-});
-```
-
-#### 4. Stripe Test Mode (Free Testing with Real Integration)
-
-Stripe offers a **test mode** that works exactly like production but doesn't charge real money:
-
-- Use `pk_test_` and `sk_test_` keys (not `pk_live_` / `sk_live_`)
-- Test card numbers: `4242 4242 4242 4242` (success), `4000 0000 0000 0002` (decline)
-- All test transactions are free
-- Great for staging environments and demos with real Stripe UI
-
-### CORS Configuration
-
-When connecting to a real backend, ensure my backend allows requests from my frontend origin:
-
-```javascript
-// Express.js example
-const cors = require('cors');
-
-app.use(cors({
-  origin: [
-    'http://localhost:5173',      // Local development
-    'https://your-frontend.com',  // Production
-  ],
-  credentials: true,
-}));
-```
-
-### Files to Review When Adding Backend
-
-| File | Purpose |
-|------|---------|
-| `frontend/src/features/payments/services/payment.service.ts` | API calls to backend |
-| `frontend/src/features/payments/components/PaymentModal.tsx` | Switches between mock/real mode |
-| `frontend/src/features/payments/components/MockPaymentForm.tsx` | Mock payment UI |
-| `frontend/src/features/payments/components/StripeProvider.tsx` | Real Stripe Elements wrapper |
-| `frontend/src/features/payments/components/PaymentForm.tsx` | Real Stripe payment form |
-| `frontend/src/config/env.ts` | Environment variable configuration |
-| `frontend/src/config/stripe.ts` | Stripe SDK initialization |
-| 
-## SMS Integration Providers
-
-While **Twilio** is the industry standard (and currently configured in `backend/src/services/sms.service.ts`), the system architecture allows for swapping providers. Here are the top supported alternatives you might consider:
-
-1.  **Plivo**
-    *   **Pro**: Significantly cheaper (often 50% less) for outbound SMS.
-    *   **Best for**: Cost-conscious projects requiring standard SMS features.
-
-2.  **AWS SNS**
-    *   **Pro**: Integrated with AWS infrastructure; includes 100 free SMS/month.
-    *   **Best for**: Projects hosted on AWS.
-
-3.  **Vonage (formerly Nexmo)**
-    *   **Pro**: Superior global delivery rates, especially outside US/Canada.
-    *   **Best for**: International user bases.
-
-4.  **ClickSend**
-    *   **Pro**: Extremely simple dashboard and API.
-    *   **Best for**: Simple use cases without complex developer requirements.
-
-*To switch providers, update `backend/src/services/sms.service.ts` and replace the `SmsService` implementation.*
+MIT
