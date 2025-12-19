@@ -419,8 +419,8 @@ export const PAYMENT_METHODS = {
   BANK_TRANSFER: 'BANK_TRANSFER',
 } as const;
 
-export const DEFAULT_TIMEZONE = 'America/New_York';
-export const DEFAULT_CURRENCY = 'USD';
+export const DEFAULT_TIMEZONE = 'Asia/Kuala_Lumpur';
+export const DEFAULT_CURRENCY = 'MYR';
 export const DEFAULT_LANGUAGE = 'en';
 
 export const REGEX_PATTERNS = {

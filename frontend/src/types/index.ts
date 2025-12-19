@@ -64,6 +64,7 @@ export {
   VehicleType,
   MeasurementUnit,
   GroupBookingStatus,
+  GuestType,
 } from '@shared/types';
 
 import type {

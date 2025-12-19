@@ -97,7 +97,7 @@ export const mockLogin = async (
     tokens: {
       accessToken: `mock-access-token-${Date.now()}`,
       refreshToken: `mock-refresh-token-${Date.now()}`,
-      expiresIn: 86400, // 24 hours
+      expiresIn: 86400, // 24 hours (remember this for when implementing a backend or it will fuck with your testing)
     },
   };
 };

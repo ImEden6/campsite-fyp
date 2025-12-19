@@ -34,6 +34,7 @@ interface AuthActions {
   updateProfile: (data: Partial<User>) => Promise<void>;
   setUser: (user: User | null) => void;
   setTokens: (tokens: AuthTokens | null) => void;
+  setError: (error: string) => void;
   clearError: () => void;
   initialize: () => void;
 }
@@ -367,6 +368,11 @@ export const useAuthStore = create<AuthStore>()(
           saveAuthTokens(tokens);
         }
         set({ tokens, isAuthenticated: !!tokens });
+      },
+
+      // Set error manually
+      setError: (error: string) => {
+        set({ error });
       },
 
       // Clear error

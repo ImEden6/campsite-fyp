@@ -150,6 +150,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                 Receipt
               </Button>
             </div>
+
           </div>
 
           {/* Site Information */}
@@ -237,6 +238,33 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                   <p className="font-medium text-gray-900">{booking.guests.pets}</p>
                 </div>
               </div>
+
+              {booking.guestDetails && booking.guestDetails.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Guest List</h4>
+                  <div className="space-y-3">
+                    {booking.guestDetails.map((guest, index) => (
+                      <div key={guest.id || index} className="flex justify-between items-start bg-gray-50 p-3 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {guest.firstName} {guest.lastName}
+                          </p>
+                          <div className="text-sm text-gray-500 space-y-0.5">
+                            <p>
+                              {guest.type}
+                              {guest.isPrimary && (
+                                <Badge className="ml-2 bg-blue-100 text-blue-800 text-xs">Primary</Badge>
+                              )}
+                            </p>
+                            {guest.email && <p>{guest.email}</p>}
+                            {guest.phone && <p>{guest.phone}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -381,26 +409,30 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
               </Button>
             )}
           </div>
-        </div>
-      </Modal>
+        </div >
+      </Modal >
 
       {/* QR Code Dialog */}
-      {showQRCode && (
-        <QRCodeDialog
-          booking={booking}
-          isOpen={showQRCode}
-          onClose={() => setShowQRCode(false)}
-        />
-      )}
+      {
+        showQRCode && (
+          <QRCodeDialog
+            booking={booking}
+            isOpen={showQRCode}
+            onClose={() => setShowQRCode(false)}
+          />
+        )
+      }
 
       {/* Receipt Dialog */}
-      {showReceipt && (
-        <ReceiptDownloadDialog
-          booking={booking}
-          isOpen={showReceipt}
-          onClose={() => setShowReceipt(false)}
-        />
-      )}
+      {
+        showReceipt && (
+          <ReceiptDownloadDialog
+            booking={booking}
+            isOpen={showReceipt}
+            onClose={() => setShowReceipt(false)}
+          />
+        )
+      }
     </>
   );
 };

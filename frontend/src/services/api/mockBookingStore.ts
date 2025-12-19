@@ -4,7 +4,7 @@
  * Note: localStorage quota is typically 5MB, sufficient for 100+ bookings
  */
 import type { Booking, Vehicle } from '@/types';
-import { BookingStatus, PaymentStatus, VehicleType } from '@/types';
+import { BookingStatus, PaymentStatus, VehicleType, GuestType } from '@/types';
 import { mockSites } from './mock-sites';
 import { mockEquipment } from './mock-equipment';
 
@@ -29,11 +29,18 @@ export interface CreateBookingData {
     siteId: string;
     checkInDate: string;
     checkOutDate: string;
-    guests: {
-        adults: number;
-        children: number;
-        pets: number;
-    };
+    guests?: {
+        firstName: string;
+        lastName: string;
+        email?: string;
+        phone?: string;
+        type: 'ADULT' | 'CHILD';
+        isPrimary: boolean;
+    }[];
+    // Legacy support or fallback if needed, but we prefer array
+    adultGuests: number;
+    childGuests: number;
+    petGuests: number;
     vehicles: Array<{
         type: string;
         licensePlate: string;
@@ -160,6 +167,26 @@ export const createMockBooking = (bookingData: CreateBookingData): Booking => {
     const bookingId = crypto.randomUUID();
     const bookingNumber = `BK-${new Date().getFullYear()}-${crypto.randomUUID().substring(0, 8).toUpperCase()}`;
 
+    // Normalize guests
+    const guests = bookingData.guests || [];
+    const adultCount = guests.length > 0
+        ? guests.filter(g => g.type === 'ADULT').length
+        : bookingData.adultGuests;
+    const childCount = guests.length > 0
+        ? guests.filter(g => g.type === 'CHILD').length
+        : bookingData.childGuests;
+    const petCount = bookingData.petGuests;
+
+    // Map to Guest objects with IDs
+    const guestDetails = guests.map(g => ({
+        id: crypto.randomUUID(),
+        bookingId: bookingId,
+        ...g,
+        type: g.type as GuestType,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    }));
+
     const booking: Booking = {
         id: bookingId,
         bookingNumber,
@@ -168,7 +195,12 @@ export const createMockBooking = (bookingData: CreateBookingData): Booking => {
         site,
         checkInDate: new Date(bookingData.checkInDate),
         checkOutDate: new Date(bookingData.checkOutDate),
-        guests: bookingData.guests,
+        guests: {
+            adults: adultCount,
+            children: childCount,
+            pets: petCount
+        },
+        guestDetails,
         vehicles: (bookingData.vehicles || []).map((v, i): Vehicle => ({
             id: `v-${i}`,
             type: v.type as VehicleType,
@@ -180,11 +212,10 @@ export const createMockBooking = (bookingData: CreateBookingData): Booking => {
             color: v.color,
         })),
         status: BookingStatus.CONFIRMED,
-        // MVP: Mark as PAID to provide complete confirmation flow without payment integration
-        // In production, this would be PENDING until actual payment is processed
-        paymentStatus: PaymentStatus.PAID,
+        // Enable mock payment flow: start as PENDING so user can complete payment
+        paymentStatus: PaymentStatus.PENDING,
         totalAmount: pricing.totalAmount,
-        paidAmount: pricing.totalAmount,
+        paidAmount: 0,  // No payment yet - user must complete mock payment
         depositAmount: pricing.depositAmount,
         taxAmount: pricing.taxAmount,
         discountAmount: 0,
@@ -221,3 +252,35 @@ export const setUsingMockData = (value: boolean) => {
     usingMockData = value;
 };
 export const isUsingMockData = () => usingMockData;
+
+/**
+ * Update a mock booking's payment info (called after mock payment is confirmed)
+ */
+export const updateMockBookingPayment = (bookingId: string, paymentAmount: number): void => {
+    const existingBooking = bookingCache.get(bookingId);
+    if (!existingBooking) {
+        return; // Booking not in mock store
+    }
+
+    // Calculate new values
+    const newPaidAmount = (existingBooking.paidAmount || 0) + paymentAmount;
+    let newPaymentStatus = existingBooking.paymentStatus;
+
+    if (newPaidAmount >= existingBooking.totalAmount) {
+        newPaymentStatus = PaymentStatus.PAID;
+    } else if (newPaidAmount > 0) {
+        newPaymentStatus = PaymentStatus.PARTIAL;
+    }
+
+    // Create updated booking object (spread to avoid readonly issues)
+    const updatedBooking: Booking = {
+        ...existingBooking,
+        paidAmount: newPaidAmount,
+        paymentStatus: newPaymentStatus,
+        updatedAt: new Date(),
+    };
+
+    // Save to storage
+    bookingCache.set(bookingId, updatedBooking);
+    saveToStorage();
+};

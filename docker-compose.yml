@@ -1,0 +1,116 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: campsite_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: campsite_db
+      POSTGRES_USER: campsite_user
+      POSTGRES_PASSWORD: campsite_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - campsite_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: campsite_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - campsite_network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: campsite_backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://campsite_user:campsite_password@postgres:5432/campsite_db
+      - REDIS_URL=redis://redis:6379
+      - PORT=5000
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - campsite_network
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: campsite_frontend
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:5000/api/v1
+      - VITE_APP_NAME=Campsite Management System
+      - VITE_APP_VERSION=1.0.0
+    ports:
+      - "5137:5137"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - campsite_network
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: campsite_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - campsite_network
+
+  # Adminer (Database Management Tool)
+  adminer:
+    image: adminer:latest
+    container_name: campsite_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - campsite_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  campsite_network:
+    driver: bridge
+
+# Development override
+# Use: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up

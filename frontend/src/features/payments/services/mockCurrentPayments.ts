@@ -137,11 +137,13 @@ sessionPayments.push(...loadPersistedPayments());
  * Add a new payment to the mock payment store (called when mock payment is confirmed)
  */
 export const addMockPayment = (payment: Payment): void => {
+    console.warn('[MockPayments] Adding payment:', payment);
     sessionPayments.unshift(payment); // Add to beginning (most recent)
-    
+
     // Persist to localStorage
     try {
         localStorage.setItem(DEMO_PAYMENTS_KEY, JSON.stringify(sessionPayments));
+        console.warn('[MockPayments] Persisted to localStorage:', sessionPayments.length);
     } catch (e) {
         console.warn('[MockPayments] Failed to persist payment:', e);
     }
@@ -160,9 +162,23 @@ export const clearSessionPayments = (): void => {
  */
 export const getMockBookingPayments = (bookingId: string): Payment[] => {
     const allPayments = [...sessionPayments, ...getDemoPaymentHistory()];
-    return allPayments
-        .filter(p => p.bookingId === bookingId)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    console.warn(`[MockPayments] Querying payments for booking: ${bookingId}`);
+    console.warn(`[MockPayments] Total payments in store: ${allPayments.length}`);
+    console.warn(`[MockPayments] Session payments (in-memory):`, sessionPayments);
+
+    const matched = allPayments.filter(p => p.bookingId === bookingId);
+    console.warn(`[MockPayments] Found ${matched.length} matches for ${bookingId}`);
+
+    if (matched.length === 0) {
+        // Log potential orphans or mismatches
+        const orphans = sessionPayments.filter(p => p.bookingId === 'unknown' || !p.bookingId);
+        if (orphans.length > 0) {
+            console.warn('[MockPayments] Found potential orphan payments with unknown bookingId:', orphans);
+        }
+    }
+
+    return matched.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
 /**
@@ -171,4 +187,16 @@ export const getMockBookingPayments = (bookingId: string): Payment[] => {
 export const getMockPaymentHistory = (): Payment[] => {
     const allPayments = [...sessionPayments, ...getDemoPaymentHistory()];
     return allPayments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+};
+
+/**
+ * Debug helper: get info about mock payment store (for on-screen debugging)
+ */
+export const getMockPaymentDebugInfo = () => {
+    return {
+        sessionPaymentsCount: sessionPayments.length,
+        sessionPayments: sessionPayments.map(p => ({ id: p.id.slice(0, 12), bookingId: p.bookingId?.slice(0, 12) })),
+        localStorageKey: DEMO_PAYMENTS_KEY,
+        hasLocalStorage: !!localStorage.getItem(DEMO_PAYMENTS_KEY),
+    };
 };

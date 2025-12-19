@@ -107,7 +107,7 @@ export const dateUtils = {
 
 // Currency Utilities
 export const currencyUtils = {
-  formatCurrency(amount: number, currency: string = 'USD'): string {
+  formatCurrency(amount: number, currency: string = 'MYR'): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency,

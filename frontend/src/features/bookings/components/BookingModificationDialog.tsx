@@ -16,6 +16,7 @@ import { queryKeys } from '@/config/query-keys';
 import { useToast } from '@/hooks/useToast';
 import type { Booking } from '@/types';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
 
 interface BookingModificationDialogProps {
   booking: Booking;
@@ -35,9 +36,20 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
 
   const [checkInDate, setCheckInDate] = useState<Date>(new Date(booking.checkInDate));
   const [checkOutDate, setCheckOutDate] = useState<Date>(new Date(booking.checkOutDate));
+
+  const [guestDetails, setGuestDetails] = useState<GuestDetail[]>(
+    booking.guestDetails?.map(g => ({
+      firstName: g.firstName,
+      lastName: g.lastName,
+      isChild: g.type === 'CHILD',
+      age: undefined // Backend doesn't store age yet, just type
+    })) || []
+  );
+
   const [adults, setAdults] = useState(booking.guests.adults);
   const [children, setChildren] = useState(booking.guests.children);
   const [pets, setPets] = useState(booking.guests.pets);
+
   const [specialRequests, setSpecialRequests] = useState(booking.specialRequests || '');
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
@@ -59,12 +71,11 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
     setNewPricing(null);
 
     try {
-      // Check if site is available for new dates
       const available = await checkSiteAvailability(
         booking.siteId,
         checkInDate.toISOString(),
         checkOutDate.toISOString(),
-        booking.id // Exclude current booking
+        booking.id
       );
 
       if (!available) {
@@ -72,7 +83,6 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
         return;
       }
 
-      // Calculate new pricing
       const pricing = await calculateBookingPrice(
         booking.siteId,
         checkInDate.toISOString(),
@@ -91,25 +101,55 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
     }
   }, [booking.equipmentRentals, booking.id, booking.siteId, checkInDate, checkOutDate]);
 
-  // Check if dates have changed
   const datesChanged =
     checkInDate.getTime() !== new Date(booking.checkInDate).getTime() ||
     checkOutDate.getTime() !== new Date(booking.checkOutDate).getTime();
 
-  // Check availability when dates change
   useEffect(() => {
     if (datesChanged && isOpen) {
       void checkAvailability();
     }
   }, [checkAvailability, datesChanged, isOpen]);
 
+  const handleGuestDetailsChange = (details: GuestDetail[]) => {
+    setGuestDetails(details);
+  };
+
   const updateMutation = useMutation({
-    mutationFn: () => updateBooking(booking.id, {
-      checkInDate: checkInDate.toISOString(),
-      checkOutDate: checkOutDate.toISOString(),
-      guests: { adults, children, pets },
-      specialRequests: specialRequests || undefined,
-    }),
+    mutationFn: () => {
+      // Map GuestDetail[] to API Guest Structure
+      const mappedGuests = guestDetails.map((g, index) => {
+        const type = g.isChild ? 'CHILD' : 'ADULT';
+        // Simple primary assignment: First adult is primary
+        // Or preserve existing primary status if we could track it.
+        // For now, assume index 0 is primary if adult? 
+        // Logic in BookingForm: First adult is primary.
+        // If we rely on order: First element of guestDetails is usually Adult 1.
+        // But guestDetails mixes adults and children?
+        // GuestDetailsInput separates them in UI but returns flattened array.
+        // It constructs array: Adults then Children. (See GuestDetailsInput.tsx Step 1016 Line 47 & 67)
+        // So index 0 is Adult 1.
+        // We'll set isPrimary = outputIndex === 0.
+        return {
+          firstName: g.firstName,
+          lastName: g.lastName,
+          type: type as 'ADULT' | 'CHILD',
+          isPrimary: index === 0,
+          email: index === 0 ? booking.guestDetails?.find(bg => bg.isPrimary)?.email : undefined, // Try to preserve primary email
+          phone: index === 0 ? booking.guestDetails?.find(bg => bg.isPrimary)?.phone : undefined
+        };
+      });
+
+      return updateBooking(booking.id, {
+        checkInDate: checkInDate.toISOString(),
+        checkOutDate: checkOutDate.toISOString(),
+        adultGuests: adults,
+        childGuests: children,
+        petGuests: pets,
+        guests: mappedGuests,
+        specialRequests: specialRequests || undefined,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
       showToast('Booking updated successfully', 'success');
@@ -123,7 +163,6 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
     if (checkInDate >= checkOutDate) {
       showToast('Check-out date must be after check-in date', 'error');
       return;
@@ -235,7 +274,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
                   {priceDifference !== 0 && (
                     <div className="flex justify-between">
                       <span>Price Difference:</span>
-                      <span className={`font-semibold ${priceDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      <span className={`font - semibold ${priceDifference > 0 ? 'text-red-600' : 'text-green-600'} `}>
                         {priceDifference > 0 ? '+' : ''}{CURRENCY_SYMBOL}{priceDifference.toFixed(2)}
                       </span>
                     </div>
@@ -256,40 +295,58 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
           </div>
         )}
 
-        {/* Guest Count */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Users size={16} className="inline mr-1" />
-            Guests
-          </label>
-          <div className="grid grid-cols-3 gap-4">
-            <Input
-              type="number"
-              label="Adults"
-              value={adults}
-              onChange={(e) => setAdults(parseInt(e.target.value) || 0)}
-              min={1}
-              max={booking.site?.capacity || 10}
-              required
-            />
-            <Input
-              type="number"
-              label="Children"
-              value={children}
-              onChange={(e) => setChildren(parseInt(e.target.value) || 0)}
-              min={0}
-              max={booking.site?.capacity || 10}
-            />
-            <Input
-              type="number"
-              label="Pets"
-              value={pets}
-              onChange={(e) => setPets(parseInt(e.target.value) || 0)}
-              min={0}
-              max={5}
-            />
+        {/* Guest Count & Details */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Guest Counts
+            </label>
+            <div className="grid grid-cols-3 gap-4">
+              <Input
+                type="number"
+                label="Adults"
+                value={adults}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAdults(parseInt(e.target.value) || 0)}
+                min={1}
+                max={booking.site?.capacity || 10}
+                required
+              />
+              <Input
+                type="number"
+                label="Children"
+                value={children}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChildren(parseInt(e.target.value) || 0)}
+                min={0}
+                max={booking.site?.capacity || 10}
+              />
+              <Input
+                type="number"
+                label="Pets"
+                value={pets}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPets(parseInt(e.target.value) || 0)}
+                min={0}
+                max={5}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Users size={16} className="inline mr-1" />
+              Guest Identification
+            </label>
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <GuestDetailsInput
+                adults={adults}
+                children={children}
+                guestDetails={guestDetails}
+                onChange={handleGuestDetailsChange}
+              // primaryGuestInfo we can omit or pass if available
+              />
+            </div>
           </div>
         </div>
+
 
         {/* Special Requests */}
         <div>

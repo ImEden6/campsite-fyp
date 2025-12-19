@@ -301,7 +301,7 @@ function App() {
               <Route
                 path="/admin/sites"
                 element={
-                  <ProtectedRoute requiredRole={[UserRole.ADMIN]}>
+                  <ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.MANAGER]}>
                     <SitesPage />
                   </ProtectedRoute>
                 }
@@ -349,7 +349,7 @@ function App() {
               <Route
                 path="/admin/settings"
                 element={
-                  <ProtectedRoute requiredRole={[UserRole.ADMIN]}>
+                  <ProtectedRoute requiredRole={[UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]}>
                     <SettingsPage />
                   </ProtectedRoute>
                 }

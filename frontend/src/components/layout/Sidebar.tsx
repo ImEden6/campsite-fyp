@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   Calendar,
@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   User as UserIcon,
-  CheckCircle
+  CheckCircle,
+  LogOut
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -55,7 +56,7 @@ const navigationItems: NavItem[] = [
     path: '/admin/sites',
     label: 'Sites',
     icon: Map,
-    roles: [UserRole.ADMIN]
+    roles: [UserRole.ADMIN, UserRole.MANAGER]
   },
   {
     path: '/admin/maps',
@@ -85,13 +86,14 @@ const navigationItems: NavItem[] = [
     path: '/admin/settings',
     label: 'Settings',
     icon: Settings,
-    roles: [UserRole.ADMIN]
+    roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
   },
 ];
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
-  const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
@@ -237,6 +239,22 @@ const Sidebar: React.FC = () => {
                   </div>
                 )}
               </Link>
+
+              <button
+                onClick={() => {
+                  logout();
+                  navigate('/admin/login');
+                }}
+                className={`
+                  mt-1 flex items-center w-full rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400
+                  ${sidebarCollapsed ? 'justify-center p-2' : 'space-x-3 p-3'}
+                `}
+                title={sidebarCollapsed ? 'Logout' : undefined}
+                aria-label="Logout"
+              >
+                <LogOut className={`w-5 h-5 ${!sidebarCollapsed ? '' : ''}`} />
+                {!sidebarCollapsed && <span className="text-sm font-medium">Logout</span>}
+              </button>
             </div>
           )}
         </div>

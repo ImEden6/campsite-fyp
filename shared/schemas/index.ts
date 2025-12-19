@@ -1,6 +1,6 @@
 // Zod Validation Schemas for Campsite Management System
 
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import { VALIDATION_RULES, REGEX_PATTERNS } from '../constants';
 
 // Base schemas for common validations
@@ -258,7 +258,7 @@ export const createEquipmentSchema = z.object({
   monthlyRate: z.number().min(VALIDATION_RULES.EQUIPMENT.MIN_RATE).max(VALIDATION_RULES.EQUIPMENT.MAX_RATE),
   deposit: nonNegativeNumberSchema,
   images: z.array(z.string().url()).default([]),
-  specifications: z.record(z.any()).optional(),
+  specifications: z.record(z.string(), z.any()).optional(),
 });
 
 export const updateEquipmentSchema = createEquipmentSchema.partial().extend({
@@ -290,7 +290,7 @@ export const createCommunicationSchema = z.object({
   subject: z.string().max(255).optional(),
   message: z.string().min(1).max(5000),
   sentTo: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Notification schemas
@@ -310,7 +310,7 @@ export const createNotificationSchema = z.object({
   type: notificationTypeSchema,
   title: z.string().min(1).max(255),
   message: z.string().min(1).max(1000),
-  data: z.record(z.any()).optional(),
+  data: z.record(z.string(), z.any()).optional(),
 });
 
 // Pricing schemas
@@ -398,7 +398,7 @@ export const campsiteSettingsSchema = z.object({
 export const fileUploadSchema = z.object({
   file: z.instanceof(File),
   category: z.enum(['site_image', 'equipment_image', 'document', 'avatar']),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Search and pagination schemas
@@ -412,7 +412,7 @@ export const paginationSchema = z.object({
 export const searchSchema = z.object({
   query: z.string().min(1).max(100),
   category: z.enum(['users', 'bookings', 'sites', 'equipment']).optional(),
-  filters: z.record(z.any()).optional(),
+  filters: z.record(z.string(), z.any()).optional(),
 }).merge(paginationSchema);
 
 // Analytics schemas
@@ -445,7 +445,7 @@ export const calendarEventSchema = z.object({
     interval: z.number().min(1).max(100),
     until: z.string().datetime().or(z.date()).optional(),
   }).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Validation utility functions
@@ -454,8 +454,9 @@ export const validateSchema = <T>(schema: z.ZodSchema<T>, data: unknown): { succ
     const result = schema.parse(data);
     return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => `${err.path.join('.')}: ${err.message}`);
+    if (error instanceof ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errors = (error as any).errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);
       return { success: false, errors };
     }
     return { success: false, errors: ['Invalid data format'] };
@@ -467,8 +468,9 @@ export const validateSchemaAsync = async <T>(schema: z.ZodSchema<T>, data: unkno
     const result = await schema.parseAsync(data);
     return { success: true, data: result };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => `${err.path.join('.')}: ${err.message}`);
+    if (error instanceof ZodError) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errors = (error as any).errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);
       return { success: false, errors };
     }
     return { success: false, errors: ['Invalid data format'] };

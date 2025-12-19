@@ -20,7 +20,6 @@ interface MockPaymentFormProps {
  */
 export const MockPaymentForm = ({
   amount,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   bookingId: _bookingId,
   clientSecret,
   onSuccess,

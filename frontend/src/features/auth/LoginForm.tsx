@@ -25,7 +25,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   alternativeLoginLink
 }) => {
   const navigate = useNavigate();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, logout, setError, isLoading, error, clearError } = useAuthStore();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -94,16 +94,31 @@ const LoginForm: React.FC<LoginFormProps> = ({
         password: formData.password,
       });
 
+      // Get user from store to check role
+      const user = useAuthStore.getState().user;
+
+      if (!user) return;
+
+      // Verify role matches the login portal type
+      if (type === 'customer' && user.role !== UserRole.CUSTOMER) {
+        logout();
+        setError('Access restricted to customers. Staff members must use the Admin Portal.');
+        return;
+      }
+
+      if (type === 'admin' && user.role === UserRole.CUSTOMER) {
+        logout();
+        setError('Access restricted to staff. Customers must use the Customer Portal.');
+        return;
+      }
+
       // Call success callback if provided
       if (onSuccess) {
         onSuccess();
       }
 
-      // Get user from store to check role
-      const user = useAuthStore.getState().user;
-
       // Force redirect based on role
-      if (user?.role === UserRole.CUSTOMER) {
+      if (user.role === UserRole.CUSTOMER) {
         navigate('/customer/dashboard', { replace: true });
       } else {
         // Staff/Admin/Manager

@@ -96,6 +96,8 @@ export const PaymentHistory = ({
     );
   }
 
+  console.log('[PaymentHistory] Rendering payments:', payments);
+
   return (
     <>
       <Card>

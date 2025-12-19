@@ -10,17 +10,50 @@ import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import SystemSettings from '@/components/settings/SystemSettings';
 
+import { useAuthStore } from '@/stores/authStore';
+import { UserRole } from '@/types';
+
 type SettingsTab = 'general' | 'appearance' | 'notifications' | 'system';
+
+interface TabDefinition {
+  id: SettingsTab;
+  label: string;
+  icon: React.ElementType;
+  roles: UserRole[];
+}
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+  const user = useAuthStore((state) => state.user);
 
-  const tabs = [
-    { id: 'general', label: 'General', icon: Settings },
-    { id: 'appearance', label: 'Appearance', icon: Monitor },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'system', label: 'System', icon: Server },
+  const tabs: TabDefinition[] = [
+    {
+      id: 'general',
+      label: 'General',
+      icon: Settings,
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
+    },
+    {
+      id: 'appearance',
+      label: 'Appearance',
+      icon: Monitor,
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF]
+    },
+    {
+      id: 'system',
+      label: 'System',
+      icon: Server,
+      roles: [UserRole.ADMIN]
+    },
   ];
+
+  const filteredTabs = tabs.filter(tab => user && tab.roles.includes(user.role));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -35,7 +68,7 @@ const SettingsPage: React.FC = () => {
         {/* Sidebar Navigation */}
         <div className="w-full lg:w-64 flex-shrink-0">
           <nav className="space-y-1">
-            {tabs.map((tab) => {
+            {filteredTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
@@ -69,9 +102,11 @@ const SettingsPage: React.FC = () => {
           <div className={activeTab === 'notifications' ? 'block' : 'hidden'}>
             <NotificationSettings />
           </div>
-          <div className={activeTab === 'system' ? 'block' : 'hidden'}>
-            <SystemSettings />
-          </div>
+          {user?.role === UserRole.ADMIN && (
+            <div className={activeTab === 'system' ? 'block' : 'hidden'}>
+              <SystemSettings />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -4,20 +4,20 @@
   "description": "Campsite Management System",
   "private": true,
   "scripts": {
-    "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "preview": "cd frontend && npm run preview",
-    "lint": "npm run lint:frontend && npm run lint:shared",
-    "lint:frontend": "cd frontend && npm run lint",
-    "lint:shared": "cd shared && npm run lint",
-    "type-check": "npm run type-check:shared && npm run type-check:frontend",
-    "type-check:frontend": "cd frontend && npm run type-check",
-    "type-check:shared": "cd shared && npm run type-check",
-    "install:all": "npm install && cd frontend && npm install && cd ../shared && npm install"
+    "dev": "npm run dev -w @campsite-management/frontend",
+    "build": "npm run build --workspaces --if-present",
+    "preview": "npm run preview -w @campsite-management/frontend",
+    "preview:local": "npm run preview:local -w @campsite-management/frontend",
+    "lint": "npm run lint --workspaces --if-present",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @campsite-management/backend"
   },
   "workspaces": [
     "frontend",
-    "shared"
+    "shared",
+    "backend",
+    "tests"
   ],
   "overrides": {
     "react": "18.3.1",
@@ -40,5 +40,9 @@
     "reservation"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@campsite-management/frontend": "^1.0.0",
+    "@campsite-management/shared": "^1.0.0"
+  }
 }

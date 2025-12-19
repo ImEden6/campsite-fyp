@@ -174,6 +174,24 @@ export enum PaymentStatus {
   FAILED = 'FAILED'
 }
 
+export enum GuestType {
+  ADULT = 'ADULT',
+  CHILD = 'CHILD'
+}
+
+export interface Guest {
+  readonly id: string;
+  bookingId: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  type: GuestType;
+  isPrimary: boolean;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
 /**
  * Booking represents a reservation for a campsite
  * Financial calculation: totalAmount = baseAmount + taxAmount - discountAmount
@@ -192,6 +210,7 @@ export interface Booking {
     children: number;
     pets: number;
   };
+  guestDetails?: Guest[];
   vehicles: Vehicle[];
   status: BookingStatus;
   paymentStatus: PaymentStatus;
@@ -695,7 +714,12 @@ export type ApiSite = Omit<Site, 'createdAt' | 'updatedAt'> & {
   updatedAt: DateString;
 };
 
-export type ApiBooking = Omit<Booking, 'checkInDate' | 'checkOutDate' | 'checkInTime' | 'checkOutTime' | 'createdAt' | 'updatedAt' | 'user' | 'site' | 'payments' | 'equipmentRentals' | 'communications'> & {
+export type ApiGuest = Omit<Guest, 'createdAt' | 'updatedAt'> & {
+  createdAt: DateString;
+  updatedAt: DateString;
+};
+
+export type ApiBooking = Omit<Booking, 'checkInDate' | 'checkOutDate' | 'checkInTime' | 'checkOutTime' | 'createdAt' | 'updatedAt' | 'user' | 'site' | 'payments' | 'equipmentRentals' | 'communications' | 'guestDetails'> & {
   checkInDate: DateString;
   checkOutDate: DateString;
   checkInTime?: DateString;
@@ -707,6 +731,7 @@ export type ApiBooking = Omit<Booking, 'checkInDate' | 'checkOutDate' | 'checkIn
   payments?: ApiPayment[];
   equipmentRentals?: ApiEquipmentRental[];
   communications?: ApiCommunication[];
+  guestDetails?: ApiGuest[];
 };
 
 export type ApiPayment = Omit<Payment, 'processedAt' | 'refundedAt' | 'createdAt' | 'updatedAt'> & {

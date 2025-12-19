@@ -1,7 +1,7 @@
 # Campsite Management System - Project Overview
 
 ## Introduction
-This project is a comprehensive **Campsite Management System** designed to handle various aspects of campsite operations for staff and administrators. It features booking management, site management, equipment rentals, and user administration with a modern frontend built with React and a shared library for types and schemas.
+This project is a comprehensive **Campsite Management System** designed to handle various aspects of campsite operations for staff, administrators, and customers. It features booking management, site management, equipment rentals, and user administration with a modern frontend built with React and a shared library for types and schemas.
 
 ## Technology Stack
 
@@ -13,7 +13,8 @@ This project is a comprehensive **Campsite Management System** designed to handl
 - **Routing**: React Router DOM
 - **UI Components**: Framer Motion (animations), Lucide React (icons)
 - **Forms**: React Hook Form, Zod
-- **Visualization**: Recharts (charts), Fabric.js (interactive maps/canvas)
+- **Visualization**: Recharts, Chart.js (react-chartjs-2), Fabric.js (interactive maps/canvas)
+- **Monitoring**: Sentry (@sentry/react)
 - **Testing**: Vitest (unit), Playwright (E2E), React Testing Library
 - **Utilities**: date-fns, axios, socket.io-client
 
@@ -26,13 +27,16 @@ This project is a comprehensive **Campsite Management System** designed to handl
 - **`frontend/`**: Contains the React application.
   - **`src/features/`**: Modular feature-based architecture.
     - `analytics`: Reporting and data visualization.
-    - `auth`: Authentication logic (Login, Register) for staff.
-    - `bookings`: Booking management workflows, calendar, check-in/out.
+    - `auth`: Authentication logic (Login, Register) for staff and customers.
+    - `bookings`: Booking management workflows, calendar, and guest booking forms.
     - `equipment`: Equipment inventory and rental management.
-    - `payments`: Payment processing integration (for staff-initiated payments).
+    - `payments`: Payment processing integration.
     - `sites`: Campsite management and browsing.
     - `users`: User profiles and management.
-  - **`src/pages/`**: Application routes/pages (e.g., `AdminDashboardPage`, `MapEditor`, `BookingPage`).
+  - **`src/pages/`**: Application routes/pages.
+    - **Admin/Staff**: `AdminDashboardPage`, `MapEditor`, `BookingManagementPage`, `CheckInPage`.
+    - **Customer**: `CustomerDashboardPage`, `CustomerBookingPage`, `CustomerProfilePage`.
+    - **Guest**: `GuestBookingPage`, `GuestBookingLookupPage`.
   - **`src/components/`**: Reusable UI components.
   - **`src/stores/`**: Global state stores.
 
@@ -43,6 +47,7 @@ This project is a comprehensive **Campsite Management System** designed to handl
 1.  **Dashboard & Portals**:
     - **Admin Dashboard**: Central hub for campsite management.
     - **Staff Interface**: Tools for managing bookings and operations.
+    - **Customer Portal**: Dedicated interface for customers to view bookings, make payments, and manage their profile.
 
 2.  **Site Management**:
     - **Map Editor**: Interactive tool to design campsite layouts (uses Fabric.js).
@@ -53,14 +58,19 @@ This project is a comprehensive **Campsite Management System** designed to handl
     - Calendar view.
     - Check-in and check-out processes.
 
-4.  **Equipment Management**:
+4.  **Guest Services**:
+    - **Public Booking**: Guest-facing booking engine for non-registered users.
+    - **Booking Lookup**: Retrieve booking details using booking reference.
+    - **Account Creation**: Option to create an account during guest checkout.
+
+5.  **Equipment Management**:
     - Catalog and rental system for equipment.
 
-5.  **User Administration**:
+6.  **User Administration**:
     - User management, profiles, and settings.
-    - Role-based access (Admin, Manager, Staff).
+    - Role-based access (Admin, Manager, Staff, Customer).
 
-6.  **Analytics**:
+7.  **Analytics**:
     - Reports and visual data analysis.
 
 ## Getting Started
@@ -114,6 +124,12 @@ The application uses mock authentication for development. The following test acc
 - **Password**: `staff123`
 - **Role**: Staff
 - **Name**: Sarah Staff
+
+### Customer Account
+- **Email**: `customer@campsite.com`
+- **Password**: `customer123`
+- **Role**: Customer
+- **Name**: Chris Customer
 
 **Note**: These credentials are for development/testing purposes only. 
 
@@ -244,7 +260,7 @@ Stripe offers a **test mode** that works exactly like production but doesn't cha
 
 ### CORS Configuration
 
-When connecting to a real backend, ensure your backend allows requests from your frontend origin:
+When connecting to a real backend, ensure my backend allows requests from my frontend origin:
 
 ```javascript
 // Express.js example
@@ -270,3 +286,25 @@ app.use(cors({
 | `frontend/src/features/payments/components/PaymentForm.tsx` | Real Stripe payment form |
 | `frontend/src/config/env.ts` | Environment variable configuration |
 | `frontend/src/config/stripe.ts` | Stripe SDK initialization |
+| 
+## SMS Integration Providers
+
+While **Twilio** is the industry standard (and currently configured in `backend/src/services/sms.service.ts`), the system architecture allows for swapping providers. Here are the top supported alternatives you might consider:
+
+1.  **Plivo**
+    *   **Pro**: Significantly cheaper (often 50% less) for outbound SMS.
+    *   **Best for**: Cost-conscious projects requiring standard SMS features.
+
+2.  **AWS SNS**
+    *   **Pro**: Integrated with AWS infrastructure; includes 100 free SMS/month.
+    *   **Best for**: Projects hosted on AWS.
+
+3.  **Vonage (formerly Nexmo)**
+    *   **Pro**: Superior global delivery rates, especially outside US/Canada.
+    *   **Best for**: International user bases.
+
+4.  **ClickSend**
+    *   **Pro**: Extremely simple dashboard and API.
+    *   **Best for**: Simple use cases without complex developer requirements.
+
+*To switch providers, update `backend/src/services/sms.service.ts` and replace the `SmsService` implementation.*

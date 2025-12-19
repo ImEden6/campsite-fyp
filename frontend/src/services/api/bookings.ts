@@ -18,16 +18,23 @@ import {
   getMockBooking,
   setUsingMockData,
 } from './mockBookingStore';
+import { env } from '@/config/env';
 
 export interface CreateBookingData {
   siteId: string;
   checkInDate: string;
   checkOutDate: string;
-  guests: {
-    adults: number;
-    children: number;
-    pets: number;
-  };
+  adultGuests: number;
+  childGuests: number;
+  petGuests: number;
+  guests?: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    type: 'ADULT' | 'CHILD';
+    isPrimary: boolean;
+  }[];
   vehicles: Omit<Vehicle, 'id'>[];
   specialRequests?: string;
   equipmentRentals?: {
@@ -39,11 +46,17 @@ export interface CreateBookingData {
 export interface UpdateBookingData {
   checkInDate?: string;
   checkOutDate?: string;
+  adultGuests?: number;
+  childGuests?: number;
+  petGuests?: number;
   guests?: {
-    adults: number;
-    children: number;
-    pets: number;
-  };
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    type: 'ADULT' | 'CHILD';
+    isPrimary: boolean;
+  }[];
   vehicles?: Omit<Vehicle, 'id'>[];
   specialRequests?: string;
   status?: BookingStatus;
@@ -197,6 +210,13 @@ export const calculateBookingPrice = async (
   checkOutDate: string,
   equipmentRentals?: { equipmentId: string; quantity: number }[]
 ): Promise<BookingPricing> => {
+  // Check for mock mode to avoid 405 errors in preview
+  if (env.useMockPayments) {
+    console.warn('[Mock] Using mock pricing (VITE_USE_MOCK_PAYMENTS=true)');
+    setUsingMockData(true);
+    return calculateMockPrice(siteId, checkInDate, checkOutDate, equipmentRentals);
+  }
+
   try {
     const response = await post<ApiResponse<BookingPricing>>('/bookings/calculate-price', {
       siteId,
@@ -220,6 +240,13 @@ export const calculateBookingPrice = async (
  * Falls back to mock booking creation if API is unavailable (MVP)
  */
 export const createBooking = async (bookingData: CreateBookingData): Promise<Booking> => {
+  // Check for mock mode to avoid 405 errors in preview
+  if (env.useMockPayments) {
+    console.warn('[Mock] Using mock booking creation (VITE_USE_MOCK_PAYMENTS=true)');
+    setUsingMockData(true);
+    return createMockBooking(bookingData);
+  }
+
   try {
     const response = await post<ApiResponse<Booking>>('/bookings', bookingData);
     if (!response.data) {

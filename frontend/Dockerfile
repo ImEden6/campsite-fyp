@@ -9,19 +9,15 @@ FROM node:18-alpine AS deps
 # Set working directory
 WORKDIR /app
 
-# Copy only package files first (maximizes layer caching)
-# These rarely change, so this layer stays cached
+# Copy all package files to support workspaces
 COPY package*.json ./
 COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
+COPY backend/package*.json ./backend/
+COPY tests/package*.json ./tests/
 
-# Install ALL dependencies in a single layer with cleanup
-RUN npm ci --prefer-offline --no-audit --no-fund && \
-  cd shared && npm ci --prefer-offline --no-audit --no-fund && \
-  cd ../frontend && npm ci --prefer-offline --no-audit --no-fund && \
-  # Clean npm cache in same layer to reduce size
-  npm cache clean --force && \
-  rm -rf /root/.npm /tmp/*
+# Install ALL dependencies in a single layer
+RUN npm ci
 
 # =============================================================================
 # Stage 2: Builder - Compile the application
@@ -30,25 +26,29 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy dependencies from deps stage (cached)
+# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/shared/node_modules ./shared/node_modules
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+COPY --from=deps /app/shared/node_modules ./shared/node_modules
+# Note: Root npm ci might hoist everything to root node_modules, checking...
 
-# Copy package files (needed for scripts)
+# Copy all package files again for reference
 COPY package*.json ./
-COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
+COPY shared/package*.json ./shared/
+COPY backend/package*.json ./backend/
+COPY tests/package*.json ./tests/
 
-# Copy source files
+# Copy source files for built packages
 COPY shared/ ./shared/
 COPY frontend/ ./frontend/
 
-# Build shared package first, then frontend in single RUN command
-RUN cd shared && npm run build && \
-  cd ../frontend && npm run build && \
+# Build shared first, then frontend using workspace commands
+# We use the specific package names defined in their package.json files
+RUN npm run build -w @campsite-management/shared && \
+  npm run build -w @campsite-management/frontend && \
   # Remove source files and dev dependencies after build
-  rm -rf ../shared/src ../frontend/src && \
+  rm -rf shared/src frontend/src && \
   rm -rf node_modules/.cache
 
 # =============================================================================
@@ -73,6 +73,9 @@ RUN apk add --no-cache curl && \
 # Copy nginx configuration
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 
+# Configure nginx to listen on port 5137
+RUN sed -i 's/listen 80;/listen 5137;/' /etc/nginx/nginx.conf
+
 # Copy only the built static files from builder stage
 COPY --from=builder --chown=appuser:root /app/frontend/dist /usr/share/nginx/html
 
@@ -80,11 +83,11 @@ COPY --from=builder --chown=appuser:root /app/frontend/dist /usr/share/nginx/htm
 USER appuser
 
 # Expose port
-EXPOSE 36257
+EXPOSE 5137
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:36257/ || exit 1
+  CMD curl -f http://localhost:5137/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]

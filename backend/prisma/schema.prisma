@@ -1,0 +1,580 @@
+// Prisma Schema for Campsite Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication Models
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  firstName         String
+  lastName          String
+  phone             String?
+  role              UserRole           @default(CUSTOMER)
+  password          String
+  isActive          Boolean            @default(true)
+  isEmailVerified   Boolean            @default(false)
+  isPhoneVerified   Boolean            @default(false)
+  avatar            String?
+  avatarKey         String?
+  lastLoginAt       DateTime?
+  emailVerifiedAt   DateTime?
+  phoneVerifiedAt   DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  // Relations
+  bookings          Booking[]
+  payments          Payment[]
+  communications    Communication[]
+  notifications     Notification[]
+  sessions          UserSession[]
+  preferences       UserPreferences?
+  apiKeys           ApiKey[]
+  
+  @@map("users")
+}
+
+model UserPreferences {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  theme         String  @default("light")
+  language      String  @default("en")
+  timezone      String  @default("America/New_York")
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_preferences")
+}
+
+model UserSession {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  refreshToken String  @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_sessions")
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyHash     String    @unique
+  permissions Json      @default("[]")
+  rateLimit   Int       @default(1000)
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  isActive    Boolean   @default(true)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  creator     User      @relation(fields: [createdBy], references: [id])
+  
+  @@index([keyHash])
+  @@index([createdBy])
+  @@map("api_keys")
+}
+
+// Site and Accommodation Models
+model Site {
+  id            String     @id @default(cuid())
+  name          String     @unique
+  type          SiteType
+  status        SiteStatus @default(AVAILABLE)
+  capacity      Int
+  description   String?
+  amenities     String[]   @default([])
+  images        String[]   @default([])
+  basePrice     Float
+  maxVehicles   Int        @default(2)
+  maxTents      Int        @default(1)
+  isPetFriendly Boolean    @default(false)
+  hasElectricity Boolean   @default(false)
+  hasWater      Boolean    @default(false)
+  hasSewer      Boolean    @default(false)
+  hasWifi       Boolean    @default(false)
+  sizeLength    Float
+  sizeWidth     Float
+  sizeUnit      String     @default("feet")
+  latitude      Float
+  longitude     Float
+  mapPositionX  Float
+  mapPositionY  Float
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Relations
+  bookings      Booking[]
+  
+  @@map("sites")
+}
+
+// Booking and Reservation Models
+model Booking {
+  id                String          @id @default(cuid())
+  bookingNumber     String          @unique
+  userId            String
+  siteId            String
+  checkInDate       DateTime
+  checkOutDate      DateTime
+  adultGuests       Int
+  childGuests       Int
+  petGuests         Int             @default(0)
+  status            BookingStatus   @default(PENDING)
+  paymentStatus     PaymentStatus   @default(PENDING)
+  totalAmount       Float
+  paidAmount        Float           @default(0)
+  depositAmount     Float           @default(0)
+  taxAmount         Float           @default(0)
+  discountAmount    Float           @default(0)
+  notes             String?
+  specialRequests   String?
+  checkInTime       DateTime?
+  checkOutTime      DateTime?
+  qrCode            String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  // Relations
+  user              User            @relation(fields: [userId], references: [id])
+  site              Site            @relation(fields: [siteId], references: [id])
+  guests            Guest[]
+  vehicles          Vehicle[]
+  payments          Payment[]
+  equipmentRentals  EquipmentRental[]
+  communications    Communication[]
+  
+  @@map("bookings")
+}
+
+model Guest {
+  id        String    @id @default(cuid())
+  bookingId String
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  type      GuestType @default(ADULT) 
+  isPrimary Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId])
+  @@map("guests")
+}
+
+model Vehicle {
+  id            String      @id @default(cuid())
+  bookingId     String
+  make          String
+  model         String
+  year          Int
+  licensePlate  String
+  state         String
+  color         String
+  type          VehicleType
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Relations
+  booking       Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@map("vehicles")
+}
+
+// Payment Models
+model Payment {
+  id                String        @id @default(cuid())
+  bookingId         String
+  userId            String
+  amount            Float
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  stripePaymentId   String?
+  stripeRefundId    String?
+  transactionId     String?
+  description       String?
+  receiptUrl        String?
+  processedAt       DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  // Relations
+  booking           Booking       @relation(fields: [bookingId], references: [id])
+  user              User          @relation(fields: [userId], references: [id])
+  
+  @@map("payments")
+}
+
+// Equipment and Inventory Models
+model Equipment {
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  category          EquipmentCategory
+  status            EquipmentStatus    @default(AVAILABLE)
+  quantity          Int
+  availableQuantity Int
+  dailyRate         Float
+  weeklyRate        Float
+  monthlyRate       Float
+  deposit           Float              @default(0)
+  images            String[]           @default([])
+  specifications    Json?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  // Relations
+  rentals           EquipmentRental[]
+  
+  @@map("equipment")
+}
+
+model EquipmentRental {
+  id            String         @id @default(cuid())
+  bookingId     String
+  equipmentId   String
+  quantity      Int
+  dailyRate     Float
+  totalAmount   Float
+  depositAmount Float          @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  returnedAt    DateTime?
+  condition     String?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relations
+  booking       Booking        @relation(fields: [bookingId], references: [id])
+  equipment     Equipment      @relation(fields: [equipmentId], references: [id])
+  
+  @@map("equipment_rentals")
+}
+
+// Communication Models
+model Communication {
+  id          String            @id @default(cuid())
+  bookingId   String?
+  userId      String?
+  type        CommunicationType
+  subject     String?
+  message     String
+  sentBy      String
+  sentTo      String?
+  sentAt      DateTime          @default(now())
+  readAt      DateTime?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  // Relations
+  booking     Booking?          @relation(fields: [bookingId], references: [id])
+  user        User?             @relation(fields: [userId], references: [id])
+  
+  @@map("communications")
+}
+
+// Notification Models
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  sentAt    DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  
+  // Relations
+  user      User             @relation(fields: [userId], references: [id])
+  
+  @@map("notifications")
+}
+
+// Pricing Models
+model PricingRule {
+  id             String     @id @default(cuid())
+  name           String
+  description    String?
+  siteTypes      SiteType[]
+  startDate      DateTime
+  endDate        DateTime
+  daysOfWeek     Int[]      @default([])
+  priceModifier  Float
+  modifierType   String     @default("multiplier")
+  minStay        Int?
+  maxStay        Int?
+  priority       Int        @default(1)
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  
+  @@map("pricing_rules")
+}
+
+// Group Booking Models
+model GroupBooking {
+  id              String         @id @default(cuid())
+  name            String
+  contactName     String
+  contactEmail    String
+  contactPhone    String
+  expectedGuests  Int
+  expectedSites   Int
+  eventDate       DateTime
+  eventEndDate    DateTime?
+  specialRate     Float?
+  notes           String?
+  status          GroupBookingStatus @default(INQUIRY)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@map("group_bookings")
+}
+
+// Settings Models
+model CampsiteSettings {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  addressStreet     String
+  addressCity       String
+  addressState      String
+  addressZip        String
+  addressCountry    String
+  contactPhone      String
+  contactEmail      String
+  contactWebsite    String?
+  checkInTime       String
+  checkOutTime      String
+  quietHoursStart   String
+  quietHoursEnd     String
+  petPolicy         String
+  cancellationPolicy String
+  refundPolicy      String
+  hasPool           Boolean  @default(false)
+  hasPlayground     Boolean  @default(false)
+  hasRestrooms      Boolean  @default(true)
+  hasShowers        Boolean  @default(true)
+  hasLaundry        Boolean  @default(false)
+  hasStore          Boolean  @default(false)
+  hasWifi           Boolean  @default(false)
+  allowsPets        Boolean  @default(false)
+  allowsFires       Boolean  @default(false)
+  timezone          String   @default("America/New_York")
+  currency          String   @default("USD")
+  taxRate           Float    @default(0.08)
+  depositPercentage Float    @default(25.0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("campsite_settings")
+}
+
+// File Upload Models
+model FileUpload {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  metadata     Json?
+  
+  @@map("file_uploads")
+}
+
+// Weather Integration Models
+model WeatherData {
+  id          String            @id @default(cuid())
+  temperature Float
+  humidity    Float
+  windSpeed   Float
+  windDirection String
+  condition   String
+  icon        String
+  forecast    WeatherForecast[]
+  updatedAt   DateTime          @updatedAt
+  
+  @@map("weather_data")
+}
+
+model WeatherForecast {
+  id            String      @id @default(cuid())
+  weatherDataId String
+  date          DateTime
+  high          Float
+  low           Float
+  condition     String
+  icon          String
+  precipitation Float
+  
+  // Relations
+  weatherData   WeatherData @relation(fields: [weatherDataId], references: [id], onDelete: Cascade)
+  
+  @@map("weather_forecasts")
+}
+
+// Calendar Integration Models
+model CalendarEvent {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime
+  allDay          Boolean   @default(false)
+  location        String?
+  attendees       String[]  @default([])
+  recurrenceFreq  String?
+  recurrenceInterval Int?
+  recurrenceUntil DateTime?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("calendar_events")
+}
+
+// Audit Log Models
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  resourceId String?
+  oldValues Json?
+  newValues Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  @@map("audit_logs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+  CUSTOMER
+}
+
+enum SiteType {
+  TENT
+  RV
+  CABIN
+}
+
+enum SiteStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  REFUNDED
+  FAILED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  CASH
+  CHECK
+  BANK_TRANSFER
+}
+
+enum VehicleType {
+  CAR
+  TRUCK
+  RV
+  MOTORCYCLE
+  TRAILER
+}
+
+enum EquipmentCategory {
+  CAMPING_GEAR
+  RECREATIONAL
+  KITCHEN
+  SAFETY
+  MAINTENANCE
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum CommunicationType {
+  EMAIL
+  SMS
+  PHONE
+  NOTE
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  PAYMENT_CONFIRMATION
+  PAYMENT_FAILED
+  CHECK_IN_REMINDER
+  CHECK_OUT_REMINDER
+  CANCELLATION
+  SYSTEM_ALERT
+}
+
+enum GroupBookingStatus {
+  INQUIRY
+  QUOTED
+  CONFIRMED
+  CANCELLED
+}
+
+enum GuestType {
+  ADULT
+  CHILD
+}

@@ -60,7 +60,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     onCancel,
 }) => {
     const { user } = useAuthStore();
-    
+
     const [formData, setFormData] = useState<FormData>({
         ...initialFormData,
         checkInDate: initialCheckInDate,
@@ -157,15 +157,33 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     const handleSubmit = async () => {
         if (!validateStep(currentStep)) return;
 
+        // Helper to determine primary guest (First adult)
+        let primaryAssigned = false;
+        const mappedGuests = formData.guestDetails.map(g => {
+            const type = g.isChild ? 'CHILD' : 'ADULT';
+            let isPrimary = false;
+            if (!primaryAssigned && type === 'ADULT') {
+                isPrimary = true;
+                primaryAssigned = true;
+            }
+            return {
+                firstName: g.firstName,
+                lastName: g.lastName,
+                type: type as 'ADULT' | 'CHILD',
+                isPrimary,
+                email: isPrimary ? user?.email : undefined, // Inherit email for primary if available
+                phone: isPrimary ? user?.phone : undefined
+            };
+        });
+
         const bookingData: CreateBookingData = {
             siteId: site.id,
             checkInDate: formData.checkInDate,
             checkOutDate: formData.checkOutDate,
-            guests: {
-                adults: formData.adults,
-                children: formData.children,
-                pets: formData.pets,
-            },
+            adultGuests: formData.adults,
+            childGuests: formData.children,
+            petGuests: formData.pets,
+            guests: mappedGuests,
             vehicles: formData.vehicles,
             specialRequests: formData.specialRequests || undefined,
             equipmentRentals: formData.equipmentRentals.length > 0 ? formData.equipmentRentals : undefined,
