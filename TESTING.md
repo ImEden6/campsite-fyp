@@ -27,7 +27,7 @@ backend/
 ## Running Tests
 
 ```bash
-# From project root
+# from project
 npm run test                    # All tests
 npm run test:backend            # Backend tests only
 npm run test:backend:unit       # Backend unit tests only
@@ -36,7 +36,7 @@ npm run test:frontend           # Frontend tests only
 npm run test:e2e                # E2E tests (Playwright)
 npm run test:coverage           # With coverage report
 
-# From backend directory
+# from backend
 cd backend
 npm run test                    # All backend tests
 npm run test:unit               # Unit tests only
