@@ -1,6 +1,0 @@
-
-> @campsite-management/frontend@1.0.0 type-check
-> tsc --noEmit
-
-src/tests/integration/diagnostics.test.tsx(45,18): error TS2578: Unused '@ts-expect-error' directive.
-src/tests/integration/diagnostics.test.tsx(76,18): error TS2578: Unused '@ts-expect-error' directive.
