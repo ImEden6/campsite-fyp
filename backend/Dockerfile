@@ -64,8 +64,9 @@ COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
 COPY tests/package*.json ./tests/
 
-# Install production dependencies
-RUN npm ci --only=production
+# Install production dependencies and curl for healthcheck
+RUN apk add --no-cache curl && \
+  npm ci --only=production
 
 # Copy built applications
 COPY --from=builder /app/shared/dist ./shared/dist
@@ -76,11 +77,11 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN adduser -S backend -u 1001 -G nodejs
 
 # Change ownership of the app directory
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+RUN chown -R backend:nodejs /app
+USER backend
 
 # Set working directory to backend
 WORKDIR /app/backend

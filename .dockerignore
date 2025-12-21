@@ -5,3 +5,9 @@ build
 *.log
 .git
 coverage
+docs
+misc
+.vscode
+.agent
+.cursor
+*.md

@@ -32,6 +32,10 @@ CMD ["npm", "run", "dev", "--workspace=@campsite-management/frontend", "--", "--
 # Stage 1: Dependencies - Cached layer for npm packages
 # =============================================================================
 
+# =============================================================================
+# Stage 1: Dependencies - Cached layer for npm packages
+# =============================================================================
+
 FROM node:22-alpine AS deps
 
 # Set working directory
@@ -44,28 +48,16 @@ COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
 COPY tests/package*.json ./tests/
 
-# Install ALL dependencies in a single layer
-RUN npm ci
+# Install dependencies directly to ensure correctness
+# Attempt to force install the native binary for Alpine/musl as requested
+RUN npm ci && npm install lightningcss-linux-x64-musl --save-optional
 
 # =============================================================================
 # Stage 2: Builder - Compile the application
 # =============================================================================
-FROM node:22-alpine AS builder
+FROM deps AS builder
 
 WORKDIR /app
-
-# Copy dependencies from deps stage
-# Install dependencies directly to ensure correctness
-# Copy all package files (dependencies)
-COPY package*.json ./
-COPY frontend/package*.json ./frontend/
-COPY shared/package*.json ./shared/
-COPY backend/package*.json ./backend/
-COPY tests/package*.json ./tests/
-
-# Install dependencies directly to ensure correctness
-# Attempt to force install the native binary for Alpine/musl as requested
-RUN npm ci && npm install lightningcss-linux-x64-musl --save-optional
 
 # Copy source files for built packages
 COPY shared/ ./shared/
