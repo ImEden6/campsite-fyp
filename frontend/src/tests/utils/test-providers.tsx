@@ -21,7 +21,7 @@ const TestDndContextProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <DndContext sensors={sensors}>
       {children}
-    </DndContext>
+    </DndContext >
   );
 };
 

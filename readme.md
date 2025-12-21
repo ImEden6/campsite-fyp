@@ -35,9 +35,49 @@ npm run dev:backend   # Backend only
 npm run dev:all       # Both (if configured)
 ```
 
-**Default URLs:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
+### ⚡ Quick Reference: Access & Commands
+
+**Development Environment**
+Run local development with hot-reloading:
+```bash
+# Docker (Recommended)
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# OR Local NPM
+npm run dev:all
+```
+
+| Service | Access URL | Port |
+| :--- | :--- | :--- |
+| **Frontend** | [http://localhost:5173](http://localhost:5173) | `5173` |
+| **Backend API** | [http://localhost:5000](http://localhost:5000) | `5000` |
+| **Prisma Studio** | [http://localhost:5555](http://localhost:5555) | `5555` |
+
+<br />
+
+**Production Environment**
+Run the optimized production build:
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+```
+
+| Service | Access URL | Port |
+| :--- | :--- | :--- |
+| **Frontend** | [http://localhost:5137](http://localhost:5137) | `5137` |
+| **Backend API** | [http://localhost:5000](http://localhost:5000) | `5000` |
+| **Prisma Studio** | [http://localhost:5555](http://localhost:5555) | `5555` |
+
+---
+
+## Documentation
+
+- [User Guides](docs/user-guide/getting-started.md)
+- [API Documentation](docs/api/README.md)
+- [Development Guide](docs/development/setup.md)
+  - [Testing](docs/development/testing.md)
+  - [Database Setup](docs/development/database-setup.md)
+  - [Mock Data](docs/development/mock-data.md)
+  - [Error Handling](docs/development/error-handling.md)
 
 ---
 
@@ -145,6 +185,8 @@ npx prisma studio           # Open database GUI
 npx prisma generate         # Regenerate client
 ```
 
+> **Note:** Prisma Studio is accessible in the Production build (docker-compose.prod.yml) on port 5555 for **demonstration and evaluation purposes only**. In a true production environment, this service would be removed and database access restricted.
+
 ---
 
 ## API Overview
@@ -188,6 +230,15 @@ Simulates payments with test card `4242 4242 4242 4242`.
 | `npm run test` | Run tests |
 | `npm run lint` | Lint code |
 | `npm run type-check` | TypeScript check |
+
+---
+
+## ⚠️ IMPORTANT: React 19 Upgrade Warning
+
+This project currently imposes strict overrides to force **React 18** types (`@types/react@^18.3.0` and `@types/react-dom@^18.3.0`) in the root `package.json`.
+
+**When upgrading to React 19:**
+You **MUST** remove the `overrides` section from the root `package.json`. Failure to do so will result in type conflicts where React 19 is installed but forced to use React 18 types.
 
 ---
 

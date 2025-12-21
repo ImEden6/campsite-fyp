@@ -3,12 +3,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { uploadService } from '@/services/upload';
-import { PrismaClient } from '@prisma/client';
+
 import logger from '@/utils/logger';
 import { NotFoundError, ValidationError } from '@/utils/errors';
 
 const router = express.Router();
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 // Configure multer for memory storage
 const upload = multer({

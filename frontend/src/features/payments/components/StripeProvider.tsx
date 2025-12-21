@@ -68,6 +68,6 @@ export const StripeProvider = ({
   return (
     <Elements stripe={stripe} options={elementsOptions}>
       {children}
-    </Elements>
+    </Elements >
   );
 };

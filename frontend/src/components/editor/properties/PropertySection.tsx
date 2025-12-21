@@ -4,11 +4,11 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, type LucideIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface PropertySectionProps {
     title: string;
-    icon?: LucideIcon;
+    icon?: React.ElementType;
     defaultExpanded?: boolean;
     children: React.ReactNode;
 }

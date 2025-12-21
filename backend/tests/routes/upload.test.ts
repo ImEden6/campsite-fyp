@@ -5,7 +5,7 @@ import request from 'supertest';
 import express from 'express';
 import uploadRoutes from '@/routes/upload.routes';
 import { errorHandler } from '@/utils/errors';
-import { PrismaClient } from '@prisma/client';
+
 import sharp from 'sharp';
 
 const app = express();
@@ -13,7 +13,7 @@ app.use(express.json());
 app.use('/api/v1', uploadRoutes);
 app.use(errorHandler);
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 describe('Upload Routes', () => {
   let testUserId: string;
@@ -134,7 +134,7 @@ describe('Upload Routes', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      
+
       // Verify user has new avatar
       const user = await prisma.user.findUnique({
         where: { id: testUserId },

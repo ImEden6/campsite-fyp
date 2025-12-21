@@ -6,7 +6,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import apiKeyRoutes from '@/routes/api-key.routes';
 import { errorHandler } from '@/utils/errors';
-import { PrismaClient } from '@prisma/client';
+
 import { config } from '@/config';
 
 const app = express();
@@ -14,7 +14,7 @@ app.use(express.json());
 app.use('/api/v1/admin/api-keys', apiKeyRoutes);
 app.use(errorHandler);
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 describe('API Key Routes', () => {
   let adminToken: string;
@@ -73,10 +73,10 @@ describe('API Key Routes', () => {
 
     // Clean up test users
     if (adminUserId) {
-      await prisma.user.delete({ where: { id: adminUserId } }).catch(() => {});
+      await prisma.user.delete({ where: { id: adminUserId } }).catch(() => { });
     }
     if (managerUserId) {
-      await prisma.user.delete({ where: { id: managerUserId } }).catch(() => {});
+      await prisma.user.delete({ where: { id: managerUserId } }).catch(() => { });
     }
   });
 

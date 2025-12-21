@@ -1,36 +1,57 @@
 // Database Connection and Prisma Client Setup
 
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
-// Prisma Client instance
+// Prisma Client instance & DB Pool
 let prisma: PrismaClient;
+let pool: Pool;
 
 // Initialize Prisma Client
 const initializePrisma = (): PrismaClient => {
   if (!prisma) {
+    // 1. Create a `pg` Pool
+    pool = new Pool({
+      connectionString: config.database.url,
+      // You can also add more pool options here if needed, e.g.:
+      // max: 20,
+      // idleTimeoutMillis: 30000,
+      // connectionTimeoutMillis: 2000,
+    });
+
+    // 2. Create the driver adapter
+    const adapter = new PrismaPg(pool);
+
+    // 3. Pass the adapter to `PrismaClient`
     prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: config.database.url,
-        },
-      },
+      adapter,
       log: config.server.nodeEnv === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
 
+    const cleanup = async (reason: string) => {
+      logger.info(`Cleaning up database connections... (${reason})`);
+      try {
+        if (prisma) await prisma.$disconnect();
+        if (pool) await pool.end();
+        logger.info('Database cleanup finished.');
+      } catch (err) {
+        logger.error('Error during database cleanup', err);
+      }
+    };
+
     // Handle process termination
-    process.on('beforeExit', async () => {
-      await prisma.$disconnect();
-    });
+    process.on('beforeExit', () => cleanup('beforeExit'));
 
     process.on('SIGINT', async () => {
-      await prisma.$disconnect();
+      await cleanup('SIGINT');
       process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
-      await prisma.$disconnect();
+      await cleanup('SIGTERM');
       process.exit(0);
     });
   }
@@ -62,7 +83,10 @@ export const connectDatabase = async (): Promise<void> => {
 export const disconnectDatabase = async (): Promise<void> => {
   try {
     if (prisma) {
+      // Prisma $disconnect should be sufficient, but we also ensure pool is closed in cleanup handlers.
+      // Explicitly closing prisma disconnects the adapter.
       await prisma.$disconnect();
+      if (pool) await pool.end();
       logger.info('Database disconnected successfully');
     }
   } catch (error) {

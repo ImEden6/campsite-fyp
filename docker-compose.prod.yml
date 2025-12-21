@@ -1,0 +1,34 @@
+services:
+  backend:
+    build:
+      target: production
+    env_file:
+      - ./backend/.env.production
+    environment:
+      - NODE_ENV=production
+
+  frontend:
+    build:
+      target: production
+    ports:
+      - "5137:5137" # Exposes internal port 5137 (nginx) to host 5137
+
+  studio:
+    # DEMO ONLY: Exposes Prisma Studio for FYP evaluation
+    # In production: Remove this service and use secure DB access methods
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+      target: development
+    container_name: campsite_studio_prod
+    command: sh -c "cd backend && npx prisma studio --port 5555 --browser none"
+    ports:
+      - "5555:5555"
+    environment:
+      # Note: Re-using the same connection string logic. 
+      # In real prod this would be strictly secret.
+      - DATABASE_URL=postgresql://campsite_user:campsite_password@postgres:5432/campsite_db
+    networks:
+      - campsite_network
+    depends_on:
+      - backend

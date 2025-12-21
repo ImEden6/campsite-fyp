@@ -1,0 +1,34 @@
+
+> @campsite-management/frontend@1.0.0 type-check
+> tsc --noEmit
+
+src/features/payments/components/StripeProvider.tsx(69,6): error TS2786: 'Elements' cannot be used as a JSX component.
+  Its type 'FunctionComponent<PropsWithChildren<ElementsProps>>' is not a valid JSX element type.
+    Type 'FunctionComponent<PropsWithChildren<ElementsProps>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+src/main.tsx(40,6): error TS2786: 'DndContext' cannot be used as a JSX component.
+  Its type 'NamedExoticComponent<Props>' is not a valid JSX element type.
+    Type 'NamedExoticComponent<Props>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'import("C:/Users/Mervyn/campsite-fyp/node_modules/@types/react/index").ReactNode' is not assignable to type 'React.ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+src/tests/integration/diagnostics.test.tsx(45,18): error TS2786: 'MemoryRouter' cannot be used as a JSX component.
+  Its type '({ basename, children, initialEntries, initialIndex, }: MemoryRouterProps) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not a valid JSX element type.
+    Type '({ basename, children, initialEntries, initialIndex, }: MemoryRouterProps) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type 'ReactNode'.
+        Property 'children' is missing in type 'ReactElement<unknown, string | JSXElementConstructor<any>>' but required in type 'ReactPortal'.
+src/tests/integration/diagnostics.test.tsx(75,18): error TS2786: 'MemoryRouter' cannot be used as a JSX component.
+  Its type '({ basename, children, initialEntries, initialIndex, }: MemoryRouterProps) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not a valid JSX element type.
+    Type '({ basename, children, initialEntries, initialIndex, }: MemoryRouterProps) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type 'ReactNode'.
+        Property 'children' is missing in type 'ReactElement<unknown, string | JSXElementConstructor<any>>' but required in type 'ReactPortal'.
+src/tests/integration/guest-booking-flow.test.tsx(80,18): error TS2786: 'MemoryRouter' cannot be used as a JSX component.
+  Its type '({ basename, children, initialEntries, initialIndex, }: MemoryRouterProps) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not a valid JSX element type.
+    Type '({ basename, children, initialEntries, initialIndex, }: MemoryRouterProps) => ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactElement<unknown, string | JSXElementConstructor<any>>' is not assignable to type 'ReactNode'.
+        Property 'children' is missing in type 'ReactElement<unknown, string | JSXElementConstructor<any>>' but required in type 'ReactPortal'.
+src/tests/utils/test-providers.tsx(22,6): error TS2786: 'DndContext' cannot be used as a JSX component.
+  Its type 'NamedExoticComponent<Props>' is not a valid JSX element type.
+    Type 'NamedExoticComponent<Props>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'import("C:/Users/Mervyn/campsite-fyp/node_modules/@types/react/index").ReactNode' is not assignable to type 'React.ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.

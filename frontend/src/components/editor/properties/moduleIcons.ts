@@ -15,12 +15,12 @@ import {
     Trash2,
     TreePine,
     Puzzle,
-    type LucideIcon,
 } from 'lucide-react';
 import type { ModuleType } from '@/types';
+import React from 'react';
 
 export interface ModuleIconConfig {
-    icon: LucideIcon;
+    icon: React.ElementType;
     color: string;
     label: string;
 }

@@ -1,10 +1,10 @@
 
-import { PrismaClient, User, UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 export class UserService {
     /**

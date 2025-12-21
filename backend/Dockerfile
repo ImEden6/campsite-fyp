@@ -1,5 +1,33 @@
-# Backend Production Dockerfile
-FROM node:18-alpine AS builder
+# Backend Production/Development Dockerfile
+
+# Development stage
+FROM node:22-alpine AS development
+WORKDIR /app
+
+# Copy all package files
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY shared/package*.json ./shared/
+COPY frontend/package*.json ./frontend/
+COPY tests/package*.json ./tests/
+
+# Install all dependencies (including devDependencies)
+RUN npm ci
+
+# Copy sources (for initial build if needed, though volumes will override)
+COPY shared/ ./shared/
+COPY backend/ ./backend/
+
+# Generate Prisma Client
+RUN npm run db:generate -w @campsite-management/backend
+
+# Expose port
+EXPOSE 5000
+
+# Command to run in development
+CMD ["npm", "run", "dev", "-w", "@campsite-management/backend"]
+
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -24,7 +52,7 @@ RUN npm run db:generate -w @campsite-management/backend && \
   npm run build -w @campsite-management/backend
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:22-alpine AS production
 
 # Create app directory
 WORKDIR /app
@@ -43,6 +71,8 @@ RUN npm ci --only=production
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/prisma ./backend/prisma
+COPY --from=builder /app/backend/prisma.config.js ./backend/prisma.config.js
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs

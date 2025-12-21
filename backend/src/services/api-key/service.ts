@@ -1,6 +1,6 @@
 // API Key Service Implementation
 
-import { PrismaClient } from '@prisma/client';
+
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { config } from '@/config';
@@ -15,7 +15,7 @@ import {
   ApiKeyUsage,
 } from './types';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 export class ApiKeyService implements IApiKeyService {
   private readonly KEY_PREFIX = 'cms_';
@@ -33,7 +33,7 @@ export class ApiKeyService implements IApiKeyService {
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
-    
+
     const environment = config.server.nodeEnv === 'production' ? 'live' : 'test';
     return `${this.KEY_PREFIX}${environment}_${base64Key}`;
   }
@@ -87,7 +87,7 @@ export class ApiKeyService implements IApiKeyService {
     try {
       // Generate plain text key
       const plainKey = this.generateApiKey();
-      
+
       // Hash the key for storage
       const keyHash = await this.hashApiKey(plainKey);
 
@@ -149,7 +149,7 @@ export class ApiKeyService implements IApiKeyService {
       });
 
       let matchedKey: any = null;
-      
+
       // Check each key hash
       for (const apiKey of apiKeys) {
         const isMatch = await this.verifyApiKey(key, apiKey.keyHash);
@@ -409,7 +409,7 @@ export class ApiKeyService implements IApiKeyService {
     try {
       const hourKey = this.getRateLimitKey(keyId, 'hour');
       const currentUsage = await cacheService.get<number>(hourKey) || 0;
-      
+
       return currentUsage < rateLimit;
     } catch (error) {
       logger.error('Failed to check rate limit', error, { keyId });

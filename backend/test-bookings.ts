@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { getPrismaClient } from './src/database';
+
+const prisma = getPrismaClient();
 
 async function testBookings() {
   const bookings = await prisma.booking.findMany({

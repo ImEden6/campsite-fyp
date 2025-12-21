@@ -2,9 +2,9 @@ import Stripe from 'stripe';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
-import { PrismaClient, PaymentStatus, PaymentMethod } from '@prisma/client';
+import { PaymentStatus, PaymentMethod } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 class PaymentService {
     private stripe: Stripe;

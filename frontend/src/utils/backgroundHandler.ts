@@ -4,7 +4,9 @@
  * Handles validation, scaling, and placement.
  */
 
-import * as fabric from 'fabric';
+import * as fabricImpl from 'fabric';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fabric: any = fabricImpl;
 import type { Size } from '@/types';
 
 // ============================================================================
@@ -22,6 +24,28 @@ export interface BackgroundResult {
     image: HTMLImageElement;
     size: Size;
     objectUrl: string;
+}
+
+interface FabricObject {
+    data?: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+interface FabricImage extends FabricObject {
+    width?: number;
+    height?: number;
+    scaleX?: number;
+    scaleY?: number;
+    set(options: Record<string, unknown>): void;
+}
+
+interface FabricCanvas {
+    getObjects(): FabricObject[];
+    remove(obj: FabricObject): void;
+    add(obj: FabricObject): void;
+    sendObjectToBack(obj: FabricObject): void;
+    requestRenderAll(): void;
 }
 
 // ============================================================================
@@ -111,11 +135,8 @@ export async function loadBackgroundImage(
 /**
  * Check if a Fabric object is a background image
  */
-export function isBackgroundObject(obj: fabric.FabricObject): boolean {
-    return (
-        (obj as fabric.FabricObject & { data?: { isBackground?: boolean } })
-            .data?.isBackground === true
-    );
+export function isBackgroundObject(obj: FabricObject): boolean {
+    return (obj.data as { isBackground?: boolean } | undefined)?.isBackground === true;
 }
 
 /**
@@ -126,10 +147,10 @@ export function isBackgroundObject(obj: fabric.FabricObject): boolean {
  * @param size - Desired display size (image will be scaled to fit)
  */
 export async function setCanvasBackground(
-    canvas: fabric.Canvas,
+    canvas: FabricCanvas,
     imageUrl: string,
     size: Size
-): Promise<fabric.FabricImage> {
+): Promise<FabricImage> {
     // Remove existing background
     const oldBg = canvas.getObjects().find(isBackgroundObject);
     if (oldBg) {
@@ -137,7 +158,7 @@ export async function setCanvasBackground(
     }
 
     // Load and add new background
-    const img = await fabric.FabricImage.fromURL(imageUrl);
+    const img: FabricImage = await fabric.FabricImage.fromURL(imageUrl);
 
     img.set({
         left: 0,
@@ -150,7 +171,7 @@ export async function setCanvasBackground(
     });
 
     // Store background metadata
-    (img as fabric.FabricImage & { data?: Record<string, unknown> }).data = {
+    (img as FabricObject).data = {
         isBackground: true,
     };
 
@@ -164,7 +185,7 @@ export async function setCanvasBackground(
 /**
  * Remove the background image from canvas
  */
-export function removeCanvasBackground(canvas: fabric.Canvas): boolean {
+export function removeCanvasBackground(canvas: FabricCanvas): boolean {
     const bg = canvas.getObjects().find(isBackgroundObject);
     if (bg) {
         canvas.remove(bg);
@@ -177,8 +198,8 @@ export function removeCanvasBackground(canvas: fabric.Canvas): boolean {
 /**
  * Get the current background image dimensions
  */
-export function getBackgroundSize(canvas: fabric.Canvas): Size | null {
-    const bg = canvas.getObjects().find(isBackgroundObject);
+export function getBackgroundSize(canvas: FabricCanvas): Size | null {
+    const bg = canvas.getObjects().find(isBackgroundObject) as FabricImage | undefined;
     if (!bg) return null;
 
     return {

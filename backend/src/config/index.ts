@@ -6,6 +6,8 @@ import path from 'path';
 // Load environment variables
 dotenv.config();
 
+
+
 // Environment validation
 const requiredEnvVars = [
   'DATABASE_URL',

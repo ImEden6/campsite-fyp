@@ -6,7 +6,10 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import * as fabric from 'fabric';
+import * as fabricImpl from 'fabric';
+// Cast to any to handle v5/v6 compatibility issues and missing types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fabric: any = fabricImpl;
 import { ArrowLeft, Save, Undo2, Redo2, ZoomIn, ZoomOut, Maximize2, Grid3X3, Magnet, Hand, Layers, Settings, Download, Ruler } from 'lucide-react';
 import { useMapStore } from '@/stores/mapStore';
 import { useEditorStore } from '@/stores/editorStore';
@@ -40,6 +43,68 @@ const ZOOM_IN_FACTOR = 1.1;
 const ZOOM_OUT_FACTOR = 0.9;
 const FIT_TO_SCREEN_PADDING = 0.9; // Padding factor for fit-to-screen calculation
 
+// Local Fabric Interfaces
+interface FabricObject {
+    data?: Record<string, unknown>;
+    left?: number;
+    top?: number;
+    width?: number;
+    height?: number;
+    scaleX?: number;
+    scaleY?: number;
+    angle?: number;
+    opacity?: number;
+    lockMovementX?: boolean;
+    lockMovementY?: boolean;
+    lockRotation?: boolean;
+    lockScalingX?: boolean;
+    lockScalingY?: boolean;
+    selectable?: boolean;
+    evented?: boolean;
+    type?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+interface FabricCanvas {
+    width?: number;
+    height?: number;
+    selection?: boolean;
+    defaultCursor?: string;
+    hoverCursor?: string;
+    viewportTransform: number[];
+    getActiveObjects(): FabricObject[];
+    discardActiveObject(): void;
+    setActiveObject(obj: FabricObject): void;
+    requestRenderAll(): void;
+    renderAll(): void;
+    add(obj: FabricObject): void;
+    remove(obj: FabricObject): void;
+    getObjects(): FabricObject[];
+    getZoom(): number;
+    setZoom(zoom: number): void;
+    zoomToPoint(point: { x: number; y: number }, zoom: number): void;
+    getViewportPoint(e: Event): { x: number; y: number };
+    getPointer(e: Event): { x: number; y: number };
+    setDimensions(dim: { width: number; height: number }): void;
+    clear(): void;
+    backgroundColor?: string;
+    dispose(): void;
+    on(event: string, handler: (e: FabricEvent) => void): void;
+    off(event: string, handler: (e: FabricEvent) => void): void;
+    setViewportTransform(vpt: number[]): void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+interface FabricEvent {
+    e: Event;
+    target?: FabricObject;
+    button?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
 const MapEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -47,8 +112,8 @@ const MapEditor: React.FC = () => {
 
     // Refs
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const canvasRef = useRef<fabric.Canvas | null>(null);
-    const objectMapRef = useRef<Map<string, fabric.Group>>(new Map());
+    const canvasRef = useRef<FabricCanvas | null>(null);
+    const objectMapRef = useRef<Map<string, FabricObject>>(new Map());
 
     // Transform tracking
     const transformStartRef = useRef<{
@@ -135,6 +200,28 @@ const MapEditor: React.FC = () => {
         onCommandExecuted: markDirty,
     });
 
+    /**
+     * Helper to retrieve AnyModule objects from their IDs
+     * pure, readonly return
+     */
+    const getModulesFromIds = useCallback((ids: string[]): readonly AnyModule[] => {
+        if (!ids || ids.length === 0) return [];
+        return ids
+            .map(id => getModule(id))
+            .filter((m): m is AnyModule => m !== undefined);
+    }, [getModule]);
+
+    /**
+     * Helper to retrieve Fabric objects from their IDs
+     * Encapsulates the any return type
+     */
+    const getFabricObjectsFromIds = useCallback((ids: string[]): FabricObject[] => {
+        if (!ids || ids.length === 0) return [];
+        return ids
+            .map(id => objectMapRef.current.get(id))
+            .filter((obj): obj is FabricObject => obj !== undefined);
+    }, []);
+
     // Initialize canvas - runs when container becomes ready
     useEffect(() => {
         if (!containerReady || !containerRef.current || canvasRef.current) return;
@@ -174,7 +261,8 @@ const MapEditor: React.FC = () => {
                     left: number,
                     top: number,
                     _styleOverride: unknown,
-                    _fabricObject: fabric.FabricObject
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    _fabricObject: any
                 ) => {
                     const size = 12;
                     ctx.save();
@@ -205,9 +293,10 @@ const MapEditor: React.FC = () => {
         canvasRef.current = canvas;
 
         // Disable double-click behavior on canvas
-        const handleDoubleClick = (e: fabric.TPointerEventInfo<MouseEvent>) => {
-            e.e.stopPropagation();
-            e.e.preventDefault();
+        const handleDoubleClick = (e: FabricEvent) => {
+            const domEvent = e.e as Event;
+            domEvent.stopPropagation();
+            domEvent.preventDefault();
         };
         canvas.on('mouse:dblclick', handleDoubleClick);
 
@@ -217,7 +306,7 @@ const MapEditor: React.FC = () => {
             const validIds: string[] = [];
             const lockedIds: string[] = [];
 
-            activeObjects.forEach(obj => {
+            activeObjects.forEach((obj: FabricObject) => {
                 const moduleId = getModuleId(obj);
                 if (!moduleId) return;
 
@@ -232,13 +321,11 @@ const MapEditor: React.FC = () => {
 
             // If any locked modules were selected, deselect them
             if (lockedIds.length > 0) {
-                const lockedObjects = lockedIds
-                    .map(id => objectMapRef.current.get(id))
-                    .filter((obj): obj is fabric.Group => obj !== undefined);
+                const lockedObjects = getFabricObjectsFromIds(lockedIds);
 
                 if (lockedObjects.length > 0) {
                     // Remove locked objects from selection
-                    const remainingObjects = activeObjects.filter(obj => {
+                    const remainingObjects = activeObjects.filter((obj: FabricObject) => {
                         const moduleId = getModuleId(obj);
                         return moduleId && !lockedIds.includes(moduleId);
                     });
@@ -270,7 +357,7 @@ const MapEditor: React.FC = () => {
         // Handle object modification start
         // Bug 1 Fix: Capture transform start state before snap-to-grid modifies position
         // This handler must run before the snap-to-grid handler to capture original position
-        const handleTransformStart = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
+        const handleTransformStart = (e: FabricEvent) => {
             if (!transformStartRef.current && e.target) {
                 const moduleId = getModuleId(e.target);
                 if (moduleId) {
@@ -282,7 +369,7 @@ const MapEditor: React.FC = () => {
                         return;
                     }
                     // Capture the ORIGINAL position before any modifications (like snap-to-grid)
-                    const changes = extractModuleChanges(e.target as fabric.Group);
+                    const changes = extractModuleChanges(e.target);
                     transformStartRef.current = {
                         id: moduleId,
                         position: changes.position,
@@ -296,7 +383,7 @@ const MapEditor: React.FC = () => {
         // Register with high priority (before other handlers)
         canvas.on('object:moving', handleTransformStart);
 
-        const handleObjectScaling = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
+        const handleObjectScaling = (e: FabricEvent) => {
             if (!transformStartRef.current && e.target) {
                 const moduleId = getModuleId(e.target);
                 if (moduleId) {
@@ -307,7 +394,7 @@ const MapEditor: React.FC = () => {
                         e.target.setCoords();
                         return;
                     }
-                    const changes = extractModuleChanges(e.target as fabric.Group);
+                    const changes = extractModuleChanges(e.target);
                     transformStartRef.current = {
                         id: moduleId,
                         position: changes.position,
@@ -318,7 +405,7 @@ const MapEditor: React.FC = () => {
             }
         };
 
-        const handleObjectRotating = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
+        const handleObjectRotating = (e: FabricEvent) => {
             if (!transformStartRef.current && e.target) {
                 const moduleId = getModuleId(e.target);
                 if (moduleId) {
@@ -329,7 +416,7 @@ const MapEditor: React.FC = () => {
                         e.target.setCoords();
                         return;
                     }
-                    const changes = extractModuleChanges(e.target as fabric.Group);
+                    const changes = extractModuleChanges(e.target);
                     transformStartRef.current = {
                         id: moduleId,
                         position: changes.position,
@@ -344,7 +431,7 @@ const MapEditor: React.FC = () => {
         canvas.on('object:rotating', handleObjectRotating);
 
         // Handle object modification end
-        const handleObjectModified = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
+        const handleObjectModified = (e: FabricEvent) => {
             if (!e.target || !transformStartRef.current) return;
 
             try {
@@ -354,11 +441,11 @@ const MapEditor: React.FC = () => {
                 // Preserve current selection before executing command
                 const activeObjects = canvas.getActiveObjects();
                 const selectedIds = activeObjects
-                    .map(obj => getModuleId(obj))
-                    .filter((id): id is string => id !== null);
+                    .map((obj: FabricObject) => getModuleId(obj))
+                    .filter((id: string | null): id is string => id !== null);
 
                 const startState = transformStartRef.current;
-                const changes = extractModuleChanges(e.target as fabric.Group);
+                const changes = extractModuleChanges(e.target);
 
                 // Use ref to access latest executeCommand function
                 const executeCommand = executeCommandRef.current;
@@ -418,12 +505,7 @@ const MapEditor: React.FC = () => {
                     rafIdRef.current = null;
                     if (selectedIds.length > 0 && canvasRef.current) {
                         const canvas = canvasRef.current;
-                        const objectsToSelect = selectedIds
-                            .map(id => {
-                                const obj = objectMapRef.current.get(id);
-                                return obj;
-                            })
-                            .filter((obj): obj is fabric.Group => obj !== undefined);
+                        const objectsToSelect = getFabricObjectsFromIds(selectedIds);
 
                         if (objectsToSelect.length > 0) {
                             if (objectsToSelect.length === 1) {
@@ -446,7 +528,7 @@ const MapEditor: React.FC = () => {
                 if (e.target && transformStartRef.current) {
                     try {
                         const startState = transformStartRef.current;
-                        const obj = e.target as fabric.Group;
+                        const obj = e.target;
                         const currentWidth = obj.width || 1;
                         const currentHeight = obj.height || 1;
 
@@ -517,8 +599,8 @@ const MapEditor: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const handleWheel = (opt: fabric.TPointerEventInfo<WheelEvent>) => {
-            const event = opt.e;
+        const handleWheel = (opt: FabricEvent) => {
+            const event = opt.e as WheelEvent;
             event.preventDefault();
 
             const delta = event.deltaY;
@@ -550,7 +632,7 @@ const MapEditor: React.FC = () => {
         let lastPosX = 0;
         let lastPosY = 0;
 
-        const handleMouseDown = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
+        const handleMouseDown = (opt: FabricEvent) => {
             const event = opt.e as MouseEvent;
 
             // Handle Add Tool Click
@@ -584,7 +666,7 @@ const MapEditor: React.FC = () => {
             }
 
             // Pan with alt+drag, middle mouse, or when pan mode is active
-            if ('altKey' in event && (event.altKey || event.button === 1 || isPanMode)) {
+            if (event.altKey || event.button === 1 || isPanMode) {
                 isPanning = true;
                 lastPosX = event.clientX;
                 lastPosY = event.clientY;
@@ -592,13 +674,13 @@ const MapEditor: React.FC = () => {
             }
         };
 
-        const handleMouseMove = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
+        const handleMouseMove = (opt: FabricEvent) => {
             if (!isPanning) return;
             const event = opt.e as MouseEvent;
             const vpt = canvas.viewportTransform;
             if (vpt) {
-                vpt[4] += event.clientX - lastPosX;
-                vpt[5] += event.clientY - lastPosY;
+                vpt[4]! += event.clientX - lastPosX;
+                vpt[5]! += event.clientY - lastPosY;
                 canvas.requestRenderAll();
             }
             lastPosX = event.clientX;
@@ -624,7 +706,7 @@ const MapEditor: React.FC = () => {
         // Track current cursor state to avoid unnecessary re-renders
         let currentCursor: string | null = null;
 
-        const handleMouseOver = (opt: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
+        const handleMouseOver = (opt: FabricEvent) => {
             const target = opt.target;
             if (!target) return;
 
@@ -782,7 +864,7 @@ const MapEditor: React.FC = () => {
         if (!canvas || !currentMap) return;
 
         // Track which modules need updating
-        const modulesToUpdate: Array<{ module: AnyModule; obj: fabric.Group }> = [];
+        const modulesToUpdate: Array<{ module: AnyModule; obj: FabricObject }> = [];
         let hasErrors = false;
 
         currentMap.modules.forEach((module) => {
@@ -805,7 +887,8 @@ const MapEditor: React.FC = () => {
         // Update only modules that changed
         modulesToUpdate.forEach(({ module, obj }) => {
             try {
-                updateModuleObject(obj, module);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                updateModuleObject(obj as any, module);
             } catch (error) {
                 console.error(`[MapEditor] Error updating module ${module.id}:`, error);
                 hasErrors = true;
@@ -829,8 +912,8 @@ const MapEditor: React.FC = () => {
         if (!canvas || !currentMap) return;
 
         // Remove existing grid lines
-        const existingGrid = canvas.getObjects().filter(obj => isGridObject(obj));
-        existingGrid.forEach(obj => canvas.remove(obj));
+        const existingGrid = canvas.getObjects().filter((obj: FabricObject) => isGridObject(obj));
+        existingGrid.forEach((obj: FabricObject) => canvas.remove(obj));
 
         if (!showGrid) {
             canvas.requestRenderAll();
@@ -867,7 +950,7 @@ const MapEditor: React.FC = () => {
         }
 
         // Keep background at the back
-        const bg = canvas.getObjects().find(obj => {
+        const bg = canvas.getObjects().find((obj: FabricObject) => {
             return !isGridObject(obj) && !getModuleId(obj);
         });
         if (bg) {
@@ -882,7 +965,7 @@ const MapEditor: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const handleSnapToGrid = (e: fabric.BasicTransformEvent & { target: fabric.FabricObject }) => {
+        const handleSnapToGrid = (e: FabricEvent) => {
             if (!snapToGrid || !e.target) return;
 
             const gridSize = DEFAULT_GRID_SIZE;
@@ -1028,7 +1111,7 @@ const MapEditor: React.FC = () => {
                 e.preventDefault();
                 const canvas = canvasRef.current;
                 if (canvas) {
-                    const objects = canvas.getObjects().filter(obj => getModuleId(obj) !== null);
+                    const objects = canvas.getObjects().filter((obj: FabricObject) => getModuleId(obj) !== null);
                     const selection = new fabric.ActiveSelection(objects, { canvas });
                     canvas.setActiveObject(selection);
                     canvas.requestRenderAll();
@@ -1057,11 +1140,9 @@ const MapEditor: React.FC = () => {
                 e.preventDefault();
                 const canvas = canvasRef.current;
                 if (canvas && selectedIds.length > 0) {
-                    const modules = selectedIds
-                        .map(id => getModule(id))
-                        .filter((m): m is AnyModule => m !== undefined);
+                    const modules = getModulesFromIds(selectedIds);
                     if (modules.length > 0) {
-                        copyToClipboard(modules);
+                        copyToClipboard(Array.from(modules));
                     }
                 }
             } else if (isCtrl && e.key === 'x') {
@@ -1070,12 +1151,11 @@ const MapEditor: React.FC = () => {
                 const canvas = canvasRef.current;
                 const executeCommand = executeCommandRef.current;
                 if (canvas && selectedIds.length > 0 && executeCommand) {
-                    const modules = selectedIds
-                        .map(id => getModule(id))
-                        .filter((m): m is AnyModule => m !== undefined);
+                    const modules = getModulesFromIds(selectedIds);
                     if (modules.length > 0) {
-                        cutToClipboard(modules);
-                        executeCommand(new DeleteCommand(modules));
+                        const modulesArray = Array.from(modules);
+                        cutToClipboard(modulesArray);
+                        executeCommand(new DeleteCommand(modulesArray));
                         canvas.discardActiveObject();
                         canvas.requestRenderAll();
                     }
@@ -1104,11 +1184,9 @@ const MapEditor: React.FC = () => {
                 const canvas = canvasRef.current;
                 const executeCommand = executeCommandRef.current;
                 if (canvas && selectedIds.length > 0 && executeCommand) {
-                    const modules = selectedIds
-                        .map(id => getModule(id))
-                        .filter((m): m is AnyModule => m !== undefined);
+                    const modules = getModulesFromIds(selectedIds);
                     if (modules.length > 0) {
-                        executeCommand(new DeleteCommand(modules));
+                        executeCommand(new DeleteCommand(Array.from(modules)));
                         canvas.discardActiveObject();
                         canvas.requestRenderAll();
                     }

@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import { logger } from './logger';
 
 // Custom API Error class
@@ -129,7 +129,7 @@ export const handleZodError = (error: ZodError): ValidationError => {
 };
 
 // Handle Prisma errors
-export const handlePrismaError = (error: PrismaClientKnownRequestError): ApiError => {
+export const handlePrismaError = (error: Prisma.PrismaClientKnownRequestError): ApiError => {
   switch (error.code) {
     case 'P2002': {
       // Unique constraint violation
@@ -283,7 +283,7 @@ export const errorHandler = (
   // Convert known errors to ApiError
   if (err instanceof ZodError) {
     error = handleZodError(err);
-  } else if (err instanceof PrismaClientKnownRequestError) {
+  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
     error = handlePrismaError(err);
   } else if (err.name && ['TokenExpiredError', 'JsonWebTokenError', 'NotBeforeError'].includes(err.name)) {
     error = handleJWTError(err);

@@ -49,14 +49,14 @@ export function useCommandHistory(
     const [redoStack, setRedoStack] = useState<Command[]>([]);
 
     // Refs for stable function references (for use in effects)
-    const executeCommandRef = useRef<((command: Command) => void) | undefined>();
-    const undoRef = useRef<(() => void) | undefined>();
-    const redoRef = useRef<(() => void) | undefined>();
+    const executeCommandRef = useRef<((command: Command) => void) | undefined>(undefined);
+    const undoRef = useRef<(() => void) | undefined>(undefined);
+    const redoRef = useRef<(() => void) | undefined>(undefined);
 
     // Execute command and add to history
     const executeCommand = useCallback((command: Command) => {
         command.execute();
-        
+
         setUndoStack((prev) => {
             const newStack = [...prev, command];
             // Apply max history size limit if specified
@@ -65,7 +65,7 @@ export function useCommandHistory(
             }
             return newStack;
         });
-        
+
         setRedoStack([]); // Clear redo stack on new action
         onCommandExecuted?.();
     }, [maxHistorySize, onCommandExecuted]);
@@ -74,11 +74,11 @@ export function useCommandHistory(
     const undo = useCallback(() => {
         setUndoStack((prev) => {
             if (prev.length === 0) return prev;
-            
+
             try {
                 const command = prev[prev.length - 1]!;
                 command.undo();
-                
+
                 setRedoStack((redoPrev) => [...redoPrev, command]);
                 onCommandExecuted?.();
                 return prev.slice(0, -1);
@@ -93,11 +93,11 @@ export function useCommandHistory(
     const redo = useCallback(() => {
         setRedoStack((prev) => {
             if (prev.length === 0) return prev;
-            
+
             try {
                 const command = prev[prev.length - 1]!;
                 command.execute();
-                
+
                 setUndoStack((undoPrev) => [...undoPrev, command]);
                 onCommandExecuted?.();
                 return prev.slice(0, -1);

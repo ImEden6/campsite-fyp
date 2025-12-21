@@ -39,7 +39,7 @@ const DndContextProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <DndContext sensors={sensors}>
       {children}
-    </DndContext>
+    </DndContext >
   );
 };
 

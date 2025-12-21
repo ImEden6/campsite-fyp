@@ -1,10 +1,38 @@
-# Frontend Production Dockerfile
+# Frontend Production/Development Dockerfile
 # Optimized for minimal image size with multi-stage builds and layer caching
+
+# =============================================================================
+# Stage 0: Development - Hot reloading
+# =============================================================================
+FROM node:22-alpine AS development
+WORKDIR /app/frontend
+# Note: In a workspace, we might need the root context, but user requested specific structure.
+# User's request: "FROM node:18-alpine AS development ... COPY package*.json ./ ... RUN npm install"
+# Adapting to monorepo structure while keeping user's intent for dev stage.
+# We need to run from root to respect workspaces or adjust accordingly.
+# Assuming we run from root context in docker-compose, we should set WORKDIR to /app first.
+
+WORKDIR /app
+COPY package*.json ./
+COPY frontend/package*.json ./frontend/
+COPY shared/package*.json ./shared/
+COPY backend/package*.json ./backend/
+COPY tests/package*.json ./tests/
+
+RUN npm ci
+
+# Copy sources provided by volumes in dev, but for the image itself:
+COPY shared/ ./shared/
+COPY frontend/ ./frontend/
+
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--workspace=@campsite-management/frontend", "--", "--host", "0.0.0.0"]
 
 # =============================================================================
 # Stage 1: Dependencies - Cached layer for npm packages
 # =============================================================================
-FROM node:20-alpine AS deps
+
+FROM node:22-alpine AS deps
 
 # Set working directory
 WORKDIR /app
@@ -22,7 +50,7 @@ RUN npm ci
 # =============================================================================
 # Stage 2: Builder - Compile the application
 # =============================================================================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -53,7 +81,7 @@ RUN npm run build -w @campsite-management/frontend && \
 # =============================================================================
 # Stage 3: Production - Minimal nginx image
 # =============================================================================
-FROM nginx:alpine AS production
+FROM nginx:alpine-slim AS production
 
 # Install curl for healthcheck and clean up in single layer
 RUN apk add --no-cache curl && \

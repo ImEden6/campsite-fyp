@@ -3,19 +3,37 @@
  * Creates Fabric.js objects from module data
  */
 
-import * as fabric from 'fabric';
+import * as fabricImpl from 'fabric';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fabric: any = fabricImpl;
 import type { AnyModule, ModuleType, Position, Size } from '@/types';
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface FabricObject {
+    data?: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+interface FabricGroup extends FabricObject {
+    getObjects(): FabricObject[];
+    add(obj: FabricObject): void;
+    remove(obj: FabricObject): void;
+}
+
 // Type helper for accessing custom data on Fabric objects
-export type FabricObjectWithData = fabric.FabricObject & {
+export type FabricObjectWithData = FabricObject & {
     data?: { moduleId?: string; moduleType?: string; isGrid?: boolean; isLockIcon?: boolean };
 };
 
 /**
  * Type guard to check if a Fabric object has a data property
  */
-function hasDataProperty(obj: fabric.FabricObject): obj is fabric.FabricObject & { data: Record<string, unknown> } {
-    return 'data' in obj && typeof (obj as fabric.FabricObject & { data?: unknown }).data === 'object' && (obj as fabric.FabricObject & { data?: unknown }).data !== null;
+export function hasDataProperty(obj: FabricObject): boolean {
+    return 'data' in obj && typeof obj.data === 'object' && obj.data !== null;
 }
 
 /**
@@ -23,15 +41,15 @@ function hasDataProperty(obj: fabric.FabricObject): obj is fabric.FabricObject &
  * The scale should be applied by the caller based on module dimensions
  * @returns A Fabric Group containing the lock icon, or null if creation fails
  */
-function createLockIcon(): fabric.Group | null {
+function createLockIcon(): FabricGroup | null {
     const lockIconElements: IconElement[] = [
         { type: 'path', d: 'M6 10V8a6 6 0 0 1 12 0v2' },
         { type: 'path', d: 'M8 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z' },
     ];
     const lockIconParts = createIconObjects(lockIconElements, 'oklch(0.551 0.023 264.4)');
-    
+
     if (lockIconParts.length === 0) return null;
-    
+
     const lockIconGroup = new fabric.Group(lockIconParts, {
         originX: 'center',
         originY: 'center',
@@ -39,11 +57,11 @@ function createLockIcon(): fabric.Group | null {
         evented: false,
         opacity: OPACITY_LOCK_ICON,
     });
-    
+
     if (hasDataProperty(lockIconGroup)) {
         lockIconGroup.data.isLockIcon = true;
     }
-    
+
     lockIconGroup.setCoords();
     return lockIconGroup;
 }
@@ -51,21 +69,21 @@ function createLockIcon(): fabric.Group | null {
 /**
  * Get the module ID from a Fabric object, or null if not a module
  */
-export function getModuleId(obj: fabric.FabricObject): string | null {
+export function getModuleId(obj: FabricObject): string | null {
     return (obj as FabricObjectWithData).data?.moduleId ?? null;
 }
 
 /**
  * Get the module type from a Fabric object, or null if not a module
  */
-export function getModuleType(obj: fabric.FabricObject): string | null {
+export function getModuleType(obj: FabricObject): string | null {
     return (obj as FabricObjectWithData).data?.moduleType ?? null;
 }
 
 /**
  * Check if a Fabric object is a grid line
  */
-export function isGridObject(obj: fabric.FabricObject): boolean {
+export function isGridObject(obj: FabricObject): boolean {
     return (obj as FabricObjectWithData).data?.isGrid === true;
 }
 
@@ -195,8 +213,8 @@ export function getModuleIconElements(type: ModuleType): IconElement[] {
  * Create Fabric.js objects from an array of IconElements
  * Returns an array of Fabric objects that can be grouped together
  */
-function createIconObjects(elements: IconElement[], strokeColor: string): fabric.FabricObject[] {
-    const iconObjects: fabric.FabricObject[] = [];
+function createIconObjects(elements: IconElement[], strokeColor: string): FabricObject[] {
+    const iconObjects: FabricObject[] = [];
 
     for (const element of elements) {
         const baseOptions = {
@@ -246,7 +264,7 @@ function createIconObjects(elements: IconElement[], strokeColor: string): fabric
 /**
  * Create a Fabric.js group object from module data
  */
-export function createModuleObject(module: AnyModule): fabric.Group {
+export function createModuleObject(module: AnyModule): FabricGroup {
     const color = getModuleColor(module.type);
 
     // Create the rectangle shape
@@ -267,7 +285,7 @@ export function createModuleObject(module: AnyModule): fabric.Group {
     const iconSize = Math.min(minDimension * 0.6, 48); // Max 48px, 60% of smallest dimension
     const showIcon = iconSize >= 16; // Only show icon if it's at least 16px
 
-    const objects: fabric.FabricObject[] = [rect];
+    const objects: FabricObject[] = [rect];
 
     // Create the icon if it fits
     if (showIcon) {
@@ -308,7 +326,7 @@ export function createModuleObject(module: AnyModule): fabric.Group {
     // Position is stored as top-left, but we need to set left/top as center point
     const centerX = module.position.x + module.size.width / 2;
     const centerY = module.position.y + module.size.height / 2;
-    
+
     const group = new fabric.Group(objects, {
         left: centerX,
         top: centerY,
@@ -319,7 +337,8 @@ export function createModuleObject(module: AnyModule): fabric.Group {
     });
 
     // Store module ID for reference (set after creation for Fabric v6)
-    (group as fabric.Group & { data?: Record<string, unknown> }).data = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (group as any & { data?: Record<string, unknown> }).data = {
         moduleId: module.id,
         moduleType: module.type
     };
@@ -408,11 +427,11 @@ export function createModuleObject(module: AnyModule): fabric.Group {
 
         // Add semi-transparent lock icon overlay in center
         const lockIconGroup = createLockIcon();
-        
+
         if (lockIconGroup) {
             const lockIconSize = Math.min(minDimension * 0.4, 32); // Smaller than module icon
             const lockScaleFactor = lockIconSize / 24;
-            
+
             lockIconGroup.set({
                 left: module.size.width / 2,
                 top: module.size.height / 2,
@@ -458,9 +477,9 @@ export function createModuleObject(module: AnyModule): fabric.Group {
  * @param module - Module data with top-left position coordinates
  * @throws Error if module data is invalid
  */
-export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
+export function updateModuleObject(obj: FabricGroup, module: AnyModule): void {
     // Validate module data
-    if (!module.size.width || !module.size.height || 
+    if (!module.size.width || !module.size.height ||
         module.size.width <= 0 || module.size.height <= 0 ||
         !Number.isFinite(module.size.width) || !Number.isFinite(module.size.height)) {
         const errorDetails = {
@@ -475,7 +494,7 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
             `Module ID: ${module.id}, Type: ${module.type}`
         );
     }
-    
+
     if (!Number.isFinite(module.position.x) || !Number.isFinite(module.position.y)) {
         const errorDetails = {
             x: module.position.x,
@@ -488,11 +507,11 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
             `Module ID: ${module.id}`
         );
     }
-    
+
     // Convert top-left position to center position (since origin is center)
     const centerX = module.position.x + module.size.width / 2;
     const centerY = module.position.y + module.size.height / 2;
-    
+
     obj.set({
         left: centerX,
         top: centerY,
@@ -502,9 +521,9 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
     // Update size by scaling the group
     const currentWidth = obj.width || 1;
     const currentHeight = obj.height || 1;
-    
+
     // Validate current dimensions
-    if (currentWidth <= 0 || currentHeight <= 0 || 
+    if (currentWidth <= 0 || currentHeight <= 0 ||
         !Number.isFinite(currentWidth) || !Number.isFinite(currentHeight)) {
         console.warn('[updateModuleObject] Invalid current object dimensions:', {
             width: currentWidth,
@@ -526,7 +545,7 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
     // Apply locked state - prevent transformation but allow selection
     if (module.locked) {
         // Update border to dashed for locked modules
-        const rectObj = obj.getObjects().find(o => o.type === 'rect') as fabric.Rect | undefined;
+        const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
         if (rectObj) {
             rectObj.set({
                 strokeDashArray: [5, 5],
@@ -535,17 +554,18 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
         }
 
         // Add or update lock icon overlay if not already present
-        const existingLockIcon = obj.getObjects().find(o => {
+        const existingLockIcon = obj.getObjects().find((o: FabricObject) => {
             if (hasDataProperty(o)) {
-                return o.data.isLockIcon === true;
+                return o.data?.isLockIcon === true;
             }
             // Fallback: check if it's a group at center position with lock-like structure
             if (o.type === 'group' && o.left === 0 && o.top === 0) {
-                const group = o as fabric.Group;
-                const paths = group.getObjects().filter(obj => obj.type === 'path');
+                const group = o as FabricGroup;
+                const paths = group.getObjects().filter((obj: FabricObject) => obj.type === 'path');
                 if (paths.length === 2) {
                     // Likely a lock icon - mark it
                     if (hasDataProperty(group)) {
+                        if (!group.data) group.data = {};
                         group.data.isLockIcon = true;
                     }
                     return true;
@@ -553,17 +573,17 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
             }
             return false;
         });
-        
+
         if (!existingLockIcon) {
             const moduleWidth = obj.width || module.size.width;
             const moduleHeight = obj.height || module.size.height;
             const minDimension = Math.min(moduleWidth, moduleHeight);
             const lockIconGroup = createLockIcon();
-            
+
             if (lockIconGroup) {
                 const lockIconSize = Math.min(minDimension * 0.4, 32);
                 const lockScaleFactor = lockIconSize / 24;
-                
+
                 lockIconGroup.set({
                     left: 0, // Center of group (which is at center origin)
                     top: 0,
@@ -590,7 +610,7 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
         });
     } else {
         // Unlock if not locked
-        const rectObj = obj.getObjects().find(o => o.type === 'rect') as fabric.Rect | undefined;
+        const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
         if (rectObj) {
             rectObj.set({
                 strokeDashArray: undefined, // Remove dashed border
@@ -599,9 +619,9 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
         }
 
         // Remove lock icon overlay
-        const lockIconObj = obj.getObjects().find(o => {
+        const lockIconObj = obj.getObjects().find((o: FabricObject) => {
             if (hasDataProperty(o)) {
-                return o.data.isLockIcon === true;
+                return o.data?.isLockIcon === true;
             }
             return false;
         });
@@ -647,45 +667,45 @@ export function updateModuleObject(obj: fabric.Group, module: AnyModule): void {
  * @returns Module changes with top-left position coordinates
  * @throws Error if object dimensions are invalid
  */
-export function extractModuleChanges(obj: fabric.Group): {
+export function extractModuleChanges(obj: FabricObject): {
     position: { x: number; y: number };
     size: { width: number; height: number };
     rotation: number;
 } {
     const scaleX = obj.scaleX || 1;
     const scaleY = obj.scaleY || 1;
-    
+
     // Validate scale values
     if (!Number.isFinite(scaleX) || !Number.isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) {
         const errorDetails = { scaleX, scaleY };
         console.warn('[extractModuleChanges] Invalid scale values:', errorDetails);
         throw new Error(`[extractModuleChanges] Invalid scale values: scaleX=${scaleX}, scaleY=${scaleY}`);
     }
-    
+
     const baseWidth = obj.width || 100;
     const baseHeight = obj.height || 100;
     const width = Math.max(1, baseWidth * scaleX);
     const height = Math.max(1, baseHeight * scaleY);
-    
+
     // Validate dimensions
     if (!Number.isFinite(width) || !Number.isFinite(height)) {
         const errorDetails = { width, height, baseWidth, baseHeight, scaleX, scaleY };
         console.warn('[extractModuleChanges] Invalid dimensions:', errorDetails);
         throw new Error(`[extractModuleChanges] Invalid dimensions: width=${width}, height=${height}`);
     }
-    
+
     // Convert from center coordinates to top-left coordinates
     // obj.left and obj.top represent the center when origin is 'center'
     const centerX = obj.left ?? 0;
     const centerY = obj.top ?? 0;
-    
+
     // Validate center coordinates
     if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
         const errorDetails = { centerX, centerY };
         console.warn('[extractModuleChanges] Invalid center coordinates:', errorDetails);
         throw new Error(`[extractModuleChanges] Invalid center coordinates: centerX=${centerX}, centerY=${centerY}`);
     }
-    
+
     const topLeftX = centerX - width / 2;
     const topLeftY = centerY - height / 2;
 

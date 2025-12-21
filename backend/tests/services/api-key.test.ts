@@ -1,11 +1,11 @@
 // API Key Service Tests
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { PrismaClient } from '@prisma/client';
+
 import { ApiKeyService } from '@/services/api-key/service';
 import cacheService from '@/services/cache.service';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 describe('API Key Service', () => {
   let apiKeyService: ApiKeyService;
@@ -14,7 +14,7 @@ describe('API Key Service', () => {
 
   beforeEach(async () => {
     apiKeyService = new ApiKeyService();
-    
+
     // Create a test user
     const testUser = await prisma.user.create({
       data: {
@@ -43,7 +43,7 @@ describe('API Key Service', () => {
     if (testUserId) {
       await prisma.user.delete({
         where: { id: testUserId },
-      }).catch(() => {});
+      }).catch(() => { });
     }
   });
 

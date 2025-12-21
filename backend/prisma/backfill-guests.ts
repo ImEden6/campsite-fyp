@@ -1,7 +1,9 @@
 
 import { PrismaClient, GuestType } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { getPrismaClient } from '../src/database';
+
+const prisma = getPrismaClient();
 
 async function main() {
     console.log('Starting backfill of guests for existing bookings...');

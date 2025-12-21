@@ -1,0 +1,49 @@
+services:
+  backend:
+    build:
+      target: development
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./backend:/app/backend
+      - ./shared:/app/shared
+      - /app/backend/node_modules
+      - /app/node_modules
+    command: npm run dev -w @campsite-management/backend
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      target: development
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app/frontend
+      - ./shared:/app/shared
+      - /app/frontend/node_modules
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    command: npm run dev -w @campsite-management/frontend
+
+  studio:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: campsite_studio
+    command: npx prisma studio --port 5555 --browser none
+    healthcheck:
+      disable: true
+    ports:
+      - "127.0.0.1:5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://campsite_user:campsite_password@postgres:5432/campsite_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - campsite_network

@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { PrismaClient, EquipmentCategory, EquipmentStatus, BookingStatus } from '@prisma/client';
 import bookingService from '@/services/booking.service';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 describe('Booking Service - Equipment Availability', () => {
   let testEquipmentIds: string[] = [];
@@ -127,10 +127,10 @@ describe('Booking Service - Equipment Availability', () => {
 
       expect(equipment).toBeDefined();
       expect(equipment.length).toBeGreaterThanOrEqual(2);
-      
+
       const testEquipment = equipment.filter(e => testEquipmentIds.includes(e.id));
       expect(testEquipment.length).toBe(2);
-      
+
       testEquipment.forEach(item => {
         expect(item.available).toBe(true);
         expect(item.availableQuantity).toBeGreaterThan(0);

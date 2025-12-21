@@ -4,7 +4,9 @@
  * Guides are draggable alignment lines created from rulers.
  */
 
-import * as fabric from 'fabric';
+import * as fabricImpl from 'fabric';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fabric: any = fabricImpl;
 import type { Position, Size } from '@/types';
 
 // ============================================================================
@@ -20,6 +22,21 @@ export interface Guide {
 export interface SnapResult {
     snapped: Position;
     snapLines: { orientation: 'h' | 'v'; position: number }[];
+}
+
+interface FabricObject {
+    data?: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+type FabricLine = FabricObject;
+
+interface FabricCanvas {
+    getObjects(): FabricObject[];
+    remove(obj: FabricObject): void;
+    add(obj: FabricObject): void;
+    requestRenderAll(): void;
 }
 
 // ============================================================================
@@ -42,7 +59,7 @@ export function createGuideLine(
     position: number,
     canvasSize: { width: number; height: number },
     id?: string
-): fabric.Line {
+): FabricLine {
     const coords: [number, number, number, number] =
         orientation === 'horizontal'
             ? [0, position, canvasSize.width, position]
@@ -58,7 +75,7 @@ export function createGuideLine(
     });
 
     // Store guide metadata
-    (line as fabric.Line & { data?: Record<string, unknown> }).data = {
+    (line as FabricObject).data = {
         isGuide: true,
         guideId: id ?? crypto.randomUUID(),
         orientation,
@@ -74,19 +91,15 @@ export function createGuideLine(
 /**
  * Check if a Fabric object is a guide line
  */
-export function isGuideObject(obj: fabric.FabricObject): boolean {
-    return (obj as fabric.FabricObject & { data?: { isGuide?: boolean } }).data
-        ?.isGuide === true;
+export function isGuideObject(obj: FabricObject): boolean {
+    return (obj.data as { isGuide?: boolean } | undefined)?.isGuide === true;
 }
 
 /**
  * Get the guide ID from a Fabric object
  */
-export function getGuideId(obj: fabric.FabricObject): string | null {
-    return (
-        (obj as fabric.FabricObject & { data?: { guideId?: string } }).data
-            ?.guideId ?? null
-    );
+export function getGuideId(obj: FabricObject): string | null {
+    return (obj.data as { guideId?: string } | undefined)?.guideId ?? null;
 }
 
 /**
@@ -94,7 +107,7 @@ export function getGuideId(obj: fabric.FabricObject): string | null {
  * Removes existing guides and adds current ones
  */
 export function syncGuidesToCanvas(
-    canvas: fabric.Canvas,
+    canvas: FabricCanvas,
     guides: Guide[],
     canvasSize: { width: number; height: number }
 ): void {

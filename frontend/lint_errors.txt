@@ -1,0 +1,97 @@
+
+> @campsite-management/frontend@1.0.0 lint
+> eslint . --report-unused-disable-directives --max-warnings 0
+
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\components\editor\properties\PropertySection.tsx
+  11:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\components\editor\properties\moduleIcons.ts
+  22:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\pages\MapEditor.tsx
+    53:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    54:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   156:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   160:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   202:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   233:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   245:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   264:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   296:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   308:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   322:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   333:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   344:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   355:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   370:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   380:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   381:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   384:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   467:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   538:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   571:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   613:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   645:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   803:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   850:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   851:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   888:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   903:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1049:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\types\react-router-fix.d.ts
+   8:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\utils\backgroundHandler.ts
+  116:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  169:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\utils\guideRenderer.ts
+   47:4   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   89:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Mervyn\campsite-fyp\frontend\src\utils\moduleFactory.ts
+   12:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   20:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   20:78  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   56:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   70:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  251:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  272:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  324:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  463:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  531:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  531:81  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  540:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  546:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  547:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  595:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  595:81  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  604:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  652:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 76 problems (76 errors, 0 warnings)
+

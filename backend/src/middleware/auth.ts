@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+
 import { config } from '@/config';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
@@ -10,7 +10,7 @@ import { apiKeyService } from '@/services/api-key';
 
 type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 
 // Extend Express Request type to include user and API key info
 /* eslint-disable @typescript-eslint/no-namespace */

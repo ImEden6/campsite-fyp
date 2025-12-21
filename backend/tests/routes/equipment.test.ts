@@ -7,7 +7,7 @@ import express from 'express';
 import equipmentRoutes from '@/routes/equipment.routes';
 import { errorHandler } from '@/utils/errors';
 
-const prisma = new PrismaClient();
+import prisma from '@/database';
 const app = express();
 
 app.use(express.json());
@@ -205,11 +205,11 @@ describe('Equipment Routes - Availability Endpoint', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      
-      const testEquipment = response.body.data.filter((e: any) => 
+
+      const testEquipment = response.body.data.filter((e: any) =>
         testEquipmentIds.includes(e.id)
       );
-      
+
       expect(testEquipment.length).toBe(1);
       expect(testEquipment[0].category).toBe(EquipmentCategory.CAMPING_GEAR);
     });
@@ -259,11 +259,11 @@ describe('Equipment Routes - Availability Endpoint', () => {
         });
 
       expect(response.status).toBe(200);
-      
+
       const conflictedEquipment = response.body.data.find(
         (e: any) => e.id === testEquipmentIds[0]
       );
-      
+
       expect(conflictedEquipment).toBeDefined();
       expect(conflictedEquipment.availableQuantity).toBe(2); // 5 - 3 = 2
       expect(conflictedEquipment.available).toBe(true);
@@ -302,11 +302,11 @@ describe('Equipment Routes - Availability Endpoint', () => {
         });
 
       expect(response.status).toBe(200);
-      
+
       const kayak = response.body.data.find(
         (e: any) => e.id === testEquipmentIds[1]
       );
-      
+
       expect(kayak).toBeDefined();
       expect(kayak.availableQuantity).toBe(3);
       expect(kayak.available).toBe(true);

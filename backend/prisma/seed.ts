@@ -1,10 +1,10 @@
 // seeded data
- 
 
-import { PrismaClient } from '@prisma/client';
+
+import { getPrismaClient } from '../src/database';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 async function main() {
   console.log('Starting database seed...');
@@ -183,7 +183,7 @@ async function main() {
     const existing = await prisma.equipment.findFirst({
       where: { name: item.name },
     });
-    
+
     if (!existing) {
       await prisma.equipment.create({
         data: item,
