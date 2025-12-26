@@ -26,8 +26,8 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { getSites, deleteSite } from '@/services/api/sites';
-import { mockDashboardMetrics } from '@/services/api/mockAnalyticsData';
-import { mockSites } from '@/services/api/mock-sites';
+import { getDashboardMetrics } from '@/services/api/analytics';
+
 import { SiteType, SiteStatus } from '@/types';
 import type { Site } from '@/types';
 import { formatCurrency, CURRENCY_SYMBOL } from '@/utils/currency';
@@ -192,16 +192,7 @@ export const AdminDashboardPage: React.FC = () => {
   // Fetch all sites (with mock data fallback)
   const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['sites'],
-    queryFn: async () => {
-      try {
-        const apiSites = await getSites();
-        // Use mock data if API returns empty
-        return apiSites.length > 0 ? apiSites : mockSites;
-      } catch {
-        // Fallback to mock data on error
-        return mockSites;
-      }
-    },
+    queryFn: () => getSites(),
   });
 
   // Group sites by type
@@ -213,42 +204,62 @@ export const AdminDashboardPage: React.FC = () => {
   const totalSites = sites.length;
   const occupiedSites = sites.filter(s => s.status === SiteStatus.OCCUPIED).length;
 
-  // Use analytics mock data for dashboard metrics
-  const analyticsMetrics = mockDashboardMetrics;
+  // Fetch dashboard analytics metrics from API
+  const { data: analyticsMetrics } = useQuery({
+    queryKey: ['analytics', 'dashboard'],
+    queryFn: () => getDashboardMetrics(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  // Stats for the cards - now using analytics data
+  // Default metrics if API hasn't loaded yet
+  const defaultMetrics = {
+    totalRevenue: 0,
+    revenueChange: 0,
+    occupancyRate: 0,
+    occupancyChange: 0,
+    activeBookings: 0,
+    bookingsChange: 0,
+    totalCustomers: 0,
+    customersChange: 0,
+    averageBookingValue: 0,
+    averageStayDuration: 0,
+  };
+
+  const metrics = analyticsMetrics ?? defaultMetrics;
+
+  // Stats for the cards - now using analytics data from API
   const stats = [
     {
       name: 'Total Revenue',
-      value: formatCurrency(analyticsMetrics.totalRevenue, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+      value: formatCurrency(metrics.totalRevenue, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
       icon: DollarSign,
       color: 'bg-blue-500',
-      subtext: `${analyticsMetrics.revenueChange >= 0 ? '+' : ''}${analyticsMetrics.revenueChange.toFixed(1)}% from last period`,
-      change: analyticsMetrics.revenueChange,
+      subtext: `${metrics.revenueChange >= 0 ? '+' : ''}${metrics.revenueChange.toFixed(1)}% from last period`,
+      change: metrics.revenueChange,
     },
     {
       name: 'Occupancy Rate',
-      value: `${analyticsMetrics.occupancyRate.toFixed(1)}%`,
+      value: `${metrics.occupancyRate.toFixed(1)}%`,
       icon: TrendingUp,
       color: 'bg-green-500',
       subtext: `${occupiedSites} of ${totalSites} sites`,
-      change: analyticsMetrics.occupancyChange,
+      change: metrics.occupancyChange,
     },
     {
       name: 'Active Bookings',
-      value: analyticsMetrics.activeBookings,
+      value: metrics.activeBookings,
       icon: Calendar,
       color: 'bg-purple-500',
-      subtext: `${analyticsMetrics.bookingsChange >= 0 ? '+' : ''}${analyticsMetrics.bookingsChange.toFixed(1)}% from last period`,
-      change: analyticsMetrics.bookingsChange,
+      subtext: `${metrics.bookingsChange >= 0 ? '+' : ''}${metrics.bookingsChange.toFixed(1)}% from last period`,
+      change: metrics.bookingsChange,
     },
     {
       name: 'Total Customers',
-      value: analyticsMetrics.totalCustomers.toLocaleString(),
+      value: metrics.totalCustomers.toLocaleString(),
       icon: Users,
       color: 'bg-orange-500',
-      subtext: `${analyticsMetrics.customersChange >= 0 ? '+' : ''}${analyticsMetrics.customersChange.toFixed(1)}% growth`,
-      change: analyticsMetrics.customersChange,
+      subtext: `${metrics.customersChange >= 0 ? '+' : ''}${metrics.customersChange.toFixed(1)}% growth`,
+      change: metrics.customersChange,
     }
   ];
 

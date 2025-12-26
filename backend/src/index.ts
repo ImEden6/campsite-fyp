@@ -31,6 +31,7 @@ import uploadRoutes from './routes/upload.routes';
 import apiKeyRoutes from './routes/api-key.routes';
 import equipmentRoutes from './routes/equipment.routes';
 import paymentRoutes from './routes/payment.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 // Initialize error tracking first
 const errorTracker = initializeErrorTracking();
@@ -86,6 +87,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1', uploadRoutes);
 app.use('/api/v1/admin/api-keys', apiKeyRoutes);
 app.use('/api/v1/equipment', equipmentRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {

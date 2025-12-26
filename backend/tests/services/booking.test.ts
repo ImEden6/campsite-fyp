@@ -1,7 +1,7 @@
 // Booking Service Tests
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient, EquipmentCategory, EquipmentStatus, BookingStatus } from '@prisma/client';
+import { PrismaClient, EquipmentCategory, BookingStatus, ReservationStatus } from '@prisma/client';
 import bookingService from '@/services/booking.service';
 
 import prisma from '@/database';
@@ -16,7 +16,7 @@ describe('Booking Service - Equipment Availability', () => {
     // Create test user
     const testUser = await prisma.user.create({
       data: {
-        email: `test-${Date.now()}@example.com`,
+        email: `test-${Date.now()}-${Math.random()}@example.com`,
         firstName: 'Test',
         lastName: 'User',
         password: 'hashedpassword',
@@ -52,7 +52,6 @@ describe('Booking Service - Equipment Availability', () => {
         name: 'Test Tent',
         description: 'A test camping tent',
         category: EquipmentCategory.CAMPING_GEAR,
-        status: EquipmentStatus.AVAILABLE,
         quantity: 5,
         availableQuantity: 5,
         dailyRate: 15,
@@ -68,7 +67,6 @@ describe('Booking Service - Equipment Availability', () => {
         name: 'Test Kayak',
         description: 'A test kayak',
         category: EquipmentCategory.RECREATIONAL,
-        status: EquipmentStatus.AVAILABLE,
         quantity: 3,
         availableQuantity: 3,
         dailyRate: 25,
@@ -83,7 +81,7 @@ describe('Booking Service - Equipment Availability', () => {
   afterEach(async () => {
     // Clean up in reverse order of dependencies
     if (testBookingIds.length > 0) {
-      await prisma.equipmentRental.deleteMany({
+      await prisma.equipmentReservation.deleteMany({
         where: { bookingId: { in: testBookingIds } },
       });
       await prisma.booking.deleteMany({
@@ -163,17 +161,17 @@ describe('Booking Service - Equipment Availability', () => {
       });
       testBookingIds.push(booking.id);
 
-      // Create equipment rental that conflicts
-      await prisma.equipmentRental.create({
+      // Create equipment reservation that conflicts
+      await prisma.equipmentReservation.create({
         data: {
           bookingId: booking.id,
           equipmentId: testEquipmentIds[0],
           quantity: 3,
           dailyRate: 15,
           totalAmount: 90,
-          depositAmount: 50,
           startDate: new Date('2024-06-03'),
           endDate: new Date('2024-06-05'),
+          status: ReservationStatus.CONFIRMED,
         },
       });
 
@@ -214,17 +212,17 @@ describe('Booking Service - Equipment Availability', () => {
       });
       testBookingIds.push(booking.id);
 
-      // Rent all available quantity
-      await prisma.equipmentRental.create({
+      // Reserve all available quantity
+      await prisma.equipmentReservation.create({
         data: {
           bookingId: booking.id,
           equipmentId: testEquipmentIds[0],
           quantity: 5, // All 5 tents
           dailyRate: 15,
           totalAmount: 150,
-          depositAmount: 50,
           startDate: new Date('2024-06-03'),
           endDate: new Date('2024-06-05'),
+          status: ReservationStatus.CONFIRMED,
         },
       });
 
@@ -306,18 +304,20 @@ describe('Booking Service - Equipment Availability', () => {
       });
       testBookingIds.push(booking.id);
 
-      // Create equipment rental that's been returned
-      await prisma.equipmentRental.create({
+      // Create equipment reservation that's been cancelled (simulating returned/freed up)
+      // Actually, if it's returned, it might be a Rental status thing.
+      // But for Availability check, we only look at CONFIRMED reservations.
+      // So let's create a CANCELLED reservation.
+      await prisma.equipmentReservation.create({
         data: {
           bookingId: booking.id,
           equipmentId: testEquipmentIds[0],
           quantity: 3,
           dailyRate: 15,
           totalAmount: 90,
-          depositAmount: 50,
           startDate: new Date('2024-06-03'),
           endDate: new Date('2024-06-05'),
-          returnedAt: new Date('2024-06-05'),
+          status: ReservationStatus.CANCELLED,
         },
       });
 

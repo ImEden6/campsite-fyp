@@ -84,3 +84,5 @@ Thumbs.db
 
 # Agent/AI files
 .agent/*
+.cursor/*
+WARP.md

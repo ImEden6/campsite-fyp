@@ -318,7 +318,7 @@ export default defineConfig(({ mode }) => {
     // Test configuration
     test: {
       globals: true,
-      environment: 'happy-dom',
+      environment: 'jsdom',
       setupFiles: './src/tests/setup.ts',
       css: true,
       // Exclude Playwright e2e tests from Vitest

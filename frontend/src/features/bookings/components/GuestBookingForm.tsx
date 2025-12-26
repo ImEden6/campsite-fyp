@@ -34,7 +34,7 @@ interface FormData {
   pets: number;
   guestDetails: GuestDetail[];
   vehicles: Omit<Vehicle, 'id'>[];
-  equipmentRentals: { equipmentId: string; quantity: number }[];
+  equipmentReservations: { equipmentId: string; quantity: number }[];
   specialRequests: string;
 }
 
@@ -46,7 +46,7 @@ const initialFormData: FormData = {
   pets: 0,
   guestDetails: [],
   vehicles: [],
-  equipmentRentals: [],
+  equipmentReservations: [],
   specialRequests: '',
 };
 
@@ -70,13 +70,13 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
 
   // Calculate pricing
   const { data: pricing, isLoading: isPricingLoading } = useQuery({
-    queryKey: ['booking-price', site.id, formData.checkInDate, formData.checkOutDate, formData.equipmentRentals],
+    queryKey: ['booking-price', site.id, formData.checkInDate, formData.checkOutDate, formData.equipmentReservations],
     queryFn: () =>
       calculateBookingPrice(
         site.id,
         formData.checkInDate,
         formData.checkOutDate,
-        formData.equipmentRentals
+        formData.equipmentReservations
       ),
     enabled: !!formData.checkInDate && !!formData.checkOutDate,
   });
@@ -170,7 +170,7 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
       })),
       vehicles: formData.vehicles,
       specialRequests: formData.specialRequests || undefined,
-      equipmentRentals: formData.equipmentRentals.length > 0 ? formData.equipmentRentals : undefined,
+      equipmentReservations: formData.equipmentReservations.length > 0 ? formData.equipmentReservations : undefined,
       firstName: guestInfo.firstName,
       lastName: guestInfo.lastName,
       email: guestInfo.email,
@@ -248,10 +248,11 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="checkInDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Check-in Date *
                 </label>
                 <Input
+                  id="checkInDate"
                   type="date"
                   value={formData.checkInDate}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('checkInDate', e.target.value)}
@@ -267,10 +268,11 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="checkOutDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Check-out Date *
                 </label>
                 <Input
+                  id="checkOutDate"
                   type="date"
                   value={formData.checkOutDate}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('checkOutDate', e.target.value)}
@@ -288,10 +290,11 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="adults" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Adults (18+) *
                 </label>
                 <Input
+                  id="adults"
                   type="number"
                   value={formData.adults}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('adults', parseInt(e.target.value) || 0)}
@@ -308,10 +311,11 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="children" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Children (0-17)
                 </label>
                 <Input
+                  id="children"
                   type="number"
                   value={formData.children}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('children', parseInt(e.target.value) || 0)}
@@ -321,10 +325,11 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="pets" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Pets
                 </label>
                 <Input
+                  id="pets"
                   type="number"
                   value={formData.pets}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('pets', parseInt(e.target.value) || 0)}
@@ -417,8 +422,8 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
             <EquipmentSelector
               checkInDate={formData.checkInDate}
               checkOutDate={formData.checkOutDate}
-              selectedEquipment={formData.equipmentRentals}
-              onChange={(equipment: { equipmentId: string; quantity: number }[]) => updateFormData('equipmentRentals', equipment)}
+              selectedEquipment={formData.equipmentReservations}
+              onChange={(equipment: { equipmentId: string; quantity: number }[]) => updateFormData('equipmentReservations', equipment)}
             />
           </div>
         )}
@@ -471,7 +476,7 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
                 )}
               </div>
 
-              <div className={formData.equipmentRentals.length > 0 || formData.specialRequests ? 'border-b border-gray-200 dark:border-gray-600 pb-3' : 'pb-3'}>
+              <div className={formData.equipmentReservations.length > 0 || formData.specialRequests ? 'border-b border-gray-200 dark:border-gray-600 pb-3' : 'pb-3'}>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Vehicles</h3>
                 {formData.vehicles.length > 0 ? (
                   <div className="space-y-1">
@@ -486,10 +491,10 @@ export const GuestBookingForm: React.FC<GuestBookingFormProps> = ({
                 )}
               </div>
 
-              {formData.equipmentRentals.length > 0 && (
+              {formData.equipmentReservations.length > 0 && (
                 <div className={formData.specialRequests ? 'border-b border-gray-200 dark:border-gray-600 pb-3' : 'pb-3'}>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Equipment Rentals</h3>
-                  <p className="text-sm text-gray-900 dark:text-white">{formData.equipmentRentals.length} item(s) selected</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formData.equipmentReservations.length} item(s) selected</p>
                 </div>
               )}
 

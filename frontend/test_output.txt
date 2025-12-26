@@ -1,0 +1,2045 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mD:/campsite-fyp/frontend[39m
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3a. Full Integration (Direct Render)
+[22m[39mSentry not initialized (development mode or missing DSN)
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3a. Full Integration (Direct Render)
+[22m[39m[MSW] HIT: GET http://localhost:5000/api/v1/sites/site-1
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3a. Full Integration (Direct Render)
+[22m[39mSentry not initialized (development mode or missing DSN)
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3a. Full Integration (Direct Render)
+[22m[39m[FAIL] 3a (Direct Render) failed
+<div><div class="max-w-2xl mx-auto py-8 px-4"><button class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left w-4 h-4" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg><span>Back to Sites</span></button><div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"><h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Guest Information</h1><p class="text-gray-600 dark:text-gray-400 mb-6">Please provide your contact information to complete your booking</p><form class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label><div class="w-full"><div class="relative"><div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user text-gray-400 w-5 h-5" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><input id="input-bc22au6fb" type="text" class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10" aria-invalid="false" required="" value=""></div></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label><div class="w-full"><div class="relative"><div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user text-gray-400 w-5 h-5" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><input id="input-1ew82wkxo" type="text" class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10" aria-invalid="false" required="" value=""></div></div></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address *</label><div class="w-full"><div class="relative"><div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail text-gray-400 w-5 h-5" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg></div><input id="input-wf4k638d5" type="email" class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10" aria-invalid="false" required="" value=""></div></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number *</label><div class="w-full"><div class="relative"><div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone text-gray-400 w-5 h-5" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg></div><input id="input-jfxolgjev" type="tel" class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10" aria-invalid="false" required="" value=""></div></div></div><div class="flex items-center space-x-2"><input type="checkbox" id="createAccount" class="rounded"><label for="createAccount" class="text-sm text-gray-700 dark:text-gray-300">Create an account to manage your bookings</label></div><div class="flex gap-2 pt-4"><button class="inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400 h-11 px-4 text-base min-h-[44px] flex-1" aria-busy="false">Cancel</button><button class="inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600 h-11 px-4 text-base min-h-[44px] flex-1" aria-busy="false" type="submit">Continue</button></div></form></div></div></div>
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3b. Full Integration (With Routes)
+[22m[39m[Debug] Location: /booking/guest ?siteId=site-1
+[Debug] SearchParams: siteId=site-1
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3b. Full Integration (With Routes)
+[22m[39mSentry not initialized (development mode or missing DSN)
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3b. Full Integration (With Routes)
+[22m[39m[MSW] HIT: GET http://localhost:5000/api/v1/sites/site-1
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3b. Full Integration (With Routes)
+[22m[39m[MSW] HIT: GET http://localhost:5000/api/v1/sites/site-1
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3b. Full Integration (With Routes)
+[22m[39mSentry not initialized (development mode or missing DSN)
+
+[90mstdout[2m | src/tests/integration/diagnostics.test.tsx[2m > [22m[2mDiagnostic: GuestBookingPage[2m > [22m[2m3b. Full Integration (With Routes)
+[22m[39m[FAIL] 3b (With Routes) failed
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"max-w-2xl mx-auto py-8 px-4"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-arrow-left w-4 h-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m12 19-7-7 7-7"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M19 12H5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<span>[39m
+          [0mBack to Sites[0m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"[39m
+        [36m>[39m
+          [0mGuest Information[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-gray-600 dark:text-gray-400 mb-6"[39m
+        [36m>[39m
+          [0mPlease provide your contact information to complete your booking[0m
+        [36m</p>[39m
+        [36m<form[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 gap-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[39m
+              [36m>[39m
+                [0mFirst Name *[0m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"w-full"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"7"[39m
+                        [33mr[39m=[32m"4"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</div>[39m
+                  [36m<input[39m
+                    [33maria-invalid[39m=[32m"false"[39m
+                    [33mclass[39m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[39m
+                    [33mid[39m=[32m"input-3walt5kl1"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"text"[39m
+                    [33mvalue[39m=[32m""[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<label[39m
+                [33mclass[39m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[39m
+              [36m>[39m
+                [0mLast Name *[0m
+              [36m</label>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"w-full"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                      [36m/>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"7"[39m
+                        [33mr[39m=[32m"4"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</div>[39m
+                  [36m<input[39m
+                    [33maria-invalid[39m=[32m"false"[39m
+                    [33mclass[39m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[39m
+                    [33mid[39m=[32m"input-hi1im0dej"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"text"[39m
+                    [33mvalue[39m=[32m""[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[39m
+            [36m>[39m
+              [0mEmail Address *[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"w-full"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-mail text-gray-400 w-5 h-5"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[39m
+                    [36m/>[39m
+                    [36m<rect[39m
+                      [33mheight[39m=[32m"16"[39m
+                      [33mrx[39m=[32m"2"[39m
+                      [33mwidth[39m=[32m"20"[39m
+                      [33mx[39m=[32m"2"[39m
+                      [33my[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+                [36m<input[39m
+                  [33maria-invalid[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[39m
+                  [33mid[39m=[32m"input-38kgh93r9"[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"email"[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m/>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[39m
+            [36m>[39m
+              [0mPhone Number *[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"w-full"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-phone text-gray-400 w-5 h-5"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+                [36m<input[39m
+                  [33maria-invalid[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[39m
+                  [33mid[39m=[32m"input-dwc4rikzn"[39m
+                  [33mrequired[39m=[32m""[39m
+                  [33mtype[39m=[32m"tel"[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m/>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center space-x-2"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"rounded"[39m
+              [33mid[39m=[32m"createAccount"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-sm text-gray-700 dark:text-gray-300"[39m
+              [33mfor[39m=[32m"createAccount"[39m
+            [36m>[39m
+              [0mCreate an account to manage your bookings[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 pt-4"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-busy[39m=[32m"false"[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400 h-11 px-4 text-base min-h-[44px] flex-1"[39m
+            [36m>[39m
+              [0mCancel[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-busy[39m=[32m"false"[39m
+              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600 h-11 px-4 text-base min-h-[44px] flex-1"[39m
+              [33mtype[39m=[32m"submit"[39m
+            [36m>[39m
+              [0mContinue[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</form>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+ [31mΓ¥»[39m src/tests/integration/diagnostics.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 6079[2mms[22m[39m
+[31m   [31m├ù[31m Diagnostic: GuestBookingPage[2m > [22m3a. Full Integration (Direct Render)[39m[33m 3040[2mms[22m[39m
+[31m     ΓåÆ Unable to find an element with the text: /Select Dates & Guests/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"max-w-2xl mx-auto py-8 px-4"[31m
+    [36m>[31m
+      [36m<button[31m
+        [33mclass[31m=[32m"flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"[31m
+      [36m>[31m
+        [36m<svg[31m
+          [33maria-hidden[31m=[32m"true"[31m
+          [33mclass[31m=[32m"lucide lucide-arrow-left w-4 h-4"[31m
+          [33mfill[31m=[32m"none"[31m
+          [33mheight[31m=[32m"24"[31m
+          [33mstroke[31m=[32m"currentColor"[31m
+          [33mstroke-linecap[31m=[32m"round"[31m
+          [33mstroke-linejoin[31m=[32m"round"[31m
+          [33mstroke-width[31m=[32m"2"[31m
+          [33mviewBox[31m=[32m"0 0 24 24"[31m
+          [33mwidth[31m=[32m"24"[31m
+          [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+        [36m>[31m
+          [36m<path[31m
+            [33md[31m=[32m"m12 19-7-7 7-7"[31m
+          [36m/>[31m
+          [36m<path[31m
+            [33md[31m=[32m"M19 12H5"[31m
+          [36m/>[31m
+        [36m</svg>[31m
+        [36m<span>[31m
+          [0mBack to Sites[0m
+        [36m</span>[31m
+      [36m</button>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"[31m
+      [36m>[31m
+        [36m<h1[31m
+          [33mclass[31m=[32m"text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"[31m
+        [36m>[31m
+          [0mGuest Information[0m
+        [36m</h1>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-gray-600 dark:text-gray-400 mb-6"[31m
+        [36m>[31m
+          [0mPlease provide your contact information to complete your booking[0m
+        [36m</p>[31m
+        [36m<form[31m
+          [33mclass[31m=[32m"space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"grid grid-cols-1 md:grid-cols-2 gap-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<label[31m
+                [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+              [36m>[31m
+                [0mFirst Name *[0m
+              [36m</label>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"w-full"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"relative"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                  [36m>[31m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"24"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"24"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                      [36m/>[31m
+                      [36m<circle[31m
+                        [33mcx[31m=[32m"12"[31m
+                        [33mcy[31m=[32m"7"[31m
+                        [33mr[31m=[32m"4"[31m
+                      [36m/>[31m
+                    [36m</svg>[31m
+                  [36m</div>[31m
+                  [36m<input[31m
+                    [33maria-invalid[31m=[32m"false"[31m
+                    [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                    [33mid[31m=[32m"input-bc22au6fb"[31m
+                    [33mrequired[31m=[32m""[31m
+                    [33mtype[31m=[32m"text"[31m
+                    [33mvalue[31m=[32m""[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+            [36m<div>[31m
+              [36m<label[31m
+                [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+              [36m>[31m
+                [0mLast Name *[0m
+              [36m</label>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"w-full"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"relative"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                  [36m>[31m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"24"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"24"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                      [36m/>[31m
+                      [36m<circle[31m
+                        [33mcx[31m=[32m"12"[31m
+                        [33mcy[31m=[32m"7"[31m
+                        [33mr[31m=[32m"4"[31m
+                      [36m/>[31m
+                    [36m</svg>[31m
+                  [36m</div>[31m
+                  [36m<input[31m
+                    [33maria-invalid[31m=[32m"false"[31m
+                    [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                    [33mid[31m=[32m"input-1ew82wkxo"[31m
+                    [33mrequired[31m=[32m""[31m
+                    [33mtype[31m=[32m"text"[31m
+                    [33mvalue[31m=[32m""[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div>[31m
+            [36m<label[31m
+              [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+            [36m>[31m
+              [0mEmail Address *[0m
+            [36m</label>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"w-full"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-mail text-gray-400 w-5 h-5"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"24"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"24"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[31m
+                    [36m/>[31m
+                    [36m<rect[31m
+                      [33mheight[31m=[32m"16"[31m
+                      [33mrx[31m=[32m"2"[31m
+                      [33mwidth[31m=[32m"20"[31m
+                      [33mx[31m=[32m"2"[31m
+                      [33my[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+                [36m<input[31m
+                  [33maria-invalid[31m=[32m"false"[31m
+                  [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                  [33mid[31m=[32m"input-wf4k638d5"[31m
+                  [33mrequired[31m=[32m""[31m
+                  [33mtype[31m=[32m"email"[31m
+                  [33mvalue[31m=[32m""[31m
+                [36m/>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div>[31m
+            [36m<label[31m
+              [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+            [36m>[31m
+              [0mPhone Number *[0m
+            [36m</label>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"w-full"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-phone text-gray-400 w-5 h-5"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"24"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"24"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+                [36m<input[31m
+                  [33maria-invalid[31m=[32m"false"[31m
+                  [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                  [33mid[31m=[32m"input-jfxolgjev"[31m
+                  [33mrequired[31m=[32m""[31m
+                  [33mtype[31m=[32m"tel"[31m
+                  [33mvalue[31m=[32m""[31m
+                [36m/>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center space-x-2"[31m
+          [36m>[31m
+            [36m<input[31m
+              [33mclass[31m=[32m"rounded"[31m
+              [33mid[31m=[32m"createAccount"[31m
+              [33mtype[31m=[32m"checkbox"[31m
+            [36m/>[31m
+            [36m<label[31m
+              [33mclass[31m=[32m"text-sm text-gray-700 dark:text-gray-300"[31m
+              [33mfor[31m=[32m"createAccount"[31m
+            [36m>[31m
+              [0mCreate an account to manage your bookings[0m
+            [36m</label>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex gap-2 pt-4"[31m
+          [36m>[31m
+            [36m<button[31m
+              [33maria-busy[31m=[32m"false"[31m
+              [33mclass[31m=[32m"inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400 h-11 px-4 text-base min-h-[44px] flex-1"[31m
+            [36m>[31m
+              [0mCancel[0m
+            [36m</button>[31m
+            [36m<button[31m
+              [33maria-busy[31m=[32m"false"[31m
+              [33mclass[31m=[32m"inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600 h-11 px-4 text-base min-h-[44px] flex-1"[31m
+              [33mtype[31m=[32m"submit"[31m
+            [36m>[31m
+              [0mContinue[0m
+            [36m</button>[31m
+          [36m</div>[31m
+        [36m</form>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<html>[31m
+  [36m<head />[31m
+  [36m<body>[31m
+    [36m<div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"max-w-2xl mx-auto py-8 px-4"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"[31m
+        [36m>[31m
+          [36m<svg[31m
+            [33maria-hidden[31m=[32m"true"[31m
+            [33mclass[31m=[32m"lucide lucide-arrow-left w-4 h-4"[31m
+            [33mfill[31m=[32m"none"[31m
+            [33mheight[31m=[32m"24"[31m
+            [33mstroke[31m=[32m"currentColor"[31m
+            [33mstroke-linecap[31m=[32m"round"[31m
+            [33mstroke-linejoin[31m=[32m"round"[31m
+            [33mstroke-width[31m=[32m"2"[31m
+            [33mviewBox[31m=[32m"0 0 24 24"[31m
+            [33mwidth[31m=[32m"24"[31m
+            [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+          [36m>[31m
+            [36m<path[31m
+              [33md[31m=[32m"m12 19-7-7 7-7"[31m
+            [36m/>[31m
+            [36m<path[31m
+              [33md[31m=[32m"M19 12H5"[31m
+            [36m/>[31m
+          [36m</svg>[31m
+          [36m<span>[31m
+            [0mBack to Sites[0m
+          [36m</span>[31m
+        [36m</button>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"[31m
+          [36m>[31m
+            [0mGuest Information[0m
+          [36m</h1>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-gray-600 dark:text-gray-400 mb-6"[31m
+          [36m>[31m
+            [0mPlease provide your contact information to complete your booking[0m
+          [36m</p>[31m
+          [36m<form[31m
+            [33mclass[31m=[32m"space-y-4"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"grid grid-cols-1 md:grid-cols-2 gap-4"[31m
+            [36m>[31m
+              [36m<div>[31m
+                [36m<label[31m
+                  [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+                [36m>[31m
+                  [0mFirst Name *[0m
+                [36m</label>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"w-full"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"relative"[31m
+                  [36m>[31m
+                    [36m<div[31m
+                      [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                    [36m>[31m
+                      [36m<svg[31m
+                        [33maria-hidden[31m=[32m"true"[31m
+                        [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                        [33mfill[31m=[32m"none"[31m
+                        [33mheight[31m=[32m"24"[31m
+                        [33mstroke[31m=[32m"currentColor"[31m
+                        [33mstroke-linecap[31m=[32m"round"[31m
+                        [33mstroke-linejoin[31m=[32m"round"[31m
+                        [33mstroke-width[31m=[32m"2"[31m
+                        [33mviewBox[31m=[32m"0 0 24 24"[31m
+                        [33mwidth[31m=[32m"24"[31m
+                        [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                      [36m>[31m
+                        [36m<path[31m
+                          [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                        [36m/>[31m
+                        [36m<circle[31m
+                          [33mcx[31m=[32m"12"[31m
+                          [33mcy[31m=[32m"7"[31m
+                          [33mr[31m=[32m"4"[31m
+                        [36m/>[31m
+                      [36m</svg>[31m
+                    [36m</div>[31m
+                    [36m<input[31m
+                      [33maria-invalid[31m=[32m"false"[31m
+                      [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                      [33mid[31m=[32m"input-bc22au6fb"[31m
+                      [33mrequired[31m=[32m""[31m
+                      [33mtype[31m=[32m"text"[31m
+                      [33mvalue[31m=[32m""[31m
+                    [36m/>[31m
+                  [36m</div>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<div>[31m
+                [36m<label[31m
+                  [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+                [36m>[31m
+                  [0mLast Name *[0m
+                [36m</label>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"w-full"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"relative"[31m
+                  [36m>[31m
+                    [36m<div[31m
+                      [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                    [36m>[31m
+                      [36m<svg[31m
+                        [33maria-hidden[31m=[32m"true"[31m
+                        [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                        [33mfill[31m=[32m"none"[31m
+                        [33mheight[31m=[32m"24"[31m
+                        [33mstroke[31m=[32m"currentColor"[31m
+                        [33mstroke-linecap[31m=[32m"round"[31m
+                        [33mstroke-linejoin[31m=[32m"round"[31m
+                        [33mstroke-width[31m=[32m"2"[31m
+                        [33mviewBox[31m=[32m"0 0 24 24"[31m
+                        [33mwidth[31m=[32m"24"[31m
+                        [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                      [36m>[31m
+                        [36m<path[31m
+                          [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                        [36m/>[31m
+                        [36m<circle[31m
+                          [33mcx[31m=[32m"12"[31m
+                          [33mcy[...[39m
+[31m   [31m├ù[31m Diagnostic: GuestBookingPage[2m > [22m3b. Full Integration (With Routes)[39m[33m 3036[2mms[22m[39m
+[31m     ΓåÆ Unable to find an element with the text: /Select Dates & Guests/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"max-w-2xl mx-auto py-8 px-4"[31m
+    [36m>[31m
+      [36m<button[31m
+        [33mclass[31m=[32m"flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"[31m
+      [36m>[31m
+        [36m<svg[31m
+          [33maria-hidden[31m=[32m"true"[31m
+          [33mclass[31m=[32m"lucide lucide-arrow-left w-4 h-4"[31m
+          [33mfill[31m=[32m"none"[31m
+          [33mheight[31m=[32m"24"[31m
+          [33mstroke[31m=[32m"currentColor"[31m
+          [33mstroke-linecap[31m=[32m"round"[31m
+          [33mstroke-linejoin[31m=[32m"round"[31m
+          [33mstroke-width[31m=[32m"2"[31m
+          [33mviewBox[31m=[32m"0 0 24 24"[31m
+          [33mwidth[31m=[32m"24"[31m
+          [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+        [36m>[31m
+          [36m<path[31m
+            [33md[31m=[32m"m12 19-7-7 7-7"[31m
+          [36m/>[31m
+          [36m<path[31m
+            [33md[31m=[32m"M19 12H5"[31m
+          [36m/>[31m
+        [36m</svg>[31m
+        [36m<span>[31m
+          [0mBack to Sites[0m
+        [36m</span>[31m
+      [36m</button>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"[31m
+      [36m>[31m
+        [36m<h1[31m
+          [33mclass[31m=[32m"text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"[31m
+        [36m>[31m
+          [0mGuest Information[0m
+        [36m</h1>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-gray-600 dark:text-gray-400 mb-6"[31m
+        [36m>[31m
+          [0mPlease provide your contact information to complete your booking[0m
+        [36m</p>[31m
+        [36m<form[31m
+          [33mclass[31m=[32m"space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"grid grid-cols-1 md:grid-cols-2 gap-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<label[31m
+                [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+              [36m>[31m
+                [0mFirst Name *[0m
+              [36m</label>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"w-full"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"relative"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                  [36m>[31m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"24"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"24"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                      [36m/>[31m
+                      [36m<circle[31m
+                        [33mcx[31m=[32m"12"[31m
+                        [33mcy[31m=[32m"7"[31m
+                        [33mr[31m=[32m"4"[31m
+                      [36m/>[31m
+                    [36m</svg>[31m
+                  [36m</div>[31m
+                  [36m<input[31m
+                    [33maria-invalid[31m=[32m"false"[31m
+                    [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                    [33mid[31m=[32m"input-3walt5kl1"[31m
+                    [33mrequired[31m=[32m""[31m
+                    [33mtype[31m=[32m"text"[31m
+                    [33mvalue[31m=[32m""[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+            [36m<div>[31m
+              [36m<label[31m
+                [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+              [36m>[31m
+                [0mLast Name *[0m
+              [36m</label>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"w-full"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"relative"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                  [36m>[31m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"24"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"24"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                      [36m/>[31m
+                      [36m<circle[31m
+                        [33mcx[31m=[32m"12"[31m
+                        [33mcy[31m=[32m"7"[31m
+                        [33mr[31m=[32m"4"[31m
+                      [36m/>[31m
+                    [36m</svg>[31m
+                  [36m</div>[31m
+                  [36m<input[31m
+                    [33maria-invalid[31m=[32m"false"[31m
+                    [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                    [33mid[31m=[32m"input-hi1im0dej"[31m
+                    [33mrequired[31m=[32m""[31m
+                    [33mtype[31m=[32m"text"[31m
+                    [33mvalue[31m=[32m""[31m
+                  [36m/>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div>[31m
+            [36m<label[31m
+              [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+            [36m>[31m
+              [0mEmail Address *[0m
+            [36m</label>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"w-full"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-mail text-gray-400 w-5 h-5"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"24"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"24"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"[31m
+                    [36m/>[31m
+                    [36m<rect[31m
+                      [33mheight[31m=[32m"16"[31m
+                      [33mrx[31m=[32m"2"[31m
+                      [33mwidth[31m=[32m"20"[31m
+                      [33mx[31m=[32m"2"[31m
+                      [33my[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+                [36m<input[31m
+                  [33maria-invalid[31m=[32m"false"[31m
+                  [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                  [33mid[31m=[32m"input-38kgh93r9"[31m
+                  [33mrequired[31m=[32m""[31m
+                  [33mtype[31m=[32m"email"[31m
+                  [33mvalue[31m=[32m""[31m
+                [36m/>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div>[31m
+            [36m<label[31m
+              [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+            [36m>[31m
+              [0mPhone Number *[0m
+            [36m</label>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"w-full"[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"relative"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-phone text-gray-400 w-5 h-5"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"24"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"24"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+                [36m<input[31m
+                  [33maria-invalid[31m=[32m"false"[31m
+                  [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                  [33mid[31m=[32m"input-dwc4rikzn"[31m
+                  [33mrequired[31m=[32m""[31m
+                  [33mtype[31m=[32m"tel"[31m
+                  [33mvalue[31m=[32m""[31m
+                [36m/>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center space-x-2"[31m
+          [36m>[31m
+            [36m<input[31m
+              [33mclass[31m=[32m"rounded"[31m
+              [33mid[31m=[32m"createAccount"[31m
+              [33mtype[31m=[32m"checkbox"[31m
+            [36m/>[31m
+            [36m<label[31m
+              [33mclass[31m=[32m"text-sm text-gray-700 dark:text-gray-300"[31m
+              [33mfor[31m=[32m"createAccount"[31m
+            [36m>[31m
+              [0mCreate an account to manage your bookings[0m
+            [36m</label>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex gap-2 pt-4"[31m
+          [36m>[31m
+            [36m<button[31m
+              [33maria-busy[31m=[32m"false"[31m
+              [33mclass[31m=[32m"inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400 h-11 px-4 text-base min-h-[44px] flex-1"[31m
+            [36m>[31m
+              [0mCancel[0m
+            [36m</button>[31m
+            [36m<button[31m
+              [33maria-busy[31m=[32m"false"[31m
+              [33mclass[31m=[32m"inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600 h-11 px-4 text-base min-h-[44px] flex-1"[31m
+              [33mtype[31m=[32m"submit"[31m
+            [36m>[31m
+              [0mContinue[0m
+            [36m</button>[31m
+          [36m</div>[31m
+        [36m</form>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m
+
+Ignored nodes: comments, script, style
+[36m<html>[31m
+  [36m<head />[31m
+  [36m<body>[31m
+    [36m<div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"max-w-2xl mx-auto py-8 px-4"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"[31m
+        [36m>[31m
+          [36m<svg[31m
+            [33maria-hidden[31m=[32m"true"[31m
+            [33mclass[31m=[32m"lucide lucide-arrow-left w-4 h-4"[31m
+            [33mfill[31m=[32m"none"[31m
+            [33mheight[31m=[32m"24"[31m
+            [33mstroke[31m=[32m"currentColor"[31m
+            [33mstroke-linecap[31m=[32m"round"[31m
+            [33mstroke-linejoin[31m=[32m"round"[31m
+            [33mstroke-width[31m=[32m"2"[31m
+            [33mviewBox[31m=[32m"0 0 24 24"[31m
+            [33mwidth[31m=[32m"24"[31m
+            [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+          [36m>[31m
+            [36m<path[31m
+              [33md[31m=[32m"m12 19-7-7 7-7"[31m
+            [36m/>[31m
+            [36m<path[31m
+              [33md[31m=[32m"M19 12H5"[31m
+            [36m/>[31m
+          [36m</svg>[31m
+          [36m<span>[31m
+            [0mBack to Sites[0m
+          [36m</span>[31m
+        [36m</button>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"[31m
+          [36m>[31m
+            [0mGuest Information[0m
+          [36m</h1>[31m
+          [36m<p[31m
+            [33mclass[31m=[32m"text-gray-600 dark:text-gray-400 mb-6"[31m
+          [36m>[31m
+            [0mPlease provide your contact information to complete your booking[0m
+          [36m</p>[31m
+          [36m<form[31m
+            [33mclass[31m=[32m"space-y-4"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"grid grid-cols-1 md:grid-cols-2 gap-4"[31m
+            [36m>[31m
+              [36m<div>[31m
+                [36m<label[31m
+                  [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+                [36m>[31m
+                  [0mFirst Name *[0m
+                [36m</label>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"w-full"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"relative"[31m
+                  [36m>[31m
+                    [36m<div[31m
+                      [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                    [36m>[31m
+                      [36m<svg[31m
+                        [33maria-hidden[31m=[32m"true"[31m
+                        [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                        [33mfill[31m=[32m"none"[31m
+                        [33mheight[31m=[32m"24"[31m
+                        [33mstroke[31m=[32m"currentColor"[31m
+                        [33mstroke-linecap[31m=[32m"round"[31m
+                        [33mstroke-linejoin[31m=[32m"round"[31m
+                        [33mstroke-width[31m=[32m"2"[31m
+                        [33mviewBox[31m=[32m"0 0 24 24"[31m
+                        [33mwidth[31m=[32m"24"[31m
+                        [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                      [36m>[31m
+                        [36m<path[31m
+                          [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                        [36m/>[31m
+                        [36m<circle[31m
+                          [33mcx[31m=[32m"12"[31m
+                          [33mcy[31m=[32m"7"[31m
+                          [33mr[31m=[32m"4"[31m
+                        [36m/>[31m
+                      [36m</svg>[31m
+                    [36m</div>[31m
+                    [36m<input[31m
+                      [33maria-invalid[31m=[32m"false"[31m
+                      [33mclass[31m=[32m"block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"[31m
+                      [33mid[31m=[32m"input-3walt5kl1"[31m
+                      [33mrequired[31m=[32m""[31m
+                      [33mtype[31m=[32m"text"[31m
+                      [33mvalue[31m=[32m""[31m
+                    [36m/>[31m
+                  [36m</div>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<div>[31m
+                [36m<label[31m
+                  [33mclass[31m=[32m"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"[31m
+                [36m>[31m
+                  [0mLast Name *[0m
+                [36m</label>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"w-full"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"relative"[31m
+                  [36m>[31m
+                    [36m<div[31m
+                      [33mclass[31m=[32m"pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"[31m
+                    [36m>[31m
+                      [36m<svg[31m
+                        [33maria-hidden[31m=[32m"true"[31m
+                        [33mclass[31m=[32m"lucide lucide-user text-gray-400 w-5 h-5"[31m
+                        [33mfill[31m=[32m"none"[31m
+                        [33mheight[31m=[32m"24"[31m
+                        [33mstroke[31m=[32m"currentColor"[31m
+                        [33mstroke-linecap[31m=[32m"round"[31m
+                        [33mstroke-linejoin[31m=[32m"round"[31m
+                        [33mstroke-width[31m=[32m"2"[31m
+                        [33mviewBox[31m=[32m"0 0 24 24"[31m
+                        [33mwidth[31m=[32m"24"[31m
+                        [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                      [36m>[31m
+                        [36m<path[31m
+                          [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                        [36m/>[31m
+                        [36m<circle[31m
+                          [33mcx[31m=[32m"12"[31m
+                          [33mcy[...[39m
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 2 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  src/tests/integration/diagnostics.test.tsx > Diagnostic: GuestBookingPage > 3a. Full Integration (Direct Render)
+TestingLibraryElementError: Unable to find an element with the text: /Select Dates & Guests/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="max-w-2xl mx-auto py-8 px-4"
+    >
+      <button
+        class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-arrow-left w-4 h-4"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m12 19-7-7 7-7"
+          />
+          <path
+            d="M19 12H5"
+          />
+        </svg>
+        <span>
+          Back to Sites
+        </span>
+      </button>
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"
+      >
+        <h1
+          class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+        >
+          Guest Information
+        </h1>
+        <p
+          class="text-gray-600 dark:text-gray-400 mb-6"
+        >
+          Please provide your contact information to complete your booking
+        </p>
+        <form
+          class="space-y-4"
+        >
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                First Name *
+              </label>
+              <div
+                class="w-full"
+              >
+                <div
+                  class="relative"
+                >
+                  <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-user text-gray-400 w-5 h-5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                      />
+                      <circle
+                        cx="12"
+                        cy="7"
+                        r="4"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    aria-invalid="false"
+                    class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                    id="input-bc22au6fb"
+                    required=""
+                    type="text"
+                    value=""
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Last Name *
+              </label>
+              <div
+                class="w-full"
+              >
+                <div
+                  class="relative"
+                >
+                  <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-user text-gray-400 w-5 h-5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                      />
+                      <circle
+                        cx="12"
+                        cy="7"
+                        r="4"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    aria-invalid="false"
+                    class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                    id="input-1ew82wkxo"
+                    required=""
+                    type="text"
+                    value=""
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Email Address *
+            </label>
+            <div
+              class="w-full"
+            >
+              <div
+                class="relative"
+              >
+                <div
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="lucide lucide-mail text-gray-400 w-5 h-5"
+                    fill="none"
+                    height="24"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"
+                    />
+                    <rect
+                      height="16"
+                      rx="2"
+                      width="20"
+                      x="2"
+                      y="4"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-invalid="false"
+                  class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                  id="input-wf4k638d5"
+                  required=""
+                  type="email"
+                  value=""
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Phone Number *
+            </label>
+            <div
+              class="w-full"
+            >
+              <div
+                class="relative"
+              >
+                <div
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="lucide lucide-phone text-gray-400 w-5 h-5"
+                    fill="none"
+                    height="24"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-invalid="false"
+                  class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                  id="input-jfxolgjev"
+                  required=""
+                  type="tel"
+                  value=""
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex items-center space-x-2"
+          >
+            <input
+              class="rounded"
+              id="createAccount"
+              type="checkbox"
+            />
+            <label
+              class="text-sm text-gray-700 dark:text-gray-300"
+              for="createAccount"
+            >
+              Create an account to manage your bookings
+            </label>
+          </div>
+          <div
+            class="flex gap-2 pt-4"
+          >
+            <button
+              aria-busy="false"
+              class="inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400 h-11 px-4 text-base min-h-[44px] flex-1"
+            >
+              Cancel
+            </button>
+            <button
+              aria-busy="false"
+              class="inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600 h-11 px-4 text-base min-h-[44px] flex-1"
+              type="submit"
+            >
+              Continue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div
+        class="max-w-2xl mx-auto py-8 px-4"
+      >
+        <button
+          class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-arrow-left w-4 h-4"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m12 19-7-7 7-7"
+            />
+            <path
+              d="M19 12H5"
+            />
+          </svg>
+          <span>
+            Back to Sites
+          </span>
+        </button>
+        <div
+          class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"
+        >
+          <h1
+            class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Guest Information
+          </h1>
+          <p
+            class="text-gray-600 dark:text-gray-400 mb-6"
+          >
+            Please provide your contact information to complete your booking
+          </p>
+          <form
+            class="space-y-4"
+          >
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  First Name *
+                </label>
+                <div
+                  class="w-full"
+                >
+                  <div
+                    class="relative"
+                  >
+                    <div
+                      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="lucide lucide-user text-gray-400 w-5 h-5"
+                        fill="none"
+                        height="24"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                        />
+                        <circle
+                          cx="12"
+                          cy="7"
+                          r="4"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      aria-invalid="false"
+                      class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                      id="input-bc22au6fb"
+                      required=""
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Last Name *
+                </label>
+                <div
+                  class="w-full"
+                >
+                  <div
+                    class="relative"
+                  >
+                    <div
+                      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="lucide lucide-user text-gray-400 w-5 h-5"
+                        fill="none"
+                        height="24"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                        />
+                        <circle
+                          cx="12"
+                          cy[...
+ Γ¥» waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ Γ¥» src/tests/integration/diagnostics.test.tsx:52:19
+     50| 
+     51|         try {
+     52|             await waitFor(() => expect(screen.getByText(/Select Dates ΓÇª
+       |                   ^
+     53|             console.log('[PASS] 3a (Direct Render) works');
+     54|         } catch (e) {
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/2]ΓÄ»
+
+ FAIL  src/tests/integration/diagnostics.test.tsx > Diagnostic: GuestBookingPage > 3b. Full Integration (With Routes)
+TestingLibraryElementError: Unable to find an element with the text: /Select Dates & Guests/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="max-w-2xl mx-auto py-8 px-4"
+    >
+      <button
+        class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-arrow-left w-4 h-4"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m12 19-7-7 7-7"
+          />
+          <path
+            d="M19 12H5"
+          />
+        </svg>
+        <span>
+          Back to Sites
+        </span>
+      </button>
+      <div
+        class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"
+      >
+        <h1
+          class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+        >
+          Guest Information
+        </h1>
+        <p
+          class="text-gray-600 dark:text-gray-400 mb-6"
+        >
+          Please provide your contact information to complete your booking
+        </p>
+        <form
+          class="space-y-4"
+        >
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                First Name *
+              </label>
+              <div
+                class="w-full"
+              >
+                <div
+                  class="relative"
+                >
+                  <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-user text-gray-400 w-5 h-5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                      />
+                      <circle
+                        cx="12"
+                        cy="7"
+                        r="4"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    aria-invalid="false"
+                    class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                    id="input-3walt5kl1"
+                    required=""
+                    type="text"
+                    value=""
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Last Name *
+              </label>
+              <div
+                class="w-full"
+              >
+                <div
+                  class="relative"
+                >
+                  <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-user text-gray-400 w-5 h-5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                      />
+                      <circle
+                        cx="12"
+                        cy="7"
+                        r="4"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    aria-invalid="false"
+                    class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                    id="input-hi1im0dej"
+                    required=""
+                    type="text"
+                    value=""
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Email Address *
+            </label>
+            <div
+              class="w-full"
+            >
+              <div
+                class="relative"
+              >
+                <div
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="lucide lucide-mail text-gray-400 w-5 h-5"
+                    fill="none"
+                    height="24"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"
+                    />
+                    <rect
+                      height="16"
+                      rx="2"
+                      width="20"
+                      x="2"
+                      y="4"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-invalid="false"
+                  class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                  id="input-38kgh93r9"
+                  required=""
+                  type="email"
+                  value=""
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Phone Number *
+            </label>
+            <div
+              class="w-full"
+            >
+              <div
+                class="relative"
+              >
+                <div
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="lucide lucide-phone text-gray-400 w-5 h-5"
+                    fill="none"
+                    height="24"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-invalid="false"
+                  class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                  id="input-dwc4rikzn"
+                  required=""
+                  type="tel"
+                  value=""
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex items-center space-x-2"
+          >
+            <input
+              class="rounded"
+              id="createAccount"
+              type="checkbox"
+            />
+            <label
+              class="text-sm text-gray-700 dark:text-gray-300"
+              for="createAccount"
+            >
+              Create an account to manage your bookings
+            </label>
+          </div>
+          <div
+            class="flex gap-2 pt-4"
+          >
+            <button
+              aria-busy="false"
+              class="inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400 h-11 px-4 text-base min-h-[44px] flex-1"
+            >
+              Cancel
+            </button>
+            <button
+              aria-busy="false"
+              class="inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600 h-11 px-4 text-base min-h-[44px] flex-1"
+              type="submit"
+            >
+              Continue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div
+        class="max-w-2xl mx-auto py-8 px-4"
+      >
+        <button
+          class="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-arrow-left w-4 h-4"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m12 19-7-7 7-7"
+            />
+            <path
+              d="M19 12H5"
+            />
+          </svg>
+          <span>
+            Back to Sites
+          </span>
+        </button>
+        <div
+          class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-6"
+        >
+          <h1
+            class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Guest Information
+          </h1>
+          <p
+            class="text-gray-600 dark:text-gray-400 mb-6"
+          >
+            Please provide your contact information to complete your booking
+          </p>
+          <form
+            class="space-y-4"
+          >
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  First Name *
+                </label>
+                <div
+                  class="w-full"
+                >
+                  <div
+                    class="relative"
+                  >
+                    <div
+                      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="lucide lucide-user text-gray-400 w-5 h-5"
+                        fill="none"
+                        height="24"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                        />
+                        <circle
+                          cx="12"
+                          cy="7"
+                          r="4"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      aria-invalid="false"
+                      class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600 pl-10"
+                      id="input-3walt5kl1"
+                      required=""
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Last Name *
+                </label>
+                <div
+                  class="w-full"
+                >
+                  <div
+                    class="relative"
+                  >
+                    <div
+                      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="lucide lucide-user text-gray-400 w-5 h-5"
+                        fill="none"
+                        height="24"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                        />
+                        <circle
+                          cx="12"
+                          cy[...
+ Γ¥» waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ Γ¥» src/tests/integration/diagnostics.test.tsx:89:19
+     87| 
+     88|         try {
+     89|             await waitFor(() => expect(screen.getByText(/Select Dates ΓÇª
+       |                   ^
+     90|             console.log('[PASS] 3b (With Routes) works');
+     91|         } catch (e) {
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/2]ΓÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m   Start at [22m 23:19:51
+[2m   Duration [22m 8.67s[2m (transform 368ms, setup 240ms, collect 1.07s, tests 6.08s, environment 662ms, prepare 216ms)[22m
+

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { getSiteById, checkSiteAvailability } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { SiteType } from '@/types';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -35,15 +35,7 @@ const SiteDetailPage: React.FC = () => {
   // Fetch site details
   const { data: site, isLoading } = useQuery({
     queryKey: queryKeys.sites.detail(id!),
-    queryFn: async () => {
-      try {
-        const apiSite = await getSiteById(id!);
-        return apiSite;
-      } catch {
-        // Fallback to mock data
-        return mockSites.find((s) => s.id === id) || mockSites[0];
-      }
-    },
+    queryFn: () => getSiteById(id!),
     enabled: !!id,
   });
 

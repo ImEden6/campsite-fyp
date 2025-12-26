@@ -127,10 +127,11 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_firstName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             First Name *
                                         </label>
                                         <Input
+                                            id={`guest_${globalIndex}_firstName`}
                                             type="text"
                                             value={guest.firstName}
                                             onChange={(e) => handleUpdate(globalIndex, 'firstName', e.target.value)}
@@ -148,10 +149,11 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_lastName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Last Name *
                                         </label>
                                         <Input
+                                            id={`guest_${globalIndex}_lastName`}
                                             type="text"
                                             value={guest.lastName}
                                             onChange={(e) => handleUpdate(globalIndex, 'lastName', e.target.value)}
@@ -195,10 +197,11 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_firstName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             First Name *
                                         </label>
                                         <Input
+                                            id={`guest_${globalIndex}_firstName`}
                                             type="text"
                                             value={guest.firstName}
                                             onChange={(e) => handleUpdate(globalIndex, 'firstName', e.target.value)}
@@ -214,10 +217,11 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_lastName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Last Name *
                                         </label>
                                         <Input
+                                            id={`guest_${globalIndex}_lastName`}
                                             type="text"
                                             value={guest.lastName}
                                             onChange={(e) => handleUpdate(globalIndex, 'lastName', e.target.value)}
@@ -233,10 +237,11 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_age`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Age (Optional)
                                         </label>
                                         <Input
+                                            id={`guest_${globalIndex}_age`}
                                             type="number"
                                             value={guest.age || ''}
                                             onChange={(e) => handleUpdate(globalIndex, 'age', e.target.value ? parseInt(e.target.value) : undefined)}

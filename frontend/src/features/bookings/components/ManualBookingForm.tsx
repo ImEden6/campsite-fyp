@@ -10,7 +10,7 @@ import { Button, Input, Select, Card } from '@/components/ui';
 import { VehicleInput, EquipmentSelector, PricingBreakdown } from './';
 import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
 import { getSites } from '@/services/api/sites';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { calculateBookingPrice, createBooking } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, Vehicle, SiteStatus } from '@/types';
@@ -36,7 +36,7 @@ interface ManualFormState {
   guestDetails: GuestDetail[];
   vehicles: Omit<Vehicle, 'id'>[];
   specialRequests: string;
-  equipmentRentals: { equipmentId: string; quantity: number }[];
+  equipmentReservations: { equipmentId: string; quantity: number }[];
   status: BookingStatus;
   skipPayment: boolean;
 }
@@ -54,7 +54,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
     guestDetails: [],
     vehicles: [],
     specialRequests: '',
-    equipmentRentals: [],
+    equipmentReservations: [],
     status: BookingStatus.CONFIRMED,
     skipPayment: true,
   });
@@ -80,13 +80,9 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
       try {
         const apiSites = await getSites({ status: [SiteStatus.AVAILABLE] });
         // Use mock data if API returns empty
-        if (apiSites.length === 0) {
-          return mockSites.filter(s => s.status === SiteStatus.AVAILABLE);
-        }
         return apiSites;
       } catch {
-        // Fallback to mock data on error
-        return mockSites.filter(s => s.status === SiteStatus.AVAILABLE);
+        return [];
       }
     },
   });
@@ -102,7 +98,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
         state.siteId,
         state.checkInDate,
         state.checkOutDate,
-        state.equipmentRentals
+        state.equipmentReservations
       );
       setPricing(price);
     } catch (err: unknown) {
@@ -131,7 +127,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
         })),
         vehicles: formData.vehicles,
         specialRequests: formData.specialRequests || undefined,
-        equipmentRentals: formData.equipmentRentals.length > 0 ? formData.equipmentRentals : undefined,
+        equipmentReservations: formData.equipmentReservations.length > 0 ? formData.equipmentReservations : undefined,
       };
 
       const booking = await createBooking(bookingData);
@@ -149,7 +145,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
   const handleEquipmentChange = (equipment: { equipmentId: string; quantity: number }[]) => {
     setFormData((prev) => {
-      const next = { ...prev, equipmentRentals: equipment };
+      const next = { ...prev, equipmentReservations: equipment };
       void handleCalculatePrice(next);
       return next;
     });
@@ -323,7 +319,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Equipment Rentals (Optional)</h3>
         <EquipmentSelector
-          selectedEquipment={formData.equipmentRentals}
+          selectedEquipment={formData.equipmentReservations}
           onChange={handleEquipmentChange}
           checkInDate={formData.checkInDate}
           checkOutDate={formData.checkOutDate}

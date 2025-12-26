@@ -12,13 +12,7 @@ import type {
   ApiResponse,
   BookingFilters,
 } from '@/types';
-import {
-  calculateMockPrice,
-  createMockBooking,
-  getMockBooking,
-  setUsingMockData,
-} from './mockBookingStore';
-import { env } from '@/config/env';
+
 
 export interface CreateBookingData {
   siteId: string;
@@ -37,7 +31,7 @@ export interface CreateBookingData {
   }[];
   vehicles: Omit<Vehicle, 'id'>[];
   specialRequests?: string;
-  equipmentRentals?: {
+  equipmentReservations?: {
     equipmentId: string;
     quantity: number;
   }[];
@@ -112,21 +106,11 @@ export const getBookingsPaginated = async (
  * Falls back to mock booking if API is unavailable (MVP)
  */
 export const getBookingById = async (id: string): Promise<Booking> => {
-  try {
-    const response = await get<ApiResponse<Booking>>(`/bookings/${id}`);
-    if (!response.data) {
-      throw new Error(`Booking not found: ${id}`);
-    }
-    return response.data;
-  } catch (error) {
-    const mockBooking = getMockBooking(id);
-    if (mockBooking) {
-      console.warn('[MVP] Using mock booking - API unavailable');
-      setUsingMockData(true);
-      return mockBooking;
-    }
-    throw error;
+  const response = await get<ApiResponse<Booking>>(`/bookings/${id}`);
+  if (!response.data) {
+    throw new Error(`Booking not found: ${id}`);
   }
+  return response.data;
 };
 
 /**
@@ -139,18 +123,9 @@ export const getMyBookings = async (filters?: BookingFilters): Promise<Booking[]
       params: filters,
     });
 
-    // Use mock data if API returns empty or invalid response
-    if (!response || !response.data || response.data.length === 0) {
-      const { getMockMyBookings } = await import('./mock-bookings');
-      return getMockMyBookings();
-    }
-
     return response.data;
   } catch (error) {
-    // Fallback to mock data on any error
-    console.warn('Failed to fetch bookings from API, using mock data:', error);
-    const { getMockMyBookings } = await import('./mock-bookings');
-    return getMockMyBookings();
+    throw error;
   }
 };
 
@@ -159,22 +134,8 @@ export const getMyBookings = async (filters?: BookingFilters): Promise<Booking[]
  * Falls back to mock data if API is unavailable
  */
 export const getUpcomingBookings = async (): Promise<Booking[]> => {
-  try {
-    const response = await get<ApiResponse<Booking[]>>('/bookings/upcoming');
-
-    // Use mock data if API returns empty or invalid response
-    if (!response || !response.data || response.data.length === 0) {
-      const { getMockUpcomingBookings } = await import('./mock-bookings');
-      return getMockUpcomingBookings();
-    }
-
-    return response.data;
-  } catch (error) {
-    // Fallback to mock data on any error
-    console.warn('Failed to fetch upcoming bookings from API, using mock data:', error);
-    const { getMockUpcomingBookings } = await import('./mock-bookings');
-    return getMockUpcomingBookings();
-  }
+  const response = await get<ApiResponse<Booking[]>>('/bookings/upcoming');
+  return response.data;
 };
 
 /**
@@ -182,22 +143,8 @@ export const getUpcomingBookings = async (): Promise<Booking[]> => {
  * Falls back to mock data if API is unavailable
  */
 export const getBookingHistory = async (): Promise<Booking[]> => {
-  try {
-    const response = await get<ApiResponse<Booking[]>>('/bookings/history');
-
-    // Use mock data if API returns empty or invalid response
-    if (!response || !response.data || response.data.length === 0) {
-      const { getMockBookingHistory } = await import('./mock-bookings');
-      return getMockBookingHistory();
-    }
-
-    return response.data;
-  } catch (error) {
-    // Fallback to mock data on any error
-    console.warn('Failed to fetch booking history from API, using mock data:', error);
-    const { getMockBookingHistory } = await import('./mock-bookings');
-    return getMockBookingHistory();
-  }
+  const response = await get<ApiResponse<Booking[]>>('/bookings/history');
+  return response.data;
 };
 
 /**
@@ -208,31 +155,18 @@ export const calculateBookingPrice = async (
   siteId: string,
   checkInDate: string,
   checkOutDate: string,
-  equipmentRentals?: { equipmentId: string; quantity: number }[]
+  equipmentReservations?: { equipmentId: string; quantity: number }[]
 ): Promise<BookingPricing> => {
-  // Check for mock mode to avoid 405 errors in preview
-  if (env.useMockPayments) {
-    console.warn('[Mock] Using mock pricing (VITE_USE_MOCK_PAYMENTS=true)');
-    setUsingMockData(true);
-    return calculateMockPrice(siteId, checkInDate, checkOutDate, equipmentRentals);
+  const response = await post<ApiResponse<BookingPricing>>('/bookings/calculate-price', {
+    siteId,
+    checkInDate,
+    checkOutDate,
+    equipmentReservations,
+  });
+  if (!response.data) {
+    throw new Error('Failed to calculate pricing');
   }
-
-  try {
-    const response = await post<ApiResponse<BookingPricing>>('/bookings/calculate-price', {
-      siteId,
-      checkInDate,
-      checkOutDate,
-      equipmentRentals,
-    });
-    if (!response.data) {
-      throw new Error('Failed to calculate pricing');
-    }
-    return response.data;
-  } catch {
-    console.warn('[MVP] Using mock pricing - API unavailable');
-    setUsingMockData(true);
-    return calculateMockPrice(siteId, checkInDate, checkOutDate, equipmentRentals);
-  }
+  return response.data;
 };
 
 /**
@@ -240,13 +174,6 @@ export const calculateBookingPrice = async (
  * Falls back to mock booking creation if API is unavailable (MVP)
  */
 export const createBooking = async (bookingData: CreateBookingData): Promise<Booking> => {
-  // Check for mock mode to avoid 405 errors in preview
-  if (env.useMockPayments) {
-    console.warn('[Mock] Using mock booking creation (VITE_USE_MOCK_PAYMENTS=true)');
-    setUsingMockData(true);
-    return createMockBooking(bookingData);
-  }
-
   try {
     const response = await post<ApiResponse<Booking>>('/bookings', bookingData);
     if (!response.data) {
@@ -254,9 +181,7 @@ export const createBooking = async (bookingData: CreateBookingData): Promise<Boo
     }
     return response.data;
   } catch {
-    console.warn('[MVP] Using mock booking creation - API unavailable');
-    setUsingMockData(true);
-    return createMockBooking(bookingData);
+    throw new Error('Failed to create booking');
   }
 };
 
@@ -358,21 +283,11 @@ export interface GuestBookingResponse {
 export const createGuestBooking = async (
   bookingData: CreateGuestBookingData
 ): Promise<GuestBookingResponse> => {
-  try {
-    const response = await post<ApiResponse<GuestBookingResponse>>('/bookings/guest', bookingData);
-    if (!response.data) {
-      throw new Error('Failed to create guest booking');
-    }
-    return response.data;
-  } catch (error) {
-    console.warn('[Mock] Using mock guest booking creation - API unavailable', error);
-    setUsingMockData(true);
-    const mockBooking = createMockBooking(bookingData);
-    return {
-      booking: mockBooking,
-      accessToken: 'mock-access-token',
-    };
+  const response = await post<ApiResponse<GuestBookingResponse>>('/bookings/guest', bookingData);
+  if (!response.data) {
+    throw new Error('Failed to create guest booking');
   }
+  return response.data;
 };
 
 /**

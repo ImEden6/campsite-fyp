@@ -214,11 +214,11 @@ const CheckOutPage: React.FC = () => {
             </div>
           </div>
 
-          {selectedBooking.equipmentRentals && selectedBooking.equipmentRentals.length > 0 && (
+          {selectedBooking.equipmentReservations && selectedBooking.equipmentReservations.length > 0 && (
             <div className="mb-6">
               <div className="text-sm text-gray-500 mb-2">Equipment Rentals</div>
               <div className="space-y-2">
-                {selectedBooking.equipmentRentals.map((rental, index) => (
+                {selectedBooking.equipmentReservations.map((rental, index) => (
                   <div key={index} className="text-sm bg-gray-50 p-2 rounded flex justify-between">
                     <span>
                       {rental.equipment?.name} x{rental.quantity}

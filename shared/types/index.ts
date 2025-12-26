@@ -174,6 +174,13 @@ export enum PaymentStatus {
   FAILED = 'FAILED'
 }
 
+export enum ReservationStatus {
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+  FULFILLED = 'FULFILLED',
+  PARTIAL = 'PARTIAL'
+}
+
 export enum GuestType {
   ADULT = 'ADULT',
   CHILD = 'CHILD'
@@ -238,7 +245,7 @@ export interface Booking {
   user?: User;
   site?: Site;
   payments?: Payment[];
-  equipmentRentals?: EquipmentRental[];
+  equipmentReservations?: EquipmentReservation[];
   communications?: Communication[];
 }
 
@@ -352,6 +359,25 @@ export interface EquipmentRental {
   // Relations
   equipment?: Equipment;
   booking?: Booking;
+}
+
+export interface EquipmentReservation {
+  readonly id: string;
+  bookingId: string;
+  equipmentId: string;
+  quantity: number;
+  startDate: Date;
+  endDate: Date;
+  status: ReservationStatus;
+  dailyRate: number;
+  totalAmount: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+
+  // Relations
+  booking?: Booking;
+  equipment?: Equipment;
+  rentals?: EquipmentRental[];
 }
 
 // ============================================================================
@@ -719,7 +745,7 @@ export type ApiGuest = Omit<Guest, 'createdAt' | 'updatedAt'> & {
   updatedAt: DateString;
 };
 
-export type ApiBooking = Omit<Booking, 'checkInDate' | 'checkOutDate' | 'checkInTime' | 'checkOutTime' | 'createdAt' | 'updatedAt' | 'user' | 'site' | 'payments' | 'equipmentRentals' | 'communications' | 'guestDetails'> & {
+export type ApiBooking = Omit<Booking, 'checkInDate' | 'checkOutDate' | 'checkInTime' | 'checkOutTime' | 'createdAt' | 'updatedAt' | 'user' | 'site' | 'payments' | 'equipmentReservations' | 'communications' | 'guestDetails'> & {
   checkInDate: DateString;
   checkOutDate: DateString;
   checkInTime?: DateString;
@@ -729,7 +755,7 @@ export type ApiBooking = Omit<Booking, 'checkInDate' | 'checkOutDate' | 'checkIn
   user?: ApiUser;
   site?: ApiSite;
   payments?: ApiPayment[];
-  equipmentRentals?: ApiEquipmentRental[];
+  equipmentReservations?: ApiEquipmentReservation[];
   communications?: ApiCommunication[];
   guestDetails?: ApiGuest[];
 };
@@ -754,6 +780,16 @@ export type ApiEquipmentRental = Omit<EquipmentRental, 'startDate' | 'endDate' |
   updatedAt: DateString;
   equipment?: ApiEquipment;
   booking?: ApiBooking;
+};
+
+export type ApiEquipmentReservation = Omit<EquipmentReservation, 'startDate' | 'endDate' | 'createdAt' | 'updatedAt' | 'equipment' | 'booking' | 'rentals'> & {
+  startDate: DateString;
+  endDate: DateString;
+  createdAt: DateString;
+  updatedAt: DateString;
+  equipment?: ApiEquipment;
+  booking?: ApiBooking;
+  rentals?: ApiEquipmentRental[];
 };
 
 export type ApiCommunication = Omit<Communication, 'sentAt' | 'readAt' | 'createdAt' | 'updatedAt'> & {

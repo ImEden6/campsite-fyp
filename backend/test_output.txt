@@ -1,0 +1,113 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mD:/campsite-fyp/backend[39m
+
+ [31mΓ¥»[39m tests/services/booking.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[32m 169[2mms[22m[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould return all equipment when no conflicts exist[39m[32m 141[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould detect conflicting bookings[39m[32m 5[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould mark equipment as unavailable when fully booked[39m[32m 5[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould filter by equipment type[39m[32m 5[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould handle timezone conversion correctly[39m[32m 4[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould throw error for invalid date range[39m[32m 4[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+[31m   [31m├ù[31m Booking Service - Equipment Availability[2m > [22mgetAvailableEquipment[2m > [22mshould not count returned rentals as conflicts[39m[32m 4[2mms[22m[39m
+[31m     ΓåÆ 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433[39m
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 7 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should return all equipment when no conflicts exist
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should detect conflicting bookings
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should mark equipment as unavailable when fully booked
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should filter by equipment type
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should handle timezone conversion correctly
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should throw error for invalid date range
+ FAIL  tests/services/booking.test.ts > Booking Service - Equipment Availability > getAvailableEquipment > should not count returned rentals as conflicts
+PrismaClientKnownRequestError: 
+Invalid `prisma.user.create()` invocation in
+D:\campsite-fyp\backend\tests\services\booking.test.ts:17:40
+
+  14 
+  15 beforeEach(async () => {
+  16   // Create test user
+ΓåÆ 17   const testUser = await prisma.user.create(
+Can't reach database server at 127.0.0.1:5433
+ Γ¥» qr.handleRequestError ../node_modules/@prisma/client/src/runtime/RequestHandler.ts:228:13
+ Γ¥» qr.handleAndLogRequestError ../node_modules/@prisma/client/src/runtime/RequestHandler.ts:174:12
+ Γ¥» qr.request ../node_modules/@prisma/client/src/runtime/RequestHandler.ts:143:12
+ Γ¥» a ../node_modules/@prisma/client/src/runtime/getPrismaClient.ts:805:24
+ Γ¥» tests/services/booking.test.ts:17:22
+     15|   beforeEach(async () => {
+     16|     // Create test user
+     17|     const testUser = await prisma.user.create({
+       |                      ^
+     18|       data: {
+     19|         email: `test-${Date.now()}-${Math.random()}@example.com`,
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/7]ΓÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[90m (7)[39m
+[2m   Start at [22m 22:15:31
+[2m   Duration [22m 1.40s[2m (transform 206ms, setup 50ms, collect 472ms, tests 169ms, environment 0ms, prepare 278ms)[22m
+

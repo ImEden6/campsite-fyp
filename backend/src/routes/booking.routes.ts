@@ -98,7 +98,7 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
           select: {
             guests: true,
             vehicles: true,
-            equipmentRentals: true,
+            equipmentReservations: true,
           },
         },
       },
@@ -118,7 +118,7 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
       // Use counts from _count for list view
       guestCount: booking._count.guests,
       vehicleCount: booking._count.vehicles,
-      equipmentRentalCount: booking._count.equipmentRentals,
+      equipmentRentalCount: booking._count.equipmentReservations,
     }));
 
     logger.info('Bookings retrieved', {
@@ -221,7 +221,7 @@ router.get('/paginated', authenticate, async (req: Request, res: Response, next:
             select: {
               guests: true,
               vehicles: true,
-              equipmentRentals: true,
+              equipmentReservations: true,
             },
           },
         },
@@ -243,7 +243,7 @@ router.get('/paginated', authenticate, async (req: Request, res: Response, next:
       },
       guestCount: booking._count.guests,
       vehicleCount: booking._count.vehicles,
-      equipmentRentalCount: booking._count.equipmentRentals,
+      equipmentRentalCount: booking._count.equipmentReservations,
     }));
 
     res.json({
@@ -289,7 +289,7 @@ router.get('/my-bookings', authenticate, async (req: Request, res: Response, nex
         },
         vehicles: true,
         guests: true,
-        equipmentRentals: {
+        equipmentReservations: {
           include: {
             equipment: true,
           },
@@ -351,7 +351,7 @@ router.get('/:id', authenticate, authorizeBookingOwnership, async (req: Request,
         },
         vehicles: true,
         guests: true,
-        equipmentRentals: {
+        equipmentReservations: {
           include: {
             equipment: true,
           },

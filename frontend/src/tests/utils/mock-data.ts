@@ -66,7 +66,7 @@ export const mockBooking = {
     pets: 0,
   },
   vehicles: [],
-  equipmentRentals: [],
+  equipmentReservations: [],
   specialRequests: 'Early check-in if possible',
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),

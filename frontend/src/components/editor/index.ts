@@ -9,3 +9,5 @@ export { LayersPanel } from './LayersPanel';
 export { Rulers, RULER_SIZE } from './Rulers';
 export { AlignmentToolbar } from './AlignmentToolbar';
 export { ExportDialog } from './ExportDialog';
+export { BackgroundDialog } from './BackgroundDialog';
+

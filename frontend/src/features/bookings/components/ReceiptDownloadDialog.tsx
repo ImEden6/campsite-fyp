@@ -290,10 +290,10 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
                     <div class="line-item-details">${calculateNights()} nights</div>
                   </div>
                   <div class="line-item-amount">
-                    ${CURRENCY_SYMBOL}${(booking.totalAmount - booking.taxAmount - (booking.equipmentRentals?.reduce((sum, er) => sum + er.totalAmount, 0) || 0)).toFixed(2)}
+                    ${CURRENCY_SYMBOL}${(booking.totalAmount - booking.taxAmount - (booking.equipmentReservations?.reduce((sum, er) => sum + er.totalAmount, 0) || 0)).toFixed(2)}
                   </div>
                 </div>
-                ${booking.equipmentRentals && booking.equipmentRentals.length > 0 ? booking.equipmentRentals.map(rental => `
+                ${booking.equipmentReservations && booking.equipmentReservations.length > 0 ? booking.equipmentReservations.map(rental => `
                   <div class="line-item">
                     <div class="line-item-description">
                       <div class="line-item-title">${rental.equipment?.name || 'Equipment'}</div>

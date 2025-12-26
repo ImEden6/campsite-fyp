@@ -10,66 +10,66 @@ datasource db {
 
 // User and Authentication Models
 model User {
-  id                String             @id @default(cuid())
-  email             String             @unique
-  firstName         String
-  lastName          String
-  phone             String?
-  role              UserRole           @default(CUSTOMER)
-  password          String
-  isActive          Boolean            @default(true)
-  isEmailVerified   Boolean            @default(false)
-  isPhoneVerified   Boolean            @default(false)
-  avatar            String?
-  avatarKey         String?
-  lastLoginAt       DateTime?
-  emailVerifiedAt   DateTime?
-  phoneVerifiedAt   DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
+  id              String    @id @default(cuid())
+  email           String    @unique
+  firstName       String
+  lastName        String
+  phone           String?
+  role            UserRole  @default(CUSTOMER)
+  password        String
+  isActive        Boolean   @default(true)
+  isEmailVerified Boolean   @default(false)
+  isPhoneVerified Boolean   @default(false)
+  avatar          String?
+  avatarKey       String?
+  lastLoginAt     DateTime?
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
   // Relations
-  bookings          Booking[]
-  payments          Payment[]
-  communications    Communication[]
-  notifications     Notification[]
-  sessions          UserSession[]
-  preferences       UserPreferences?
-  apiKeys           ApiKey[]
-  
+  bookings       Booking[]
+  payments       Payment[]
+  communications Communication[]
+  notifications  Notification[]
+  sessions       UserSession[]
+  preferences    UserPreferences?
+  apiKeys        ApiKey[]
+
   @@map("users")
 }
 
 model UserPreferences {
-  id            String  @id @default(cuid())
-  userId        String  @unique
-  theme         String  @default("light")
-  language      String  @default("en")
-  timezone      String  @default("America/New_York")
-  emailNotifications Boolean @default(true)
-  smsNotifications   Boolean @default(true)
-  pushNotifications  Boolean @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  theme              String   @default("light")
+  language           String   @default("en")
+  timezone           String   @default("America/New_York")
+  emailNotifications Boolean  @default(true)
+  smsNotifications   Boolean  @default(true)
+  pushNotifications  Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
   // Relations
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("user_preferences")
 }
 
 model UserSession {
-  id          String   @id @default(cuid())
-  userId      String
-  token       String   @unique
-  refreshToken String  @unique
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([expiresAt])
   @@map("user_sessions")
@@ -87,10 +87,10 @@ model ApiKey {
   createdBy   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   // Relations
-  creator     User      @relation(fields: [createdBy], references: [id])
-  
+  creator User @relation(fields: [createdBy], references: [id])
+
   @@index([keyHash])
   @@index([createdBy])
   @@map("api_keys")
@@ -98,35 +98,35 @@ model ApiKey {
 
 // Site and Accommodation Models
 model Site {
-  id            String     @id @default(cuid())
-  name          String     @unique
-  type          SiteType
-  status        SiteStatus @default(AVAILABLE)
-  capacity      Int
-  description   String?
-  amenities     String[]   @default([])
-  images        String[]   @default([])
-  basePrice     Float
-  maxVehicles   Int        @default(2)
-  maxTents      Int        @default(1)
-  isPetFriendly Boolean    @default(false)
-  hasElectricity Boolean   @default(false)
-  hasWater      Boolean    @default(false)
-  hasSewer      Boolean    @default(false)
-  hasWifi       Boolean    @default(false)
-  sizeLength    Float
-  sizeWidth     Float
-  sizeUnit      String     @default("feet")
-  latitude      Float
-  longitude     Float
-  mapPositionX  Float
-  mapPositionY  Float
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  
+  id             String     @id @default(cuid())
+  name           String     @unique
+  type           SiteType
+  status         SiteStatus @default(AVAILABLE)
+  capacity       Int
+  description    String?
+  amenities      String[]   @default([])
+  images         String[]   @default([])
+  basePrice      Float
+  maxVehicles    Int        @default(2)
+  maxTents       Int        @default(1)
+  isPetFriendly  Boolean    @default(false)
+  hasElectricity Boolean    @default(false)
+  hasWater       Boolean    @default(false)
+  hasSewer       Boolean    @default(false)
+  hasWifi        Boolean    @default(false)
+  sizeLength     Float
+  sizeWidth      Float
+  sizeUnit       String     @default("feet")
+  latitude       Float
+  longitude      Float
+  mapPositionX   Float
+  mapPositionY   Float
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
   // Relations
-  bookings      Booking[]
-  
+  bookings Booking[]
+
   // Indexes for common filter queries
   @@index([type, status])
   @@map("sites")
@@ -134,39 +134,40 @@ model Site {
 
 // Booking and Reservation Models
 model Booking {
-  id                String          @id @default(cuid())
-  bookingNumber     String          @unique
-  userId            String
-  siteId            String
-  checkInDate       DateTime
-  checkOutDate      DateTime
-  adultGuests       Int
-  childGuests       Int
-  petGuests         Int             @default(0)
-  status            BookingStatus   @default(PENDING)
-  paymentStatus     PaymentStatus   @default(PENDING)
-  totalAmount       Float
-  paidAmount        Float           @default(0)
-  depositAmount     Float           @default(0)
-  taxAmount         Float           @default(0)
-  discountAmount    Float           @default(0)
-  notes             String?
-  specialRequests   String?
-  checkInTime       DateTime?
-  checkOutTime      DateTime?
-  qrCode            String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  
+  id              String        @id @default(cuid())
+  bookingNumber   String        @unique
+  userId          String
+  siteId          String
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  adultGuests     Int
+  childGuests     Int
+  petGuests       Int           @default(0)
+  status          BookingStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  totalAmount     Float
+  paidAmount      Float         @default(0)
+  depositAmount   Float         @default(0)
+  taxAmount       Float         @default(0)
+  discountAmount  Float         @default(0)
+  notes           String?
+  specialRequests String?
+  checkInTime     DateTime?
+  checkOutTime    DateTime?
+  qrCode          String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
   // Relations
-  user              User            @relation(fields: [userId], references: [id])
-  site              Site            @relation(fields: [siteId], references: [id])
-  guests            Guest[]
-  vehicles          Vehicle[]
-  payments          Payment[]
-  equipmentRentals  EquipmentRental[]
-  communications    Communication[]
-  
+  user                  User                   @relation(fields: [userId], references: [id])
+  site                  Site                   @relation(fields: [siteId], references: [id])
+  guests                Guest[]
+  vehicles              Vehicle[]
+  payments              Payment[]
+  equipmentRentals      EquipmentRental[]
+  communications        Communication[]
+  equipmentReservations EquipmentReservation[]
+
   @@index([userId])
   @@index([siteId])
   @@index([status])
@@ -182,59 +183,59 @@ model Guest {
   lastName  String
   email     String?
   phone     String?
-  type      GuestType @default(ADULT) 
+  type      GuestType @default(ADULT)
   isPrimary Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   @@index([bookingId])
   @@map("guests")
 }
 
 model Vehicle {
-  id            String      @id @default(cuid())
-  bookingId     String
-  make          String
-  model         String
-  year          Int
-  licensePlate  String
-  state         String
-  color         String
-  type          VehicleType
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  
+  id           String      @id @default(cuid())
+  bookingId    String
+  make         String
+  model        String
+  year         Int
+  licensePlate String
+  state        String
+  color        String
+  type         VehicleType
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
   // Relations
-  booking       Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   @@index([bookingId])
   @@map("vehicles")
 }
 
 // Payment Models
 model Payment {
-  id                String        @id @default(cuid())
-  bookingId         String
-  userId            String
-  amount            Float
-  method            PaymentMethod
-  status            PaymentStatus @default(PENDING)
-  stripePaymentId   String?
-  stripeRefundId    String?
-  transactionId     String?
-  description       String?
-  receiptUrl        String?
-  processedAt       DateTime?
-  refundedAt        DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
+  id              String        @id @default(cuid())
+  bookingId       String
+  userId          String
+  amount          Float
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  stripePaymentId String?
+  stripeRefundId  String?
+  transactionId   String?
+  description     String?
+  receiptUrl      String?
+  processedAt     DateTime?
+  refundedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
   // Relations
-  booking           Booking       @relation(fields: [bookingId], references: [id])
-  user              User          @relation(fields: [userId], references: [id])
-  
+  booking Booking @relation(fields: [bookingId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
   @@index([bookingId])
   @@index([userId])
   @@index([createdAt])
@@ -243,73 +244,169 @@ model Payment {
 
 // Equipment and Inventory Models
 model Equipment {
-  id                String             @id @default(cuid())
-  name              String
-  description       String?
-  category          EquipmentCategory
-  status            EquipmentStatus    @default(AVAILABLE)
-  quantity          Int
-  availableQuantity Int
-  dailyRate         Float
-  weeklyRate        Float
-  monthlyRate       Float
-  deposit           Float              @default(0)
-  images            String[]           @default([])
-  specifications    Json?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
+  id            String            @id @default(cuid())
+  name          String
+  description   String?
+  category      EquipmentCategory
+  // Inventory tracking
+  isSerialized  Boolean           @default(true)
+  quantity      Int               @default(0) // Total owned quantity (or bulk quantity)
+  minStockLevel Int               @default(0) // Warning threshold
+
+  // Pricing
+  dailyRate   Float
+  weeklyRate  Float
+  monthlyRate Float
+  deposit     Float @default(0)
+
+  // Media & Meta
+  images         String[] @default([])
+  specifications Json?
+  manufacturer   String?
+  modelNumber    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  rentals           EquipmentRental[]
-  
+  items        EquipmentItem[]
+  reservations EquipmentReservation[]
+
   @@map("equipment")
 }
 
-model EquipmentRental {
-  id            String         @id @default(cuid())
-  bookingId     String
-  equipmentId   String
-  quantity      Int
-  dailyRate     Float
-  totalAmount   Float
-  depositAmount Float          @default(0)
-  startDate     DateTime
-  endDate       DateTime
-  returnedAt    DateTime?
-  condition     String?
+// Physical Asset Tracking (for serialized items)
+model EquipmentItem {
+  id           String  @id @default(cuid())
+  equipmentId  String
+  internalId   String  @unique // Asset Tag / Barcode
+  serialNumber String? // Manufacturer Serial
+
+  status    EquipmentItemStatus @default(AVAILABLE)
+  condition EquipmentCondition  @default(GOOD)
+
+  purchaseDate  DateTime?
+  purchasePrice Float?
+  supplier      String?
   notes         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  booking       Booking        @relation(fields: [bookingId], references: [id])
-  equipment     Equipment      @relation(fields: [equipmentId], references: [id])
-  
+  equipment   Equipment         @relation(fields: [equipmentId], references: [id])
+  rentals     EquipmentRental[]
+  maintenance MaintenanceLog[]
+
+  @@map("equipment_items")
+}
+
+// User intent to rent (Quantity based)
+// Renamed from old EquipmentRental to preserve booking history logic
+model EquipmentReservation {
+  id          String @id @default(cuid())
+  bookingId   String
+  equipmentId String
+  quantity    Int
+
+  startDate DateTime
+  endDate   DateTime
+
+  status ReservationStatus @default(CONFIRMED)
+
+  // Pricing snapshot
+  dailyRate   Float
+  totalAmount Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  booking   Booking           @relation(fields: [bookingId], references: [id])
+  equipment Equipment         @relation(fields: [equipmentId], references: [id])
+  rentals   EquipmentRental[]
+
   @@index([bookingId])
   @@index([startDate, endDate])
+  @@map("equipment_reservations")
+}
+
+// Actual fulfillment of a reservation (Item based)
+model EquipmentRental {
+  id              String  @id @default(cuid())
+  reservationId   String
+  equipmentItemId String? // Null if bulk item
+
+  checkoutTime DateTime  @default(now())
+  returnTime   DateTime?
+
+  conditionOut EquipmentCondition?
+  conditionIn  EquipmentCondition?
+
+  rentedBy   String? // Staff ID
+  receivedBy String? // Staff ID
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  reservation EquipmentReservation @relation(fields: [reservationId], references: [id])
+  item        EquipmentItem?       @relation(fields: [equipmentItemId], references: [id])
+  booking     Booking?             @relation(fields: [bookingId], references: [id])
+  bookingId   String?
+
+  @@index([reservationId])
+  @@index([equipmentItemId])
   @@map("equipment_rentals")
+}
+
+// Service history
+model MaintenanceLog {
+  id              String @id @default(cuid())
+  equipmentItemId String
+
+  type   MaintenanceType
+  status MaintenanceStatus @default(SCHEDULED)
+
+  description String
+  cost        Float?
+  performedBy String? // Staff or Vendor name
+
+  scheduledDate DateTime
+  completedDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  item EquipmentItem @relation(fields: [equipmentItemId], references: [id])
+
+  @@index([equipmentItemId])
+  @@map("maintenance_logs")
 }
 
 // Communication Models
 model Communication {
-  id          String            @id @default(cuid())
-  bookingId   String?
-  userId      String?
-  type        CommunicationType
-  subject     String?
-  message     String
-  sentBy      String
-  sentTo      String?
-  sentAt      DateTime          @default(now())
-  readAt      DateTime?
-  metadata    Json?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
+  id        String            @id @default(cuid())
+  bookingId String?
+  userId    String?
+  type      CommunicationType
+  subject   String?
+  message   String
+  sentBy    String
+  sentTo    String?
+  sentAt    DateTime          @default(now())
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
   // Relations
-  booking     Booking?          @relation(fields: [bookingId], references: [id])
-  user        User?             @relation(fields: [userId], references: [id])
-  
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  user    User?    @relation(fields: [userId], references: [id])
+
   @@index([bookingId])
   @@index([userId])
   @@map("communications")
@@ -327,10 +424,10 @@ model Notification {
   sentAt    DateTime?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-  
+
   // Relations
-  user      User             @relation(fields: [userId], references: [id])
-  
+  user User @relation(fields: [userId], references: [id])
+
   @@index([userId])
   @@index([isRead])
   @@map("notifications")
@@ -338,81 +435,81 @@ model Notification {
 
 // Pricing Models
 model PricingRule {
-  id             String     @id @default(cuid())
-  name           String
-  description    String?
-  siteTypes      SiteType[]
-  startDate      DateTime
-  endDate        DateTime
-  daysOfWeek     Int[]      @default([])
-  priceModifier  Float
-  modifierType   String     @default("multiplier")
-  minStay        Int?
-  maxStay        Int?
-  priority       Int        @default(1)
-  isActive       Boolean    @default(true)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  
+  id            String     @id @default(cuid())
+  name          String
+  description   String?
+  siteTypes     SiteType[]
+  startDate     DateTime
+  endDate       DateTime
+  daysOfWeek    Int[]      @default([])
+  priceModifier Float
+  modifierType  String     @default("multiplier")
+  minStay       Int?
+  maxStay       Int?
+  priority      Int        @default(1)
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
   @@map("pricing_rules")
 }
 
 // Group Booking Models
 model GroupBooking {
-  id              String         @id @default(cuid())
-  name            String
-  contactName     String
-  contactEmail    String
-  contactPhone    String
-  expectedGuests  Int
-  expectedSites   Int
-  eventDate       DateTime
-  eventEndDate    DateTime?
-  specialRate     Float?
-  notes           String?
-  status          GroupBookingStatus @default(INQUIRY)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  
+  id             String             @id @default(cuid())
+  name           String
+  contactName    String
+  contactEmail   String
+  contactPhone   String
+  expectedGuests Int
+  expectedSites  Int
+  eventDate      DateTime
+  eventEndDate   DateTime?
+  specialRate    Float?
+  notes          String?
+  status         GroupBookingStatus @default(INQUIRY)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
   @@map("group_bookings")
 }
 
 // Settings Models
 model CampsiteSettings {
-  id                String   @id @default(cuid())
-  name              String
-  description       String?
-  addressStreet     String
-  addressCity       String
-  addressState      String
-  addressZip        String
-  addressCountry    String
-  contactPhone      String
-  contactEmail      String
-  contactWebsite    String?
-  checkInTime       String
-  checkOutTime      String
-  quietHoursStart   String
-  quietHoursEnd     String
-  petPolicy         String
+  id                 String   @id @default(cuid())
+  name               String
+  description        String?
+  addressStreet      String
+  addressCity        String
+  addressState       String
+  addressZip         String
+  addressCountry     String
+  contactPhone       String
+  contactEmail       String
+  contactWebsite     String?
+  checkInTime        String
+  checkOutTime       String
+  quietHoursStart    String
+  quietHoursEnd      String
+  petPolicy          String
   cancellationPolicy String
-  refundPolicy      String
-  hasPool           Boolean  @default(false)
-  hasPlayground     Boolean  @default(false)
-  hasRestrooms      Boolean  @default(true)
-  hasShowers        Boolean  @default(true)
-  hasLaundry        Boolean  @default(false)
-  hasStore          Boolean  @default(false)
-  hasWifi           Boolean  @default(false)
-  allowsPets        Boolean  @default(false)
-  allowsFires       Boolean  @default(false)
-  timezone          String   @default("America/New_York")
-  currency          String   @default("USD")
-  taxRate           Float    @default(0.08)
-  depositPercentage Float    @default(25.0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  refundPolicy       String
+  hasPool            Boolean  @default(false)
+  hasPlayground      Boolean  @default(false)
+  hasRestrooms       Boolean  @default(true)
+  hasShowers         Boolean  @default(true)
+  hasLaundry         Boolean  @default(false)
+  hasStore           Boolean  @default(false)
+  hasWifi            Boolean  @default(false)
+  allowsPets         Boolean  @default(false)
+  allowsFires        Boolean  @default(false)
+  timezone           String   @default("America/New_York")
+  currency           String   @default("USD")
+  taxRate            Float    @default(0.08)
+  depositPercentage  Float    @default(25.0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
   @@map("campsite_settings")
 }
 
@@ -427,27 +524,27 @@ model FileUpload {
   uploadedBy   String
   uploadedAt   DateTime @default(now())
   metadata     Json?
-  
+
   @@map("file_uploads")
 }
 
 // Weather Integration Models
 model WeatherData {
-  id          String            @id @default(cuid())
-  temperature Float
-  humidity    Float
-  windSpeed   Float
+  id            String            @id @default(cuid())
+  temperature   Float
+  humidity      Float
+  windSpeed     Float
   windDirection String
-  condition   String
-  icon        String
-  forecast    WeatherForecast[]
-  updatedAt   DateTime          @updatedAt
-  
+  condition     String
+  icon          String
+  forecast      WeatherForecast[]
+  updatedAt     DateTime          @updatedAt
+
   @@map("weather_data")
 }
 
 model WeatherForecast {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   weatherDataId String
   date          DateTime
   high          Float
@@ -455,46 +552,46 @@ model WeatherForecast {
   condition     String
   icon          String
   precipitation Float
-  
+
   // Relations
-  weatherData   WeatherData @relation(fields: [weatherDataId], references: [id], onDelete: Cascade)
-  
+  weatherData WeatherData @relation(fields: [weatherDataId], references: [id], onDelete: Cascade)
+
   @@map("weather_forecasts")
 }
 
 // Calendar Integration Models
 model CalendarEvent {
-  id              String    @id @default(cuid())
-  title           String
-  description     String?
-  startDate       DateTime
-  endDate         DateTime
-  allDay          Boolean   @default(false)
-  location        String?
-  attendees       String[]  @default([])
-  recurrenceFreq  String?
+  id                 String    @id @default(cuid())
+  title              String
+  description        String?
+  startDate          DateTime
+  endDate            DateTime
+  allDay             Boolean   @default(false)
+  location           String?
+  attendees          String[]  @default([])
+  recurrenceFreq     String?
   recurrenceInterval Int?
-  recurrenceUntil DateTime?
-  metadata        Json?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  recurrenceUntil    DateTime?
+  metadata           Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
   @@map("calendar_events")
 }
 
 // Audit Log Models
 model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  action    String
-  resource  String
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
   resourceId String?
-  oldValues Json?
-  newValues Json?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
-  
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
   @@map("audit_logs")
 }
 
@@ -558,13 +655,48 @@ enum EquipmentCategory {
   KITCHEN
   SAFETY
   MAINTENANCE
+  WATER_SPORTS
+  WINTER_SPORTS
+  ELECTRONICS
+  COMFORT
 }
 
-enum EquipmentStatus {
+enum EquipmentItemStatus {
   AVAILABLE
-  RENTED
+  IN_USE
   MAINTENANCE
-  OUT_OF_SERVICE
+  REPAIR
+  LOST
+  RETIRED
+}
+
+enum EquipmentCondition {
+  NEW
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+  FULFILLED
+  PARTIAL
+}
+
+enum MaintenanceType {
+  INSPECTION
+  CLEANING
+  REPAIR
+  ROUTINE_SERVICE
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
 
 enum CommunicationType {

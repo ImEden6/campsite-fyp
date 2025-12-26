@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, User, Mail, Phone } from 'lucide-react';
 import { getSiteById } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { GuestBookingForm } from '@/features/bookings/components/GuestBookingForm';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -46,8 +46,8 @@ const GuestBookingPage: React.FC = () => {
     queryFn: async () => {
       try {
         return await getSiteById(siteId!);
-      } catch {
-        return mockSites.find((s) => s.id === siteId) || mockSites[0];
+      } catch (error) {
+        throw error;
       }
     },
     enabled: !!siteId,
@@ -132,10 +132,11 @@ const GuestBookingPage: React.FC = () => {
           <form onSubmit={handleGuestInfoSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   First Name *
                 </label>
                 <Input
+                  id="firstName"
                   type="text"
                   required
                   value={guestInfo.firstName}
@@ -144,10 +145,11 @@ const GuestBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Last Name *
                 </label>
                 <Input
+                  id="lastName"
                   type="text"
                   required
                   value={guestInfo.lastName}
@@ -157,10 +159,11 @@ const GuestBookingPage: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address *
               </label>
               <Input
+                id="email"
                 type="email"
                 required
                 value={guestInfo.email}
@@ -169,10 +172,11 @@ const GuestBookingPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Phone Number *
               </label>
               <Input
+                id="phone"
                 type="tel"
                 required
                 value={guestInfo.phone}

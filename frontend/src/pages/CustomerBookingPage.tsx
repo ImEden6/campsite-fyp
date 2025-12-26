@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getSiteById } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { BookingForm } from '@/features/bookings/components/BookingForm';
 
 const CustomerBookingPage: React.FC = () => {
@@ -20,18 +20,7 @@ const CustomerBookingPage: React.FC = () => {
       if (!siteId) {
         throw new Error('Site ID is required');
       }
-      try {
-        return await getSiteById(siteId);
-      } catch (error) {
-        console.error('Failed to fetch site:', error);
-        // Always use mock fallback when API fails (MVP)
-        const mockSite = mockSites.find((s) => s.id === siteId) || mockSites[0];
-        if (mockSite) {
-          console.warn('[MVP] Using mock site data - API unavailable');
-          return mockSite;
-        }
-        throw error;
-      }
+      return await getSiteById(siteId);
     },
     enabled: !!siteId,
   });

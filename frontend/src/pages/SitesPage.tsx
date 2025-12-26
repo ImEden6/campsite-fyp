@@ -28,7 +28,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { getSites, createSite, updateSite, deleteSite, uploadSiteImages } from '@/services/api/sites';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { queryKeys } from '@/config/query-keys';
 import { SiteType, SiteStatus } from '@/types';
 import type { Site } from '@/types';
@@ -66,9 +66,10 @@ const SitesPage: React.FC = () => {
     queryFn: async () => {
       try {
         const apiSites = await getSites();
-        return apiSites.length > 0 ? apiSites : mockSites;
-      } catch {
-        return mockSites;
+        return apiSites;
+      } catch (error) {
+        console.error('Failed to fetch sites:', error);
+        return [];
       }
     },
   });

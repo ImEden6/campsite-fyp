@@ -1,6 +1,6 @@
 import { Payment, PaymentIntent, PaymentStatus, PaymentMethod } from '../types/payment.types';
 import { addMockPayment } from './mockCurrentPayments';
-import { updateMockBookingPayment } from '@/services/api/mockBookingStore';
+
 
 // In-memory store for mock payment intents (to preserve amount/currency for confirmation)
 // Entries are cleaned up after retrieval to prevent memory leaks
@@ -81,8 +81,8 @@ export const createMockConfirmedPayment = (
 
     // Update the mock booking's paid amount so balance due updates
     if (finalBookingId !== 'unknown') {
-        // Amount is in cents, convert to dollars for booking store
-        updateMockBookingPayment(finalBookingId, amount / 100);
+        // Mock booking update removed as store is deprecated
+        console.log('[Mock] Payment confirmed for booking:', finalBookingId);
     }
 
     return payment;

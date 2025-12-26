@@ -23,13 +23,6 @@ import {
   getSitePerformance,
   type SitePerformance,
 } from '@/services/api/analytics';
-import {
-  generateMockDashboardMetrics,
-  generateMockRevenueMetrics,
-  generateMockOccupancyMetrics,
-  generateMockCustomerInsights,
-  generateMockSitePerformance,
-} from '@/services/api/mockAnalyticsData';
 import { queryKeys } from '@/config/query-keys';
 import {
   DashboardMetrics,
@@ -276,12 +269,12 @@ const AnalyticsPage: React.FC = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Use mock data as fallback - now date-range aware
-  const metrics = dashboardMetrics ?? generateMockDashboardMetrics(dateRange);
-  const revenue = revenueMetrics ?? generateMockRevenueMetrics(dateRange);
-  const occupancy = occupancyMetrics ?? generateMockOccupancyMetrics(dateRange);
-  const customers = customerInsights ?? generateMockCustomerInsights(dateRange);
-  const sites = sitePerformance ?? generateMockSitePerformance(dateRange);
+  // Use data from API (backend handles mock/real data based on USE_MOCK_DATA env var)
+  const metrics = dashboardMetrics;
+  const revenue = revenueMetrics;
+  const occupancy = occupancyMetrics;
+  const customers = customerInsights;
+  const sites = sitePerformance ?? [];
 
   const handleRefresh = () => {
     refetchMetrics();
@@ -328,23 +321,23 @@ const AnalyticsPage: React.FC = () => {
 
         {/* Dashboard Metrics */}
         <div className="mb-8">
-          <DashboardMetrics metrics={metrics} loading={metricsLoading} />
+          {metrics && <DashboardMetrics metrics={metrics} loading={metricsLoading} />}
         </div>
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Suspense fallback={<ChartSkeleton />}>
-            <RevenueChart data={revenue} loading={revenueLoading} />
+            {revenue ? <RevenueChart data={revenue} loading={revenueLoading} /> : <ChartSkeleton />}
           </Suspense>
           <Suspense fallback={<ChartSkeleton />}>
-            <OccupancyChart data={occupancy} loading={occupancyLoading} />
+            {occupancy ? <OccupancyChart data={occupancy} loading={occupancyLoading} /> : <ChartSkeleton />}
           </Suspense>
         </div>
 
         {/* Customer Insights */}
         <div className="mb-8">
           <Suspense fallback={<ChartSkeleton />}>
-            <CustomerInsights data={customers} loading={customersLoading} />
+            {customers ? <CustomerInsights data={customers} loading={customersLoading} /> : <ChartSkeleton />}
           </Suspense>
         </div>
 
@@ -361,21 +354,21 @@ const AnalyticsPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold">Performance Summary</h3>
                 <p className="text-blue-100 text-sm">
-                  Revenue is up {metrics.revenueChange.toFixed(1)}% compared to last period
+                  Revenue is up {metrics?.revenueChange?.toFixed(1) ?? '0.0'}% compared to last period
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center">
-                <p className="text-2xl font-bold">{metrics.activeBookings}</p>
+                <p className="text-2xl font-bold">{metrics?.activeBookings ?? 0}</p>
                 <p className="text-blue-100 text-xs">Active Bookings</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">{metrics.occupancyRate.toFixed(0)}%</p>
+                <p className="text-2xl font-bold">{metrics?.occupancyRate?.toFixed(0) ?? 0}%</p>
                 <p className="text-blue-100 text-xs">Occupancy</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">{formatCurrency(metrics.averageBookingValue, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                <p className="text-2xl font-bold">{formatCurrency(metrics?.averageBookingValue ?? 0, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                 <p className="text-blue-100 text-xs">Avg Booking</p>
               </div>
             </div>

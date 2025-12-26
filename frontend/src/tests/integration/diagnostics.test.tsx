@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import GuestBookingPage from '@/pages/GuestBookingPage';
-import { mockSites } from '@/services/api/mock-sites';
+import { mockSite } from '@/tests/utils/mock-data';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -13,8 +13,8 @@ import * as router from 'react-router-dom';
 const server = setupServer(
     http.get('http://localhost:5000/api/v1/sites/:id', ({ request, params }) => {
         console.log(`[MSW] HIT: ${request.method} ${request.url}`);
-        const site = mockSites.find((s) => s.id === params.id) || mockSites[0];
-        return HttpResponse.json(site);
+        const site = params.id === mockSite.id ? mockSite : { ...mockSite, id: params.id as string };
+        return HttpResponse.json({ data: site });
     })
 );
 

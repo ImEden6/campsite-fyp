@@ -295,7 +295,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
           )}
 
           {/* Equipment Rentals */}
-          {booking.equipmentRentals && booking.equipmentRentals.length > 0 && (
+          {booking.equipmentReservations && booking.equipmentReservations.length > 0 && (
             <Card>
               <div className="p-4">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -303,7 +303,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                   Equipment Rentals
                 </h3>
                 <div className="space-y-3">
-                  {booking.equipmentRentals.map((rental) => (
+                  {booking.equipmentReservations.map((rental) => (
                     <div key={rental.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium text-gray-900">{rental.equipment?.name}</p>

@@ -35,7 +35,7 @@ const mockBookings = [
     taxAmount: 5.0,
     discountAmount: 0,
     vehicles: [],
-    equipmentRentals: [],
+    equipmentReservations: [],
   },
   {
     ...mockBooking,
@@ -47,7 +47,7 @@ const mockBookings = [
     taxAmount: 5.0,
     discountAmount: 0,
     vehicles: [],
-    equipmentRentals: [],
+    equipmentReservations: [],
   },
 ];
 

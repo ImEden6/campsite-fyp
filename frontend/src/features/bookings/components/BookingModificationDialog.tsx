@@ -87,7 +87,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
         booking.siteId,
         checkInDate.toISOString(),
         checkOutDate.toISOString(),
-        booking.equipmentRentals?.map(er => ({
+        booking.equipmentReservations?.map(er => ({
           equipmentId: er.equipmentId,
           quantity: er.quantity,
         }))
@@ -99,7 +99,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
     } finally {
       setIsCheckingAvailability(false);
     }
-  }, [booking.equipmentRentals, booking.id, booking.siteId, checkInDate, checkOutDate]);
+  }, [booking.equipmentReservations, booking.id, booking.siteId, checkInDate, checkOutDate]);
 
   const datesChanged =
     checkInDate.getTime() !== new Date(booking.checkInDate).getTime() ||

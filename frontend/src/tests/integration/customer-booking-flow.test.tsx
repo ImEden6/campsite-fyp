@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import CustomerBookingPage from '@/pages/CustomerBookingPage';
-import { mockSites } from '@/services/api/mock-sites';
+import { mockSite } from '@/tests/utils/mock-data';
 import { BookingFlowDriver } from '../utils/booking-flow-driver';
 
 // Setup MSW
@@ -12,8 +12,9 @@ const server = setupServer(
     // Get Site Detail
     http.get('http://localhost:5000/api/v1/sites/:id', ({ params }) => {
         // console.log('[MSW] Handling getSiteById', params.id);
-        const site = mockSites.find((s) => s.id === params.id) || mockSites[0];
-        return HttpResponse.json(site);
+        // console.log('[MSW] Handling getSiteById', params.id);
+        const site = params.id === mockSite.id ? mockSite : { ...mockSite, id: params.id as string };
+        return HttpResponse.json({ data: site });
     }),
 
     // Create Booking
@@ -25,7 +26,10 @@ const server = setupServer(
         if (body.specialRequests === 'TRIGGER_ERROR') {
             return HttpResponse.json({ message: 'Simulated API Error' }, { status: 500 });
         }
-        return HttpResponse.json({ id: 'customer-booking-id', bookingNumber: 'BK-CUST-456', totalAmount: 100 });
+        // Wrap response in { data: ... } to match ApiResponse structure
+        return HttpResponse.json({
+            data: { id: 'customer-booking-id', bookingNumber: 'BK-CUST-456', totalAmount: 100 }
+        });
     }),
 
     // Calculate Price
@@ -70,8 +74,8 @@ describe('Customer Booking Flow', () => {
         // console.log(document.body.innerHTML); 
 
         await driver.completeCustomerBooking({
-            checkInDate: '2025-07-01',
-            checkOutDate: '2025-07-05',
+            checkInDate: '2026-07-01',
+            checkOutDate: '2026-07-05',
             guests: { adults: 2, children: 0, pets: 0 }
         });
 

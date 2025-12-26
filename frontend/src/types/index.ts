@@ -293,6 +293,20 @@ export type AnyModule =
   | CustomModule;
 
 // ============================================================================
+// BACKGROUND LAYER TYPES
+// ============================================================================
+
+export interface BackgroundLayer {
+  imageData: string;        // Compressed base64 (JPEG)
+  position: Position;
+  size: Size;
+  opacity: number;          // 0-1
+  originalSize: Size;       // Original dimensions before resize
+  originalFormat: string;   // User reference (e.g., 'PNG', 'JPEG')
+  locked: boolean;          // Default true, unlockable for repositioning
+}
+
+// ============================================================================
 // CAMPSITE MAP TYPES
 // ============================================================================
 
@@ -314,6 +328,7 @@ export interface CampsiteMap {
     height: number;
   };
   modules: AnyModule[];
+  backgroundLayer?: BackgroundLayer;
   metadata: {
     address: string;
     coordinates: {

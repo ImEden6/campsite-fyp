@@ -1,6 +1,6 @@
 // Booking Service
 
-import { PrismaClient, Equipment, EquipmentStatus, GuestType, Prisma, Booking } from '@prisma/client';
+import { PrismaClient, Equipment, GuestType, Prisma, Booking } from '@prisma/client';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
@@ -76,37 +76,36 @@ export class BookingService {
           where: {
 
             ...(equipmentType && { category: equipmentType as any }),
-            status: EquipmentStatus.AVAILABLE,
           },
           include: {
-            rentals: {
+            reservations: {
               where: {
-                // Check for overlapping rentals
+                // Check for overlapping reservations
                 OR: [
                   {
-                    // Rental starts during requested period
+                    // Reservation starts during requested period
                     startDate: {
                       gte: startDateUTC,
                       lt: endDateUTC,
                     },
                   },
                   {
-                    // Rental ends during requested period
+                    // Reservation ends during requested period
                     endDate: {
                       gt: startDateUTC,
                       lte: endDateUTC,
                     },
                   },
                   {
-                    // Rental spans entire requested period
+                    // Reservation spans entire requested period
                     AND: [
                       { startDate: { lte: startDateUTC } },
                       { endDate: { gte: endDateUTC } },
                     ],
                   },
                 ],
-                // Only consider active rentals (not returned)
-                returnedAt: null,
+                // Only consider confirmed reservations
+                status: 'CONFIRMED',
               },
               include: {
                 booking: {
@@ -122,32 +121,25 @@ export class BookingService {
 
         // Calculate availability for each equipment item
         const equipmentWithAvailability: EquipmentAvailability[] = equipment.map((item) => {
-          // Filter rentals for confirmed/active bookings only
-          const activeRentals = item.rentals.filter(
-            (rental) =>
-              rental.booking.status === 'CONFIRMED' ||
-              rental.booking.status === 'CHECKED_IN'
-          );
-
-          // Calculate total quantity rented during the period
-          const totalRented = activeRentals.reduce(
-            (sum, rental) => sum + rental.quantity,
+          // Calculate total quantity reserved during the period
+          const totalReserved = item.reservations.reduce(
+            (sum, res) => sum + res.quantity,
             0
           );
 
           // Calculate available quantity
-          const availableQuantity = item.quantity - totalRented;
+          const availableQuantity = item.quantity - totalReserved;
 
           // Get conflicting bookings info
-          const conflictingBookings = activeRentals.map((rental) => ({
-            bookingId: rental.bookingId,
-            startDate: rental.startDate,
-            endDate: rental.endDate,
+          const conflictingBookings = item.reservations.map((res) => ({
+            bookingId: res.bookingId,
+            startDate: res.startDate,
+            endDate: res.endDate,
           }));
 
-          // Remove rentals from the returned object
+          // Remove reservations from the returned object
 
-          const { rentals, ...equipmentData } = item;
+          const { reservations, ...equipmentData } = item;
 
           return {
             ...equipmentData,

@@ -93,16 +93,20 @@ export class BookingFlowDriver {
     async fillGuestDetails(_adults: number) {
         await this.assertOnStep(/guest information/i);
 
-        // Fill in guest names for additional adults if required
-        // Skipping primary guest as it's often pre-filled or handled separately in guest flow
-        // But for this driver, let's just click next as we usually mock the pre-fill
-        // If validation fails, we might need to add logic here to fill all inputs
-        // The GuestBookingForm requires all names.
+        // Fill all First Name inputs if enabled
+        const firstNames = await screen.findAllByLabelText(/first name/i);
+        for (const input of firstNames) {
+            if (!input.hasAttribute('disabled')) {
+                await this.user.clear(input);
+                await this.user.type(input, 'Test Guest');
+            }
+        }
 
-        const inputs = screen.getAllByRole('textbox');
-        // Simple heuristic: fill empty required textboxes
-        for (const input of inputs) {
-            if (input.hasAttribute('required') && (input as HTMLInputElement).value === '') {
+        // Fill all Last Name inputs if enabled
+        const lastNames = await screen.findAllByLabelText(/last name/i);
+        for (const input of lastNames) {
+            if (!input.hasAttribute('disabled')) {
+                await this.user.clear(input);
                 await this.user.type(input, 'Test Guest');
             }
         }
@@ -141,6 +145,16 @@ export class BookingFlowDriver {
         });
     }
 
+    async completePayment() {
+        // Wait for payment modal
+        await waitFor(() => {
+            expect(screen.getByText('Complete Payment')).toBeInTheDocument();
+        });
+
+        // Click Pay button (assuming mock payment form or similar button text)
+        await this.user.click(screen.getByRole('button', { name: /pay/i }));
+    }
+
     // Rigid composite method for Guest Happy Path
     async completeGuestBooking(details: BookingDetails) {
         if (!details.guestInfo) throw new Error('Guest Info required for guest flow');
@@ -161,6 +175,9 @@ export class BookingFlowDriver {
 
         // Step 5: Review
         await this.reviewAndConfirm();
+
+        // Payment
+        await this.completePayment();
     }
 
     // Rigid composite method for Customer Happy Path
@@ -181,5 +198,8 @@ export class BookingFlowDriver {
 
         // Step 5: Review
         await this.reviewAndConfirm();
+
+        // Note: Customer bookings submit directly and redirect to booking details
+        // Payment is handled separately (not part of the form flow)
     }
 }

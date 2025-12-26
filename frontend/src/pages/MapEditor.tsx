@@ -10,7 +10,7 @@ import * as fabricImpl from 'fabric';
 // Cast to any to handle v5/v6 compatibility issues and missing types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
-import { ArrowLeft, Save, Undo2, Redo2, ZoomIn, ZoomOut, Maximize2, Grid3X3, Magnet, Hand, Layers, Settings, Download, Ruler } from 'lucide-react';
+import { ArrowLeft, Save, Undo2, Redo2, ZoomIn, ZoomOut, Maximize2, Grid3X3, Magnet, Hand, Layers, Settings, Download, Ruler, Image as ImageIcon, Lock, Unlock, Scan } from 'lucide-react';
 import { useMapStore } from '@/stores/mapStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useMapOverridesStore } from '@/stores/mapOverridesStore';
@@ -18,7 +18,7 @@ import { PageLoader } from '@/components/ui/PageLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { createModuleObject, createNewModule, extractModuleChanges, getModuleId, isGridObject, updateModuleObject } from '@/utils/moduleFactory';
 import { generateMapFromSites, getSiteIdFromModuleId } from '@/utils/generateModulesFromSites';
-import { mockSites } from '@/services/api/mock-sites';
+import { getSites } from '@/services/api/sites';
 
 // Import opacity constants for state checks
 const OPACITY_HIDDEN = 0.3;
@@ -33,6 +33,8 @@ import {
     AlignmentToolbar,
     ExportDialog,
 } from '@/components/editor';
+import { BackgroundDialog } from '@/components/editor';
+import { renderBackgroundLayer, removeBackgroundLayer, updateBackgroundLocked } from '@/utils/backgroundLayer';
 
 // Constants
 const MIN_ZOOM = 0.1;
@@ -137,6 +139,8 @@ const MapEditor: React.FC = () => {
     const [showLayersPanel, setShowLayersPanel] = useState(false);
     const [showRulers, setShowRulers] = useState(false);
     const [showExportDialog, setShowExportDialog] = useState(false);
+    const [showBackgroundDialog, setShowBackgroundDialog] = useState(false);
+    const [backgroundLocked, setBackgroundLocked] = useState(true);
 
     // Ref to the HTML canvas element for export
     const htmlCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -764,46 +768,48 @@ const MapEditor: React.FC = () => {
         if (!currentMap || currentMap.id !== id) {
             setLoading(true);
             // TODO: Replace with actual API call
-            const timeoutId = setTimeout(() => {
-
-                if (id === 'new') {
-                    // Initialize blank map
-                    setMap({
-                        id: 'new',
-                        name: 'New Map',
-                        description: 'Start designing your campsite',
-                        imageUrl: '',
-                        imageSize: { width: 800, height: 600 },
-                        scale: 1,
-                        bounds: { minX: 0, minY: 0, maxX: 800, maxY: 600 },
-                        modules: [],
-                        metadata: {
-                            address: '',
-                            coordinates: { latitude: 0, longitude: 0 },
-                            timezone: 'UTC',
-                            capacity: 0,
-                            amenities: [],
-                            rules: [],
-                            emergencyContacts: [],
-                        },
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
-                    });
-                } else {
-                    // Generate map from sites with stored overrides
-                    const generatedMap = generateMapFromSites(mockSites);
-                    // Use the route ID for the map
-                    setMap({
-                        ...generatedMap,
-                        id,
-                    });
-                }
+            if (id === 'new') {
+                // Initialize blank map
+                setMap({
+                    id: 'new',
+                    name: 'New Map',
+                    description: 'Start designing your campsite',
+                    imageUrl: '',
+                    imageSize: { width: 800, height: 600 },
+                    scale: 1,
+                    bounds: { minX: 0, minY: 0, maxX: 800, maxY: 600 },
+                    modules: [],
+                    metadata: {
+                        address: '',
+                        coordinates: { latitude: 0, longitude: 0 },
+                        timezone: 'UTC',
+                        capacity: 0,
+                        amenities: [],
+                        rules: [],
+                        emergencyContacts: [],
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
                 setLoading(false);
-            }, 500);
+            } else {
+                // Fetch real sites from API to generate map
+                getSites()
+                    .then((sites) => {
+                        const generatedMap = generateMapFromSites(sites);
+                        setMap({
+                            ...generatedMap,
+                            id,
+                        });
+                    })
+                    .catch((err) => {
+                        console.error('Failed to load sites for map:', err);
+                    })
+                    .finally(() => {
+                        setLoading(false);
+                    });
+            }
 
-            return () => {
-                clearTimeout(timeoutId);
-            };
         }
         return undefined;
     }, [id, currentMap, setMap, setLoading]);
@@ -1464,6 +1470,65 @@ const MapEditor: React.FC = () => {
                             <Download className="w-4 h-4" />
                         </button>
                     </Tooltip>
+                    <Tooltip content="Background Image" placement="bottom">
+                        <button
+                            onClick={() => setShowBackgroundDialog(true)}
+                            title="Background Image"
+                            className={`p-2 rounded-md transition-colors ${currentMap?.backgroundLayer
+                                ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400'
+                                : 'hover:bg-white dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200'
+                                }`}>
+                            <ImageIcon className="w-4 h-4" />
+                        </button>
+                    </Tooltip>
+                    {currentMap?.backgroundLayer && (
+                        <>
+                            <Tooltip content={backgroundLocked ? "Unlock Background" : "Lock Background"} placement="bottom">
+                                <button
+                                    onClick={() => {
+                                        const newLocked = !backgroundLocked;
+                                        setBackgroundLocked(newLocked);
+                                        if (canvasRef.current) {
+                                            updateBackgroundLocked(canvasRef.current, newLocked);
+                                        }
+                                        if (currentMap.backgroundLayer) {
+                                            setMap({
+                                                ...currentMap,
+                                                backgroundLayer: { ...currentMap.backgroundLayer, locked: newLocked }
+                                            });
+                                        }
+                                    }}
+                                    title={backgroundLocked ? "Unlock Background" : "Lock Background"}
+                                    className={`p-2 rounded-md transition-colors ${!backgroundLocked
+                                        ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400'
+                                        : 'hover:bg-white dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200'
+                                        }`}>
+                                    {backgroundLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                                </button>
+                            </Tooltip>
+                            <Tooltip content="Fit Map Bounds to Background" placement="bottom">
+                                <button
+                                    onClick={() => {
+                                        if (currentMap?.backgroundLayer) {
+                                            setMap({
+                                                ...currentMap,
+                                                bounds: {
+                                                    minX: 0,
+                                                    minY: 0,
+                                                    maxX: currentMap.backgroundLayer.size.width,
+                                                    maxY: currentMap.backgroundLayer.size.height,
+                                                },
+                                            });
+                                            markDirty();
+                                        }
+                                    }}
+                                    title="Fit Map Bounds to Background"
+                                    className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 transition-colors text-gray-700 dark:text-gray-200">
+                                    <Scan className="w-4 h-4" />
+                                </button>
+                            </Tooltip>
+                        </>
+                    )}
                 </div>
 
                 {/* Right: Save */}
@@ -1553,6 +1618,48 @@ const MapEditor: React.FC = () => {
                 isOpen={showExportDialog}
                 onClose={() => setShowExportDialog(false)}
                 canvasRef={htmlCanvasRef}
+            />
+
+            {/* Background Dialog */}
+            <BackgroundDialog
+                isOpen={showBackgroundDialog}
+                onClose={() => setShowBackgroundDialog(false)}
+                existingLayer={currentMap?.backgroundLayer}
+                onConfirm={(layer, fitBounds) => {
+                    if (!canvasRef.current) return;
+
+                    // Handle remove
+                    if (!layer) {
+                        removeBackgroundLayer(canvasRef.current);
+                        // Update store to remove background
+                        if (currentMap) {
+                            setMap({ ...currentMap, backgroundLayer: undefined });
+                        }
+                        return;
+                    }
+
+                    // Render background layer
+                    renderBackgroundLayer(canvasRef.current, layer);
+
+                    // Update store
+                    if (currentMap) {
+                        const updatedMap = { ...currentMap, backgroundLayer: layer };
+
+                        // Optionally fit bounds
+                        if (fitBounds) {
+                            updatedMap.bounds = {
+                                minX: 0,
+                                minY: 0,
+                                maxX: layer.size.width,
+                                maxY: layer.size.height,
+                            };
+                        }
+
+                        setMap(updatedMap);
+                    }
+
+                    markDirty();
+                }}
             />
 
             {/* Status Bar */}

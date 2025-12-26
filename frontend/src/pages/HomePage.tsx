@@ -19,7 +19,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getSites } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { useAuthStore } from '@/stores/authStore';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -40,9 +40,9 @@ const HomePage: React.FC = () => {
     queryFn: async () => {
       try {
         const apiSites = await getSites();
-        return apiSites.length > 0 ? apiSites : mockSites;
-      } catch {
-        return mockSites;
+        return apiSites;
+      } catch (error) {
+        return [];
       }
     },
   });
@@ -59,7 +59,7 @@ const HomePage: React.FC = () => {
         return;
       }
     }
-    
+
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
     if (checkInDate) params.set('checkIn', checkInDate);
@@ -212,15 +212,15 @@ const HomePage: React.FC = () => {
               <Sparkles className="w-4 h-4" />
               <span className="text-sm font-medium">Discover Your Perfect Campsite</span>
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
               Your Next Adventure
               <br />
               <span className="text-blue-200">Awaits</span>
             </h1>
-            
+
             <p className="text-xl md:text-2xl mb-12 text-blue-100 max-w-3xl mx-auto">
-              Find and book the perfect campsite for your outdoor adventure. 
+              Find and book the perfect campsite for your outdoor adventure.
               Real-time availability, instant booking, and secure payments.
             </p>
 
@@ -554,7 +554,7 @@ const HomePage: React.FC = () => {
             Ready to Start Your Adventure?
           </h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Join thousands of happy campers and discover your perfect campsite today. 
+            Join thousands of happy campers and discover your perfect campsite today.
             Book instantly with secure payments and instant confirmation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

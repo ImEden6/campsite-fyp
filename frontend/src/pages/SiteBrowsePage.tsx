@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, Grid, List, X } from 'lucide-react';
 import { getSites } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
-import { mockSites } from '@/services/api/mock-sites';
+
 import { SiteType, SiteStatus } from '@/types';
 import type { Site } from '@/types';
 import Button from '@/components/ui/Button';
@@ -18,7 +18,7 @@ const SiteBrowsePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated, user } = useAuthStore();
-  
+
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [typeFilter, setTypeFilter] = useState<SiteType | 'all'>('all');
@@ -31,21 +31,14 @@ const SiteBrowsePage: React.FC = () => {
   const [hasWifi, setHasWifi] = useState(false);
   const [isPetFriendly, setIsPetFriendly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  
+
   const checkInDate = searchParams.get('checkIn') || '';
   const checkOutDate = searchParams.get('checkOut') || '';
 
   // Fetch sites
   const { data: sites = [], isLoading, error: sitesError } = useQuery({
     queryKey: queryKeys.sites.all,
-    queryFn: async () => {
-      try {
-        const apiSites = await getSites();
-        return apiSites.length > 0 ? apiSites : mockSites;
-      } catch {
-        return mockSites;
-      }
-    },
+    queryFn: () => getSites(),
   });
 
   // Filter and sort sites
