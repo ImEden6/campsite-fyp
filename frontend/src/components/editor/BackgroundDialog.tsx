@@ -127,6 +127,8 @@ export function BackgroundDialog({
         } finally {
             setProcessing({ isProcessing: false, progress: '' });
         }
+        // imagePreview is intentionally omitted - we only use it to revoke the old URL
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Handle file input change

@@ -4,6 +4,38 @@
 // These types are now defined in dedicated files and re-exported here
 // for backward compatibility and centralized access
 
+// Fabric.js types (canvas, objects, events)
+export type {
+  FabricObject,
+  FabricGroup,
+  FabricCanvas,
+  FabricEvent,
+  FabricTransform,
+  FabricControl,
+  FabricObjectWithData,
+  CanvasOptions,
+  Point as FabricPoint,
+  Size as FabricSize,
+} from './fabricTypes';
+
+export {
+  hasDataProperty,
+  getModuleId,
+  getModuleType,
+  isGridObject,
+  isBackgroundObject,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  ZOOM_STEP,
+  ZOOM_IN_FACTOR,
+  ZOOM_OUT_FACTOR,
+  DEFAULT_GRID_SIZE,
+  FIT_TO_SCREEN_PADDING,
+  OPACITY_LOCKED,
+  OPACITY_HIDDEN,
+  OPACITY_LOCK_ICON,
+} from './fabricTypes';
+
 // Common types (date ranges, shared utilities)
 export type {
   DateRange,

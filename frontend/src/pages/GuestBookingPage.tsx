@@ -43,13 +43,7 @@ const GuestBookingPage: React.FC = () => {
 
   const { data: site, isLoading } = useQuery({
     queryKey: queryKeys.sites.detail(siteId!),
-    queryFn: async () => {
-      try {
-        return await getSiteById(siteId!);
-      } catch (error) {
-        throw error;
-      }
-    },
+    queryFn: () => getSiteById(siteId!),
     enabled: !!siteId,
   });
 

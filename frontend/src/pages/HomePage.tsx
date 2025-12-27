@@ -41,7 +41,7 @@ const HomePage: React.FC = () => {
       try {
         const apiSites = await getSites();
         return apiSites;
-      } catch (error) {
+      } catch {
         return [];
       }
     },

@@ -118,15 +118,11 @@ export const getBookingById = async (id: string): Promise<Booking> => {
  * Falls back to mock data if API is unavailable
  */
 export const getMyBookings = async (filters?: BookingFilters): Promise<Booking[]> => {
-  try {
-    const response = await get<ApiResponse<Booking[]>>('/bookings/my-bookings', {
-      params: filters,
-    });
+  const response = await get<ApiResponse<Booking[]>>('/bookings/my-bookings', {
+    params: filters,
+  });
 
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  return response.data;
 };
 
 /**
