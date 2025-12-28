@@ -3,7 +3,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 import {
@@ -17,8 +17,14 @@ import { CacheService } from './cache.service';
 import { emailService } from './email';
 import { getPrismaClient } from '@/database';
 
-type User = any; // Will be properly typed by Prisma
 type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
+
+/** JWT payload structure for access/refresh tokens */
+interface JwtPayload {
+  userId: string;
+  email: string;
+  role: UserRole;
+}
 
 const prisma = getPrismaClient();
 const cacheService = new CacheService();
@@ -126,7 +132,7 @@ export class AuthService {
   // Validate refresh token
   private async validateRefreshToken(refreshToken: string): Promise<User | null> {
     try {
-      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as any;
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as JwtPayload;
 
       const session = await prisma.userSession.findFirst({
         where: {

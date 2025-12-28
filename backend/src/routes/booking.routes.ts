@@ -1,6 +1,7 @@
 // Booking Routes
 
 import { Router, Request, Response, NextFunction } from 'express';
+import { Prisma, Booking } from '@prisma/client';
 import { authenticate, authorize, authorizeBookingOwnership } from '@/middleware/auth';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
@@ -16,6 +17,138 @@ import {
 const router = Router();
 const prisma = getPrismaClient();
 
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+interface BookingFilters {
+  status?: string;
+  siteId?: string;
+  startDate?: string;
+  endDate?: string;
+  searchTerm?: string;
+}
+
+/**
+ * Build Prisma where clause for booking queries.
+ * Handles role-based filtering and common search/filter parameters.
+ */
+function buildBookingWhereClause(
+  user: NonNullable<Request['user']>,
+  filters: BookingFilters
+): Prisma.BookingWhereInput {
+  const { status, siteId, startDate, endDate, searchTerm } = filters;
+  const where: Prisma.BookingWhereInput = {};
+
+  // Customers can only see their own bookings
+  if (user.role === 'CUSTOMER') {
+    where.userId = user.id;
+  }
+
+  if (status) {
+    where.status = status as Prisma.BookingWhereInput['status'];
+  }
+
+  if (siteId) {
+    where.siteId = siteId;
+  }
+
+  if (startDate || endDate) {
+    where.checkInDate = {};
+    if (startDate) {
+      where.checkInDate.gte = new Date(startDate);
+    }
+    if (endDate) {
+      where.checkInDate.lte = new Date(endDate);
+    }
+  }
+
+  if (searchTerm) {
+    where.OR = [
+      { bookingNumber: { contains: searchTerm, mode: 'insensitive' } },
+      { user: { firstName: { contains: searchTerm, mode: 'insensitive' } } },
+      { user: { lastName: { contains: searchTerm, mode: 'insensitive' } } },
+    ];
+  }
+
+  return where;
+}
+
+/**
+ * Common booking select fields for list views.
+ */
+const bookingListSelect = {
+  id: true,
+  bookingNumber: true,
+  checkInDate: true,
+  checkOutDate: true,
+  status: true,
+  paymentStatus: true,
+  totalAmount: true,
+  adultGuests: true,
+  childGuests: true,
+  petGuests: true,
+  createdAt: true,
+  user: {
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+    },
+  },
+  site: {
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      basePrice: true,
+    },
+  },
+  _count: {
+    select: {
+      guests: true,
+      vehicles: true,
+      equipmentReservations: true,
+    },
+  },
+} as const;
+
+interface BookingWithGuestCounts {
+  adultGuests: number;
+  childGuests: number;
+  petGuests: number;
+  _count?: { guests: number; vehicles: number; equipmentReservations: number };
+}
+
+/**
+ * Transform booking to include structured guest counts.
+ */
+function transformBookingForResponse<T extends BookingWithGuestCounts>(booking: T) {
+  const { _count, ...rest } = booking as T & { _count?: BookingWithGuestCounts['_count'] };
+  return {
+    ...rest,
+    guests: {
+      adults: booking.adultGuests,
+      children: booking.childGuests,
+      pets: booking.petGuests,
+    },
+    ...(
+      _count && {
+        guestCount: _count.guests,
+        vehicleCount: _count.vehicles,
+        equipmentRentalCount: _count.equipmentReservations,
+      }
+    ),
+  };
+}
+
+// ============================================================================
+// ROUTES
+// ============================================================================
+
+
 /**
  * GET /bookings
  * Get all bookings (with filters)
@@ -27,99 +160,21 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
     const { status, siteId, startDate, endDate, searchTerm } = req.query;
     const user = req.user!;
 
-    // Build where clause based on user role
-    const where: any = {};
-
-    // Customers can only see their own bookings
-    if (user.role === 'CUSTOMER') {
-      where.userId = user.id;
-    }
-
-    // Apply filters
-    if (status) {
-      where.status = status;
-    }
-
-    if (siteId) {
-      where.siteId = siteId;
-    }
-
-    if (startDate || endDate) {
-      where.checkInDate = {};
-      if (startDate) {
-        where.checkInDate.gte = new Date(startDate as string);
-      }
-      if (endDate) {
-        where.checkInDate.lte = new Date(endDate as string);
-      }
-    }
-
-    // Search by booking number or guest name
-    if (searchTerm) {
-      where.OR = [
-        { bookingNumber: { contains: searchTerm as string, mode: 'insensitive' } },
-        { user: { firstName: { contains: searchTerm as string, mode: 'insensitive' } } },
-        { user: { lastName: { contains: searchTerm as string, mode: 'insensitive' } } },
-      ];
-    }
+    const where = buildBookingWhereClause(user, {
+      status: status as string | undefined,
+      siteId: siteId as string | undefined,
+      startDate: startDate as string | undefined,
+      endDate: endDate as string | undefined,
+      searchTerm: searchTerm as string | undefined,
+    });
 
     const bookings = await prisma.booking.findMany({
       where,
-      select: {
-        id: true,
-        bookingNumber: true,
-        checkInDate: true,
-        checkOutDate: true,
-        status: true,
-        paymentStatus: true,
-        totalAmount: true,
-        adultGuests: true,
-        childGuests: true,
-        petGuests: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            phone: true,
-          },
-        },
-        site: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            basePrice: true,
-          },
-        },
-        _count: {
-          select: {
-            guests: true,
-            vehicles: true,
-            equipmentReservations: true,
-          },
-        },
-      },
-      orderBy: {
-        checkInDate: 'desc',
-      },
+      select: bookingListSelect,
+      orderBy: { checkInDate: 'desc' },
     });
 
-    // Transform bookings to match frontend expectations
-    const transformedBookings = bookings.map(booking => ({
-      ...booking,
-      guests: {
-        adults: booking.adultGuests,
-        children: booking.childGuests,
-        pets: booking.petGuests,
-      },
-      // Use counts from _count for list view
-      guestCount: booking._count.guests,
-      vehicleCount: booking._count.vehicles,
-      equipmentRentalCount: booking._count.equipmentReservations,
-    }));
+    const transformedBookings = bookings.map(transformBookingForResponse);
 
     logger.info('Bookings retrieved', {
       userId: user.id,
@@ -152,102 +207,30 @@ router.get('/paginated', authenticate, async (req: Request, res: Response, next:
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    // Build where clause
-    const where: any = {};
-
-    if (user.role === 'CUSTOMER') {
-      where.userId = user.id;
-    }
-
-    if (status) {
-      where.status = status;
-    }
-
-    if (siteId) {
-      where.siteId = siteId;
-    }
-
-    if (startDate || endDate) {
-      where.checkInDate = {};
-      if (startDate) {
-        where.checkInDate.gte = new Date(startDate as string);
-      }
-      if (endDate) {
-        where.checkInDate.lte = new Date(endDate as string);
-      }
-    }
-
-    if (searchTerm) {
-      where.OR = [
-        { bookingNumber: { contains: searchTerm as string, mode: 'insensitive' } },
-        { user: { firstName: { contains: searchTerm as string, mode: 'insensitive' } } },
-        { user: { lastName: { contains: searchTerm as string, mode: 'insensitive' } } },
-      ];
-    }
+    const where = buildBookingWhereClause(user, {
+      status: status as string | undefined,
+      siteId: siteId as string | undefined,
+      startDate: startDate as string | undefined,
+      endDate: endDate as string | undefined,
+      searchTerm: searchTerm as string | undefined,
+    });
 
     const [bookings, total] = await Promise.all([
       prisma.booking.findMany({
         where,
-        select: {
-          id: true,
-          bookingNumber: true,
-          checkInDate: true,
-          checkOutDate: true,
-          status: true,
-          paymentStatus: true,
-          totalAmount: true,
-          adultGuests: true,
-          childGuests: true,
-          petGuests: true,
-          createdAt: true,
-          user: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              phone: true,
-            },
-          },
-          site: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              basePrice: true,
-            },
-          },
-          _count: {
-            select: {
-              guests: true,
-              vehicles: true,
-              equipmentReservations: true,
-            },
-          },
-        },
-        orderBy: {
-          checkInDate: 'desc',
-        },
+        select: bookingListSelect,
+        orderBy: { checkInDate: 'desc' },
         skip,
         take: limitNum,
       }),
       prisma.booking.count({ where }),
     ]);
 
-    const transformedBookings = bookings.map(booking => ({
-      ...booking,
-      guests: {
-        adults: booking.adultGuests,
-        children: booking.childGuests,
-        pets: booking.petGuests,
-      },
-      guestCount: booking._count.guests,
-      vehicleCount: booking._count.vehicles,
-      equipmentRentalCount: booking._count.equipmentReservations,
-    }));
+    const transformedBookings = bookings.map(transformBookingForResponse);
 
     res.json({
-      items: transformedBookings,
+      success: true,
+      data: transformedBookings,
       total,
       page: pageNum,
       limit: limitNum,
