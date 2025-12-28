@@ -4,7 +4,7 @@
  * Required for security purposes at the campsite
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { User, Baby, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -38,46 +38,58 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
 }) => {
     const totalGuests = adults + children;
 
-    // Initialize guest details when adult/children counts change
-    useEffect(() => {
-        if (guestDetails.length !== totalGuests) {
-            const newGuests: GuestDetail[] = [];
+    // Track previous total to detect changes
+    const prevTotalRef = useRef<number | null>(null);
 
-            // Add adults
-            for (let i = 0; i < adults; i++) {
-                // First adult uses primary guest info if available
-                if (i === 0 && primaryGuestInfo) {
-                    newGuests.push({
-                        firstName: primaryGuestInfo.firstName,
-                        lastName: primaryGuestInfo.lastName,
-                        isChild: false,
-                    });
-                } else {
-                    // Keep existing data if available
-                    const existingAdult = guestDetails.filter(g => !g.isChild)[i];
-                    newGuests.push(existingAdult || {
-                        firstName: '',
-                        lastName: '',
-                        isChild: false,
-                    });
-                }
-            }
+    // Memoize the guest initialization to avoid stale closures
+    const initializeGuests = useCallback(() => {
+        const newGuests: GuestDetail[] = [];
 
-            // Add children
-            for (let i = 0; i < children; i++) {
-                const existingChild = guestDetails.filter(g => g.isChild)[i];
-                newGuests.push(existingChild || {
+        // Add adults
+        for (let i = 0; i < adults; i++) {
+            // First adult uses primary guest info if available
+            if (i === 0 && primaryGuestInfo) {
+                newGuests.push({
+                    firstName: primaryGuestInfo.firstName,
+                    lastName: primaryGuestInfo.lastName,
+                    isChild: false,
+                });
+            } else {
+                // Keep existing data if available
+                const existingAdult = guestDetails.filter(g => !g.isChild)[i];
+                newGuests.push(existingAdult || {
                     firstName: '',
                     lastName: '',
-                    isChild: true,
-                    age: undefined,
+                    isChild: false,
                 });
             }
-
-            onChange(newGuests);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [adults, children, totalGuests]);
+
+        // Add children
+        for (let i = 0; i < children; i++) {
+            const existingChild = guestDetails.filter(g => g.isChild)[i];
+            newGuests.push(existingChild || {
+                firstName: '',
+                lastName: '',
+                isChild: true,
+                age: undefined,
+            });
+        }
+
+        return newGuests;
+    }, [adults, children, guestDetails, primaryGuestInfo]);
+
+    // Initialize guest details when adult/children counts change
+    useEffect(() => {
+        // Only reinitialize when the total guest count changes
+        if (prevTotalRef.current !== totalGuests) {
+            prevTotalRef.current = totalGuests;
+
+            if (guestDetails.length !== totalGuests) {
+                onChange(initializeGuests());
+            }
+        }
+    }, [totalGuests, guestDetails.length, onChange, initializeGuests]);
 
     const handleUpdate = (index: number, field: keyof GuestDetail, value: string | number | boolean | undefined) => {
         const newGuests = [...guestDetails];

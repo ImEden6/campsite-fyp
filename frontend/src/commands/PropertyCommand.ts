@@ -33,9 +33,52 @@ export class PropertyCommand implements Command {
         this.changes = changes;
     }
 
+    /**
+     * Sync editorStore locked/hidden Sets with module's locked/visible state.
+     * Batches all changes and updates the store once for efficiency.
+     */
+    private syncEditorStoreState(): void {
+        const { lockedModuleIds, hiddenModuleIds } = useEditorStore.getState();
+        const { getModule } = useMapStore.getState();
+        const newLocked = new Set(lockedModuleIds);
+        const newHidden = new Set(hiddenModuleIds);
+        let hasChanges = false;
+
+        for (const { moduleId } of this.changes) {
+            const module = getModule(moduleId);
+            if (!module) continue;
+
+            const shouldBeLocked = module.locked;
+            const shouldBeHidden = !module.visible;
+
+            if (lockedModuleIds.has(moduleId) !== shouldBeLocked) {
+                hasChanges = true;
+                if (shouldBeLocked) {
+                    newLocked.add(moduleId);
+                } else {
+                    newLocked.delete(moduleId);
+                }
+            }
+            if (hiddenModuleIds.has(moduleId) !== shouldBeHidden) {
+                hasChanges = true;
+                if (shouldBeHidden) {
+                    newHidden.add(moduleId);
+                } else {
+                    newHidden.delete(moduleId);
+                }
+            }
+        }
+
+        if (hasChanges) {
+            useEditorStore.setState({
+                lockedModuleIds: newLocked,
+                hiddenModuleIds: newHidden,
+            });
+        }
+    }
+
     execute(): void {
         const { _updateModule, getModule } = useMapStore.getState();
-        const { lockedModuleIds, hiddenModuleIds } = useEditorStore.getState();
 
         for (const { moduleId, newProps } of this.changes) {
             // Validate: check module exists
@@ -46,82 +89,23 @@ export class PropertyCommand implements Command {
                 continue;
             }
             _updateModule(moduleId, newProps);
-
-            // Synchronize editorStore Sets with module data
-            const module = getModule(moduleId);
-            if (module) {
-                const newLocked = new Set(lockedModuleIds);
-                const newHidden = new Set(hiddenModuleIds);
-
-                // Sync locked state
-                if (module.locked && !newLocked.has(moduleId)) {
-                    newLocked.add(moduleId);
-                } else if (!module.locked && newLocked.has(moduleId)) {
-                    newLocked.delete(moduleId);
-                }
-
-                // Sync visible state (inverted: hidden = !visible)
-                if (!module.visible && !newHidden.has(moduleId)) {
-                    newHidden.add(moduleId);
-                } else if (module.visible && newHidden.has(moduleId)) {
-                    newHidden.delete(moduleId);
-                }
-
-                // Update editorStore if changes were made
-                if (newLocked.size !== lockedModuleIds.size || 
-                    Array.from(newLocked).some(id => !lockedModuleIds.has(id)) ||
-                    Array.from(lockedModuleIds).some(id => !newLocked.has(id))) {
-                    useEditorStore.setState({ lockedModuleIds: newLocked });
-                }
-                if (newHidden.size !== hiddenModuleIds.size ||
-                    Array.from(newHidden).some(id => !hiddenModuleIds.has(id)) ||
-                    Array.from(hiddenModuleIds).some(id => !newHidden.has(id))) {
-                    useEditorStore.setState({ hiddenModuleIds: newHidden });
-                }
-            }
         }
+        this.syncEditorStoreState();
     }
 
     undo(): void {
         const { _updateModule, getModule } = useMapStore.getState();
-        const { lockedModuleIds, hiddenModuleIds } = useEditorStore.getState();
 
         // Apply old props in reverse order
         for (const { moduleId, oldProps } of [...this.changes].reverse()) {
-            _updateModule(moduleId, oldProps);
-
-            // Synchronize editorStore Sets with module data after undo
-            const module = getModule(moduleId);
-            if (module) {
-                const newLocked = new Set(lockedModuleIds);
-                const newHidden = new Set(hiddenModuleIds);
-
-                // Sync locked state
-                if (module.locked && !newLocked.has(moduleId)) {
-                    newLocked.add(moduleId);
-                } else if (!module.locked && newLocked.has(moduleId)) {
-                    newLocked.delete(moduleId);
-                }
-
-                // Sync visible state (inverted: hidden = !visible)
-                if (!module.visible && !newHidden.has(moduleId)) {
-                    newHidden.add(moduleId);
-                } else if (module.visible && newHidden.has(moduleId)) {
-                    newHidden.delete(moduleId);
-                }
-
-                // Update editorStore if changes were made
-                if (newLocked.size !== lockedModuleIds.size || 
-                    Array.from(newLocked).some(id => !lockedModuleIds.has(id)) ||
-                    Array.from(lockedModuleIds).some(id => !newLocked.has(id))) {
-                    useEditorStore.setState({ lockedModuleIds: newLocked });
-                }
-                if (newHidden.size !== hiddenModuleIds.size ||
-                    Array.from(newHidden).some(id => !hiddenModuleIds.has(id)) ||
-                    Array.from(hiddenModuleIds).some(id => !newHidden.has(id))) {
-                    useEditorStore.setState({ hiddenModuleIds: newHidden });
-                }
+            if (!getModule(moduleId)) {
+                console.warn(
+                    `[PropertyCommand] Module ${moduleId} not found during undo, skipping`
+                );
+                continue;
             }
+            _updateModule(moduleId, oldProps);
         }
+        this.syncEditorStoreState();
     }
 }

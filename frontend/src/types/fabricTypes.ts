@@ -1,17 +1,22 @@
 /**
  * Fabric.js Type Definitions
  * Centralized type definitions for Fabric.js v6 objects and events.
- * Used across editor hooks to avoid circular dependencies.
- * 
+ * Provides custom interfaces that match Fabric.js classes for type-safe usage.
+ *
+ * Note: For instantiation, import directly from 'fabric'.
+ * These types are for type annotations and parameter typing.
+ *
  * @see https://fabricjs.com/api
  */
 
 // ============================================================================
-// CORE FABRIC TYPES
+// BASE FABRIC.JS TYPE INTERFACES
 // ============================================================================
+// These interfaces match the Fabric.js v6 class structures but are defined
+// as pure types for use with `import type` statements.
 
 /**
- * Generic Fabric object with custom data property
+ * Generic Fabric object interface matching fabric.FabricObject
  */
 export interface FabricObject {
     // Transform properties
@@ -34,6 +39,8 @@ export interface FabricObject {
     // Interaction properties
     selectable?: boolean;
     evented?: boolean;
+    hasControls?: boolean;
+    hasBorders?: boolean;
 
     // Fabric type identifier
     type?: string;
@@ -44,26 +51,70 @@ export interface FabricObject {
     // Controls
     controls?: Record<string, FabricControl>;
 
-    // Methods
+    // Methods commonly used
     set?(options: Partial<FabricObject>): void;
     setCoords?(): void;
+    dispose?(): void;
 
-    // Index signature for additional properties
+    // Index signature for additional Fabric.js properties
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 }
 
 /**
- * Fabric Group - extends FabricObject with group-specific methods
+ * Fabric Group interface extending FabricObject
  */
 export interface FabricGroup extends FabricObject {
     getObjects(): FabricObject[];
     add(obj: FabricObject): void;
     remove(obj: FabricObject): void;
+    // Override optional methods as required for groups
+    set(options: Partial<FabricObject>): void;
+    setCoords(): void;
 }
 
 /**
- * Fabric Canvas interface for canvas operations
+ * Fabric Image interface extending FabricObject
+ */
+export interface FabricImage extends FabricObject {
+    width?: number;
+    height?: number;
+    scaleX?: number;
+    scaleY?: number;
+    // Override optional methods as required for images
+    set(options: Partial<FabricObject>): void;
+    setCoords(): void;
+    dispose?(): void;
+}
+
+/**
+ * Fabric Line interface extending FabricObject
+ */
+export interface FabricLine extends FabricObject {
+    x1?: number;
+    y1?: number;
+    x2?: number;
+    y2?: number;
+}
+
+/**
+ * Point interface for coordinates
+ */
+export interface Point {
+    x: number;
+    y: number;
+}
+
+/**
+ * Size interface for dimensions
+ */
+export interface Size {
+    width: number;
+    height: number;
+}
+
+/**
+ * Canvas interface for typed Fabric.js canvas operations
  */
 export interface FabricCanvas {
     // Dimensions
@@ -124,25 +175,31 @@ export interface FabricCanvas {
     [key: string]: any;
 }
 
+// ============================================================================
+// CUSTOM TYPE EXTENSIONS
+// ============================================================================
+
 /**
- * Point interface for coordinates
+ * Custom data that can be attached to Fabric objects for module identification
  */
-export interface Point {
-    x: number;
-    y: number;
+export interface ModuleData {
+    moduleId?: string;
+    moduleType?: string;
+    isGrid?: boolean;
+    isLockIcon?: boolean;
+    isBackground?: boolean;
+    isGuide?: boolean;
+    guideId?: string;
+    // Index signature for compatibility with Record<string, unknown>
+    [key: string]: unknown;
 }
 
 /**
- * Size interface for dimensions
+ * Extended FabricObject with custom module data
  */
-export interface Size {
-    width: number;
-    height: number;
+export interface FabricObjectWithData extends FabricObject {
+    data?: ModuleData;
 }
-
-// ============================================================================
-// EVENT TYPES
-// ============================================================================
 
 /**
  * Fabric event object passed to event handlers
@@ -160,6 +217,11 @@ export interface FabricEvent {
     selected?: FabricObject[];
     /** Deselected objects for selection events */
     deselected?: FabricObject[];
+    /** Pointer info for mouse events */
+    pointer?: Point;
+    absolutePointer?: Point;
+    scenePoint?: Point;
+    viewportPoint?: Point;
     // Index signature for additional properties
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
@@ -183,10 +245,6 @@ export interface FabricTransform {
     };
 }
 
-// ============================================================================
-// CONTROL TYPES
-// ============================================================================
-
 /**
  * Fabric control interface for object manipulation handles
  */
@@ -203,37 +261,25 @@ export interface FabricControl {
 }
 
 // ============================================================================
-// MODULE-SPECIFIC TYPES
-// ============================================================================
-
-/**
- * Extended FabricObject with custom module data
- */
-export interface FabricObjectWithData extends FabricObject {
-    data?: {
-        moduleId?: string;
-        moduleType?: string;
-        isGrid?: boolean;
-        isLockIcon?: boolean;
-        isBackground?: boolean;
-    };
-}
-
-// ============================================================================
 // TYPE GUARDS
 // ============================================================================
 
 /**
- * Check if a Fabric object has a data property
+ * Check if a Fabric object has a data property with module data
  */
-export function hasDataProperty(obj: FabricObject): obj is FabricObjectWithData {
-    return 'data' in obj && typeof obj.data === 'object' && obj.data !== null;
+export function hasDataProperty(obj: unknown): obj is FabricObjectWithData {
+    return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        'data' in obj &&
+        typeof (obj as FabricObjectWithData).data === 'object'
+    );
 }
 
 /**
  * Get the module ID from a Fabric object, or null if not a module
  */
-export function getModuleId(obj: FabricObject): string | null {
+export function getModuleId(obj: unknown): string | null {
     if (hasDataProperty(obj)) {
         return obj.data?.moduleId ?? null;
     }
@@ -243,7 +289,7 @@ export function getModuleId(obj: FabricObject): string | null {
 /**
  * Get the module type from a Fabric object, or null if not a module
  */
-export function getModuleType(obj: FabricObject): string | null {
+export function getModuleType(obj: unknown): string | null {
     if (hasDataProperty(obj)) {
         return obj.data?.moduleType ?? null;
     }
@@ -253,7 +299,7 @@ export function getModuleType(obj: FabricObject): string | null {
 /**
  * Check if a Fabric object is a grid line
  */
-export function isGridObject(obj: FabricObject): boolean {
+export function isGridObject(obj: unknown): boolean {
     if (hasDataProperty(obj)) {
         return obj.data?.isGrid === true;
     }
@@ -263,11 +309,31 @@ export function isGridObject(obj: FabricObject): boolean {
 /**
  * Check if a Fabric object is a background layer
  */
-export function isBackgroundObject(obj: FabricObject): boolean {
+export function isBackgroundObject(obj: unknown): boolean {
     if (hasDataProperty(obj)) {
         return obj.data?.isBackground === true;
     }
     return false;
+}
+
+/**
+ * Check if a Fabric object is a guide line
+ */
+export function isGuideObject(obj: unknown): boolean {
+    if (hasDataProperty(obj)) {
+        return obj.data?.isGuide === true;
+    }
+    return false;
+}
+
+/**
+ * Get the guide ID from a Fabric object
+ */
+export function getGuideId(obj: unknown): string | null {
+    if (hasDataProperty(obj)) {
+        return obj.data?.guideId ?? null;
+    }
+    return null;
 }
 
 // ============================================================================

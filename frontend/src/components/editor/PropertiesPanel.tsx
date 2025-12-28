@@ -166,11 +166,7 @@ function PropertyInput({
                     e.stopPropagation();
                     // Allow normal input behavior
                 }}
-                onKeyPress={(e) => {
-                    // Stop propagation to prevent canvas keyboard handlers from interfering
-                    e.stopPropagation();
-                    // Allow normal input behavior - don't prevent default
-                }}
+
                 onKeyUp={(e) => {
                     // Stop propagation to prevent canvas keyboard handlers from interfering
                     e.stopPropagation();
@@ -360,7 +356,9 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
 
             // Restore selection after command execution
             requestAnimationFrame(() => {
-                setSelection(selectedIdsToPreserve);
+                if (isMountedRef.current) {
+                    setSelection(selectedIdsToPreserve);
+                }
             });
         },
         [singleModule, currentMap, executeCommand, selectedIds, setSelection]
@@ -531,11 +529,7 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                                     }
                                 ).name || ''
                             }
-                            onChange={(v) => {
-                                const currentModule = currentMap?.modules.find((m) => m.id === singleModule.id);
-                                if (!currentModule) return;
-                                handleMetadataUpdate({ name: String(v) });
-                            }}
+                            onChange={(v) => handleMetadataUpdate({ name: String(v) })}
                         />
                         {(
                             singleModule.metadata as {
@@ -552,11 +546,7 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                                             }
                                         ).capacity
                                     }
-                                    onChange={(v) => {
-                                        const currentModule = currentMap?.modules.find((m) => m.id === singleModule.id);
-                                        if (!currentModule) return;
-                                        handleMetadataUpdate({ capacity: Number(v) });
-                                    }}
+                                    onChange={(v) => handleMetadataUpdate({ capacity: Number(v) })}
                                 />
                             )}
                     </div>

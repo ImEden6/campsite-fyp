@@ -7,85 +7,29 @@ import * as fabricImpl from 'fabric';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
 import type { AnyModule, ModuleType, Position, Size } from '@/types';
+import type { FabricObject, FabricGroup } from '@/types/fabricTypes';
+import {
+    hasDataProperty,
+    OPACITY_LOCKED,
+    OPACITY_HIDDEN,
+    OPACITY_LOCK_ICON,
+} from '@/types/fabricTypes';
 
 // ============================================================================
-// TYPES
+// TYPE HELPERS (re-exported for backward compatibility)
 // ============================================================================
 
-interface FabricObject {
-    data?: Record<string, unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-}
+export { hasDataProperty };
+export { getModuleId, getModuleType, isGridObject } from '@/types/fabricTypes';
 
-interface FabricGroup extends FabricObject {
-    getObjects(): FabricObject[];
-    add(obj: FabricObject): void;
-    remove(obj: FabricObject): void;
-}
-
-// Type helper for accessing custom data on Fabric objects
+// Local re-export for internal use
 export type FabricObjectWithData = FabricObject & {
     data?: { moduleId?: string; moduleType?: string; isGrid?: boolean; isLockIcon?: boolean };
 };
 
-/**
- * Type guard to check if a Fabric object has a data property
- */
-export function hasDataProperty(obj: FabricObject): boolean {
-    return 'data' in obj && typeof obj.data === 'object' && obj.data !== null;
-}
-
-/**
- * Create a lock icon group for locked modules
- * The scale should be applied by the caller based on module dimensions
- * @returns A Fabric Group containing the lock icon, or null if creation fails
- */
-function createLockIcon(): FabricGroup | null {
-    const lockIconElements: IconElement[] = [
-        { type: 'path', d: 'M6 10V8a6 6 0 0 1 12 0v2' },
-        { type: 'path', d: 'M8 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z' },
-    ];
-    const lockIconParts = createIconObjects(lockIconElements, 'oklch(0.551 0.023 264.4)');
-
-    if (lockIconParts.length === 0) return null;
-
-    const lockIconGroup = new fabric.Group(lockIconParts, {
-        originX: 'center',
-        originY: 'center',
-        selectable: false,
-        evented: false,
-        opacity: OPACITY_LOCK_ICON,
-    });
-
-    if (hasDataProperty(lockIconGroup)) {
-        lockIconGroup.data.isLockIcon = true;
-    }
-
-    lockIconGroup.setCoords();
-    return lockIconGroup;
-}
-
-/**
- * Get the module ID from a Fabric object, or null if not a module
- */
-export function getModuleId(obj: FabricObject): string | null {
-    return (obj as FabricObjectWithData).data?.moduleId ?? null;
-}
-
-/**
- * Get the module type from a Fabric object, or null if not a module
- */
-export function getModuleType(obj: FabricObject): string | null {
-    return (obj as FabricObjectWithData).data?.moduleType ?? null;
-}
-
-/**
- * Check if a Fabric object is a grid line
- */
-export function isGridObject(obj: FabricObject): boolean {
-    return (obj as FabricObjectWithData).data?.isGrid === true;
-}
+// ============================================================================
+// MODULE COLORS AND ICONS
+// ============================================================================
 
 // Module type color mapping
 const MODULE_COLORS: Record<ModuleType, string> = {
@@ -101,11 +45,6 @@ const MODULE_COLORS: Record<ModuleType, string> = {
     recreation: 'oklch(0.656 0.212 354.3)',    // pink
     custom: 'oklch(0.606 0.219 292.7)',        // violet
 };
-
-// Opacity constants for module states
-const OPACITY_LOCKED = 0.85;
-const OPACITY_HIDDEN = 0.3;
-const OPACITY_LOCK_ICON = 0.5;
 
 // Interface for structured SVG icon element definitions
 // Lucide icons are composed of multiple SVG elements (path, circle, polyline)
@@ -259,6 +198,36 @@ function createIconObjects(elements: IconElement[], strokeColor: string): Fabric
     }
 
     return iconObjects;
+}
+
+/**
+ * Create a lock icon group for locked modules
+ * The scale should be applied by the caller based on module dimensions
+ * @returns A Fabric Group containing the lock icon, or null if creation fails
+ */
+function createLockIcon(): FabricGroup | null {
+    const lockIconElements: IconElement[] = [
+        { type: 'path', d: 'M6 10V8a6 6 0 0 1 12 0v2' },
+        { type: 'path', d: 'M8 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z' },
+    ];
+    const lockIconParts = createIconObjects(lockIconElements, 'oklch(0.551 0.023 264.4)');
+
+    if (lockIconParts.length === 0) return null;
+
+    const lockIconGroup = new fabric.Group(lockIconParts, {
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+        evented: false,
+        opacity: OPACITY_LOCK_ICON,
+    });
+
+    if (hasDataProperty(lockIconGroup)) {
+        (lockIconGroup as FabricObject).data = { isLockIcon: true };
+    }
+
+    lockIconGroup.setCoords();
+    return lockIconGroup as FabricGroup;
 }
 
 /**
@@ -546,7 +515,7 @@ export function updateModuleObject(obj: FabricGroup, module: AnyModule): void {
     if (module.locked) {
         // Update border to dashed for locked modules
         const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
-        if (rectObj) {
+        if (rectObj && rectObj.set) {
             rectObj.set({
                 strokeDashArray: [5, 5],
                 strokeWidth: 2,
@@ -611,7 +580,7 @@ export function updateModuleObject(obj: FabricGroup, module: AnyModule): void {
     } else {
         // Unlock if not locked
         const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
-        if (rectObj) {
+        if (rectObj && rectObj.set) {
             rectObj.set({
                 strokeDashArray: undefined, // Remove dashed border
                 strokeWidth: 1,

@@ -8,6 +8,11 @@ import * as fabricImpl from 'fabric';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
 import type { Size } from '@/types';
+import type { FabricObject, FabricCanvas, FabricImage } from '@/types/fabricTypes';
+import { isBackgroundObject } from '@/types/fabricTypes';
+
+// Re-export for backward compatibility
+export { isBackgroundObject };
 
 // ============================================================================
 // TYPES
@@ -24,28 +29,6 @@ export interface BackgroundResult {
     image: HTMLImageElement;
     size: Size;
     objectUrl: string;
-}
-
-interface FabricObject {
-    data?: Record<string, unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-}
-
-interface FabricImage extends FabricObject {
-    width?: number;
-    height?: number;
-    scaleX?: number;
-    scaleY?: number;
-    set(options: Record<string, unknown>): void;
-}
-
-interface FabricCanvas {
-    getObjects(): FabricObject[];
-    remove(obj: FabricObject): void;
-    add(obj: FabricObject): void;
-    sendObjectToBack(obj: FabricObject): void;
-    requestRenderAll(): void;
 }
 
 // ============================================================================
@@ -131,13 +114,6 @@ export async function loadBackgroundImage(
 // ============================================================================
 // CANVAS INTEGRATION
 // ============================================================================
-
-/**
- * Check if a Fabric object is a background image
- */
-export function isBackgroundObject(obj: FabricObject): boolean {
-    return (obj.data as { isBackground?: boolean } | undefined)?.isBackground === true;
-}
 
 /**
  * Set the canvas background image

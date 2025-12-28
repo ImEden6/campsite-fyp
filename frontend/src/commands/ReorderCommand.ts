@@ -52,7 +52,13 @@ export class ReorderCommand implements Command {
     }
 
     undo(): void {
-        const { _reorderModule } = useMapStore.getState();
+        const { _reorderModule, getModule } = useMapStore.getState();
+        if (!getModule(this.moduleId)) {
+            console.warn(
+                `[ReorderCommand] Cannot undo: Module ${this.moduleId} no longer exists`
+            );
+            return;
+        }
         _reorderModule(this.moduleId, this.oldZIndex);
     }
 }

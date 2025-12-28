@@ -9,6 +9,8 @@ export type {
   FabricObject,
   FabricGroup,
   FabricCanvas,
+  FabricImage,
+  FabricLine,
   FabricEvent,
   FabricTransform,
   FabricControl,

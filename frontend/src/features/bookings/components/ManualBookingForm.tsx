@@ -1,124 +1,118 @@
 /**
  * ManualBookingForm Component
  * Form for staff to create bookings manually without payment
+ * 
+ * Refactored to use shared useBookingFormState hook
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, Users } from 'lucide-react';
 import { Button, Input, Select, Card } from '@/components/ui';
 import { VehicleInput, EquipmentSelector, PricingBreakdown } from './';
-import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
+import { GuestDetailsInput } from './GuestDetailsInput';
 import { getSites } from '@/services/api/sites';
-
 import { calculateBookingPrice, createBooking } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
-import { BookingStatus, Vehicle, SiteStatus } from '@/types';
-import type { CreateBookingData, BookingPricing } from '@/services/api/bookings';
+import { BookingStatus, SiteStatus } from '@/types';
+import type { CreateBookingData } from '@/services/api/bookings';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { useBookingFormState } from '../hooks';
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export interface ManualBookingFormProps {
   onSuccess?: (bookingId: string) => void;
   onCancel?: () => void;
 }
 
-interface GuestsState {
-  adults: number;
-  children: number;
-  pets: number;
-}
+// ============================================================================
+// HELPERS
+// ============================================================================
 
-interface ManualFormState {
-  siteId: string;
-  checkInDate: string;
-  checkOutDate: string;
-  guests: GuestsState;
-  guestDetails: GuestDetail[];
-  vehicles: Omit<Vehicle, 'id'>[];
-  specialRequests: string;
-  equipmentReservations: { equipmentId: string; quantity: number }[];
-  status: BookingStatus;
-  skipPayment: boolean;
-}
+const getErrorMessage = (err: unknown): string => {
+  if (err instanceof Error) {
+    return err.message;
+  }
+  if (typeof err === 'string' && err.trim()) {
+    return err;
+  }
+  return 'An unexpected error occurred';
+};
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCancel }) => {
-  const [formData, setFormData] = useState<ManualFormState>({
-    siteId: '',
-    checkInDate: '',
-    checkOutDate: '',
-    guests: {
-      adults: 1,
-      children: 0,
-      pets: 0,
-    },
-    guestDetails: [],
-    vehicles: [],
-    specialRequests: '',
-    equipmentReservations: [],
-    status: BookingStatus.CONFIRMED,
-    skipPayment: true,
+  // Use shared form state hook for core booking data
+  const {
+    formData,
+    updateField,
+    today,
+  } = useBookingFormState({
+    initialData: { adults: 1 }, // Default to 1 adult for manual bookings
   });
 
-  const [pricing, setPricing] = useState<BookingPricing | null>(null);
+  // Manual-form specific state
+  const [siteId, setSiteId] = useState('');
+  const [status, setStatus] = useState<BookingStatus>(BookingStatus.CONFIRMED);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getErrorMessage = (err: unknown): string => {
-    if (err instanceof Error) {
-      return err.message;
-    }
-    if (typeof err === 'string' && err.trim()) {
-      return err;
-    }
-    return 'An unexpected error occurred';
-  };
-
-  // Fetch available sites (with mock data fallback)
+  // Fetch available sites
   const { data: sites = [], isLoading: sitesLoading } = useQuery({
     queryKey: queryKeys.sites.lists(),
     queryFn: async () => {
       try {
-        const apiSites = await getSites({ status: [SiteStatus.AVAILABLE] });
-        // Use mock data if API returns empty
-        return apiSites;
+        return await getSites({ status: [SiteStatus.AVAILABLE] });
       } catch {
         return [];
       }
     },
   });
 
-  // Calculate pricing when dates or site changes
-  const handleCalculatePrice = async (state: ManualFormState = formData) => {
-    if (!state.siteId || !state.checkInDate || !state.checkOutDate) {
-      return;
-    }
+  // Get selected site for max vehicles
+  const selectedSite = useMemo(
+    () => sites.find((s) => s.id === siteId),
+    [sites, siteId]
+  );
 
-    try {
-      const price = await calculateBookingPrice(
-        state.siteId,
-        state.checkInDate,
-        state.checkOutDate,
-        state.equipmentReservations
-      );
-      setPricing(price);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    }
-  };
+  // Calculate pricing reactively with useQuery
+  const { data: pricing } = useQuery({
+    queryKey: [
+      'booking-price',
+      siteId,
+      formData.checkInDate,
+      formData.checkOutDate,
+      formData.equipmentReservations,
+    ],
+    queryFn: () =>
+      calculateBookingPrice(
+        siteId,
+        formData.checkInDate,
+        formData.checkOutDate,
+        formData.equipmentReservations
+      ),
+    enabled: !!siteId && !!formData.checkInDate && !!formData.checkOutDate,
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
       const bookingData: CreateBookingData = {
-        siteId: formData.siteId,
+        siteId,
         checkInDate: formData.checkInDate,
         checkOutDate: formData.checkOutDate,
-        adultGuests: formData.guests.adults,
-        childGuests: formData.guests.children,
-        petGuests: formData.guests.pets,
+        adultGuests: formData.adults,
+        childGuests: formData.children,
+        petGuests: formData.pets,
         guests: formData.guestDetails.map((guest, index) => ({
           firstName: guest.firstName,
           lastName: guest.lastName,
@@ -127,7 +121,10 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
         })),
         vehicles: formData.vehicles,
         specialRequests: formData.specialRequests || undefined,
-        equipmentReservations: formData.equipmentReservations.length > 0 ? formData.equipmentReservations : undefined,
+        equipmentReservations:
+          formData.equipmentReservations.length > 0
+            ? formData.equipmentReservations
+            : undefined,
       };
 
       const booking = await createBooking(bookingData);
@@ -137,50 +134,27 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
     } finally {
       setLoading(false);
     }
-  };
+  }, [siteId, formData, onSuccess]);
 
-  const handleVehiclesChange = (vehicles: Omit<Vehicle, 'id'>[]) => {
-    setFormData((prev) => ({ ...prev, vehicles }));
-  };
-
-  const handleEquipmentChange = (equipment: { equipmentId: string; quantity: number }[]) => {
-    setFormData((prev) => {
-      const next = { ...prev, equipmentReservations: equipment };
-      void handleCalculatePrice(next);
-      return next;
-    });
-  };
-
-  const updateGuests = (updater: (prev: GuestsState) => GuestsState) => {
-    setFormData((prev) => ({ ...prev, guests: updater(prev.guests) }));
-  };
-
-  const handleGuestDetailsChange = (guestDetails: GuestDetail[]) => {
-    setFormData((prev) => ({ ...prev, guestDetails }));
-  };
-
-  const updateFormField = <K extends keyof ManualFormState>(field: K, value: ManualFormState[K]) => {
-    setFormData((prev) => {
-      const next = { ...prev, [field]: value } as ManualFormState;
-      if (field === 'siteId' || field === 'checkInDate' || field === 'checkOutDate') {
-        void handleCalculatePrice(next);
-      }
-      return next;
-    });
-  };
+  // Handle site change
+  const handleSiteChange = useCallback((value: string) => {
+    setSiteId(value);
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Booking Details</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Booking Details
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Site Selection */}
           <div className="md:col-span-2">
             <Select
               label="Site *"
-              value={formData.siteId}
-              onChange={(value) => updateFormField('siteId', value)}
+              value={siteId}
+              onChange={handleSiteChange}
               disabled={sitesLoading}
               options={[
                 { value: '', label: 'Select a site' },
@@ -201,9 +175,9 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
             <Input
               type="date"
               value={formData.checkInDate}
-              onChange={(e) => updateFormField('checkInDate', e.target.value)}
+              onChange={(e) => updateField('checkInDate', e.target.value)}
               required
-              min={new Date().toISOString().split('T')[0]}
+              min={today}
               icon={<Calendar size={18} className="text-gray-700 dark:text-gray-300" />}
             />
           </div>
@@ -217,22 +191,22 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
             <Input
               type="date"
               value={formData.checkOutDate}
-              onChange={(e) => updateFormField('checkOutDate', e.target.value)}
+              onChange={(e) => updateField('checkOutDate', e.target.value)}
               required
-              min={formData.checkInDate || new Date().toISOString().split('T')[0]}
+              min={formData.checkInDate || today}
               icon={<Calendar size={18} className="text-gray-700 dark:text-gray-300" />}
             />
           </div>
 
           {/* Adults */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adults *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Adults *
+            </label>
             <Input
               type="number"
-              value={formData.guests.adults}
-              onChange={(e) =>
-                updateGuests((prev) => ({ ...prev, adults: parseInt(e.target.value, 10) || 0 }))
-              }
+              value={formData.adults}
+              onChange={(e) => updateField('adults', parseInt(e.target.value, 10) || 0)}
               min={1}
               required
             />
@@ -240,26 +214,26 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
           {/* Children */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Children</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Children
+            </label>
             <Input
               type="number"
-              value={formData.guests.children}
-              onChange={(e) =>
-                updateGuests((prev) => ({ ...prev, children: parseInt(e.target.value, 10) || 0 }))
-              }
+              value={formData.children}
+              onChange={(e) => updateField('children', parseInt(e.target.value, 10) || 0)}
               min={0}
             />
           </div>
 
           {/* Pets */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pets</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Pets
+            </label>
             <Input
               type="number"
-              value={formData.guests.pets}
-              onChange={(e) =>
-                updateGuests((prev) => ({ ...prev, pets: parseInt(e.target.value, 10) || 0 }))
-              }
+              value={formData.pets}
+              onChange={(e) => updateField('pets', parseInt(e.target.value, 10) || 0)}
               min={0}
             />
           </div>
@@ -268,8 +242,8 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
           <div>
             <Select
               label="Status *"
-              value={formData.status}
-              onChange={(value) => updateFormField('status', value as BookingStatus)}
+              value={status}
+              onChange={(value) => setStatus(value as BookingStatus)}
               options={[
                 { value: BookingStatus.PENDING, label: 'Pending' },
                 { value: BookingStatus.CONFIRMED, label: 'Confirmed' },
@@ -279,10 +253,12 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
           {/* Special Requests */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Special Requests / Notes</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Special Requests / Notes
+            </label>
             <textarea
               value={formData.specialRequests}
-              onChange={(e) => updateFormField('specialRequests', e.target.value)}
+              onChange={(e) => updateField('specialRequests', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               rows={3}
               placeholder="Any special requests or notes..."
@@ -298,29 +274,33 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
           Guest Information
         </h3>
         <GuestDetailsInput
-          adults={formData.guests.adults}
-          children={formData.guests.children}
+          adults={formData.adults}
+          children={formData.children}
           guestDetails={formData.guestDetails}
-          onChange={handleGuestDetailsChange}
+          onChange={(guests) => updateField('guestDetails', guests)}
         />
       </Card>
 
       {/* Vehicles */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Vehicles (Optional)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Vehicles (Optional)
+        </h3>
         <VehicleInput
           vehicles={formData.vehicles}
-          onChange={handleVehiclesChange}
-          maxVehicles={5}
+          onChange={(vehicles) => updateField('vehicles', vehicles)}
+          maxVehicles={selectedSite?.maxVehicles ?? 5}
         />
       </Card>
 
       {/* Equipment Rentals */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Equipment Rentals (Optional)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Equipment Rentals (Optional)
+        </h3>
         <EquipmentSelector
           selectedEquipment={formData.equipmentReservations}
-          onChange={handleEquipmentChange}
+          onChange={(equipment) => updateField('equipmentReservations', equipment)}
           checkInDate={formData.checkInDate}
           checkOutDate={formData.checkOutDate}
         />
@@ -329,12 +309,14 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
       {/* Pricing */}
       {pricing && (
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Pricing Summary</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Pricing Summary
+          </h3>
           <PricingBreakdown pricing={pricing} />
           <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/30 rounded-md">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              <strong>Note:</strong> This is a manual booking. Payment will be marked as pending and can be
-              collected separately.
+              <strong>Note:</strong> This is a manual booking. Payment will be marked as pending and
+              can be collected separately.
             </p>
           </div>
         </Card>
@@ -354,7 +336,10 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={loading || !formData.siteId || !formData.checkInDate || !formData.checkOutDate}>
+        <Button
+          type="submit"
+          disabled={loading || !siteId || !formData.checkInDate || !formData.checkOutDate}
+        >
           {loading ? 'Creating...' : 'Create Booking'}
         </Button>
       </div>

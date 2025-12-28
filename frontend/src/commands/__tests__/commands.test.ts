@@ -9,6 +9,8 @@ import { DeleteCommand } from '../DeleteCommand';
 import { PropertyCommand } from '../PropertyCommand';
 import { ReorderCommand } from '../ReorderCommand';
 import { BatchCommand } from '../BatchCommand';
+import { MoveCommand } from '../MoveCommand';
+import { TransformCommand } from '../TransformCommand';
 import { useMapStore } from '@/stores/mapStore';
 import type { AnyModule, CampsiteMap } from '@/types';
 
@@ -116,7 +118,9 @@ describe('AddCommand', () => {
         const warnSpy = vi.spyOn(console, 'warn');
 
         cmd1.execute();
-        cmd2.execute();
+
+        // AddCommand throws when ALL modules are duplicates
+        expect(() => cmd2.execute()).toThrow('[AddCommand] All modules already exist');
 
         expect(useMapStore.getState().getModules()).toHaveLength(1);
         expect(warnSpy).toHaveBeenCalledWith(
@@ -341,6 +345,192 @@ describe('BatchCommand', () => {
 
         expect(warnSpy).toHaveBeenCalledWith(
             expect.stringContaining('empty command array')
+        );
+    });
+});
+
+describe('MoveCommand', () => {
+
+    it('should move module on execute', () => {
+        const module = createMockModule('test-1', {
+            position: { x: 0, y: 0 },
+        });
+        useMapStore.getState()._addModule(module);
+
+        const cmd = new MoveCommand([
+            {
+                id: 'test-1',
+                oldPosition: { x: 0, y: 0 },
+                newPosition: { x: 100, y: 100 },
+            },
+        ]);
+        cmd.execute();
+
+        const moved = useMapStore.getState().getModule('test-1');
+        expect(moved?.position).toEqual({ x: 100, y: 100 });
+    });
+
+    it('should restore position on undo', () => {
+        const module = createMockModule('test-1', {
+            position: { x: 0, y: 0 },
+        });
+        useMapStore.getState()._addModule(module);
+
+        const cmd = new MoveCommand([
+            {
+                id: 'test-1',
+                oldPosition: { x: 0, y: 0 },
+                newPosition: { x: 100, y: 100 },
+            },
+        ]);
+        cmd.execute();
+        cmd.undo();
+
+        const restored = useMapStore.getState().getModule('test-1');
+        expect(restored?.position).toEqual({ x: 0, y: 0 });
+    });
+
+    it('should warn and skip undo for deleted modules', () => {
+        const module = createMockModule('test-1', {
+            position: { x: 0, y: 0 },
+        });
+        useMapStore.getState()._addModule(module);
+
+        const cmd = new MoveCommand([
+            {
+                id: 'test-1',
+                oldPosition: { x: 0, y: 0 },
+                newPosition: { x: 100, y: 100 },
+            },
+        ]);
+        cmd.execute();
+
+        // Delete module before undo
+        useMapStore.getState()._removeModules(['test-1']);
+
+        const warnSpy = vi.spyOn(console, 'warn');
+        cmd.undo(); // Should not throw
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('no longer exists')
+        );
+    });
+
+    it('should handle multiple modules', () => {
+        const m1 = createMockModule('m1', { position: { x: 0, y: 0 } });
+        const m2 = createMockModule('m2', { position: { x: 50, y: 50 } });
+        useMapStore.getState()._addModule(m1);
+        useMapStore.getState()._addModule(m2);
+
+        const cmd = new MoveCommand([
+            { id: 'm1', oldPosition: { x: 0, y: 0 }, newPosition: { x: 10, y: 10 } },
+            { id: 'm2', oldPosition: { x: 50, y: 50 }, newPosition: { x: 60, y: 60 } },
+        ]);
+        cmd.execute();
+
+        expect(useMapStore.getState().getModule('m1')?.position).toEqual({ x: 10, y: 10 });
+        expect(useMapStore.getState().getModule('m2')?.position).toEqual({ x: 60, y: 60 });
+    });
+});
+
+describe('TransformCommand', () => {
+
+    it('should transform module on execute', () => {
+        const module = createMockModule('test-1', {
+            position: { x: 0, y: 0 },
+            size: { width: 100, height: 100 },
+            rotation: 0,
+        });
+        useMapStore.getState()._addModule(module);
+
+        const cmd = new TransformCommand({
+            id: 'test-1',
+            oldPosition: { x: 0, y: 0 },
+            newPosition: { x: 50, y: 50 },
+            oldSize: { width: 100, height: 100 },
+            newSize: { width: 200, height: 200 },
+            oldRotation: 0,
+            newRotation: 45,
+        });
+        cmd.execute();
+
+        const transformed = useMapStore.getState().getModule('test-1');
+        expect(transformed?.position).toEqual({ x: 50, y: 50 });
+        expect(transformed?.size).toEqual({ width: 200, height: 200 });
+        expect(transformed?.rotation).toBe(45);
+    });
+
+    it('should restore on undo', () => {
+        const module = createMockModule('test-1', {
+            position: { x: 0, y: 0 },
+            size: { width: 100, height: 100 },
+            rotation: 0,
+        });
+        useMapStore.getState()._addModule(module);
+
+        const cmd = new TransformCommand({
+            id: 'test-1',
+            oldPosition: { x: 0, y: 0 },
+            newPosition: { x: 50, y: 50 },
+            oldSize: { width: 100, height: 100 },
+            newSize: { width: 200, height: 200 },
+            oldRotation: 0,
+            newRotation: 45,
+        });
+        cmd.execute();
+        cmd.undo();
+
+        const restored = useMapStore.getState().getModule('test-1');
+        expect(restored?.position).toEqual({ x: 0, y: 0 });
+        expect(restored?.size).toEqual({ width: 100, height: 100 });
+        expect(restored?.rotation).toBe(0);
+    });
+
+    it('should not undo if execute failed', () => {
+        const cmd = new TransformCommand({
+            id: 'non-existent',
+            oldPosition: { x: 0, y: 0 },
+            newPosition: { x: 50, y: 50 },
+            oldSize: { width: 100, height: 100 },
+            newSize: { width: 200, height: 200 },
+            oldRotation: 0,
+            newRotation: 45,
+        });
+
+        const warnSpy = vi.spyOn(console, 'warn');
+        cmd.execute(); // Should warn and not throw
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('not found')
+        );
+
+        // Undo should be a no-op since execute failed
+        cmd.undo();
+    });
+
+    it('should warn if module deleted before undo', () => {
+        const module = createMockModule('test-1');
+        useMapStore.getState()._addModule(module);
+
+        const cmd = new TransformCommand({
+            id: 'test-1',
+            oldPosition: { x: 0, y: 0 },
+            newPosition: { x: 50, y: 50 },
+            oldSize: { width: 100, height: 100 },
+            newSize: { width: 200, height: 200 },
+            oldRotation: 0,
+            newRotation: 45,
+        });
+        cmd.execute();
+
+        // Delete before undo
+        useMapStore.getState()._removeModules(['test-1']);
+
+        const warnSpy = vi.spyOn(console, 'warn');
+        cmd.undo();
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('not found during undo')
         );
     });
 });

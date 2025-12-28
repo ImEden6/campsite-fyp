@@ -8,6 +8,11 @@ import * as fabricImpl from 'fabric';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
 import type { Position, Size } from '@/types';
+import type { FabricObject, FabricCanvas, FabricLine } from '@/types/fabricTypes';
+import { isGuideObject, getGuideId } from '@/types/fabricTypes';
+
+// Re-export for backward compatibility
+export { isGuideObject, getGuideId };
 
 // ============================================================================
 // TYPES
@@ -22,21 +27,6 @@ export interface Guide {
 export interface SnapResult {
     snapped: Position;
     snapLines: { orientation: 'h' | 'v'; position: number }[];
-}
-
-interface FabricObject {
-    data?: Record<string, unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-}
-
-type FabricLine = FabricObject;
-
-interface FabricCanvas {
-    getObjects(): FabricObject[];
-    remove(obj: FabricObject): void;
-    add(obj: FabricObject): void;
-    requestRenderAll(): void;
 }
 
 // ============================================================================
@@ -87,20 +77,6 @@ export function createGuideLine(
 // ============================================================================
 // GUIDE SYNCHRONIZATION
 // ============================================================================
-
-/**
- * Check if a Fabric object is a guide line
- */
-export function isGuideObject(obj: FabricObject): boolean {
-    return (obj.data as { isGuide?: boolean } | undefined)?.isGuide === true;
-}
-
-/**
- * Get the guide ID from a Fabric object
- */
-export function getGuideId(obj: FabricObject): string | null {
-    return (obj.data as { guideId?: string } | undefined)?.guideId ?? null;
-}
 
 /**
  * Sync guides from state to canvas

@@ -7,28 +7,7 @@ import * as fabricImpl from 'fabric';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
 import type { BackgroundLayer, Position, Size } from '@/types';
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-// Using any for canvas type to ensure compatibility with various Fabric.js versions
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FabricCanvas = any;
-
-interface FabricObject {
-    data?: Record<string, unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-}
-
-interface FabricImage extends FabricObject {
-    width?: number;
-    height?: number;
-    set(options: Record<string, unknown>): void;
-    setCoords(): void;
-    dispose?(): void;
-}
+import type { FabricObject, FabricCanvas, FabricImage } from '@/types/fabricTypes';
 
 // Store reference to the background image for updates
 const BACKGROUND_DATA_KEY = 'isBackgroundLayer';
