@@ -11,14 +11,12 @@
 
 import { useCallback } from 'react';
 import { useCommandHistory } from '@/hooks/useCommandHistory';
-import {
-    AddCommand,
-    DeleteCommand,
-    MoveCommand,
-    PropertyCommand,
-    ReorderCommand,
-    TransformCommand,
-} from '@/commands';
+import { AddCommand } from '@/commands/AddCommand';
+import { DeleteCommand } from '@/commands/DeleteCommand';
+import { MoveCommand } from '@/commands/MoveCommand';
+import { PropertyCommand } from '@/commands/PropertyCommand';
+import { ReorderCommand } from '@/commands/ReorderCommand';
+import { TransformCommand } from '@/commands/TransformCommand';
 import { useMapStore } from '@/stores/mapStore';
 import type { AnyModule, Position, Size } from '@/types';
 
