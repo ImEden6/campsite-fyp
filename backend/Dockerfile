@@ -9,8 +9,6 @@ COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
-COPY tests/package*.json ./tests/
-
 # Install all dependencies (including devDependencies)
 RUN npm ci
 
@@ -37,8 +35,6 @@ COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
-COPY tests/package*.json ./tests/
-
 # Install all dependencies
 RUN npm ci
 
@@ -62,8 +58,6 @@ COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
-COPY tests/package*.json ./tests/
-
 # Install production dependencies and curl for healthcheck
 RUN apk add --no-cache curl && \
   npm ci --only=production

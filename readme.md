@@ -35,7 +35,7 @@ npm run dev:backend   # Backend only
 npm run dev:all       # Both (if configured)
 ```
 
-### ⚡ Quick Reference: Access & Commands
+###  Quick Reference: Access & Commands
 
 **Development Environment**
 Run local development with hot-reloading:

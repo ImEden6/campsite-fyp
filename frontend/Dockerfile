@@ -17,8 +17,6 @@ COPY package*.json ./
 COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
-COPY tests/package*.json ./tests/
-
 RUN npm ci
 
 # Copy sources provided by volumes in dev, but for the image itself:
@@ -28,9 +26,6 @@ COPY frontend/ ./frontend/
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--workspace=@campsite-management/frontend", "--", "--host", "0.0.0.0"]
 
-# =============================================================================
-# Stage 1: Dependencies - Cached layer for npm packages
-# =============================================================================
 
 # =============================================================================
 # Stage 1: Dependencies - Cached layer for npm packages
@@ -46,8 +41,6 @@ COPY package*.json ./
 COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
-COPY tests/package*.json ./tests/
-
 # Install dependencies directly to ensure correctness
 # Attempt to force install the native binary for Alpine/musl as requested
 RUN npm ci && npm install lightningcss-linux-x64-musl --save-optional
@@ -89,11 +82,8 @@ RUN apk add --no-cache curl && \
   # Remove unnecessary files to reduce image size
   rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
 
-# Copy nginx configuration
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-
-# Configure nginx to listen on port 5137
-RUN sed -i 's/listen 80;/listen 5137;/' /etc/nginx/nginx.conf
+# Copy frontend-specific nginx configuration (serves static files with SPA fallback)
+COPY docker/frontend.nginx.conf /etc/nginx/nginx.conf
 
 # Copy only the built static files from builder stage
 COPY --from=builder --chown=appuser:root /app/frontend/dist /usr/share/nginx/html
