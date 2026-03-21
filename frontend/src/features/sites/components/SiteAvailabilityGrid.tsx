@@ -14,9 +14,9 @@ import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface SiteAvailabilityGridProps {
   sites: Site[];
-  loading?: boolean;
-  onSiteSelect?: (site: Site) => void;
-  onSiteViewDetails?: (site: Site) => void;
+  loading?: boolean | undefined;
+  onSiteSelect?: ((site: Site) => void) | undefined;
+  onSiteViewDetails?: ((site: Site) => void) | undefined;
 }
 
 interface Filters {

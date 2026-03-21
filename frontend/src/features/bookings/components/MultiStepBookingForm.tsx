@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Car, Package, Users, AlertCircle } from 'lucide-react';
 import type { Site, Vehicle } from '@/types';
 import Button from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { calculateBookingPrice } from '@/services/api/bookings';
 import { useBookingFormState, useMultiStepForm } from '../hooks';
 import type { BookingFormData, PrimaryGuestInfo, BookingFormStep, BookingFormErrors } from '../types';
@@ -36,22 +36,22 @@ export interface MultiStepBookingFormProps {
     /**
      * Initial check-in date (YYYY-MM-DD)
      */
-    initialCheckInDate?: string;
+    initialCheckInDate?: string | undefined;
 
     /**
      * Initial check-out date (YYYY-MM-DD)
      */
-    initialCheckOutDate?: string;
+    initialCheckOutDate?: string | undefined;
 
     /**
      * Initial number of guests
      */
-    initialGuests?: number;
+    initialGuests?: number | undefined;
 
     /**
      * Primary guest information (pre-populated for first guest)
      */
-    primaryGuestInfo?: PrimaryGuestInfo;
+    primaryGuestInfo?: PrimaryGuestInfo | undefined;
 
     /**
      * Called when form is submitted with valid data
@@ -66,17 +66,17 @@ export interface MultiStepBookingFormProps {
     /**
      * Submission error message
      */
-    submitError?: string;
+    submitError?: string | undefined;
 
     /**
      * Called when user clicks cancel
      */
-    onCancel?: () => void;
+    onCancel?: (() => void) | undefined;
 
     /**
      * Custom label for submit button
      */
-    submitLabel?: string;
+    submitLabel?: string | undefined;
 }
 
 // ============================================================================
@@ -120,10 +120,10 @@ function createStepValidator(
                 newErrors.guestDetails = 'Please provide details for all guests';
             } else {
                 formData.guestDetails.forEach((guest, index) => {
-                    if (!guest.firstName.trim()) {
+                    if (!(guest.firstName ?? '').trim()) {
                         newErrors[`guest_${index}_firstName`] = 'First name is required';
                     }
-                    if (!guest.lastName.trim()) {
+                    if (!(guest.lastName ?? '').trim()) {
                         newErrors[`guest_${index}_lastName`] = 'Last name is required';
                     }
                 });
@@ -217,12 +217,15 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
     );
 
     return (
-        <div className="max-w-3xl mx-auto">
-            {/* Progress Steps */}
-            <BookingProgressStepper currentStep={currentStep} />
 
-            {/* Form Content */}
-            <Card className="p-6 dark:bg-gray-800 dark:border-gray-700">
+        <div className="max-w-4xl mx-auto">
+            {/* Progress Steps - Enhanced */}
+            <div className="mb-8">
+                <BookingProgressStepper currentStep={currentStep} />
+            </div>
+
+            {/* Form Content - Glassmorphism */}
+            <GlassCard className="p-6 md:p-8" intensity="strong">
                 {/* Step 1: Dates & Guests */}
                 {currentStep === 1 && (
                     <DateGuestsStep
@@ -236,11 +239,18 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
 
                 {/* Step 2: Guest Details */}
                 {currentStep === 2 && (
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <Users size={20} className="text-blue-600 dark:text-blue-400" />
-                            Guest Information
-                        </h2>
+                    <div className="space-y-6">
+                        <div className="border-b border-secondary-200/50 pb-4 mb-4">
+                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                                <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
+                                    <Users size={24} />
+                                </div>
+                                Guest Information
+                            </h2>
+                            <p className="text-secondary-600 dark:text-secondary-400 mt-1 ml-14">
+                                Who will be staying with us?
+                            </p>
+                        </div>
 
                         <GuestDetailsInput
                             adults={formData.adults}
@@ -248,12 +258,12 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                             guestDetails={formData.guestDetails}
                             onChange={(guests) => updateField('guestDetails', guests)}
                             primaryGuestInfo={primaryGuestInfo}
-                            errors={errors}
+                            errors={errors as Record<string, string | undefined>}
                         />
 
                         {errors.guestDetails && (
-                            <div className="flex items-center gap-2 text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 p-3 rounded-lg">
-                                <AlertCircle size={20} />
+                            <div className="flex items-center gap-3 text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 p-4 rounded-xl">
+                                <AlertCircle size={20} className="flex-shrink-0" />
                                 <p className="text-sm font-medium">{errors.guestDetails}</p>
                             </div>
                         )}
@@ -262,14 +272,18 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
 
                 {/* Step 3: Vehicles */}
                 {currentStep === 3 && (
-                    <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <Car size={20} className="text-blue-600 dark:text-blue-400" />
-                            Vehicle Information (Optional)
-                        </h2>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Add your vehicle details if arriving by car, RV, or motorcycle
-                        </p>
+                    <div className="space-y-6">
+                        <div className="border-b border-secondary-200/50 pb-4 mb-4">
+                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                                <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
+                                    <Car size={24} />
+                                </div>
+                                Vehicle Information
+                            </h2>
+                            <p className="text-secondary-600 dark:text-secondary-400 mt-1 ml-14">
+                                Bringing a vehicle? Let us know for parking arrangements.
+                            </p>
+                        </div>
 
                         <VehicleInput
                             vehicles={formData.vehicles}
@@ -280,31 +294,33 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                         />
 
                         {errors.vehicles && (
-                            <div className="flex items-center gap-2 text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 p-3 rounded-lg">
-                                <AlertCircle size={20} />
+                            <div className="flex items-center gap-3 text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 p-4 rounded-xl">
+                                <AlertCircle size={20} className="flex-shrink-0" />
                                 <p className="text-sm font-medium">{errors.vehicles}</p>
                             </div>
                         )}
 
-                        <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 p-4 rounded-lg">
-                            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                                <strong>Maximum Vehicles:</strong> {site.maxVehicles} |{' '}
-                                <strong>Current:</strong> {formData.vehicles.length}
-                            </p>
+                        <div className="bg-secondary-50 dark:bg-gray-800/50 border border-secondary-200 dark:border-gray-700 p-4 rounded-xl flex justify-between items-center text-sm">
+                            <span className="text-secondary-600 dark:text-secondary-400">Parking Capacity</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                                {formData.vehicles.length} / {site.maxVehicles} Vehicles
+                            </span>
                         </div>
                     </div>
                 )}
 
                 {/* Step 4: Equipment */}
                 {currentStep === 4 && (
-                    <div className="space-y-4">
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <Package size={20} className="text-blue-600 dark:text-blue-400" />
-                                Equipment Rentals (Optional)
+                    <div className="space-y-6">
+                        <div className="border-b border-secondary-200/50 pb-4 mb-4">
+                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                                <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
+                                    <Package size={24} />
+                                </div>
+                                Enhancements
                             </h2>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Add equipment rentals to enhance your camping experience
+                            <p className="text-secondary-600 dark:text-secondary-400 mt-1 ml-14">
+                                Add equipment rentals to upgrade your adventure.
                             </p>
                         </div>
 
@@ -332,37 +348,38 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                 )}
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between mt-8 pt-6 border-t border-secondary-200/50 dark:border-gray-700">
                     <div>
                         {currentStep > 1 && (
-                            <Button variant="outline" onClick={handleBack}>
+                            <Button variant="outline" onClick={handleBack} className="min-w-[100px]">
                                 Back
                             </Button>
                         )}
                         {onCancel && currentStep === 1 && (
-                            <Button variant="outline" onClick={onCancel}>
+                            <Button variant="outline" onClick={onCancel} className="min-w-[100px]">
                                 Cancel
                             </Button>
                         )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                         {!isLastStep ? (
-                            <Button variant="primary" onClick={handleNext}>
-                                Next
+                            <Button variant="primary" onClick={handleNext} className="min-w-[120px]">
+                                Next Step
                             </Button>
                         ) : (
                             <Button
                                 variant="primary"
                                 onClick={handleSubmit}
                                 disabled={isSubmitting}
+                                className="min-w-[150px] shadow-lg shadow-primary-600/20"
                             >
-                                {isSubmitting ? 'Creating Booking...' : submitLabel}
+                                {isSubmitting ? 'Processing...' : submitLabel}
                             </Button>
                         )}
                     </div>
                 </div>
-            </Card>
+            </GlassCard>
         </div>
     );
 };

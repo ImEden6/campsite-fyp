@@ -49,7 +49,7 @@ describe('Diagnostic: GuestBookingPage', () => {
         );
 
         try {
-            await waitFor(() => expect(screen.getByText('Guest Information')).toBeInTheDocument(), { timeout: 3000 });
+            await waitFor(() => expect(screen.getByText('Enter Guest Information')).toBeInTheDocument(), { timeout: 3000 });
             console.log('[PASS] 3a (Direct Render) works');
         } catch (e) {
             console.log('[FAIL] 3a (Direct Render) failed');
@@ -86,7 +86,7 @@ describe('Diagnostic: GuestBookingPage', () => {
         );
 
         try {
-            await waitFor(() => expect(screen.getByText('Guest Information')).toBeInTheDocument(), { timeout: 3000 });
+            await waitFor(() => expect(screen.getByText('Enter Guest Information')).toBeInTheDocument(), { timeout: 3000 });
             console.log('[PASS] 3b (With Routes) works');
         } catch (e) {
             console.log('[FAIL] 3b (With Routes) failed');

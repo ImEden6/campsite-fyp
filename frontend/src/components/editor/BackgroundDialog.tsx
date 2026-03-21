@@ -26,7 +26,7 @@ export interface BackgroundDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: (layer: BackgroundLayer | null, fitBounds: boolean) => void;
-    existingLayer?: BackgroundLayer;
+    existingLayer?: BackgroundLayer | undefined;
 }
 
 interface ProcessingState {
@@ -288,10 +288,10 @@ export function BackgroundDialog({
                         <>
                             <div className="background-dialog__preview">
                                 <ReactCrop
-                                    crop={crop}
+                                    crop={crop || { unit: '%', width: 0, height: 0, x: 0, y: 0 }}
                                     onChange={(c) => setCrop(c)}
                                     onComplete={(c) => setCompletedCrop(c)}
-                                    aspect={undefined}
+                                    aspect={16 / 9}
                                 >
                                     <img
                                         ref={imgRef}

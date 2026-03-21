@@ -24,36 +24,36 @@ export interface CreateBookingData {
   guests?: {
     firstName: string;
     lastName: string;
-    email?: string;
-    phone?: string;
+    email?: string | undefined;
+    phone?: string | undefined;
     type: 'ADULT' | 'CHILD';
     isPrimary: boolean;
-  }[];
+  }[] | undefined;
   vehicles: Omit<Vehicle, 'id'>[];
-  specialRequests?: string;
+  specialRequests?: string | undefined;
   equipmentReservations?: {
     equipmentId: string;
     quantity: number;
-  }[];
+  }[] | undefined;
 }
 
 export interface UpdateBookingData {
-  checkInDate?: string;
-  checkOutDate?: string;
-  adultGuests?: number;
-  childGuests?: number;
-  petGuests?: number;
+  checkInDate?: string | undefined;
+  checkOutDate?: string | undefined;
+  adultGuests?: number | undefined;
+  childGuests?: number | undefined;
+  petGuests?: number | undefined;
   guests?: {
     firstName: string;
     lastName: string;
-    email?: string;
-    phone?: string;
+    email?: string | undefined;
+    phone?: string | undefined;
     type: 'ADULT' | 'CHILD';
     isPrimary: boolean;
-  }[];
-  vehicles?: Omit<Vehicle, 'id'>[];
-  specialRequests?: string;
-  status?: BookingStatus;
+  }[] | undefined;
+  vehicles?: Omit<Vehicle, 'id'>[] | undefined;
+  specialRequests?: string | undefined;
+  status?: BookingStatus | undefined;
 }
 
 export interface BookingPricing {
@@ -75,7 +75,7 @@ export interface BookingPricing {
 /**
  * Get all bookings with optional filters
  */
-export const getBookings = async (filters?: BookingFilters): Promise<Booking[]> => {
+export const getBookings = async (filters?: BookingFilters | undefined): Promise<Booking[]> => {
   console.log('[getBookings] Calling API with filters:', filters);
   try {
     const response = await get<ApiResponse<Booking[]>>('/bookings', { params: filters });
@@ -93,7 +93,7 @@ export const getBookings = async (filters?: BookingFilters): Promise<Booking[]> 
 export const getBookingsPaginated = async (
   page: number = 1,
   limit: number = 10,
-  filters?: BookingFilters
+  filters?: BookingFilters | undefined
 ): Promise<PaginatedResponse<Booking>> => {
   const response = await get<PaginatedResponse<Booking>>('/bookings/paginated', {
     params: { page, limit, ...filters },
@@ -117,7 +117,7 @@ export const getBookingById = async (id: string): Promise<Booking> => {
  * Get current user's bookings
  * Falls back to mock data if API is unavailable
  */
-export const getMyBookings = async (filters?: BookingFilters): Promise<Booking[]> => {
+export const getMyBookings = async (filters?: BookingFilters | undefined): Promise<Booking[]> => {
   const response = await get<ApiResponse<Booking[]>>('/bookings/my-bookings', {
     params: filters,
   });
@@ -151,7 +151,7 @@ export const calculateBookingPrice = async (
   siteId: string,
   checkInDate: string,
   checkOutDate: string,
-  equipmentReservations?: { equipmentId: string; quantity: number }[]
+  equipmentReservations?: { equipmentId: string; quantity: number }[] | undefined
 ): Promise<BookingPricing> => {
   const response = await post<ApiResponse<BookingPricing>>('/bookings/calculate-price', {
     siteId,
@@ -198,7 +198,7 @@ export const updateBooking = async (
 /**
  * Cancel booking
  */
-export const cancelBooking = async (id: string, reason?: string): Promise<Booking> => {
+export const cancelBooking = async (id: string, reason?: string | undefined): Promise<Booking> => {
   const response = await post<ApiResponse<Booking>>(`/bookings/${id}/cancel`, { reason });
   if (!response.data) {
     throw new Error(`Failed to cancel booking: ${id}`);
@@ -291,8 +291,8 @@ export const createGuestBooking = async (
  */
 export const getGuestBooking = async (
   bookingNumber: string,
-  token?: string,
-  email?: string
+  token?: string | undefined,
+  email?: string | undefined
 ): Promise<Booking> => {
   const params: Record<string, string> = {};
   if (token) params.token = token;

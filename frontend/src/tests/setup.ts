@@ -67,3 +67,41 @@ const sessionStorageMock = {
   clear: vi.fn(),
 };
 global.sessionStorage = sessionStorageMock as any;
+
+// Mock Sentry
+vi.mock('@sentry/react', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  withScope: vi.fn(),
+  BrowserTracing: vi.fn(),
+  Replay: vi.fn(),
+}));
+
+// Mock IndexedDB
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'indexedDB', {
+    value: {
+      open: vi.fn().mockImplementation(() => ({
+        onupgradeneeded: null,
+        onsuccess: null,
+        onerror: null,
+      })),
+      deleteDatabase: vi.fn(),
+    },
+    writable: true,
+  });
+}
+
+// Mock IndexedDB Storage Utility to prevent ReferenceErrors for IDBRequest etc.
+vi.mock('@/utils/indexedDBStorage', () => ({
+  indexedDBStorage: {
+    getItem: vi.fn().mockResolvedValue(null),
+    setItem: vi.fn().mockResolvedValue(undefined),
+    removeItem: vi.fn().mockResolvedValue(undefined),
+  },
+  isIndexedDBAvailable: vi.fn().mockReturnValue(false),
+  getIndexedDBStats: vi.fn().mockResolvedValue({ used: 0, available: 0, percentage: 0 }),
+  clearIndexedDB: vi.fn().mockResolvedValue(undefined),
+}));

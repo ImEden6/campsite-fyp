@@ -9,16 +9,23 @@ import {
   Droplet,
   Heart,
   ArrowLeft,
-  CheckCircle
+  CheckCircle,
+  Calendar,
+  Share2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { getSiteById, checkSiteAvailability } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
 
 import { SiteType } from '@/types';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+
+import { Badge } from '@/components/ui/Badge';
 import { useAuthStore } from '@/stores/authStore';
 import { format } from 'date-fns';
+import { cn } from '@/utils/cn';
+import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,322 +77,324 @@ const SiteDetailPage: React.FC = () => {
 
   const getSiteTypeLabel = (type: SiteType) => {
     switch (type) {
-      case SiteType.TENT:
-        return 'Tent Site';
-      case SiteType.RV:
-        return 'RV Site';
-      case SiteType.CABIN:
-        return 'Cabin';
-      default:
-        return type;
+      case SiteType.TENT: return 'Tent Site';
+      case SiteType.RV: return 'RV Site';
+      case SiteType.CABIN: return 'Cabin';
+      default: return type;
+    }
+  };
+
+  const nextImage = () => {
+    if (site?.images) {
+      setCurrentImageIndex((prev) => (prev === site.images.length - 1 ? 0 : prev + 1));
+    }
+  };
+
+  const prevImage = () => {
+    if (site?.images) {
+      setCurrentImageIndex((prev) => (prev === 0 ? site.images.length - 1 : prev - 1));
     }
   };
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-400">Loading site details...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-nature-bg dark:bg-night-bg">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   if (!site) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-12">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            Site not found
-          </p>
-          <Button onClick={() => navigate('/sites')}>Back to Sites</Button>
+      <div className="min-h-screen flex items-center justify-center bg-nature-bg dark:bg-night-bg p-4">
+        <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-secondary-200 text-center max-w-md w-full">
+          <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-gray-100 mb-2">Site Not Found</h2>
+          <p className="text-secondary-600 mb-6">We couldn't find the campsite you're looking for.</p>
+          <Button onClick={() => navigate('/sites')} className="w-full">Back to Sites</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back Button */}
-      <button
-        onClick={() => navigate('/sites')}
-        className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Back to Sites</span>
-      </button>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Images */}
-          {site.images && site.images.length > 0 ? (
-            <div className="relative">
-              <img
-                src={site.images[currentImageIndex]}
-                alt={site.name}
-                className="w-full h-96 object-cover rounded-lg"
-              />
-              {site.images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                  {site.images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`w-3 h-3 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                        }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <MapPin className="w-16 h-16 text-gray-400" />
-            </div>
-          )}
-
-          {/* Site Info */}
-          <div>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  {site.name}
-                </h1>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
-                    {getSiteTypeLabel(site.type)}
-                  </span>
-                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-                    {site.status}
-                  </span>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                  ${site.basePrice}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">per night</div>
-              </div>
-            </div>
-
-            {site.description && (
-              <p className="text-gray-700 dark:text-gray-300 mb-6">{site.description}</p>
-            )}
-
-            {/* Details */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Capacity</div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {site.capacity} guests
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Size</div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {site.size.length}x{site.size.width} {site.size.unit}
-                  </div>
-                </div>
-              </div>
-              {site.maxVehicles > 0 && (
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Max Vehicles</div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {site.maxVehicles}
-                  </div>
-                </div>
-              )}
-              {site.maxTents > 0 && (
-                <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Max Tents</div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {site.maxTents}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Amenities */}
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                Amenities
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {site.hasElectricity && (
-                  <div className="flex items-center space-x-2">
-                    <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-gray-700 dark:text-gray-300">Electricity</span>
-                  </div>
-                )}
-                {site.hasWater && (
-                  <div className="flex items-center space-x-2">
-                    <Droplet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-gray-700 dark:text-gray-300">Water</span>
-                  </div>
-                )}
-                {site.hasSewer && (
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-gray-700 dark:text-gray-300">Sewer</span>
-                  </div>
-                )}
-                {site.hasWifi && (
-                  <div className="flex items-center space-x-2">
-                    <Wifi className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-gray-700 dark:text-gray-300">WiFi</span>
-                  </div>
-                )}
-                {site.isPetFriendly && (
-                  <div className="flex items-center space-x-2">
-                    <Heart className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-gray-700 dark:text-gray-300">Pet Friendly</span>
-                  </div>
-                )}
-              </div>
-              {site.amenities.length > 0 && (
-                <div className="mt-4">
-                  <div className="flex flex-wrap gap-2">
-                    {site.amenities.map((amenity, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm"
-                      >
-                        {amenity}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg pb-12">
+      {/* Navigation Header */}
+      <div className="bg-white dark:bg-gray-800 border-b border-secondary-200/60 dark:border-secondary-800 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <button
+            onClick={() => navigate('/sites')}
+            className="flex items-center text-sm font-medium text-secondary-600 hover:text-primary-600 transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+            Back to browse
+          </button>
+          <div className="flex gap-2">
+            <button className="p-2 text-secondary-500 hover:text-primary-600 rounded-full hover:bg-primary-50 transition-colors">
+              <Share2 className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-secondary-500 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors">
+              <Heart className="w-5 h-5" />
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Booking Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 sticky top-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Book This Site
-            </h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-12">
 
-            {/* Date Selection */}
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Check In
-                </label>
-                <Input
-                  type="date"
-                  value={checkInDate}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                  min={format(new Date(), 'yyyy-MM-dd')}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Check Out
-                </label>
-                <Input
-                  type="date"
-                  value={checkOutDate}
-                  onChange={(e) => setCheckOutDate(e.target.value)}
-                  min={checkInDate || format(new Date(), 'yyyy-MM-dd')}
-                />
-              </div>
-              {checkInDate && checkOutDate && (
-                <Button
-                  variant="outline"
-                  onClick={handleCheckAvailability}
-                  disabled={isCheckingAvailability}
-                  className="w-full"
-                >
-                  {isCheckingAvailability ? 'Checking...' : 'Check Availability'}
-                </Button>
-              )}
-              {availabilityStatus && (
-                <div
-                  className={`p-3 rounded-lg ${availabilityStatus === 'available'
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
-                    : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
-                    }`}
-                >
-                  {availabilityStatus === 'available' ? (
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-5 h-5" />
-                      <span>Available for these dates</span>
-                    </div>
-                  ) : (
-                    <span>Not available for these dates</span>
+          {/* Main Content Column */}
+          <div className="lg:col-span-2 space-y-8">
+
+            {/* Image Gallery */}
+            <div className="relative aspect-video bg-secondary-100 dark:bg-gray-800 rounded-3xl overflow-hidden shadow-md group">
+              {site.images && site.images.length > 0 ? (
+                <>
+                  <img
+                    src={site.images[currentImageIndex]}
+                    alt={`${site.name} view ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                  {/* Navigation Arrows */}
+                  {site.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 backdrop-blur text-gray-800 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 backdrop-blur text-gray-800 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+
+                      {/* Dots */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 px-3 py-1.5 bg-black/30 backdrop-blur-md rounded-full">
+                        {site.images.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            className={cn(
+                              "w-2 h-2 rounded-full transition-all",
+                              idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/80"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </>
                   )}
+                </>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-secondary-400">
+                  <MapPin className="w-16 h-16 opacity-20 mb-2" />
+                  <span className="text-sm">No images available</span>
                 </div>
               )}
             </div>
 
-            {/* Price Summary */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-600 dark:text-gray-400">Price per night</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  ${site.basePrice}
-                </span>
+            {/* Title & Stats */}
+            <div>
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                <div>
+                  <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    {site.name}
+                  </h1>
+                  <div className="flex items-center gap-3 text-secondary-600 dark:text-secondary-400">
+                    <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> Loop B</span>
+                    <span className="w-1 h-1 bg-secondary-300 rounded-full" />
+                    <Badge variant="outline" className="border-secondary-200 text-secondary-600 bg-secondary-50">
+                      {getSiteTypeLabel(site.type)}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <div className="text-3xl font-heading font-bold text-primary-600 dark:text-primary-400">
+                    {CURRENCY_SYMBOL}{site.basePrice}
+                  </div>
+                  <span className="text-secondary-500 text-sm">per night</span>
+                </div>
               </div>
-              {checkInDate && checkOutDate && (
-                <>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600 dark:text-gray-400">Nights</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {Math.ceil(
-                        (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) /
-                        (1000 * 60 * 60 * 24)
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span>Total</span>
-                    <span>
-                      $
-                      {checkInDate && checkOutDate
-                        ? (
-                          Math.ceil(
-                            (new Date(checkOutDate).getTime() -
-                              new Date(checkInDate).getTime()) /
-                            (1000 * 60 * 60 * 24)
-                          ) * site.basePrice
-                        ).toFixed(2)
-                        : site.basePrice.toFixed(2)}
-                    </span>
-                  </div>
-                </>
-              )}
+
+              {/* Quick Specs */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-secondary-100 dark:border-secondary-800">
+                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                  <Users className="w-5 h-5 text-primary-500 mb-2" />
+                  <span className="text-xs text-secondary-500 uppercase tracking-wide">Capacity</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.capacity} Guests</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                  <MapPin className="w-5 h-5 text-primary-500 mb-2" />
+                  <span className="text-xs text-secondary-500 uppercase tracking-wide">Size</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.size.length}' x {site.size.width}'</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                  <Zap className="w-5 h-5 text-primary-500 mb-2" />
+                  <span className="text-xs text-secondary-500 uppercase tracking-wide">Electric</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.hasElectricity ? 'Yes' : 'No'}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                  <Heart className="w-5 h-5 text-primary-500 mb-2" />
+                  <span className="text-xs text-secondary-500 uppercase tracking-wide">Pets</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.isPetFriendly ? 'Allowed' : 'No'}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Book Button */}
-            <Button
-              onClick={handleBookNow}
-              disabled={!checkInDate || !checkOutDate || availabilityStatus === 'unavailable'}
-              className="w-full"
-            >
-              {isAuthenticated ? 'Book Now' : 'Continue as Guest'}
-            </Button>
-
-            {!isAuthenticated && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                Or{' '}
-                <button
-                  onClick={() => navigate('/customer/login')}
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  login
-                </button>{' '}
-                to manage your bookings
+            {/* Description */}
+            <div className="prose prose-nature dark:prose-invert max-w-none">
+              <h3 className="font-heading text-xl font-bold mb-3">About this site</h3>
+              <p className="text-secondary-600 dark:text-secondary-300 leading-relaxed">
+                {site.description || "Nestled in the heart of nature, this campsite offers a perfect blend of seclusion and accessibility. Enjoy the sounds of the nearby creek and the shade of ancient oaks."}
               </p>
-            )}
+            </div>
+
+            {/* Amenities Grid */}
+            <div>
+              <h3 className="font-heading text-xl font-bold mb-4">Amenities & Features</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8">
+                {[
+                  { label: "Electricity Hookup", active: site.hasElectricity, icon: Zap },
+                  { label: "Water Hookup", active: site.hasWater, icon: Droplet },
+                  { label: "Sewer Connection", active: site.hasSewer, icon: CheckCircle },
+                  { label: "WiFi Access", active: site.hasWifi, icon: Wifi },
+                  { label: "Pet Friendly", active: site.isPetFriendly, icon: Heart },
+                  ...site.amenities.map(a => ({ label: a, active: true, icon: CheckCircle }))
+                ].map((item, idx) => (
+                  <div key={idx} className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl transition-colors",
+                    item.active ? "bg-primary-50/50 dark:bg-primary-900/10 text-gray-900 dark:text-gray-100" : "opacity-40 text-gray-400"
+                  )}>
+                    <item.icon className={cn("w-5 h-5", item.active ? "text-primary-600" : "text-gray-400")} />
+                    <span className="font-medium">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
+
+          {/* Sidebar Booking Widget */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 bg-white dark:bg-gray-800 rounded-3xl shadow-xl shadow-primary-900/5 border border-secondary-200/60 dark:border-secondary-700 p-6 overflow-hidden">
+
+              {/* Header Pattern */}
+              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary-400 to-primary-600" />
+
+              <div className="mb-6">
+                <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Book your stay</h2>
+                <p className="text-sm text-secondary-500">Select dates to check availability</p>
+              </div>
+
+              <div className="space-y-5">
+                {/* Dates */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase text-secondary-500 tracking-wider">Check In</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
+                      <input
+                        type="date"
+                        value={checkInDate}
+                        onChange={(e) => setCheckInDate(e.target.value)}
+                        min={format(new Date(), 'yyyy-MM-dd')}
+                        className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/50 border border-secondary-200 dark:border-secondary-600 rounded-xl focus:ring-2 focus:ring-primary-500/20"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase text-secondary-500 tracking-wider">Check Out</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
+                      <input
+                        type="date"
+                        value={checkOutDate}
+                        onChange={(e) => setCheckOutDate(e.target.value)}
+                        min={checkInDate || format(new Date(), 'yyyy-MM-dd')}
+                        className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/50 border border-secondary-200 dark:border-secondary-600 rounded-xl focus:ring-2 focus:ring-primary-500/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Availability Status */}
+                {checkInDate && checkOutDate && (
+                  <div className="space-y-3">
+                    <Button
+                      variant="outline"
+                      onClick={handleCheckAvailability}
+                      loading={isCheckingAvailability}
+                      className="w-full border-secondary-200 hover:bg-secondary-50 hover:text-secondary-900"
+                    >
+                      Check Availability
+                    </Button>
+
+                    {availabilityStatus && (
+                      <div className={cn(
+                        "p-3 rounded-xl flex items-center gap-3 text-sm font-medium animate-in fade-in slide-in-from-top-2",
+                        availabilityStatus === 'available'
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
+                      )}>
+                        {availabilityStatus === 'available' ? (
+                          <>
+                            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p>Site available!</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                              <Users className="w-4 h-4 text-red-600" />
+                            </div>
+                            <p>Not available for these dates</p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Price Breakdown */}
+                {checkInDate && checkOutDate && availabilityStatus === 'available' && (
+                  <div className="bg-secondary-50 dark:bg-secondary-900/30 rounded-xl p-4 space-y-3">
+                    <div className="flex justify-between text-sm text-secondary-600">
+                      <span>${site.basePrice} x {Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24))} nights</span>
+                      <span>${(site.basePrice * Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24))).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-secondary-600">
+                      <span>Service fee</span>
+                      <span>$15.00</span>
+                    </div>
+                    <div className="border-t border-secondary-200 dark:border-secondary-700 pt-3 flex justify-between font-bold text-gray-900 dark:text-gray-100">
+                      <span>Total</span>
+                      <span>${(site.basePrice * Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)) + 15).toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Button */}
+                <Button
+                  onClick={handleBookNow}
+                  disabled={!checkInDate || !checkOutDate || availabilityStatus === 'unavailable'}
+                  className="w-full py-6 text-lg shadow-lg shadow-primary-500/20"
+                >
+                  {isAuthenticated ? 'Reserve Now' : 'Continue as Guest'}
+                </Button>
+
+                {!isAuthenticated && (
+                  <p className="text-xs text-center text-secondary-500">
+                    <button onClick={() => navigate('/customer/login')} className="text-primary-600 hover:underline font-medium">Log in</button> to earn rewards on this booking
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

@@ -17,38 +17,13 @@ import {
 import type {
   User,
   UserRole,
+  UserFilters,
+  CreateUserData,
+  UpdateUserData,
+  UpdateUserPasswordData,
   PaginatedResponse,
   ApiResponse,
 } from '@/types';
-
-export interface UserFilters {
-  role?: UserRole[];
-  isActive?: boolean;
-  searchTerm?: string;
-  isEmailVerified?: boolean;
-}
-
-export interface CreateUserData {
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role: UserRole;
-  password: string;
-}
-
-export interface UpdateUserData {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  role?: UserRole;
-  isActive?: boolean;
-}
-
-export interface UpdateUserPasswordData {
-  currentPassword?: string;
-  newPassword: string;
-}
 
 export interface UserActivityLog {
   id: string;

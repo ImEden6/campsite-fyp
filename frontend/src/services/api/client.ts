@@ -28,15 +28,15 @@ const transformDates = (data: unknown): unknown => {
   // Handle objects
   if (typeof data === 'object') {
     const transformed: Record<string, unknown> = {};
-    
+
     for (const [key, value] of Object.entries(data)) {
       // Convert date fields
-      if ((key === 'checkInDate' || key === 'checkOutDate' || key === 'createdAt' || 
-           key === 'updatedAt' || key === 'checkInTime' || key === 'checkOutTime' ||
-           key === 'startDate' || key === 'endDate' || key === 'sentAt' || key === 'readAt' ||
-           key === 'processedAt' || key === 'refundedAt' || key === 'returnedAt' ||
-           key === 'lastLoginAt' || key === 'emailVerifiedAt' || key === 'phoneVerifiedAt') && 
-          typeof value === 'string') {
+      if ((key === 'checkInDate' || key === 'checkOutDate' || key === 'createdAt' ||
+        key === 'updatedAt' || key === 'checkInTime' || key === 'checkOutTime' ||
+        key === 'startDate' || key === 'endDate' || key === 'sentAt' || key === 'readAt' ||
+        key === 'processedAt' || key === 'refundedAt' || key === 'returnedAt' ||
+        key === 'lastLoginAt' || key === 'emailVerifiedAt' || key === 'phoneVerifiedAt') &&
+        typeof value === 'string') {
         transformed[key] = new Date(value);
       } else if (typeof value === 'object') {
         // Recursively transform nested objects
@@ -45,7 +45,7 @@ const transformDates = (data: unknown): unknown => {
         transformed[key] = value;
       }
     }
-    
+
     return transformed;
   }
 
@@ -68,11 +68,11 @@ const createApiClient = (): AxiosInstance => {
   client.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       const token = getAuthToken();
-      
+
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
+
       // Add breadcrumb for API request
       addBreadcrumb(
         `API Request: ${config.method?.toUpperCase()} ${config.url}`,
@@ -83,7 +83,7 @@ const createApiClient = (): AxiosInstance => {
           url: config.url,
         }
       );
-      
+
       return config;
     },
     (error) => {
@@ -104,12 +104,12 @@ const createApiClient = (): AxiosInstance => {
           url: response.config.url,
         }
       );
-      
+
       // Transform date strings to Date objects for booking-related endpoints
       if (response.config.url?.includes('/bookings')) {
         response.data = transformDates(response.data);
       }
-      
+
       // Return successful response
       return response;
     },
@@ -118,7 +118,7 @@ const createApiClient = (): AxiosInstance => {
 
       // Transform error to ApiError format
       const apiError = transformAxiosError(error);
-      
+
       // Add breadcrumb for error
       addBreadcrumb(
         `API Error: ${apiError.statusCode} ${originalRequest.url}`,
@@ -138,44 +138,45 @@ const createApiClient = (): AxiosInstance => {
         try {
           // Attempt to refresh the token
           const newToken = await refreshAuthToken();
-          
+
           if (newToken && originalRequest.headers) {
             // Update the authorization header with new token
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            
+
             // Retry the original request
             return client.request(originalRequest);
           }
         } catch (refreshError) {
           // Token refresh failed, clear auth and redirect to login
           clearAuthTokens();
-          
+
           // Capture exception in Sentry
           captureException(
             refreshError instanceof Error ? refreshError : new Error('Token refresh failed'),
             { originalError: apiError }
           );
-          
+
           // Dispatch custom event for auth failure
           window.dispatchEvent(new CustomEvent('auth:session-expired'));
-          
+
           return Promise.reject(new ApiException(
             apiError.message,
-            apiError.statusCode,
-            apiError.errors,
-            apiError.code
+            apiError.statusCode || 500,
+            undefined, // errors (legacy)
+            apiError.code,
+            apiError.details
           ));
         }
       }
-      
+
       // Capture non-auth errors in Sentry (except expected errors)
-      if (apiError.statusCode >= 500) {
+      if ((apiError.statusCode || 0) >= 500) {
         captureException(
           new Error(apiError.message),
           {
             statusCode: apiError.statusCode,
             url: originalRequest.url,
-            errors: apiError.errors,
+            errors: apiError.details,
           }
         );
       }
@@ -183,9 +184,10 @@ const createApiClient = (): AxiosInstance => {
       // Reject with ApiException
       return Promise.reject(new ApiException(
         apiError.message,
-        apiError.statusCode,
-        apiError.errors,
-        apiError.code
+        apiError.statusCode || 500,
+        undefined, // errors (legacy)
+        apiError.code,
+        apiError.details
       ));
     }
   );
@@ -200,7 +202,7 @@ const refreshAuthToken = async (): Promise<string | null> => {
   try {
     // Get refresh token from storage
     const refreshToken = localStorage.getItem('campsite_refresh_token');
-    
+
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -311,7 +313,7 @@ export const uploadFile = async <T = unknown>(
   file: File,
   fieldName: string = 'file',
   additionalData?: Record<string, unknown>,
-  onUploadProgress?: (progressEvent: { loaded: number; total?: number }) => void
+  onUploadProgress?: (progressEvent: any) => void
 ): Promise<T> => {
   const formData = new FormData();
   formData.append(fieldName, file);
@@ -330,9 +332,9 @@ export const uploadFile = async <T = unknown>(
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data',
-    },
+    } as any,
     onUploadProgress,
-  });
+  } as AxiosRequestConfig);
 };
 
 /**
@@ -357,7 +359,7 @@ export const downloadFile = async (
     link.href = window.URL.createObjectURL(blob);
     link.download = filename || 'download';
     link.click();
-    
+
     // Clean up
     window.URL.revokeObjectURL(link.href);
   } catch (error) {

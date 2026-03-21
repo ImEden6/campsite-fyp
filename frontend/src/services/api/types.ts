@@ -3,12 +3,9 @@
  * Type definitions for API requests and responses
  */
 
-export interface ApiError {
-  message: string;
-  statusCode: number;
-  errors?: Record<string, string[]>;
-  code?: string;
-}
+import type { ApiError } from '@/types';
+
+export type { ApiError };
 
 export interface ApiResponse<T = unknown> {
   data: T;

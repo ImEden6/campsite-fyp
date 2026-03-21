@@ -24,8 +24,8 @@ import { useBookingFormState } from '../hooks';
 // ============================================================================
 
 export interface ManualBookingFormProps {
-  onSuccess?: (bookingId: string) => void;
-  onCancel?: () => void;
+  onSuccess?: ((bookingId: string) => void) | undefined;
+  onCancel?: (() => void) | undefined;
 }
 
 // ============================================================================

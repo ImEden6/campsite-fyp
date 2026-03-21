@@ -4,10 +4,10 @@
  */
 
 import { get, post, put, del } from './client';
-import type { 
-  CampsiteMap, 
-  AnyModule, 
-  CreateMapRequest, 
+import type {
+  CampsiteMap,
+  AnyModule,
+  CreateMapRequest,
   UpdateMapRequest,
   CreateModuleRequest,
   UpdateModuleRequest,
@@ -55,7 +55,7 @@ export const createMap = async (mapData: CreateMapRequest): Promise<CampsiteMap>
  */
 export const updateMap = async (id: string, mapData: UpdateMapRequest): Promise<CampsiteMap> => {
   const formData = new FormData();
-  
+
   if (mapData.name) formData.append('name', mapData.name);
   if (mapData.description) formData.append('description', mapData.description);
   if (mapData.imageFile) formData.append('imageFile', mapData.imageFile);
@@ -89,8 +89,8 @@ export const addModule = async (mapId: string, moduleData: CreateModuleRequest):
  * Update module
  */
 export const updateModule = async (
-  mapId: string, 
-  moduleId: string, 
+  mapId: string,
+  moduleId: string,
   moduleData: UpdateModuleRequest
 ): Promise<AnyModule> => {
   const response = await put<ApiResponse<AnyModule>>(`/maps/${mapId}/modules/${moduleId}`, moduleData);
@@ -120,4 +120,71 @@ export const bulkUpdateModules = async (request: BulkUpdateModulesRequest): Prom
 export const duplicateModule = async (mapId: string, moduleId: string): Promise<AnyModule> => {
   const response = await post<ApiResponse<AnyModule>>(`/maps/${mapId}/modules/${moduleId}/duplicate`);
   return response.data!;
+};
+
+
+export interface SaveMapRequest {
+  mapId: string;
+  modules: UpdateModuleRequest[];
+  metadata?: {
+    name?: string;
+    description?: string;
+  };
+  clientVersion?: Date; // For optimistic concurrency control
+}
+
+export interface SaveMapResponse {
+  map: CampsiteMap;
+  modules: AnyModule[];
+  serverVersion: Date;
+}
+
+export const saveMap = async (request: SaveMapRequest): Promise<SaveMapResponse> => {
+  try {
+    // Try atomic endpoint first
+    const response = await post<ApiResponse<SaveMapResponse>>(`/maps/${request.mapId}/save`, {
+      modules: request.modules,
+      metadata: request.metadata,
+      clientVersion: request.clientVersion?.toISOString(),
+    });
+    return response.data!;
+  } catch (error: unknown) {
+    // Check if this is a 404 (endpoint not implemented)
+    // Works with axios errors which have response.status
+    const is404 =
+      error !== null &&
+      typeof error === 'object' &&
+      'response' in error &&
+      error.response !== null &&
+      typeof error.response === 'object' &&
+      'status' in error.response &&
+      error.response.status === 404;
+
+    if (is404) {
+      // Fallback: Update modules first, then metadata
+      const modulesResult = await bulkUpdateModules({
+        mapId: request.mapId,
+        modules: request.modules,
+      });
+
+      let mapResult: CampsiteMap | undefined;
+      if (request.metadata && (request.metadata.name || request.metadata.description)) {
+        mapResult = await updateMap(request.mapId, {
+          id: request.mapId,
+          name: request.metadata.name,
+          description: request.metadata.description,
+        });
+      }
+
+      // Get current map state for response
+      const currentMap = mapResult || await getMapById(request.mapId);
+
+      return {
+        map: currentMap,
+        modules: modulesResult,
+        serverVersion: currentMap.updatedAt,
+      };
+    }
+    throw error;
+  }
 };

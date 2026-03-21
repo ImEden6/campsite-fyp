@@ -13,12 +13,13 @@ import {
   updateUserStatus,
   deleteUser,
   sendPasswordResetEmail,
-  CreateUserData,
-  UpdateUserData,
 } from '@/services/api/users';
+import { CreateUserData, UpdateUserData } from '@/types';
 import { UserTable, UserForm, UserFilters, UserFormData, UserFilterValues } from '@/features/users/components';
 import { useToast } from '@/hooks/useToast';
 import { Plus, Users } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import Button from '@/components/ui/Button';
 
 export const UserManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -200,58 +201,57 @@ export const UserManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Users className="h-8 w-8" />
-              User Management
-            </h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Manage user accounts, roles, and permissions
-            </p>
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <Users className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+            </div>
+            <div>
+              <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">
+                User Management
+              </h1>
+              <p className="text-secondary-600 dark:text-secondary-400">
+                Manage user accounts, roles, and permissions
+              </p>
+            </div>
           </div>
-          <button
-            onClick={handleCreateUser}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
-          >
+          <Button onClick={handleCreateUser} className="shadow-lg shadow-primary-600/20">
             <Plus className="h-5 w-5 mr-2" />
             Add User
-          </button>
+          </Button>
         </div>
-      </div>
 
-      <div className="mb-6">
-        <UserFilters filters={filters} onFilterChange={setFilters} />
-      </div>
+        <GlassCard className="p-4" intensity="medium">
+          <UserFilters filters={filters} onFilterChange={setFilters} />
+        </GlassCard>
 
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+        <GlassCard className="overflow-hidden" intensity="strong">
+          <div className="px-6 py-4 border-b border-secondary-200 dark:border-gray-700">
+            <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-gray-100">
               Users ({filteredUsers.length})
             </h2>
           </div>
-        </div>
-        <UserTable
-          users={filteredUsers}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUser}
-          onToggleStatus={handleToggleStatus}
-          onResetPassword={handleResetPassword}
-          loading={isLoading}
-        />
-      </div>
+          <UserTable
+            users={filteredUsers}
+            onEdit={handleEditUser}
+            onDelete={handleDeleteUser}
+            onToggleStatus={handleToggleStatus}
+            onResetPassword={handleResetPassword}
+            loading={isLoading}
+          />
+        </GlassCard>
 
-      {showForm && (
-        <UserForm
-          user={selectedUser}
-          onSubmit={handleFormSubmit}
-          onCancel={handleFormCancel}
-          loading={createUserMutation.isPending || updateUserMutation.isPending}
-        />
-      )}
+        {showForm && (
+          <UserForm
+            user={selectedUser}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+            loading={createUserMutation.isPending || updateUserMutation.isPending}
+          />
+        )}
+      </div>
     </div>
   );
 };

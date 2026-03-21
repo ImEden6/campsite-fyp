@@ -13,11 +13,11 @@ type RouterLinkOptions = Pick<LinkProps, 'reloadDocument' | 'replace' | 'state' 
 
 interface SafeLinkProps
   extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>,
-    RouterLinkOptions {
+  RouterLinkOptions {
   to: string;
-  external?: boolean;
+  external?: boolean | undefined;
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
 }
 
 /**
@@ -58,11 +58,11 @@ const SafeLink: React.FC<SafeLinkProps> = ({
       <Link
         to={safeUrl}
         className={className}
-        reloadDocument={reloadDocument}
-        replace={replace}
-        state={state}
-        preventScrollReset={preventScrollReset}
-        relative={relative}
+        {...(reloadDocument !== undefined ? { reloadDocument } : {})}
+        {...(replace !== undefined ? { replace } : {})}
+        {...(state !== undefined ? { state } : {})}
+        {...(preventScrollReset !== undefined ? { preventScrollReset } : {})}
+        {...(relative !== undefined ? { relative } : {})}
         {...props}
       >
         {children}
@@ -92,8 +92,8 @@ export default SafeLink;
 interface ExternalLinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'target' | 'rel'> {
   href: string;
   children: React.ReactNode;
-  className?: string;
-  showIcon?: boolean;
+  className?: string | undefined;
+  showIcon?: boolean | undefined;
 }
 
 export const ExternalLink: React.FC<ExternalLinkProps> = ({

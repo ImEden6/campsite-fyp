@@ -1,8 +1,3 @@
-/**
- * BookingManagementPage
- * Staff/Manager interface for managing all bookings
- */
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Calendar as CalendarIcon, List, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -34,9 +29,7 @@ const BookingManagementPage: React.FC = () => {
   const { data: allBookings = [], isLoading: isLoadingAll } = useQuery({
     queryKey: queryKeys.bookings.list({ ...filters, searchTerm }),
     queryFn: async () => {
-      console.log('[BookingManagement] Fetching bookings with filters:', { ...filters, searchTerm });
       const result = await getBookings({ ...filters, searchTerm });
-      console.log('[BookingManagement] Received bookings:', result.length, result);
       return result;
     },
     enabled: viewMode === 'calendar',
@@ -46,9 +39,7 @@ const BookingManagementPage: React.FC = () => {
   const { data: paginatedData, isLoading: isLoadingPaginated, refetch } = useQuery({
     queryKey: [...queryKeys.bookings.list({ ...filters, searchTerm }), 'paginated', currentPage],
     queryFn: async () => {
-      console.log('[BookingManagement] Fetching paginated bookings with filters:', { ...filters, searchTerm, page: currentPage });
       const result = await getBookingsPaginated(currentPage, pageSize, { ...filters, searchTerm });
-      console.log('[BookingManagement] Received paginated bookings:', result);
       return result;
     },
     enabled: viewMode === 'list',
@@ -59,13 +50,7 @@ const BookingManagementPage: React.FC = () => {
   const totalPages = paginatedData?.totalPages || 1;
   const totalItems = paginatedData?.total || 0;
 
-  console.log('[BookingManagement] Current state:', {
-    viewMode,
-    bookingsCount: bookings.length,
-    isLoading,
-    filters,
-    searchTerm
-  });
+
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -236,108 +221,115 @@ const BookingManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Booking Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage all campsite bookings and reservations</p>
-      </div>
-
-      {/* Actions Bar */}
-      <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <div className="flex-1 w-full md:w-auto">
-          <BookingSearchBar onSearch={handleSearch} defaultValue={searchTerm} />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
-            <button
-              className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${viewMode === 'calendar'
-                ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              onClick={() => setViewMode('calendar')}
-            >
-              <CalendarIcon className="w-4 h-4" />
-              Calendar
-            </button>
-            <button
-              className={`px-4 py-2 text-sm flex items-center gap-2 border-l border-gray-300 dark:border-gray-600 transition-colors ${viewMode === 'list'
-                ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              onClick={() => setViewMode('list')}
-            >
-              <List className="w-4 h-4" />
-              List
-            </button>
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-6 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+            <CalendarIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Booking
-          </Button>
+          <div>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Booking Management</h1>
+            <p className="text-secondary-600 dark:text-secondary-400">Manage all campsite bookings and reservations</p>
+          </div>
         </div>
-      </div>
 
-      {/* Content */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
+        {/* Actions Bar */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="flex-1 w-full md:w-auto">
+            <BookingSearchBar onSearch={handleSearch} defaultValue={searchTerm} />
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+              <button
+                className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${viewMode === 'calendar'
+                  ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                onClick={() => setViewMode('calendar')}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                Calendar
+              </button>
+              <button
+                className={`px-4 py-2 text-sm flex items-center gap-2 border-l border-gray-300 dark:border-gray-600 transition-colors ${viewMode === 'list'
+                  ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                onClick={() => setViewMode('list')}
+              >
+                <List className="w-4 h-4" />
+                List
+              </button>
+            </div>
+            <Button onClick={() => setShowCreateModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Booking
+            </Button>
+          </div>
         </div>
-      ) : (
-        <>
-          {viewMode === 'calendar' ? (
-            <BookingCalendar
-              bookings={bookings}
-              view={calendarView}
-              onDateSelect={handleDateSelect}
-              onBookingClick={handleBookingClick}
-              onViewChange={setCalendarView}
-              loading={isLoading}
-            />
-          ) : (
-            renderListView()
-          )}
-        </>
-      )}
 
-      {/* Create Booking Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title="Create Manual Booking"
-        size="xl"
-      >
-        <ManualBookingForm
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setShowCreateModal(false)}
-        />
-      </Modal>
-
-      {/* Booking Detail Modal */}
-      <Modal
-        isOpen={showDetailModal}
-        onClose={() => {
-          setShowDetailModal(false);
-          setSelectedBooking(null);
-        }}
-        title="Booking Details"
-        size="xl"
-      >
-        {selectedBooking && (
-          <BookingDetailView
-            booking={selectedBooking}
-            isOpen={showDetailModal}
-            onUpdate={() => {
-              refetch();
-              setShowDetailModal(false);
-            }}
-            onClose={() => {
-              setShowDetailModal(false);
-              setSelectedBooking(null);
-            }}
-          />
+        {/* Content */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
+          </div>
+        ) : (
+          <>
+            {viewMode === 'calendar' ? (
+              <BookingCalendar
+                bookings={bookings}
+                view={calendarView}
+                onDateSelect={handleDateSelect}
+                onBookingClick={handleBookingClick}
+                onViewChange={setCalendarView}
+                loading={isLoading}
+              />
+            ) : (
+              renderListView()
+            )}
+          </>
         )}
-      </Modal>
+
+        {/* Create Booking Modal */}
+        <Modal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          title="Create Manual Booking"
+          size="xl"
+        >
+          <ManualBookingForm
+            onSuccess={handleCreateSuccess}
+            onCancel={() => setShowCreateModal(false)}
+          />
+        </Modal>
+
+        {/* Booking Detail Modal */}
+        <Modal
+          isOpen={showDetailModal}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedBooking(null);
+          }}
+          title="Booking Details"
+          size="xl"
+        >
+          {selectedBooking && (
+            <BookingDetailView
+              booking={selectedBooking}
+              isOpen={showDetailModal}
+              onUpdate={() => {
+                refetch();
+                setShowDetailModal(false);
+              }}
+              onClose={() => {
+                setShowDetailModal(false);
+                setSelectedBooking(null);
+              }}
+            />
+          )}
+        </Modal>
+      </div>
     </div>
   );
 };

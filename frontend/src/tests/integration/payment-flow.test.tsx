@@ -1,42 +1,55 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import { render, screen, waitFor } from '../utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { PaymentPage } from '@/pages/PaymentPage';
 import { mockBooking, mockPayment, mockUser } from '../utils/mock-data';
+import { env } from '@/config/env';
+
+// Mock window.alert
+const mockAlert = vi.fn();
+window.alert = mockAlert;
+
+// Force mock payments off so tests use our Stripe mock
+beforeAll(() => {
+  env.useMockPayments = false;
+});
 
 // Mock Stripe
-const mockStripe = {
-  elements: vi.fn(() => ({
-    create: vi.fn(() => ({
-      mount: vi.fn(),
-      unmount: vi.fn(),
-      on: vi.fn(),
-      update: vi.fn(),
+const { mockStripe, MockCardElement, MockPaymentElement } = vi.hoisted(() => {
+  const mockStripe = {
+    elements: vi.fn(() => ({
+      create: vi.fn(() => ({
+        mount: vi.fn(),
+        unmount: vi.fn(),
+        on: vi.fn(),
+        update: vi.fn(),
+      })),
     })),
-  })),
-  confirmCardPayment: vi.fn(() =>
-    Promise.resolve({
-      paymentIntent: {
-        id: 'pi_test_123',
-        status: 'succeeded',
-      },
-    })
-  ),
-  confirmPayment: vi.fn(() =>
-    Promise.resolve({
-      paymentIntent: {
-        id: 'pi_test_123',
-        status: 'succeeded',
-      },
-    })
-  ),
-};
+    confirmCardPayment: vi.fn(() =>
+      Promise.resolve({
+        paymentIntent: {
+          id: 'pi_test_123',
+          status: 'succeeded',
+        },
+      })
+    ),
+    confirmPayment: vi.fn(() =>
+      Promise.resolve({
+        paymentIntent: {
+          id: 'pi_test_123',
+          status: 'succeeded',
+        },
+      })
+    ),
+  };
 
-// Create a mock element that can be found
-const MockCardElement = () => <div data-testid="card-element">Card Element</div>;
-const MockPaymentElement = () => <div data-testid="payment-element">Payment Element</div>;
+  const MockCardElement = () => <div data-testid="card-element">Card Element</div>;
+  const MockPaymentElement = () => <div data-testid="payment-element">Payment Element</div>;
+
+  return { mockStripe, MockCardElement, MockPaymentElement };
+});
 
 vi.mock('@stripe/react-stripe-js', () => ({
   Elements: ({ children }: any) => (
@@ -61,11 +74,30 @@ vi.mock('@stripe/react-stripe-js', () => ({
   PaymentElement: MockPaymentElement,
 }));
 
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    useParams: () => ({ bookingId: 'test_booking_123' }),
+  };
+});
+
+vi.mock('@/config/stripe', () => ({
+  getStripe: vi.fn(() => Promise.resolve(mockStripe)),
+  stripePublicKey: 'pk_test_123',
+}));
+
 const server = setupServer(
   http.get('http://localhost:5000/api/v1/bookings/:id', () => {
     return HttpResponse.json(mockBooking);
   }),
-  http.post('http://localhost:5000/api/v1/payments/create-intent', () => {
+  http.get('http://localhost:5000/api/v1/bookings/:id/payments', () => {
+    return HttpResponse.json([mockPayment]);
+  }),
+  http.get('http://localhost:5000/api/v1/payments/history', () => {
+    return HttpResponse.json([mockPayment]);
+  }),
+  http.post('http://localhost:5000/api/v1/payments/intent', () => {
     return HttpResponse.json({
       clientSecret: 'test_client_secret',
       paymentIntentId: 'pi_test_123',
@@ -73,7 +105,10 @@ const server = setupServer(
   }),
   http.post('http://localhost:5000/api/v1/payments/confirm', () => {
     return HttpResponse.json(mockPayment);
-  })
+  }),
+  http.options('http://localhost:5000/api/v1/bookings/:id/payments', () => HttpResponse.json({})),
+  http.options('http://localhost:5000/api/v1/payments/history', () => HttpResponse.json({})),
+  http.options('http://localhost:5000/api/v1/payments/intent', () => HttpResponse.json({}))
 );
 
 beforeEach(() => {
@@ -85,6 +120,8 @@ beforeEach(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  mockAlert.mockClear();
+  vi.clearAllMocks();
 });
 
 afterAll(() => {
@@ -98,7 +135,7 @@ describe('Payment Flow', () => {
     await waitFor(() => {
       // PaymentPage might show booking ID or amount differently
       // Check for payment-related content
-      expect(screen.getByText(/payment/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: "Payment" })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
@@ -107,7 +144,7 @@ describe('Payment Flow', () => {
     render(<PaymentPage />);
 
     // Open payment modal if needed
-    const payNowButton = screen.queryByRole('button', { name: /pay now/i });
+    const payNowButton = screen.queryByRole('button', { name: /^pay now$/i });
     if (payNowButton) {
       await user.click(payNowButton);
     }
@@ -126,7 +163,7 @@ describe('Payment Flow', () => {
     }
 
     // Submit payment
-    const submitButton = screen.getByRole('button', { name: /pay|submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: /Pay RM|submit|confirm/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -138,7 +175,7 @@ describe('Payment Flow', () => {
   });
 
   it('should handle payment failure', async () => {
-    mockStripe.confirmCardPayment.mockResolvedValueOnce({
+    mockStripe.confirmPayment.mockResolvedValueOnce({
       paymentIntent: undefined,
       error: {
         type: 'card_error',
@@ -150,7 +187,7 @@ describe('Payment Flow', () => {
     render(<PaymentPage />);
 
     // Open payment modal if needed
-    const payNowButton = screen.queryByRole('button', { name: /pay now/i });
+    const payNowButton = screen.queryByRole('button', { name: /^pay now$/i });
     if (payNowButton) {
       await user.click(payNowButton);
     }
@@ -166,7 +203,7 @@ describe('Payment Flow', () => {
       await user.type(nameInput, 'Test User');
     }
 
-    const submitButton = screen.getByRole('button', { name: /pay|submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: /Pay RM|submit|confirm/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -179,7 +216,7 @@ describe('Payment Flow', () => {
     render(<PaymentPage />);
 
     // Open payment modal if needed
-    const payNowButton = screen.queryByRole('button', { name: /pay now/i });
+    const payNowButton = screen.queryByRole('button', { name: /^pay now$/i });
     if (payNowButton) {
       await user.click(payNowButton);
     }
@@ -190,13 +227,22 @@ describe('Payment Flow', () => {
       expect(cardElement || paymentElement).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    const submitButton = screen.getByRole('button', { name: /pay|submit|confirm/i });
+    const submitButton = await screen.findByRole('button', { name: /Pay RM|submit|confirm/i });
+    
+    // Make confirmPayment slow
+    let resolvePayment: (value: any) => void;
+    const paymentPromise = new Promise((resolve) => {
+      resolvePayment = resolve;
+    });
+    mockStripe.confirmPayment.mockReturnValueOnce(paymentPromise);
+
     await user.click(submitButton);
 
     // Check for loading/processing state
-    await waitFor(() => {
-      expect(screen.getByText(/processing|loading/i)).toBeInTheDocument();
-    }, { timeout: 2000 });
+    expect(screen.getByText(/processing|loading/i)).toBeInTheDocument();
+
+    // Resolve it
+    resolvePayment!({ paymentIntent: { status: 'succeeded' } });
   });
 
   it('should validate required fields', async () => {
@@ -204,7 +250,7 @@ describe('Payment Flow', () => {
     render(<PaymentPage />);
 
     // Open payment modal if needed
-    const payNowButton = screen.queryByRole('button', { name: /pay now/i });
+    const payNowButton = screen.queryByRole('button', { name: /^pay now$/i });
     if (payNowButton) {
       await user.click(payNowButton);
     }
@@ -215,13 +261,20 @@ describe('Payment Flow', () => {
       expect(cardElement || paymentElement).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // Try to submit without filling required fields
-    const submitButton = screen.getByRole('button', { name: /pay|submit|confirm/i });
+    mockStripe.confirmPayment.mockResolvedValueOnce({
+      error: {
+        type: 'validation_error',
+        message: 'Card information is incomplete',
+      },
+    } as any);
+
+    // Try to submit
+    const submitButton = await screen.findByRole('button', { name: /Pay RM|submit|confirm/i });
     await user.click(submitButton);
 
-    // Check for validation error (might be cardholder name or other required field)
+    // Check for validation error
     await waitFor(() => {
-      const errorText = screen.queryByText(/required|invalid|error/i);
+      const errorText = screen.queryByText(/incomplete|required|invalid|error/i);
       expect(errorText).toBeInTheDocument();
     }, { timeout: 2000 });
   });
@@ -232,8 +285,8 @@ describe('Payment Flow', () => {
     // Payment breakdown might be in modal or on page
     await waitFor(() => {
       // Look for payment-related terms (might be formatted differently)
-      const hasPaymentInfo = screen.queryByText(/subtotal|deposit|total|amount|payment/i);
-      expect(hasPaymentInfo).toBeInTheDocument();
+      const paymentInfos = screen.getAllByText(/subtotal|deposit|total|amount|payment/i);
+      expect(paymentInfos.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
 });

@@ -20,11 +20,11 @@ import type { BookingFormData } from '../types';
 
 interface BookingFormProps {
     site: Site;
-    initialCheckInDate?: string;
-    initialCheckOutDate?: string;
-    initialGuests?: number;
-    onSuccess?: (bookingId: string) => void;
-    onCancel?: () => void;
+    initialCheckInDate?: string | undefined;
+    initialCheckOutDate?: string | undefined;
+    initialGuests?: number | undefined;
+    onSuccess?: ((bookingId: string) => void) | undefined;
+    onCancel?: (() => void) | undefined;
 }
 
 // ============================================================================
@@ -37,7 +37,7 @@ interface BookingFormProps {
 function mapToCreateBookingData(
     formData: BookingFormData,
     siteId: string,
-    user: { email?: string; phone?: string } | null
+    user: { email?: string | undefined; phone?: string | undefined } | null
 ): CreateBookingData {
     // Determine primary guest (first adult)
     let primaryAssigned = false;

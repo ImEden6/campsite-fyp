@@ -93,8 +93,8 @@ export interface EditorActions {
     clearGuides: () => void;
 
     // === Layer Settings ===
-    toggleModuleVisibility: (id: string, executeCommand?: (command: Command) => void) => void;
-    toggleModuleLock: (id: string, executeCommand?: (command: Command) => void) => void;
+    toggleModuleVisibility: (id: string, executeCommand?: ((command: Command) => void) | undefined) => void;
+    toggleModuleLock: (id: string, executeCommand?: ((command: Command) => void) | undefined) => void;
     isModuleHidden: (id: string) => boolean;
     isModuleLocked: (id: string) => boolean;
     toggleTypeGroupExpanded: (type: ModuleType) => void;
@@ -247,18 +247,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     clearGuides: () => set({ guides: [] }),
 
     // === Layer Settings ===
-    toggleModuleVisibility: (id, executeCommand?: (command: import('@/commands').Command) => void) => {
+    toggleModuleVisibility: (id, executeCommand?: ((command: import('@/commands').Command) => void) | undefined) => {
         const { getModule } = useMapStore.getState();
         const module = getModule(id);
-        
+
         if (!module) {
             console.warn(`[editorStore] Module ${id} not found for visibility toggle`);
             return;
         }
-        
+
         try {
             const newVisible = !module.visible;
-            
+
             // If executeCommand is provided, use PropertyCommand for undo/redo support
             if (executeCommand) {
                 executeCommand(new PropertyCommand([{
@@ -275,7 +275,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
                 );
                 const { _updateModule } = useMapStore.getState();
                 _updateModule(id, { visible: newVisible });
-                
+
                 // Sync editorStore Set
                 set((state) => {
                     const newHidden = new Set(state.hiddenModuleIds);
@@ -292,18 +292,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
     },
 
-    toggleModuleLock: (id, executeCommand?: (command: import('@/commands').Command) => void) => {
+    toggleModuleLock: (id, executeCommand?: ((command: import('@/commands').Command) => void) | undefined) => {
         const { getModule } = useMapStore.getState();
         const module = getModule(id);
-        
+
         if (!module) {
             console.warn(`[editorStore] Module ${id} not found for lock toggle`);
             return;
         }
-        
+
         try {
             const shouldLock = !module.locked;
-            
+
             // If executeCommand is provided, use PropertyCommand for undo/redo support
             if (executeCommand) {
                 executeCommand(new PropertyCommand([{
@@ -320,7 +320,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
                 );
                 const { _updateModule } = useMapStore.getState();
                 _updateModule(id, { locked: shouldLock });
-                
+
                 // Sync editorStore Set
                 set((state) => {
                     const newLockedSet = new Set(state.lockedModuleIds);

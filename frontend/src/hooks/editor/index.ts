@@ -48,3 +48,7 @@ export type { UseEditorLifecycleOptions, UseEditorLifecycleReturn } from './useE
 // Composite hook (main entry point)
 export { useMapEditor } from './useMapEditor';
 export type { UseMapEditorOptions, UseMapEditorReturn } from './useMapEditor';
+
+// Map save with useMutation
+export { useMapSave } from './useMapSave';
+export type { UseMapSaveOptions, UseMapSaveReturn } from './useMapSave';

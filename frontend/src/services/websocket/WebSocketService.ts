@@ -60,13 +60,13 @@ class WebSocketService implements IWebSocketService {
 
     this.socket = io(this.config.url, {
       auth: { token },
-      autoConnect: this.config.autoConnect,
-      reconnection: this.config.reconnection,
-      reconnectionAttempts: this.config.reconnectionAttempts,
-      reconnectionDelay: this.config.reconnectionDelay,
-      reconnectionDelayMax: this.config.reconnectionDelayMax,
-      timeout: this.config.timeout,
-      transports: this.config.transports,
+      autoConnect: this.config.autoConnect ?? false,
+      reconnection: this.config.reconnection ?? true,
+      reconnectionAttempts: this.config.reconnectionAttempts ?? 5,
+      reconnectionDelay: this.config.reconnectionDelay ?? 1000,
+      reconnectionDelayMax: this.config.reconnectionDelayMax ?? 30000,
+      timeout: this.config.timeout ?? 20000,
+      transports: this.config.transports ?? ['websocket'],
     });
 
     this.setupConnectionHandlers();

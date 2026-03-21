@@ -23,7 +23,7 @@ const lazyInitSentry = async () => {
   try {
     // Dynamically import Sentry only when needed
     Sentry = await import('@sentry/react');
-    
+
     Sentry.init({
       dsn,
       environment,
@@ -46,21 +46,21 @@ const lazyInitSentry = async () => {
       beforeSend(event, hint) {
         // Filter out certain errors
         const error = hint.originalException;
-        
+
         if (error && typeof error === 'object' && 'message' in error) {
           const message = String(error.message);
-          
+
           // Ignore network errors that are expected
           if (message.includes('Network Error') || message.includes('timeout')) {
             return null;
           }
-          
+
           // Ignore cancelled requests
           if (message.includes('cancelled') || message.includes('aborted')) {
             return null;
           }
         }
-        
+
         return event;
       },
       // Ignore certain errors
@@ -111,7 +111,7 @@ export const captureException = async (
 ): Promise<string | null> => {
   const sentry = await lazyInitSentry();
   if (!sentry) return null;
-  
+
   if (context) {
     sentry.setContext('additional', context);
   }
@@ -128,7 +128,7 @@ export const captureMessage = async (
 ) => {
   const sentry = await lazyInitSentry();
   if (!sentry) return;
-  
+
   if (context) {
     sentry.setContext('additional', context);
   }
@@ -145,11 +145,11 @@ export const setUserContext = async (user: {
 }) => {
   const sentry = await lazyInitSentry();
   if (!sentry) return;
-  
+
   sentry.setUser({
     id: user.id,
-    email: user.email,
-    role: user.role,
+    ...(user.email ? { email: user.email } : {}),
+    ...(user.role ? { role: user.role } : {}),
   });
 };
 
@@ -159,7 +159,7 @@ export const setUserContext = async (user: {
 export const clearUserContext = async () => {
   const sentry = await lazyInitSentry();
   if (!sentry) return;
-  
+
   sentry.setUser(null);
 };
 
@@ -174,12 +174,12 @@ export const addBreadcrumb = async (
 ) => {
   const sentry = await lazyInitSentry();
   if (!sentry) return;
-  
+
   sentry.addBreadcrumb({
     message,
     category,
     level,
-    data,
+    data: data as any,
   });
 };
 

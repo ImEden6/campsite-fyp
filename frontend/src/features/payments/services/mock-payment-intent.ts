@@ -4,7 +4,7 @@ import { addMockPayment } from './mockCurrentPayments';
 
 // In-memory store for mock payment intents (to preserve amount/currency for confirmation)
 // Entries are cleaned up after retrieval to prevent memory leaks
-const mockPaymentIntentStore = new Map<string, { amount: number; currency: string; bookingId?: string; description?: string }>();
+const mockPaymentIntentStore = new Map<string, { amount: number; currency: string; bookingId?: string | undefined; description?: string | undefined }>();
 const MAX_STORE_SIZE = 100; // Safety limit for unclaimed intents
 
 export const createMockPaymentIntent = (
@@ -38,14 +38,14 @@ export const createMockPaymentIntent = (
 /**
  * Retrieve stored mock payment intent data (without consuming it)
  */
-export const getMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string; bookingId?: string; description?: string } | undefined => {
+export const getMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string; bookingId?: string | undefined; description?: string | undefined } | undefined => {
     return mockPaymentIntentStore.get(paymentIntentId);
 };
 
 /**
  * Consume and delete mock payment intent data after confirmation
  */
-const consumeMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string; bookingId?: string; description?: string } | undefined => {
+const consumeMockPaymentIntentData = (paymentIntentId: string): { amount: number; currency: string; bookingId?: string | undefined; description?: string | undefined } | undefined => {
     const data = mockPaymentIntentStore.get(paymentIntentId);
     if (data) {
         mockPaymentIntentStore.delete(paymentIntentId); // Cleanup after use

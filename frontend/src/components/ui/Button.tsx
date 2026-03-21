@@ -2,26 +2,27 @@ import React from 'react';
 import { cn } from '@/utils/cn';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  loading?: boolean;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'accent' | undefined;
+  size?: 'sm' | 'md' | 'lg' | undefined;
+  loading?: boolean | undefined;
   children: React.ReactNode;
-  ariaLabel?: string;
-  ariaDescribedBy?: string;
+  ariaLabel?: string | undefined;
+  ariaDescribedBy?: string | undefined;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading = false, disabled, children, ariaLabel, ariaDescribedBy, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
-    
+    const baseStyles = 'inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+
     const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:ring-blue-600',
-      secondary: 'bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 focus-visible:ring-gray-600',
-      outline: 'border border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400',
-      ghost: 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-400',
-      danger: 'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus-visible:ring-red-600',
+      primary: 'bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-400 dark:text-primary-950 dark:hover:bg-primary-300 focus-visible:ring-primary-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0',
+      secondary: 'bg-secondary-500 text-white hover:bg-secondary-600 dark:bg-secondary-400 dark:text-secondary-950 dark:hover:bg-secondary-300 focus-visible:ring-secondary-500',
+      outline: 'border-2 border-primary-500/30 dark:border-primary-400/30 bg-transparent text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/50 hover:border-primary-500 dark:hover:border-primary-400 focus-visible:ring-primary-400',
+      ghost: 'text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/50 focus-visible:ring-primary-400',
+      danger: 'bg-error-500 text-white hover:bg-error-600 dark:bg-error-400 dark:hover:bg-error-500 focus-visible:ring-error-500',
+      accent: 'bg-accent-500 text-accent-950 hover:bg-accent-400 dark:bg-accent-400 dark:text-accent-950 dark:hover:bg-accent-300 focus-visible:ring-accent-500 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0',
     };
-    
+
     // Mobile-optimized sizes with larger touch targets (min 44x44px for accessibility)
     const sizes = {
       sm: 'h-9 px-3 text-sm min-h-[36px]',

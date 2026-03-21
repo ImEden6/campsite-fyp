@@ -42,11 +42,11 @@ interface AuthActions {
 type AuthStore = AuthState & AuthActions;
 
 interface LegacyLoginPayload {
-  user?: unknown;
-  accessToken?: unknown;
-  refreshToken?: unknown;
-  expiresIn?: unknown;
-  tokens?: unknown;
+  user?: unknown | undefined;
+  accessToken?: unknown | undefined;
+  refreshToken?: unknown | undefined;
+  expiresIn?: unknown | undefined;
+  tokens?: unknown | undefined;
 }
 
 type RawLoginResponse = LoginResponse | (LegacyLoginPayload & { data?: LegacyLoginPayload });
@@ -88,7 +88,7 @@ const parseLoginResponse = (raw: RawLoginResponse): LoginResponse => {
   }
 
   if (isRecord(raw) && 'data' in raw) {
-    const nested = (raw as { data?: LegacyLoginPayload }).data;
+    const nested = (raw as { data?: LegacyLoginPayload | undefined }).data;
     if (nested) {
       if (isLoginResponse(nested)) {
         return nested;

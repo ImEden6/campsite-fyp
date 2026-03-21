@@ -86,3 +86,4 @@ Thumbs.db
 .agent/*
 .cursor/*
 WARP.md
+DEPENDENCY_CLEANUP.md

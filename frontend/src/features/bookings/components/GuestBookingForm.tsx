@@ -25,11 +25,11 @@ interface GuestBookingFormProps {
     email: string;
     phone: string;
   };
-  initialCheckInDate?: string;
-  initialCheckOutDate?: string;
-  initialGuests?: number;
-  onSuccess?: (bookingId: string, accessToken: string, bookingNumber: string) => void;
-  onCancel?: () => void;
+  initialCheckInDate?: string | undefined;
+  initialCheckOutDate?: string | undefined;
+  initialGuests?: number | undefined;
+  onSuccess?: ((bookingId: string, accessToken: string, bookingNumber: string) => void) | undefined;
+  onCancel?: (() => void) | undefined;
 }
 
 // ============================================================================

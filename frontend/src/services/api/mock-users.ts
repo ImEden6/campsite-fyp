@@ -5,7 +5,7 @@
 
 import { User } from '@/types';
 import { getMockUsers } from './mock-auth';
-import type { CreateUserData, UpdateUserData, UserFilters } from './users';
+import type { CreateUserData, UpdateUserData, UserFilters } from '@/types';
 
 // In-memory storage for mock users (includes the default test users)
 const mockUsersList: User[] = [...getMockUsers()];

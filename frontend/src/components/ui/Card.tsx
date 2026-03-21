@@ -6,14 +6,18 @@ export interface CardProps {
   className?: string;
   loading?: boolean;
   hover?: boolean;
+  glass?: boolean;
 }
 
-const Card: React.FC<CardProps> = ({ children, className, loading = false, hover = false }) => {
+const Card: React.FC<CardProps> = ({ children, className, loading = false, hover = false, glass = false }) => {
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm',
-        hover && 'transition-shadow hover:shadow-md',
+        'rounded-2xl border border-secondary-200/50 dark:border-secondary-700/50 shadow-campsite',
+        glass
+          ? 'bg-white/80 dark:bg-night-surface/80 backdrop-blur-md'
+          : 'bg-white dark:bg-gray-800',
+        hover && 'transition-all duration-200 hover:shadow-organic hover:-translate-y-0.5',
         loading && 'relative overflow-hidden',
         className
       )}

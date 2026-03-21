@@ -21,8 +21,9 @@ import {
   type GeneratedReport,
 } from '@/services/api/analytics';
 import { queryKeys } from '@/config/query-keys';
-import { FileText, ArrowLeft } from 'lucide-react';
+import { FileText, ArrowLeft, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import Button from '@/components/ui/Button';
 
 type Step = 'select' | 'configure' | 'display';
 
@@ -82,7 +83,7 @@ export const ReportsPage: React.FC = () => {
     try {
       setDownloadingReportId(reportId);
       const blob = await downloadReport(reportId);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -92,7 +93,7 @@ export const ReportsPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       showToast('Report downloaded successfully', 'success');
     } catch (error: unknown) {
       showToast(error instanceof Error ? error.message : 'Failed to download report', 'error');
@@ -119,26 +120,26 @@ export const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               {currentStep !== 'select' && (
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                  <ArrowLeft className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                 </button>
               )}
-              <div className="p-3 bg-blue-600 rounded-lg">
-                <FileText className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100">Reports</h1>
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   {currentStep === 'select' && 'Select a report type to generate'}
                   {currentStep === 'configure' && 'Configure report parameters'}
                   {currentStep === 'display' && 'Your report is ready'}
@@ -146,12 +147,10 @@ export const ReportsPage: React.FC = () => {
               </div>
             </div>
             {currentStep === 'display' && (
-              <button
-                onClick={handleNewReport}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
+              <Button onClick={handleNewReport}>
+                <Plus className="w-4 h-4 mr-2" />
                 Generate New Report
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -161,43 +160,40 @@ export const ReportsPage: React.FC = () => {
           <div className="flex items-center justify-center gap-4">
             <div className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                  currentStep === 'select'
-                    ? 'bg-blue-600 text-white'
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === 'select'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-green-600 text-white'
-                }`}
+                  }`}
               >
                 1
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900">Select Type</span>
+              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Select Type</span>
             </div>
-            <div className="w-16 h-0.5 bg-gray-300"></div>
+            <div className="w-16 h-0.5 bg-secondary-300 dark:bg-gray-700"></div>
             <div className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                  currentStep === 'configure'
-                    ? 'bg-blue-600 text-white'
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === 'configure'
+                    ? 'bg-primary-600 text-white'
                     : currentStep === 'display'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-300 text-gray-600'
-                }`}
+                      ? 'bg-green-600 text-white'
+                      : 'bg-secondary-300 dark:bg-gray-700 text-secondary-600 dark:text-gray-400'
+                  }`}
               >
                 2
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900">Configure</span>
+              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Configure</span>
             </div>
-            <div className="w-16 h-0.5 bg-gray-300"></div>
+            <div className="w-16 h-0.5 bg-secondary-300 dark:bg-gray-700"></div>
             <div className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                  currentStep === 'display'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-300 text-gray-600'
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === 'display'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-secondary-300 dark:bg-gray-700 text-secondary-600 dark:text-gray-400'
+                  }`}
               >
                 3
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900">Download</span>
+              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Download</span>
             </div>
           </div>
         </div>

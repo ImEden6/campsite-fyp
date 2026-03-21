@@ -23,7 +23,7 @@ class ErrorLogger {
     // Sentry is initialized in main.tsx via initSentry()
     // This method is kept for backward compatibility
     this.isInitialized = true;
-    
+
     if (this.isDevelopment) {
       console.log('ErrorLogger initialized (development mode)');
     }
@@ -103,7 +103,11 @@ class ErrorLogger {
     import('@/config/sentry')
       .then(({ setUserContext, clearUserContext }) => {
         if (user) {
-          setUserContext({ id: user.id, email: user.email, role: user.username ?? undefined });
+          setUserContext({
+            id: user.id,
+            ...(user.email ? { email: user.email } : {}),
+            ...(user.username ? { role: user.username } : {})
+          });
         } else {
           clearUserContext();
         }

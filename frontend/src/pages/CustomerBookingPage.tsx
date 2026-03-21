@@ -5,6 +5,8 @@ import { getSiteById } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
 
 import { BookingForm } from '@/features/bookings/components/BookingForm';
+import { GlassCard } from '@/components/ui/GlassCard';
+import Button from '@/components/ui/Button';
 
 const CustomerBookingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -85,32 +87,38 @@ const CustomerBookingPage: React.FC = () => {
 
   if (!site) {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center py-12">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+      <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center p-4">
+        <GlassCard className="max-w-md w-full p-8 text-center" intensity="light">
+          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
             Site not found
           </p>
-          <button
-            onClick={() => navigate('/sites')}
-            className="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            Back to Sites
-          </button>
-        </div>
+          <Button onClick={() => navigate('/sites')}>Back to Sites</Button>
+        </GlassCard>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8">
-      <BookingForm
-        site={site}
-        initialCheckInDate={checkInDate}
-        initialCheckOutDate={checkOutDate}
-        initialGuests={initialGuests}
-        onSuccess={handleSuccess}
-        onCancel={handleCancel}
-      />
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 md:py-12 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Secure Your Reservation
+          </h1>
+          <p className="text-secondary-600 dark:text-secondary-400">
+            Complete your booking for <span className="font-semibold text-primary-700 dark:text-primary-400">{site.name}</span>
+          </p>
+        </div>
+
+        <BookingForm
+          site={site}
+          initialCheckInDate={checkInDate}
+          initialCheckOutDate={checkOutDate}
+          initialGuests={initialGuests}
+          onSuccess={handleSuccess}
+          onCancel={handleCancel}
+        />
+      </div>
     </div>
   );
 };

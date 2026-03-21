@@ -75,16 +75,16 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  phone?: string;
+  phone?: string | undefined;
   role: UserRole;
   isActive: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
-  avatar?: string;
+  avatar?: string | undefined;
   readonly createdAt: Date;
   readonly updatedAt: Date;
-  lastLoginAt?: Date;
-  preferences?: UserPreferences;
+  lastLoginAt?: Date | undefined;
+  preferences?: UserPreferences | undefined;
 }
 
 export interface UserPreferences {
@@ -127,7 +127,7 @@ export interface Site {
   type: SiteType;
   status: SiteStatus;
   capacity: number;
-  description?: string;
+  description?: string | undefined;
   amenities: string[];
   images: string[];
   /** Base price per night in the campsite's currency */
@@ -195,6 +195,7 @@ export interface Guest {
   phone?: string;
   type: GuestType;
   isPrimary: boolean;
+  age?: number | undefined;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -217,7 +218,7 @@ export interface Booking {
     children: number;
     pets: number;
   };
-  guestDetails?: Guest[];
+  guestDetails?: Guest[] | undefined;
   vehicles: Vehicle[];
   status: BookingStatus;
   paymentStatus: PaymentStatus;
@@ -231,22 +232,22 @@ export interface Booking {
   taxAmount: number;
   /** Discount amount applied to reduce totalAmount */
   discountAmount: number;
-  notes?: string;
-  specialRequests?: string;
+  notes?: string | undefined;
+  specialRequests?: string | undefined;
   /** Actual check-in timestamp (null until checked in) */
-  checkInTime?: Date;
+  checkInTime?: Date | undefined;
   /** Actual check-out timestamp (null until checked out) */
-  checkOutTime?: Date;
-  qrCode?: string;
+  checkOutTime?: Date | undefined;
+  qrCode?: string | undefined;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 
   // Relations
-  user?: User;
-  site?: Site;
-  payments?: Payment[];
-  equipmentReservations?: EquipmentReservation[];
-  communications?: Communication[];
+  user?: User | undefined;
+  site?: Site | undefined;
+  payments?: Payment[] | undefined;
+  equipmentReservations?: EquipmentReservation[] | undefined;
+  communications?: Communication[] | undefined;
 }
 
 export interface Vehicle {
@@ -588,9 +589,9 @@ export interface CampsiteSettings {
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
+  data?: T | undefined;
+  error?: string | undefined;
+  message?: string | undefined;
   timestamp: Date;
 }
 
@@ -646,10 +647,11 @@ export interface ValidationError {
 }
 
 export interface ApiError {
-  code: string;
+  code?: string | undefined;
   message: string;
-  details?: ValidationError[];
+  details?: ValidationError[] | undefined;
   timestamp: Date;
+  statusCode?: number | undefined;
 }
 
 export interface FileUpload {

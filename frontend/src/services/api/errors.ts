@@ -12,15 +12,17 @@ import { ERROR_MESSAGES } from '@/config/constants';
  */
 export class ApiException extends Error {
   public statusCode: number;
-  public errors?: Record<string, string[]>;
-  public code?: string;
+  public errors?: Record<string, string[]> | undefined;
+  public details?: { field: string; message: string; code: string }[] | undefined;
+  public code?: string | undefined;
 
-  constructor(message: string, statusCode: number, errors?: Record<string, string[]>, code?: string) {
+  constructor(message: string, statusCode: number, errors?: Record<string, string[]>, code?: string, details?: { field: string; message: string; code: string }[]) {
     super(message);
     this.name = 'ApiException';
     this.statusCode = statusCode;
     this.errors = errors;
     this.code = code;
+    this.details = details;
   }
 }
 
@@ -34,6 +36,7 @@ export const transformAxiosError = (error: AxiosError): ApiError => {
       message: ERROR_MESSAGES.NETWORK_ERROR,
       statusCode: 0,
       code: 'NETWORK_ERROR',
+      timestamp: new Date(),
     };
   }
 
@@ -45,11 +48,26 @@ export const transformAxiosError = (error: AxiosError): ApiError => {
   const errors = errorData?.errors as Record<string, string[]> | undefined;
   const code = errorData?.code as string | undefined;
 
+  // Transform legacy dictionary errors to ValidationError array if needed
+  let details: { field: string; message: string; code: string }[] | undefined;
+  if (errors && !Array.isArray(errors)) {
+    details = Object.entries(errors).flatMap(([field, messages]) =>
+      messages.map(msg => ({ field, message: msg, code: 'VALIDATION_ERROR' }))
+    );
+  } else if (Array.isArray(errorData?.details)) {
+    details = (errorData?.details as any[]).map(d => ({
+      field: d.field,
+      message: d.message,
+      code: d.code || 'VALIDATION_ERROR'
+    }));
+  }
+
   return {
     message,
     statusCode: status,
-    errors,
+    details,
     code,
+    timestamp: new Date(),
   };
 };
 
@@ -87,7 +105,7 @@ export const isAuthError = (error: ApiError): boolean => {
  * Check if error is a validation error
  */
 export const isValidationError = (error: ApiError): boolean => {
-  return error.statusCode === 400 && !!error.errors;
+  return error.statusCode === 400 && (!!error.details || !!(error as any).errors);
 };
 
 /**
@@ -102,7 +120,7 @@ export const isNetworkError = (error: ApiError): boolean => {
  */
 export const formatValidationErrors = (errors?: Record<string, string[]>): string => {
   if (!errors) return '';
-  
+
   return Object.entries(errors)
     .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
     .join('\n');
@@ -113,8 +131,11 @@ export const formatValidationErrors = (errors?: Record<string, string[]>): strin
  */
 export const getUserFriendlyErrorMessage = (error: ApiError): string => {
   if (isValidationError(error)) {
-    return formatValidationErrors(error.errors) || error.message;
+    if (error.details) {
+      return error.details.map(d => `${d.field}: ${d.message}`).join('\n');
+    }
+    return (error as any).errors ? formatValidationErrors((error as any).errors) : error.message;
   }
-  
+
   return error.message;
 };

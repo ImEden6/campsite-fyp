@@ -84,29 +84,29 @@ const HomePage: React.FC = () => {
       icon: Shield,
       title: 'Secure Booking',
       description: 'Safe and secure payment processing with instant confirmation',
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+      color: 'text-primary-600 dark:text-primary-400',
+      bgColor: 'bg-primary-100 dark:bg-primary-900/30',
     },
     {
       icon: Clock,
       title: 'Instant Confirmation',
       description: 'Get immediate booking confirmation and access to your reservation',
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-100 dark:bg-green-900/30',
+      color: 'text-accent-600 dark:text-accent-400',
+      bgColor: 'bg-accent-100 dark:bg-accent-900/30',
     },
     {
       icon: Star,
       title: 'Verified Sites',
       description: 'All campsites are verified and regularly maintained for quality',
-      color: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
+      color: 'text-secondary-600 dark:text-secondary-400',
+      bgColor: 'bg-secondary-100 dark:bg-secondary-900/30',
     },
     {
       icon: Users,
       title: '24/7 Support',
       description: 'Round-the-clock customer support for all your camping needs',
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+      color: 'text-info-600 dark:text-info-400',
+      bgColor: 'bg-info-100 dark:bg-info-900/30',
     },
   ];
 
@@ -198,28 +198,28 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-gray-900 text-white py-20 lg:py-32 overflow-hidden">
-        {/* Background Pattern */}
+      <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 dark:from-primary-950 dark:via-gray-900 dark:to-gray-950 text-white py-20 lg:py-32 overflow-hidden">
+        {/* Background Pattern - Trees/Nature */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M40 10 L50 30 L30 30 Z'/%3E%3Cpath d='M40 25 L55 50 L25 50 Z'/%3E%3Crect x='37' y='50' width='6' height='10'/%3E%3Ccircle cx='15' cy='65' r='3'/%3E%3Ccircle cx='65' cy='70' r='2'/%3E%3C/g%3E%3C/svg%3E")`,
           }} />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
+              <Sparkles className="w-4 h-4 text-accent-300" />
               <span className="text-sm font-medium">Discover Your Perfect Campsite</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="font-heading text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight tracking-tight">
               Your Next Adventure
               <br />
-              <span className="text-blue-200">Awaits</span>
+              <span className="text-primary-200">Awaits</span>
             </h1>
 
-            <p className="text-xl md:text-2xl mb-12 text-blue-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl mb-12 text-primary-100 max-w-3xl mx-auto">
               Find and book the perfect campsite for your outdoor adventure.
               Real-time availability, instant booking, and secure payments.
             </p>
@@ -284,8 +284,9 @@ const HomePage: React.FC = () => {
               <div className="mt-6 flex gap-3">
                 <Button
                   onClick={handleSearch}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  variant="accent"
                   size="lg"
+                  className="flex-1"
                 >
                   Search Sites
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -293,7 +294,6 @@ const HomePage: React.FC = () => {
                 <Button
                   onClick={() => navigate('/sites')}
                   variant="outline"
-                  className="border-gray-300 dark:border-gray-600"
                   size="lg"
                 >
                   Browse All
@@ -305,18 +305,18 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <section className="py-12 bg-nature-surface-alt dark:bg-night-surface-alt border-b border-secondary-200/50 dark:border-secondary-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg mb-3">
-                  <stat.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-3 ring-4 ring-primary-50 dark:ring-primary-950/50">
+                  <stat.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                <div className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                   {stat.value}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-secondary-600 dark:text-secondary-400">
                   {stat.label}
                 </div>
               </div>
@@ -326,13 +326,13 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+      <section className="py-20 bg-nature-surface-alt dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Why Choose Us?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
               Everything you need for a seamless camping booking experience
             </p>
           </div>
@@ -341,15 +341,15 @@ const HomePage: React.FC = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
+                className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-campsite hover:shadow-organic transition-all duration-300 hover:-translate-y-1 border border-secondary-100/50 dark:border-secondary-800/50"
               >
-                <div className={`inline-flex items-center justify-center w-14 h-14 ${feature.bgColor} rounded-xl mb-4`}>
+                <div className={`inline-flex items-center justify-center w-14 h-14 ${feature.bgColor} rounded-2xl mb-4 ring-4 ring-white dark:ring-gray-700 transition-transform duration-300 group-hover:scale-110`}>
                   <feature.icon className={`w-7 h-7 ${feature.color}`} />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="font-heading text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-secondary-600 dark:text-secondary-400">
                   {feature.description}
                 </p>
               </div>
@@ -362,10 +362,10 @@ const HomePage: React.FC = () => {
       <section className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
               Book your perfect campsite in just four simple steps
             </p>
           </div>
@@ -374,19 +374,19 @@ const HomePage: React.FC = () => {
             {howItWorks.map((step, index) => (
               <div key={index} className="relative">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full text-2xl font-bold mb-4 relative z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 dark:bg-primary-600 text-white rounded-full text-2xl font-bold mb-4 relative z-10 shadow-lg">
                     {step.step}
                   </div>
                   {index < howItWorks.length - 1 && (
-                    <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-blue-200 dark:bg-blue-800 -z-0" style={{ width: 'calc(100% - 4rem)', marginLeft: 'calc(50% + 2rem)' }} />
+                    <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-primary-200 dark:bg-primary-800 -z-0" style={{ width: 'calc(100% - 4rem)', marginLeft: 'calc(50% + 2rem)' }} />
                   )}
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg mb-4">
-                    <step.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-4">
+                    <step.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  <h3 className="font-heading text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     {step.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-secondary-600 dark:text-secondary-400">
                     {step.description}
                   </p>
                 </div>
@@ -397,14 +397,14 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Featured Sites Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+      <section className="py-20 bg-nature-surface-alt dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Popular Campsites
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-400">
+              <p className="text-lg text-secondary-600 dark:text-secondary-400">
                 Handpicked sites loved by our campers
               </p>
             </div>
@@ -448,7 +448,7 @@ const HomePage: React.FC = () => {
           <div className="mt-8 text-center md:hidden">
             <Button
               onClick={() => navigate('/sites')}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              variant="primary"
             >
               View All Sites
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -461,10 +461,10 @@ const HomePage: React.FC = () => {
       <section className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               What Our Campers Say
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
               Don't just take our word for it - hear from our happy campers
             </p>
           </div>
@@ -473,25 +473,25 @@ const HomePage: React.FC = () => {
             {testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md"
+                className="bg-nature-surface-alt dark:bg-gray-900 rounded-2xl p-6 shadow-campsite border border-secondary-100/50 dark:border-secondary-800/50"
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-5 h-5 fill-accent-400 text-accent-400" />
                   ))}
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 mb-6 italic">
                   "{testimonial.text}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                  <div className="w-10 h-10 bg-primary-500 dark:bg-primary-600 text-white rounded-full flex items-center justify-center font-semibold">
                     {testimonial.avatar}
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900 dark:text-gray-100">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-secondary-600 dark:text-secondary-400">
                       {testimonial.location}
                     </div>
                   </div>
@@ -503,13 +503,13 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-nature-surface-alt dark:bg-gray-900" id="faq">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
+            <p className="text-xl text-secondary-600 dark:text-secondary-400">
               Everything you need to know about booking with us
             </p>
           </div>
@@ -518,28 +518,41 @@ const HomePage: React.FC = () => {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
+                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border transition-all duration-300 ${openFaqIndex === index
+                    ? 'border-primary-500 shadow-md ring-1 ring-primary-500/20'
+                    : 'border-secondary-100 dark:border-secondary-800 hover:border-primary-300 dark:hover:border-primary-700'
+                  }`}
               >
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset rounded-2xl"
                   aria-expanded={openFaqIndex === index}
                   aria-controls={`faq-answer-${index}`}
                 >
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  <span className={`font-semibold text-lg transition-colors duration-200 ${openFaqIndex === index ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                    }`}>
                     {faq.question}
                   </span>
-                  {openFaqIndex === index ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" aria-hidden="true" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" aria-hidden="true" />
-                  )}
-                </button>
-                {openFaqIndex === index && (
-                  <div id={`faq-answer-${index}`} className="px-6 pb-4 text-gray-600 dark:text-gray-400" role="region">
-                    {faq.answer}
+                  <div className={`flex-shrink-0 ml-4 p-1 rounded-full transition-colors duration-200 ${openFaqIndex === index ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:text-primary-500'
+                    }`}>
+                    {openFaqIndex === index ? (
+                      <ChevronUp className="w-5 h-5" aria-hidden="true" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" aria-hidden="true" />
+                    )}
                   </div>
-                )}
+                </button>
+
+                <div
+                  id={`faq-answer-${index}`}
+                  className={`px-6 text-secondary-600 dark:text-secondary-400 overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 pb-0 opacity-0'
+                    }`}
+                  role="region"
+                >
+                  <p className="leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -547,20 +560,20 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-900 dark:to-blue-950 text-white">
+      <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-950 dark:via-gray-900 dark:to-gray-950 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <TrendingUp className="w-16 h-16 mx-auto mb-6 opacity-80" />
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
             Ready to Start Your Adventure?
           </h2>
-          <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
             Join thousands of happy campers and discover your perfect campsite today.
             Book instantly with secure payments and instant confirmation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => navigate('/sites')}
-              className="bg-white text-blue-600 hover:bg-gray-100"
+              variant="accent"
               size="lg"
             >
               Browse All Sites
@@ -570,7 +583,7 @@ const HomePage: React.FC = () => {
               <Button
                 onClick={() => navigate('/register')}
                 variant="outline"
-                className="border-white text-white hover:bg-white/10"
+                className="border-white/30 text-white hover:bg-white/10 hover:border-white/50"
                 size="lg"
               >
                 Create Account

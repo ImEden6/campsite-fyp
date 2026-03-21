@@ -78,7 +78,7 @@ export const mockPayment = {
   id: '1',
   bookingId: '1',
   amount: 70.00,
-  status: 'COMPLETED' as const,
+  status: 'SUCCEEDED' as const,
   paymentMethod: 'CARD' as const,
   stripePaymentIntentId: 'pi_test_123',
   createdAt: new Date('2024-01-01'),
@@ -123,6 +123,10 @@ export const mockDashboardMetrics = {
   revenueChange: 12.5,
   occupancyChange: -2.3,
   bookingsChange: 8.1,
+  totalCustomers: 120,
+  customersChange: 5.4,
+  averageBookingValue: 450,
+  averageStayDuration: 3.2,
 };
 
 export const mockRevenueData = [

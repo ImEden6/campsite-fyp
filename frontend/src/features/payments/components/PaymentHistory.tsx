@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Download, RefreshCw, CreditCard } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card';
+import { GlassCard } from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
@@ -55,98 +55,85 @@ export const PaymentHistory = ({
 
   if (isLoading) {
     return (
-      <Card>
-        <CardBody>
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading payments...</span>
-          </div>
-        </CardBody>
-      </Card>
+      <GlassCard className="w-full p-8 flex items-center justify-center">
+        <RefreshCw className="w-6 h-6 animate-spin text-primary-500" />
+        <span className="ml-3 text-secondary-600 dark:text-secondary-400">Loading payments...</span>
+      </GlassCard>
     );
   }
 
   if (isError) {
     return (
-      <Card>
-        <CardBody>
-          <Alert variant="error">
-            <p className="text-sm">
-              Failed to load payment history. Please try again.
-            </p>
-          </Alert>
-        </CardBody>
-      </Card>
+      <GlassCard className="w-full p-6">
+        <Alert variant="error">
+          <p className="text-sm">
+            Failed to load payment history. Please try again.
+          </p>
+        </Alert>
+      </GlassCard>
     );
   }
 
   if (!payments || !Array.isArray(payments) || payments.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment History</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <div className="text-center py-8">
-            <CreditCard className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400">No payments found</p>
-          </div>
-        </CardBody>
-      </Card>
+      <GlassCard className="w-full text-center py-12" intensity="medium">
+        <CreditCard className="w-12 h-12 text-secondary-300 dark:text-gray-600 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">No Payments Found</h3>
+        <p className="text-secondary-500 dark:text-secondary-400">There are no payment records to display.</p>
+      </GlassCard>
     );
   }
 
-  console.log('[PaymentHistory] Rendering payments:', payments);
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Payment History</CardTitle>
+      <GlassCard className="w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Payment History</h3>
             <Button
               variant="outline"
               size="sm"
               onClick={() => refetch()}
               disabled={isLoading}
+              className="hover:bg-primary-50 dark:hover:bg-primary-900/20"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
           </div>
-        </CardHeader>
-        <CardBody>
+
           <div className="space-y-4">
             {payments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="flex items-center justify-between p-4 border border-secondary-200 dark:border-gray-700/50 rounded-xl bg-white/50 dark:bg-gray-800/30 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <PaymentStatusBadge status={payment.status} />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
                       {format(new Date(payment.createdAt), 'MMM dd, yyyy')}
                     </span>
                   </div>
                   {payment.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
                       {payment.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                    <span>ID: {payment.id.slice(0, 8)}...</span>
-                    <span className="uppercase">{payment.method}</span>
+                  <div className="flex items-center gap-4 text-xs text-secondary-500 dark:text-secondary-400">
+                    <span className="font-mono">ID: {payment.id.slice(0, 8)}...</span>
+                    <span className="uppercase tracking-wider font-semibold">{payment.method}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
                       {CURRENCY_SYMBOL}{(payment.amount / 100).toFixed(2)}
                     </p>
                     {payment.refundedAmount && payment.refundedAmount > 0 && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-secondary-500 dark:text-secondary-400">
                         Refunded: {CURRENCY_SYMBOL}{(payment.refundedAmount / 100).toFixed(2)}
                       </p>
                     )}
@@ -155,10 +142,11 @@ export const PaymentHistory = ({
                   <div className="flex gap-2">
                     {payment.receiptUrl && (
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDownloadReceipt(payment.id)}
                         disabled={downloadReceipt.isPending}
+                        className="text-secondary-600 hover:text-primary-600"
                       >
                         <Download className="w-4 h-4" />
                       </Button>
@@ -181,8 +169,8 @@ export const PaymentHistory = ({
               </div>
             ))}
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </GlassCard>
 
       {selectedPayment && (
         <RefundDialog

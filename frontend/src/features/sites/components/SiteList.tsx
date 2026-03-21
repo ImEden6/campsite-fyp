@@ -14,11 +14,11 @@ import { CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface SiteListProps {
   sites: Site[];
-  isLoading?: boolean;
-  onCreateSite?: () => void;
-  onEditSite?: (site: Site) => void;
-  onDeleteSite?: (siteId: string) => void;
-  showActions?: boolean;
+  isLoading?: boolean | undefined;
+  onCreateSite?: (() => void) | undefined;
+  onEditSite?: ((site: Site) => void) | undefined;
+  onDeleteSite?: ((siteId: string) => void) | undefined;
+  showActions?: boolean | undefined;
 }
 
 interface SiteFilters {

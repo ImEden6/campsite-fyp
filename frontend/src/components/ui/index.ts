@@ -46,3 +46,13 @@ export type { NumberStepperProps } from './NumberStepper';
 
 export { default as FieldWithTooltip } from './FieldWithTooltip';
 export type { FieldWithTooltipProps } from './FieldWithTooltip';
+
+// Nature Theme Components
+export { default as GlassCard } from './GlassCard';
+export type { GlassCardProps } from './GlassCard';
+
+export { default as SectionHeading } from './SectionHeading';
+export type { SectionHeadingProps } from './SectionHeading';
+
+export { default as FeatureCard } from './FeatureCard';
+export type { FeatureCardProps } from './FeatureCard';

@@ -8,7 +8,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     X,
-    // Lock, Unlock, Eye, EyeOff - TODO: Re-enable when implementing lock/visibility options
+    Lock,
+    Unlock,
+    Eye,
+    EyeOff,
     RotateCcw,
     ChevronDown,
     ChevronUp,
@@ -189,8 +192,6 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const { selectedIds, setSelection } = useEditorStore();
-    // TODO: Rethink locked and visibility functionality - prepare for future options
-    // const { toggleModuleVisibility, toggleModuleLock, isModuleHidden, isModuleLocked } = useEditorStore();
 
     // Subscribe to currentMap to reactively update when modules change
     const currentMap = useMapStore((state) => state.currentMap);
@@ -455,6 +456,22 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
         }
     }, [selectedModules, currentMap, executeCommand]);
 
+    // Handle toggle lock
+    const handleToggleLock = useCallback(() => {
+        if (selectedModules.length === 0) return;
+        // If any is unlocked, lock all. Otherwise (all locked), unlock all.
+        const anyUnlocked = selectedModules.some((m) => !m.locked);
+        handleMultiChange('locked', anyUnlocked, true);
+    }, [selectedModules, handleMultiChange]);
+
+    // Handle toggle visibility
+    const handleToggleVisibility = useCallback(() => {
+        if (selectedModules.length === 0) return;
+        // If any is visible, hide all. Otherwise (all hidden), show all.
+        const anyVisible = selectedModules.some((m) => m.visible);
+        handleMultiChange('visible', !anyVisible, true);
+    }, [selectedModules, handleMultiChange]);
+
     // Render section header
     const renderSectionHeader = (title: string, key: string) => (
         <button
@@ -604,27 +621,26 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                     <div className="properties-panel__content">
                         {/* Quick Actions (rotate) */}
                         <div className="properties-panel__actions">
-                            {/* TODO: Lock/Visibility functionality - prepare for future options */}
-                            {/* <button
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    // TODO: Implement lock functionality with options
+                                    handleToggleLock();
                                 }}
-                                title="Lock module"
-                                aria-label="Lock module"
+                                title={selectedModules.some(m => !m.locked) ? "Lock" : "Unlock"}
+                                aria-label={selectedModules.some(m => !m.locked) ? "Lock module" : "Unlock module"}
                             >
-                                <Lock size={16} />
+                                {selectedModules.some(m => !m.locked) ? <Unlock size={16} /> : <Lock size={16} />}
                             </button>
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    // TODO: Implement visibility functionality with options
+                                    handleToggleVisibility();
                                 }}
-                                title="Hide module"
-                                aria-label="Hide module"
+                                title={selectedModules.some(m => m.visible) ? "Hide" : "Show"}
+                                aria-label={selectedModules.some(m => m.visible) ? "Hide module" : "Show module"}
                             >
-                                <Eye size={16} />
-                            </button> */}
+                                {selectedModules.some(m => m.visible) ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
                             <button
                                 type="button"
                                 onClick={(e) => {
@@ -737,8 +753,7 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                                         handleMultiChange('zIndex', Number(v))
                                     }
                                 />
-                                {/* TODO: Locked/Visible functionality - prepare for future options */}
-                                {/* <PropertyInput
+                                <PropertyInput
                                     label="Locked"
                                     type="checkbox"
                                     value={singleModule?.locked}
@@ -755,7 +770,7 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                                     onChange={(v) =>
                                         handleMultiChange('visible', Boolean(v), true)
                                     }
-                                /> */}
+                                />
                             </div>
                         )}
                     </div>

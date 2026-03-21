@@ -3,37 +3,81 @@
   ---- the *main* stylesheet with tailwind imports and custom styles
  */
 
+/* Google Fonts - Lora (headings) + Raleway (body) - MUST be before other imports */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
 @import "./editor.css";
 
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Brand Colors - oklch */
-  --color-primary-50: oklch(0.97 0.014 237);
-  --color-primary-100: oklch(0.94 0.028 237);
-  --color-primary-200: oklch(0.89 0.056 230);
-  --color-primary-300: oklch(0.82 0.094 221);
-  --color-primary-400: oklch(0.74 0.128 213);
-  --color-primary-500: oklch(0.65 0.143 210);
-  --color-primary-600: oklch(0.55 0.131 215);
-  --color-primary-700: oklch(0.47 0.109 220);
-  --color-primary-800: oklch(0.41 0.091 223);
-  --color-primary-900: oklch(0.36 0.075 227);
-  --color-primary-950: oklch(0.28 0.057 230);
+  /* ========================================
+     NATURE-INSPIRED COLOR PALETTE
+     Light Mode: Earth Tones (Forest Green, Brown, Gold)
+     Dark Mode: Night Camping (Bright Green, Ember Orange, Gold)
+     ======================================== */
 
-  --color-secondary-50: oklch(0.98 0.002 75);
-  --color-secondary-100: oklch(0.97 0.003 75);
-  --color-secondary-200: oklch(0.92 0.006 75);
-  --color-secondary-300: oklch(0.87 0.008 75);
-  --color-secondary-400: oklch(0.71 0.012 75);
-  --color-secondary-500: oklch(0.55 0.014 75);
-  --color-secondary-600: oklch(0.44 0.013 55);
-  --color-secondary-700: oklch(0.36 0.012 50);
-  --color-secondary-800: oklch(0.27 0.010 45);
-  --color-secondary-850: oklch(0.23 0.008 45);
-  --color-secondary-900: oklch(0.22 0.009 45);
-  --color-secondary-950: oklch(0.15 0.007 45);
+  /* Primary Colors - Forest Green (Light) / Bright Green (Dark) */
+  --color-primary-50: oklch(0.97 0.03 145);
+  --color-primary-100: oklch(0.94 0.06 145);
+  --color-primary-200: oklch(0.88 0.10 145);
+  --color-primary-300: oklch(0.78 0.14 145);
+  --color-primary-400: oklch(0.68 0.16 142);
+  --color-primary-500: oklch(0.52 0.15 142);
+  /* Forest Green #228B22 */
+  --color-primary-600: oklch(0.45 0.14 142);
+  --color-primary-700: oklch(0.40 0.12 142);
+  /* Dark Green */
+  --color-primary-800: oklch(0.35 0.10 142);
+  --color-primary-900: oklch(0.30 0.08 142);
+  --color-primary-950: oklch(0.22 0.06 142);
+
+  /* Secondary Colors - Saddle Brown (Light) / Ember Orange (Dark) */
+  --color-secondary-50: oklch(0.97 0.02 55);
+  --color-secondary-100: oklch(0.94 0.04 55);
+  --color-secondary-200: oklch(0.88 0.08 55);
+  --color-secondary-300: oklch(0.78 0.12 55);
+  --color-secondary-400: oklch(0.65 0.14 55);
+  --color-secondary-500: oklch(0.45 0.12 55);
+  /* Saddle Brown #8B4513 */
+  --color-secondary-600: oklch(0.40 0.11 55);
+  --color-secondary-700: oklch(0.35 0.10 55);
+  --color-secondary-800: oklch(0.30 0.08 55);
+  --color-secondary-850: oklch(0.25 0.07 55);
+  --color-secondary-900: oklch(0.22 0.06 55);
+  --color-secondary-950: oklch(0.18 0.05 55);
+
+  /* Accent Colors - Gold for CTAs */
+  --color-accent-50: oklch(0.98 0.04 85);
+  --color-accent-100: oklch(0.95 0.08 85);
+  --color-accent-200: oklch(0.90 0.12 85);
+  --color-accent-300: oklch(0.85 0.14 85);
+  --color-accent-400: oklch(0.80 0.16 85);
+  --color-accent-500: oklch(0.75 0.14 85);
+  /* Gold #D4AF37 */
+  --color-accent-600: oklch(0.65 0.14 85);
+  /* Dark Gold */
+  --color-accent-700: oklch(0.55 0.12 85);
+  --color-accent-800: oklch(0.45 0.10 80);
+  --color-accent-900: oklch(0.38 0.08 75);
+  --color-accent-950: oklch(0.28 0.06 70);
+
+  /* Nature Background Colors */
+  --color-nature-bg: oklch(0.99 0.01 90);
+  /* Warm Off-White #FDFBF7 */
+  --color-nature-surface: oklch(1.0 0 0);
+  /* White */
+  --color-nature-surface-alt: oklch(0.96 0.02 85);
+  /* Beige #F5F1E8 */
+
+  /* Night Mode Background Colors */
+  --color-night-bg: oklch(0.10 0.02 40);
+  /* Deep Night #0C0A09 */
+  --color-night-surface: oklch(0.18 0.02 40);
+  /* Dark Stone #1C1917 */
+  --color-night-surface-alt: oklch(0.22 0.02 45);
+  /* Warm Dark #292524 */
 
   /* Gray scale with 850 */
   --color-gray-850: oklch(0.24 0.014 260);
@@ -94,8 +138,9 @@
   --color-booking-checked-out: oklch(0.55 0.014 75);
   --color-booking-cancelled: oklch(0.63 0.200 25);
 
-  /* Font Families */
-  --font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Font Families - Nature Theme Typography */
+  --font-family-heading: Lora, Georgia, "Times New Roman", serif;
+  --font-family-sans: Raleway, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Spacing */
@@ -103,42 +148,57 @@
   --spacing-88: 22rem;
   --spacing-128: 32rem;
 
-  /* Border Radius */
+  /* Border Radius - Organic feel */
   --radius-campsite: 0.5rem;
+  --radius-organic: 1rem;
+  --radius-organic-lg: 1.5rem;
 
-  /* Box Shadows */
-  --shadow-campsite: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -1px oklch(0 0 0 / 0.06);
-  --shadow-campsite-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -2px oklch(0 0 0 / 0.05);
-  --shadow-inner-campsite: inset 0 2px 4px 0 oklch(0 0 0 / 0.06);
+  /* Box Shadows - Warmer, softer feel */
+  --shadow-campsite: 0 4px 6px -1px oklch(0.30 0.02 55 / 0.1), 0 2px 4px -1px oklch(0.30 0.02 55 / 0.06);
+  --shadow-campsite-lg: 0 10px 15px -3px oklch(0.30 0.02 55 / 0.1), 0 4px 6px -2px oklch(0.30 0.02 55 / 0.05);
+  --shadow-inner-campsite: inset 0 2px 4px 0 oklch(0.30 0.02 55 / 0.06);
+  --shadow-organic: 0 4px 20px -2px oklch(0.30 0.02 55 / 0.12);
+  --shadow-organic-lg: 0 8px 30px -4px oklch(0.30 0.02 55 / 0.15);
 
   /* Breakpoints */
   --breakpoint-xs: 475px;
   --breakpoint-3xl: 1920px;
 }
 
-/* Button Components */
+/* Button Components - Nature Theme */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  /* Organic rounded */
   font-weight: 500;
   color: white;
-  background-color: oklch(0.55 0.200 265);
-  transition: background-color 0.2s;
+  background-color: oklch(0.52 0.15 142);
+  /* Forest Green */
+  transition: all 0.2s ease-out;
+  box-shadow: 0 2px 8px -2px oklch(0.52 0.15 142 / 0.4);
 }
 
 .btn-primary:hover {
-  background-color: oklch(0.49 0.200 265);
+  background-color: oklch(0.45 0.14 142);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px oklch(0.52 0.15 142 / 0.5);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .dark .btn-primary {
-  background-color: oklch(0.62 0.180 260);
+  background-color: oklch(0.72 0.20 145);
+  /* Bright Green */
+  color: oklch(0.10 0.02 40);
 }
 
 .dark .btn-primary:hover {
-  background-color: oklch(0.55 0.200 265);
+  background-color: oklch(0.80 0.20 145);
 }
 
 .btn-outline {
@@ -146,31 +206,41 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  /* Organic rounded */
   font-weight: 500;
-  color: oklch(0.45 0.015 260);
+  color: oklch(0.52 0.15 142);
+  /* Forest Green */
   background-color: white;
-  border: 1px solid oklch(0.87 0.006 260);
-  transition: all 0.2s;
+  border: 1.5px solid oklch(0.52 0.15 142 / 0.3);
+  transition: all 0.2s ease-out;
 }
 
 .btn-outline:hover {
-  background-color: oklch(0.98 0.002 260);
+  background-color: oklch(0.97 0.03 145);
+  border-color: oklch(0.52 0.15 142);
 }
 
 .dark .btn-outline {
-  color: oklch(0.93 0.006 260);
-  background-color: oklch(0.30 0.020 260);
-  border-color: oklch(0.45 0.015 260);
+  color: oklch(0.80 0.20 145);
+  /* Bright Green */
+  background-color: oklch(0.18 0.02 40);
+  border-color: oklch(0.80 0.20 145 / 0.3);
 }
 
 .dark .btn-outline:hover {
-  background-color: oklch(0.45 0.015 260);
+  background-color: oklch(0.22 0.02 45);
+  border-color: oklch(0.80 0.20 145);
 }
 
 .btn-sm {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
+}
+
+/* Nature Theme Typography Utilities */
+.font-heading {
+  font-family: var(--font-family-heading);
 }
 
 /* Common utility classes with dark mode */

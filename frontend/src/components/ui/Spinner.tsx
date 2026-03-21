@@ -2,9 +2,9 @@ import React from 'react';
 import { cn } from '@/utils/cn';
 
 interface SpinnerProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
-  label?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | undefined;
+  className?: string | undefined;
+  label?: string | undefined;
 }
 
 const Spinner: React.FC<SpinnerProps> = ({ size = 'md', className, label }) => {

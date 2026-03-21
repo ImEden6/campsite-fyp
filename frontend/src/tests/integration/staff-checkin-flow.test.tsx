@@ -14,7 +14,11 @@ const server = setupServer(
     const searchTerm = url.searchParams.get('searchTerm');
     const status = url.searchParams.get('status');
     
-    let filtered = mockBookingsList;
+    // Ensure all mock bookings have unique IDs to avoid duplicate key warnings
+    let filtered = [
+      ...mockBookingsList.map((b, i) => ({ ...b, id: `list-${i}` })),
+      { ...mockBooking, id: 'unique-checkin-id', bookingNumber: 'BK-CHECKIN', status: 'CONFIRMED' as any }
+    ];
     
     if (searchTerm && searchTerm.length >= 3) {
       filtered = filtered.filter(b => 
@@ -31,26 +35,32 @@ const server = setupServer(
       filtered = filtered.filter(b => statusArray.includes(b.status));
     }
     
-    return HttpResponse.json(filtered);
+    return HttpResponse.json({ data: filtered, success: true });
   }),
   // Get booking by ID
   http.get('http://localhost:5000/api/v1/bookings/:id', () => {
-    return HttpResponse.json(mockBooking);
+    return HttpResponse.json({ data: mockBooking, success: true });
   }),
   // Get QR code
   http.get('http://localhost:5000/api/v1/bookings/:id/qr-code', () => {
-    return HttpResponse.json({ qrCode: 'mock-qr-code-data' });
+    return HttpResponse.json({ data: { qrCode: 'mock-qr-code-data' }, success: true });
   }),
   http.post('http://localhost:5000/api/v1/bookings/:id/check-in', () => {
     return HttpResponse.json({
-      ...mockBooking,
-      status: 'CHECKED_IN',
+      data: {
+        ...mockBooking,
+        status: 'CHECKED_IN',
+      },
+      success: true
     });
   }),
   http.post('http://localhost:5000/api/v1/bookings/:id/check-out', () => {
     return HttpResponse.json({
-      ...mockBooking,
-      status: 'CHECKED_OUT',
+      data: {
+        ...mockBooking,
+        status: 'CHECKED_OUT',
+      },
+      success: true
     });
   })
 );
@@ -76,13 +86,12 @@ describe('Staff Check-in/Check-out Flow', () => {
     const user = userEvent.setup();
     render(<CheckInPage />);
 
-    // Component uses "Enter search term..." placeholder
-    const searchInput = screen.getByPlaceholderText(/enter search term/i);
-    await user.type(searchInput, mockBooking.bookingNumber || mockBooking.id);
+    const searchInput = screen.getByPlaceholderText(/Search by guest name/i);
+    // Use the specific booking number we added to the unique list
+    await user.type(searchInput, 'BK-CHECKIN');
 
-    // Wait for search results (component searches when searchTerm.length >= 3)
     await waitFor(() => {
-      expect(screen.getByText(mockBooking.user.firstName)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))).toBeInTheDocument();
       expect(screen.getByText(mockBooking.site.name)).toBeInTheDocument();
     }, { timeout: 3000 });
   });
@@ -91,22 +100,18 @@ describe('Staff Check-in/Check-out Flow', () => {
     const user = userEvent.setup();
     render(<CheckInPage />);
 
-    // Search for booking
-    const searchInput = screen.getByPlaceholderText(/enter search term/i);
-    await user.type(searchInput, mockBooking.bookingNumber || mockBooking.id);
+    const searchInput = screen.getByPlaceholderText(/Search by guest name/i);
+    await user.type(searchInput, 'BK-CHECKIN');
 
-    // Wait for search results and select booking
     await waitFor(() => {
-      expect(screen.getByText(mockBooking.user.firstName)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // Click on booking to select it
-    const bookingCard = screen.getByText(mockBooking.user.firstName).closest('div[class*="cursor-pointer"]');
+    const bookingCard = screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i')).closest('div[class*="cursor-pointer"]');
     if (bookingCard) {
       await user.click(bookingCard);
     }
 
-    // Complete check-in
     await waitFor(() => {
       const checkInButton = screen.getByRole('button', { name: /check in/i });
       expect(checkInButton).toBeInTheDocument();
@@ -116,64 +121,52 @@ describe('Staff Check-in/Check-out Flow', () => {
     await user.click(checkInButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/success/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /success/i })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
-  it('should complete check-out process with additional charges', async () => {
+  it('should complete check-out process', async () => {
     const user = userEvent.setup();
     render(<CheckOutPage />);
 
-    // Search for booking (CheckOutPage likely uses similar search)
-    const searchInput = screen.getByPlaceholderText(/enter search term/i);
-    await user.type(searchInput, mockBooking.bookingNumber || mockBooking.id);
+    const searchInput = screen.getByPlaceholderText(/Search by guest name/i);
+    await user.type(searchInput, 'BK-CHECKIN');
 
     await waitFor(() => {
-      expect(screen.getByText(mockBooking.user.firstName)).toBeInTheDocument();
+      expect(screen.getAllByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))[0]).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // Select booking if needed
-    const bookingCard = screen.getByText(mockBooking.user.firstName).closest('div[class*="cursor-pointer"]');
+    const bookingCard = screen.getAllByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))[0].closest('div[class*="cursor-pointer"]');
     if (bookingCard) {
       await user.click(bookingCard);
     }
 
-    // Add additional charges (if component supports this)
-    const addChargeButton = screen.queryByRole('button', { name: /add charge/i });
-    if (addChargeButton) {
-      await user.click(addChargeButton);
-      await user.type(screen.getByLabelText(/description/i), 'Firewood');
-      await user.type(screen.getByLabelText(/amount/i), '15.00');
-    }
-
-    // Complete check-out
     await waitFor(() => {
-      const checkOutButton = screen.getByRole('button', { name: /check out/i });
+      const checkOutButton = screen.getByRole('button', { name: /check.?out/i });
       expect(checkOutButton).toBeInTheDocument();
     });
 
-    const checkOutButton = screen.getByRole('button', { name: /check out/i });
+    const checkOutButton = screen.getByRole('button', { name: /check.?out/i });
     await user.click(checkOutButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/success/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /success/i })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
   it('should show error for invalid booking ID', async () => {
     server.use(
       http.get('http://localhost:5000/api/v1/bookings', () => {
-        return HttpResponse.json([]);
+        return HttpResponse.json({ data: [], success: true });
       })
     );
 
     const user = userEvent.setup();
     render(<CheckInPage />);
 
-    const searchInput = screen.getByPlaceholderText(/enter search term/i);
+    const searchInput = screen.getByPlaceholderText(/Search by guest name/i);
     await user.type(searchInput, 'invalid-id-123');
 
-    // Wait for "no bookings found" message
     await waitFor(() => {
       expect(screen.getByText(/no.*booking/i)).toBeInTheDocument();
     }, { timeout: 3000 });

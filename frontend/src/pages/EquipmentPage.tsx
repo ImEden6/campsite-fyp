@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, Tent, Waves, Flame, Loader2 } from 'lucide-react';
+import { Package, Tent, Waves, Flame, RefreshCw } from 'lucide-react';
 import { getEquipment } from '@/services/api/equipment';
 import { queryKeys } from '@/config/query-keys';
 import type { Equipment } from '@/types';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 // Icon mapping for equipment categories
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -76,16 +77,18 @@ const EquipmentPage: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Manage rental equipment inventory and availability
-          </p>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-blue-600 dark:text-blue-400 mr-2" size={24} />
-          <span className="text-gray-600 dark:text-gray-400">Loading equipment...</span>
+      <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
+            <p className="text-secondary-600 dark:text-secondary-400 mt-2">
+              Manage rental equipment inventory and availability
+            </p>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-10 h-10 animate-spin text-primary-500 mr-3" />
+            <span className="text-secondary-600 dark:text-secondary-400">Loading equipment...</span>
+          </div>
         </div>
       </div>
     );
@@ -136,124 +139,127 @@ const EquipmentPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Manage rental equipment inventory and availability
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Items</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalItems}</p>
-            </div>
-            <Package className="w-8 h-8 text-blue-500" />
-          </div>
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div>
+          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
+          <p className="text-secondary-600 dark:text-secondary-400 mt-2">
+            Manage rental equipment inventory and availability
+          </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Available</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAvailable}</p>
-            </div>
-            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <span className="text-green-600 dark:text-green-400 font-bold">✓</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Categories</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{categoryCount}</p>
-            </div>
-            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-              <span className="text-purple-600 dark:text-purple-400 font-bold">#</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Equipment List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {equipment.map((item) => {
-          const Icon = item.icon;
-          const quantity = item.quantity || 0;
-          const available = item.available;
-          const availabilityPercentage = quantity > 0 ? (available / quantity) * 100 : 0;
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <GlassCard className="p-6" intensity="medium">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Total Items</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalItems}</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </GlassCard>
+          <GlassCard className="p-6" intensity="medium">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Available</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAvailable}</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <span className="text-green-600 dark:text-green-400 font-bold text-xl">✓</span>
+              </div>
+            </div>
+          </GlassCard>
+          <GlassCard className="p-6" intensity="medium">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Categories</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{categoryCount}</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <span className="text-purple-600 dark:text-purple-400 font-bold text-xl">#</span>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
 
-          return (
-            <div
-              key={item.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700"
-              role="article"
-              aria-label={`Equipment: ${item.name}`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-lg ${item.color}`} aria-hidden="true">
-                      <Icon className="w-5 h-5 text-white" />
+        {/* Equipment List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {equipment.map((item) => {
+            const Icon = item.icon;
+            const quantity = item.quantity || 0;
+            const available = item.available;
+            const availabilityPercentage = quantity > 0 ? (available / quantity) * 100 : 0;
+
+            return (
+              <GlassCard
+                key={item.id}
+                className="p-6"
+                intensity="medium"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`p-2 rounded-lg ${item.color}`} aria-hidden="true">
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{item.name}</h3>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{formatCategory(item.category)}</span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{item.name}</h3>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatCategory(item.category)}</span>
-                    </div>
+                    {item.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
+                    )}
                   </div>
-                  {item.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Total Quantity:</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{quantity}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Available:</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">{available}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Daily Rate:</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{(item.dailyRate || 0).toFixed(2)}</span>
+                  </div>
+                  {item.weeklyRate && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Weekly Rate:</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.weeklyRate.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {item.deposit && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Deposit:</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.deposit.toFixed(2)}</span>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Total Quantity:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{quantity}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Available:</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">{available}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Daily Rate:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{(item.dailyRate || 0).toFixed(2)}</span>
-                </div>
-                {item.weeklyRate && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Weekly Rate:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.weeklyRate.toFixed(2)}</span>
+                {quantity > 0 && (
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={available} aria-valuemin={0} aria-valuemax={quantity}>
+                      <div
+                        className="bg-green-500 h-2 rounded-full transition-all"
+                        style={{ width: `${availabilityPercentage}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                      {available} of {quantity} available
+                    </p>
                   </div>
                 )}
-                {item.deposit && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Deposit:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.deposit.toFixed(2)}</span>
-                  </div>
-                )}
-              </div>
-
-              {quantity > 0 && (
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={available} aria-valuemin={0} aria-valuemax={quantity}>
-                    <div
-                      className="bg-green-500 h-2 rounded-full transition-all"
-                      style={{ width: `${availabilityPercentage}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
-                    {available} of {quantity} available
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+              </GlassCard>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

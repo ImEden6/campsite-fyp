@@ -80,6 +80,9 @@ export {
   hasActiveFilters,
 } from './booking';
 
+export * from './siteFilters';
+export * from './userFilters';
+
 // ============================================================================
 // SHARED BACKEND TYPES
 // ============================================================================
@@ -112,10 +115,11 @@ import type {
   Notification,
   NotificationType,
   PaginatedResponse,
+  ApiError,
 } from '@shared/types';
 
 export type User = SharedUser;
-export type { Site, Booking, Vehicle, Payment, Equipment, EquipmentRental, Notification, NotificationType, PaginatedResponse };
+export type { Site, Booking, Vehicle, Payment, Equipment, EquipmentRental, Notification, NotificationType, PaginatedResponse, ApiError };
 
 // ============================================================================
 // AUTHENTICATION TYPES
@@ -362,7 +366,7 @@ export interface CampsiteMap {
     height: number;
   };
   modules: AnyModule[];
-  backgroundLayer?: BackgroundLayer;
+  backgroundLayer?: BackgroundLayer | undefined;
   metadata: {
     address: string;
     coordinates: {
@@ -489,11 +493,11 @@ export interface CreateMapRequest {
 
 export interface UpdateMapRequest {
   id: string;
-  name?: string;
-  description?: string;
-  imageFile?: File;
-  scale?: number;
-  metadata?: Partial<CampsiteMap['metadata']>;
+  name?: string | undefined;
+  description?: string | undefined;
+  imageFile?: File | undefined;
+  scale?: number | undefined;
+  metadata?: Partial<CampsiteMap['metadata']> | undefined;
 }
 
 export interface CreateModuleRequest {
@@ -506,12 +510,12 @@ export interface CreateModuleRequest {
 
 export interface UpdateModuleRequest {
   id: string;
-  position?: Position;
-  size?: Size;
-  rotation?: number;
-  metadata?: Record<string, unknown>;
-  locked?: boolean;
-  visible?: boolean;
+  position?: Position | undefined;
+  size?: Size | undefined;
+  rotation?: number | undefined;
+  metadata?: Record<string, unknown> | undefined;
+  locked?: boolean | undefined;
+  visible?: boolean | undefined;
 }
 
 export interface BulkUpdateModulesRequest {

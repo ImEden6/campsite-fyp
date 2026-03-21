@@ -2,12 +2,12 @@ import React from 'react';
 import { cn } from '@/utils/cn';
 
 interface SkeletonProps {
-  className?: string;
-  variant?: 'text' | 'circular' | 'rectangular';
-  width?: string | number;
-  height?: string | number;
-  animation?: 'pulse' | 'wave' | 'none';
-  style?: React.CSSProperties;
+  className?: string | undefined;
+  variant?: 'text' | 'circular' | 'rectangular' | undefined;
+  width?: string | number | undefined;
+  height?: string | number | undefined;
+  animation?: 'pulse' | 'wave' | 'none' | undefined;
+  style?: React.CSSProperties | undefined;
 }
 
 const Skeleton: React.FC<SkeletonProps> = ({
@@ -19,7 +19,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
   style: customStyle,
 }) => {
   const baseStyles = 'bg-gray-200';
-  
+
   const variantStyles = {
     text: 'rounded h-4',
     circular: 'rounded-full',

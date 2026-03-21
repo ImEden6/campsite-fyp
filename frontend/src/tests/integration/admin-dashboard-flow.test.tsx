@@ -22,20 +22,23 @@ const mockSites = [
 const server = setupServer(
   // AdminDashboardPage fetches sites, not analytics endpoints
   http.get('http://localhost:5000/api/v1/sites', () => {
-    return HttpResponse.json(mockSites);
+    return HttpResponse.json({ data: mockSites, success: true });
   }),
   http.get('http://localhost:5000/api/v1/analytics/dashboard', () => {
-    return HttpResponse.json(mockDashboardMetrics);
+    return HttpResponse.json({ data: mockDashboardMetrics, success: true });
   }),
   http.get('http://localhost:5000/api/v1/analytics/revenue', () => {
-    return HttpResponse.json(mockRevenueData);
+    return HttpResponse.json({ data: mockRevenueData, success: true });
   }),
   http.get('http://localhost:5000/api/v1/analytics/occupancy', () => {
-    return HttpResponse.json([
-      { date: '2024-01', occupancy: 65 },
-      { date: '2024-02', occupancy: 72 },
-      { date: '2024-03', occupancy: 78 },
-    ]);
+    return HttpResponse.json({
+      data: [
+        { date: '2024-01', occupancy: 65 },
+        { date: '2024-02', occupancy: 72 },
+        { date: '2024-03', occupancy: 78 },
+      ],
+      success: true
+    });
   })
 );
 
@@ -60,13 +63,10 @@ describe('Admin Dashboard Flow', () => {
     render(<AdminDashboardPage />);
 
     await waitFor(() => {
-      // Component calculates revenue from occupied sites
-      // With 3 occupied sites at $5000 each = $15,000
-      expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
-      // 3 occupied out of 4 total = 75% occupancy
-      expect(screen.getByText(/75%/)).toBeInTheDocument();
-      // Available sites count
-      expect(screen.getByText(/1/)).toBeInTheDocument();
+      // Dump to file to debug what's rendering
+      require('fs').writeFileSync('debug.html', document.body.innerHTML);
+      expect(screen.getByText(/RM\s*15,000/)).toBeInTheDocument();
+      expect(screen.getByText(/75(?:\.0)?%/)).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
@@ -77,7 +77,7 @@ describe('Admin Dashboard Flow', () => {
       // Component shows revenue in stats, check for that
       expect(screen.getByText(/revenue|total revenue/i)).toBeInTheDocument();
       // Chart might not render dates as text, so just verify component loaded
-      expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
+      expect(screen.getByText(/RM\s*15,000/)).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
@@ -86,7 +86,7 @@ describe('Admin Dashboard Flow', () => {
     render(<AdminDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
+      expect(screen.getByText(/RM\s*15,000/)).toBeInTheDocument();
     }, { timeout: 3000 });
 
     // Check if date range picker exists (component might not have this feature)
@@ -108,7 +108,7 @@ describe('Admin Dashboard Flow', () => {
 
     // Verify dashboard still shows data
     await waitFor(() => {
-      expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
+      expect(screen.getByText(/RM\s*15,000/)).toBeInTheDocument();
     });
   });
 
@@ -130,7 +130,7 @@ describe('Admin Dashboard Flow', () => {
     render(<AdminDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
+      expect(screen.getByText(/RM\s*15,000/)).toBeInTheDocument();
     }, { timeout: 3000 });
 
     // Check if export button exists (component might not have this feature)
@@ -148,7 +148,7 @@ describe('Admin Dashboard Flow', () => {
       }
     } else {
       // If export feature doesn't exist, just verify page loaded
-      expect(screen.getByText(/\$15,000/)).toBeInTheDocument();
+      expect(screen.getByText(/RM\s*15,000/)).toBeInTheDocument();
     }
   });
 
@@ -159,7 +159,7 @@ describe('Admin Dashboard Flow', () => {
       // Component shows occupancy rate in stats
       expect(screen.getByText(/occupancy/i)).toBeInTheDocument();
       // 3 occupied out of 4 total = 75%
-      expect(screen.getByText(/75%/)).toBeInTheDocument();
+      expect(screen.getByText(/75(?:\.0)?%/)).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });

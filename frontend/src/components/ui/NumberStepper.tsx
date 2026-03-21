@@ -13,11 +13,11 @@ export interface NumberStepperProps {
     min?: number;
     max?: number;
     step?: number;
-    label?: string;
-    error?: string;
-    disabled?: boolean;
-    showValidIcon?: boolean;
-    className?: string;
+    label?: string | undefined;
+    error?: string | undefined;
+    disabled?: boolean | undefined;
+    showValidIcon?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export const NumberStepper: React.FC<NumberStepperProps> = ({

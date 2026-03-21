@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Users, CreditCard } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, CreditCard, Ban, FileText, MapPin } from 'lucide-react';
 import { getBookingById, cancelBooking, calculateCancellationRefund, type CancellationRefund } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, PaymentStatus } from '@/types';
 import Button from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { GlassCard } from '@/components/ui/GlassCard';
 import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
 import { PaymentModal } from '@/features/payments/components/PaymentModal';
 import { useUIStore } from '@/stores/uiStore';
@@ -65,18 +65,16 @@ const CustomerBookingDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-400">Loading booking details...</p>
-        </div>
+      <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   if (bookingError || !booking) {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center py-12">
+      <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center p-4">
+        <GlassCard className="max-w-md w-full p-8 text-center" intensity="light">
           <p className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
             {bookingError ? 'Failed to load booking' : 'Booking not found'}
           </p>
@@ -86,7 +84,7 @@ const CustomerBookingDetailPage: React.FC = () => {
             </p>
           )}
           <Button onClick={() => navigate('/customer/bookings')}>Back to Bookings</Button>
-        </div>
+        </GlassCard>
       </div>
     );
   }
@@ -99,188 +97,222 @@ const CustomerBookingDetailPage: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => navigate('/customer/bookings')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            aria-label="Back to bookings"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Booking #{booking.bookingNumber}
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 md:py-12 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <button
+              onClick={() => navigate('/customer/bookings')}
+              className="flex items-center space-x-2 text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 mb-2 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to bookings</span>
+            </button>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+              <span>Booking #{booking.bookingNumber}</span>
+              <span className={`px-3 py-1 text-sm font-sans font-medium rounded-full ${booking.status === 'CONFIRMED'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                : booking.status === 'CANCELLED'
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                }`}>
+                {booking.status}
+              </span>
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {booking.site?.name || 'Site information unavailable'}
-            </p>
+            <div className="flex items-center text-secondary-600 dark:text-secondary-400">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span>{booking.site?.name || 'Site information unavailable'}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {needsPayment && (
+              <Button onClick={() => setShowPaymentModal(true)} className="shadow-lg shadow-primary-600/20">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Make Payment
+              </Button>
+            )}
+            {canCancel && (
+              <Button variant="outline" onClick={handleCheckRefund} className="bg-white/50 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 transition-colors">
+                <Ban className="w-4 h-4 mr-2" />
+                Cancel Booking
+              </Button>
+            )}
           </div>
         </div>
-        <div className="flex gap-2">
-          {needsPayment && (
-            <Button onClick={() => setShowPaymentModal(true)}>
-              <CreditCard className="w-4 h-4 mr-2" />
-              Make Payment
-            </Button>
-          )}
-          {canCancel && (
-            <Button variant="outline" onClick={handleCheckRefund}>
-              Cancel Booking
-            </Button>
-          )}
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Booking Details */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Booking Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Check-in</div>
-                <div className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                  <Calendar className="w-4 h-4" />
-                  <span>{format(new Date(booking.checkInDate), 'MMM dd, yyyy')}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Booking Details */}
+            <GlassCard className="p-6 md:p-8">
+              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary-500" />
+                Reservation Details
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-in</div>
+                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
+                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
+                        <Calendar className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <span className="text-lg font-medium">{format(new Date(booking.checkInDate), 'EEE, MMM dd, yyyy')}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-out</div>
+                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
+                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
+                        <Calendar className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <span className="text-lg font-medium">{format(new Date(booking.checkOutDate), 'EEE, MMM dd, yyyy')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Guests</div>
+                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
+                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
+                        <Users className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <span className="text-lg font-medium">
+                        {booking.guests.adults} Adults
+                        {booking.guests.children > 0 && `, ${booking.guests.children} Children`}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Duration</div>
+                    <div className="text-lg font-medium text-gray-900 dark:text-gray-100 pl-2">
+                      {nights} Nights
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Check-out</div>
-                <div className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                  <Calendar className="w-4 h-4" />
-                  <span>{format(new Date(booking.checkOutDate), 'MMM dd, yyyy')}</span>
+            </GlassCard>
+
+            {/* Payment History */}
+            <GlassCard className="p-6 md:p-8">
+              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary-500" />
+                Payment History
+              </h2>
+              <PaymentHistory bookingId={booking.id} />
+            </GlassCard>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Price Summary */}
+            <GlassCard className="p-6">
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+                Price Breakdown
+              </h2>
+              <div className="space-y-3">
+                <div className="flex justify-between text-secondary-600 dark:text-secondary-400">
+                  <span>Subtotal</span>
+                  <span>{CURRENCY_SYMBOL}{(booking.totalAmount - booking.taxAmount).toFixed(2)}</span>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Duration</div>
-                <div className="text-gray-900 dark:text-gray-100">{nights} nights</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Guests</div>
-                <div className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                  <Users className="w-4 h-4" />
-                  <span>
-                    {booking.guests.adults} adult{booking.guests.adults !== 1 ? 's' : ''}
-                    {booking.guests.children > 0 && `, ${booking.guests.children} child${booking.guests.children !== 1 ? 'ren' : ''}`}
+                <div className="flex justify-between text-secondary-600 dark:text-secondary-400">
+                  <span>Tax</span>
+                  <span>{CURRENCY_SYMBOL}{booking.taxAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between pt-3 border-t border-secondary-200/50 dark:border-gray-700">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">Total</span>
+                  <span className="font-bold text-xl text-primary-700 dark:text-primary-400">
+                    {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
                   </span>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</div>
-                <div className="text-gray-900 dark:text-gray-100">{booking.status}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Payment Status</div>
-                <div className="text-gray-900 dark:text-gray-100">{booking.paymentStatus}</div>
-              </div>
-            </div>
-          </Card>
 
-          {/* Payment History */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Payment History
-            </h2>
-            <PaymentHistory bookingId={booking.id} />
-          </Card>
+                <div className="pt-4 mt-2 border-t border-secondary-200/50 dark:border-gray-700 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Amount Paid</span>
+                    <span className="font-semibold text-green-600 dark:text-green-400">
+                      {CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {booking.paidAmount < booking.totalAmount && (
+                  <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 rounded-xl flex justify-between items-center text-red-700 dark:text-red-400">
+                    <span className="font-medium">Balance Due</span>
+                    <span className="font-bold">
+                      {CURRENCY_SYMBOL}{(booking.totalAmount - booking.paidAmount).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6 bg-primary-600/5 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
+              <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Need Assistance?
+              </h3>
+              <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-4">
+                Have questions about your upcoming stay? We're here to help.
+              </p>
+              <Button variant="outline" className="w-full bg-white dark:bg-transparent" onClick={() => navigate('/contact')}>
+                Contact Support
+              </Button>
+            </GlassCard>
+          </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Price Summary */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Price Summary
-            </h2>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                <span className="text-gray-900 dark:text-gray-100">
-                  {CURRENCY_SYMBOL}{(booking.totalAmount - booking.taxAmount).toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                <span className="text-gray-900 dark:text-gray-100">
-                  {CURRENCY_SYMBOL}{booking.taxAmount.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">Total</span>
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-                <span className="text-gray-600 dark:text-gray-400">Paid</span>
-                <span className="text-gray-900 dark:text-gray-100">
-                  {CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}
-                </span>
-              </div>
-              {booking.paidAmount < booking.totalAmount && (
-                <div className="flex justify-between text-red-600 dark:text-red-400">
-                  <span>Balance Due</span>
-                  <span className="font-semibold">
-                    {CURRENCY_SYMBOL}{(booking.totalAmount - booking.paidAmount).toFixed(2)}
-                  </span>
+        {/* Cancel Dialog */}
+        {showCancelDialog && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <GlassCard className="max-w-md w-full p-6 animate-in fade-in zoom-in duration-200" intensity="strong">
+              <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                Cancel Booking
+              </h3>
+              {refundInfo && (
+                <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/30">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Refund Amount:</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Cancellation Fee:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{refundInfo.cancellationFee.toFixed(2)}</span>
+                  </div>
                 </div>
               )}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Cancel Dialog */}
-      {showCancelDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Cancel Booking
-            </h3>
-            {refundInfo && (
-              <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Refund Amount:</strong> {CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)}
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Cancellation Fee:</strong> {CURRENCY_SYMBOL}{refundInfo.cancellationFee.toFixed(2)}
-                </p>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Are you sure you want to cancel this booking? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setShowCancelDialog(false)} className="flex-1">
+                  Keep Booking
+                </Button>
+                <Button onClick={handleCancel} className="flex-1 bg-red-600 hover:bg-red-700 text-white border-none" disabled={cancelMutation.isPending}>
+                  {cancelMutation.isPending ? 'Cancelling...' : 'Confirm Cancel'}
+                </Button>
               </div>
-            )}
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Are you sure you want to cancel this booking? This action cannot be undone.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowCancelDialog(false)} className="flex-1">
-                Keep Booking
-              </Button>
-              <Button onClick={handleCancel} className="flex-1" disabled={cancelMutation.isPending}>
-                {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+            </GlassCard>
+          </div>
+        )}
 
-      {/* Payment Modal */}
-      {showPaymentModal && booking && (
-        <PaymentModal
-          isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          bookingId={booking.id}
-          amount={Math.round((booking.totalAmount - booking.paidAmount) * 100)}
-          onSuccess={() => {
-            setShowPaymentModal(false);
-            queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id!) });
-          }}
-        />
-      )}
+        {/* Payment Modal */}
+        {showPaymentModal && booking && (
+          <PaymentModal
+            isOpen={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            bookingId={booking.id}
+            amount={Math.round((booking.totalAmount - booking.paidAmount) * 100)}
+            onSuccess={() => {
+              setShowPaymentModal(false);
+              queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id!) });
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -2,18 +2,18 @@ import React from 'react';
 import { cn } from '@/utils/cn';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  icon?: React.ReactNode;
-  prefix?: string;
-  suffix?: string;
+  label?: string | undefined;
+  error?: string | undefined;
+  helperText?: string | undefined;
+  icon?: React.ReactNode | undefined;
+  prefix?: string | undefined;
+  suffix?: string | undefined;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, helperText, icon, prefix, suffix, type = 'text', ...props }, ref) => {
     const inputId = props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return (
       <div className="w-full">
         {label && (
@@ -37,10 +37,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={type}
             className={cn(
-              'block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500',
-              'focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400',
+              'block w-full rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500',
+              'focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20',
               'disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600',
-              error && 'border-red-500 dark:border-red-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-red-500 dark:focus:ring-red-400',
+              'transition-all duration-200',
+              error && 'border-error-500 dark:border-error-400 focus:border-error-500 dark:focus:border-error-400 focus:ring-error-500/20 dark:focus:ring-error-400/20',
               icon && 'pl-10',
               prefix && 'pl-8',
               suffix && 'pr-8',

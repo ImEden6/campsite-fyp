@@ -8,7 +8,7 @@ import { User, UserRole } from '@/types';
 import { X } from 'lucide-react';
 
 interface UserFormProps {
-  user?: User;
+  user?: User | null | undefined;
   onSubmit: (data: UserFormData) => void;
   onCancel: () => void;
   loading?: boolean;

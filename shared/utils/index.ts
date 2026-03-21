@@ -700,13 +700,13 @@ export const errorUtils = {
       'field' in error && 'message' in error && 'code' in error;
   },
 
-  handleApiError(error: unknown): { message: string; code?: string } {
+  handleApiError(error: unknown): { message: string; code?: string | undefined } {
     if (error && typeof error === 'object' && 'response' in error) {
       const response = (error as { response?: { data?: { message?: string; code?: string } } }).response;
       if (response?.data?.message) {
         return {
-          message: response.data.message,
-          code: response.data.code,
+          message: response!.data!.message!,
+          code: response!.data!.code,
         };
       }
     }

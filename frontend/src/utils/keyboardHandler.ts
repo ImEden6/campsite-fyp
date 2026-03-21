@@ -5,13 +5,13 @@
 
 export interface KeyboardShortcut {
   key: string;
-  ctrl?: boolean;
-  shift?: boolean;
-  alt?: boolean;
-  meta?: boolean;
+  ctrl?: boolean | undefined;
+  shift?: boolean | undefined;
+  alt?: boolean | undefined;
+  meta?: boolean | undefined;
   handler: (event: KeyboardEvent) => void;
-  description?: string;
-  preventDefault?: boolean;
+  description?: string | undefined;
+  preventDefault?: boolean | undefined;
 }
 
 export interface KeyCombination {
@@ -190,12 +190,12 @@ export class KeyboardHandler {
    */
   private isTypingInInput(event: KeyboardEvent): boolean {
     const target = event.target as HTMLElement;
-    
+
     // Handle null or undefined target
     if (!target || !target.tagName) {
       return false;
     }
-    
+
     const tagName = target.tagName.toLowerCase();
     const isContentEditable = target.isContentEditable;
 
@@ -256,11 +256,11 @@ export class KeyboardHandler {
     this.shortcuts.forEach((shortcut) => {
       // Extract category from description or use default
       const category = this.extractCategory(shortcut);
-      
+
       if (!categories.has(category)) {
         categories.set(category, []);
       }
-      
+
       categories.get(category)!.push(shortcut);
     });
 
@@ -309,10 +309,10 @@ export class KeyboardHandler {
     if (shortcut.meta) parts.push('Cmd');
 
     // Capitalize key for display
-    const key = shortcut.key.length === 1 
-      ? shortcut.key.toUpperCase() 
+    const key = shortcut.key.length === 1
+      ? shortcut.key.toUpperCase()
       : shortcut.key.charAt(0).toUpperCase() + shortcut.key.slice(1);
-    
+
     parts.push(key);
 
     return parts.join('+');
@@ -335,7 +335,7 @@ export function parseShortcutString(
   description?: string
 ): KeyboardShortcut {
   const parts = shortcutString.toLowerCase().split('+');
-  
+
   const lastPart = parts[parts.length - 1];
   const shortcut: KeyboardShortcut = {
     key: lastPart || '',

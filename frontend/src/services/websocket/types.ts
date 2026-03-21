@@ -20,38 +20,38 @@ export const SOCKET_EVENTS = {
   RECONNECT_ATTEMPT: 'reconnect_attempt',
   RECONNECT_ERROR: 'reconnect_error',
   RECONNECT_FAILED: 'reconnect_failed',
-  
+
   // Booking events
   BOOKING_CREATED: 'booking:created',
   BOOKING_UPDATED: 'booking:updated',
   BOOKING_CANCELLED: 'booking:cancelled',
   BOOKING_CHECKED_IN: 'booking:checked_in',
   BOOKING_CHECKED_OUT: 'booking:checked_out',
-  
+
   // Payment events
   PAYMENT_PROCESSED: 'payment:processed',
   PAYMENT_FAILED: 'payment:failed',
   PAYMENT_REFUNDED: 'payment:refunded',
-  
+
   // Site events
   SITE_STATUS_CHANGED: 'site:status_changed',
   SITE_CREATED: 'site:created',
   SITE_UPDATED: 'site:updated',
   SITE_DELETED: 'site:deleted',
-  
+
   // Notification events
   NOTIFICATION_NEW: 'notification:new',
   NOTIFICATION_READ: 'notification:read',
-  
+
   // User events
   USER_UPDATED: 'user:updated',
   USER_STATUS_CHANGED: 'user:status_changed',
-  
+
   // Equipment events
   EQUIPMENT_RENTED: 'equipment:rented',
   EQUIPMENT_RETURNED: 'equipment:returned',
   EQUIPMENT_INVENTORY_LOW: 'equipment:inventory_low',
-  
+
   // Analytics events
   METRICS_UPDATED: 'metrics:updated',
   DASHBOARD_REFRESH: 'dashboard:refresh',
@@ -131,13 +131,13 @@ export type EventHandler<T = unknown> = (data: T) => void;
  */
 export interface WebSocketConfig {
   url: string;
-  autoConnect?: boolean;
-  reconnection?: boolean;
-  reconnectionAttempts?: number;
-  reconnectionDelay?: number;
-  reconnectionDelayMax?: number;
-  timeout?: number;
-  transports?: string[];
+  autoConnect?: boolean | undefined;
+  reconnection?: boolean | undefined;
+  reconnectionAttempts?: number | undefined;
+  reconnectionDelay?: number | undefined;
+  reconnectionDelayMax?: number | undefined;
+  timeout?: number | undefined;
+  transports?: string[] | undefined;
 }
 
 /**

@@ -44,9 +44,9 @@ export interface PaymentIntent {
 export interface CreatePaymentIntentRequest {
   bookingId: string;
   amount: number;
-  currency?: string;
-  description?: string;
-  metadata?: Record<string, unknown>;
+  currency?: string | undefined;
+  description?: string | undefined;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 export interface ProcessPaymentRequest {
@@ -56,8 +56,8 @@ export interface ProcessPaymentRequest {
 
 export interface RefundRequest {
   paymentId: string;
-  amount?: number;
-  reason?: string;
+  amount?: number | undefined;
+  reason?: string | undefined;
 }
 
 export interface RefundResponse {

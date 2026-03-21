@@ -2,27 +2,27 @@ import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 
 export interface DatePickerProps {
-  value?: Date | null;
-  onChange?: (date: Date | null) => void;
-  label?: string;
-  error?: string;
-  placeholder?: string;
-  minDate?: Date;
-  maxDate?: Date;
-  disabled?: boolean;
-  className?: string;
+  value?: Date | null | undefined;
+  onChange?: ((date: Date | null) => void) | undefined;
+  label?: string | undefined;
+  error?: string | undefined;
+  placeholder?: string | undefined;
+  minDate?: Date | undefined;
+  maxDate?: Date | undefined;
+  disabled?: boolean | undefined;
+  className?: string | undefined;
 }
 
 export interface DateRangePickerProps {
-  startDate?: Date | null;
-  endDate?: Date | null;
-  onChange?: (startDate: Date | null, endDate: Date | null) => void;
-  label?: string;
-  error?: string;
-  minDate?: Date;
-  maxDate?: Date;
-  disabled?: boolean;
-  className?: string;
+  startDate?: Date | null | undefined;
+  endDate?: Date | null | undefined;
+  onChange?: ((startDate: Date | null, endDate: Date | null) => void) | undefined;
+  label?: string | undefined;
+  error?: string | undefined;
+  minDate?: Date | undefined;
+  maxDate?: Date | undefined;
+  disabled?: boolean | undefined;
+  className?: string | undefined;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterEach, afterAll, vi } from 'vitest';
 import { render, screen, waitFor } from '../utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -6,49 +6,89 @@ import { setupServer } from 'msw/node';
 import CustomerBookingPage from '@/pages/CustomerBookingPage';
 import { mockSite } from '@/tests/utils/mock-data';
 import { BookingFlowDriver } from '../utils/booking-flow-driver';
+import { useAuthStore } from '@/stores/authStore';
+import { useBookingStore } from '@/stores/bookingStore';
 
-// Setup MSW
 const server = setupServer(
-    // Get Site Detail
-    http.get('http://localhost:5000/api/v1/sites/:id', ({ params }) => {
-        // console.log('[MSW] Handling getSiteById', params.id);
-        // console.log('[MSW] Handling getSiteById', params.id);
+    http.get('*/api/v1/sites/:id', ({ params }) => {
         const site = params.id === mockSite.id ? mockSite : { ...mockSite, id: params.id as string };
         return HttpResponse.json({ data: site });
     }),
 
-    // Create Booking
-    http.post('http://localhost:5000/api/v1/bookings', async ({ request }) => {
-        if (!request.headers.get('Authorization')) {
-            return new HttpResponse(null, { status: 401 });
-        }
-        const body = await request.json() as any;
+    http.post('*/api/v1/bookings', async ({ request }) => {
+        const body = await request.json() as { specialRequests?: string };
         if (body.specialRequests === 'TRIGGER_ERROR') {
             return HttpResponse.json({ message: 'Simulated API Error' }, { status: 500 });
         }
-        // Wrap response in { data: ... } to match ApiResponse structure
         return HttpResponse.json({
             data: { id: 'customer-booking-id', bookingNumber: 'BK-CUST-456', totalAmount: 100 }
         });
     }),
 
-    // Calculate Price
-    http.post('http://localhost:5000/api/v1/bookings/price', () => {
-        return HttpResponse.json({ total: 100, subtotal: 90, tax: 10, breakdown: [] });
+    http.post('*/api/v1/bookings/price', () => {
+        return HttpResponse.json({
+            data: { totalAmount: 100, depositAmount: 50, days: 3 },
+            success: true
+        });
+    }),
+
+    http.get('*/api/v1/equipment/available', () => {
+        return HttpResponse.json({
+            data: [{
+                id: 'eq-1',
+                name: 'Family Tent',
+                description: 'Large 4-person tent',
+                category: 'CAMPING_GEAR',
+                dailyRate: 25,
+                quantity: 5,
+                available: true,
+                images: []
+            }],
+            success: true
+        });
     })
 );
 
-beforeEach(() => {
-    server.listen({ onUnhandledRequest: 'bypass' });
-    window.scrollTo = vi.fn();
+function resetStores() {
+    useAuthStore.setState({
+        user: null,
+        tokens: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+    });
+    useBookingStore.getState().clearFilters();
+    useBookingStore.getState().setSelectedBooking(null);
+}
+
+function setTestAuth() {
     localStorage.setItem('campsite_auth_token', 'fake-token');
-    localStorage.setItem('campsite_user', JSON.stringify({ id: 'user-1', role: 'CUSTOMER' }));
+    localStorage.setItem('campsite_user', JSON.stringify({ id: 'user-1', role: 'CUSTOMER', firstName: 'John', lastName: 'Doe' }));
+    useAuthStore.setState({
+        user: { id: 'user-1', role: 'CUSTOMER', firstName: 'John', lastName: 'Doe' } as any,
+        tokens: { accessToken: 'fake-token', refreshToken: 'fake-refresh', expiresIn: 3600 },
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+    });
+}
+
+beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'bypass' });
+});
+
+beforeEach(() => {
+    localStorage.clear();
+    resetStores();
+    window.scrollTo = vi.fn();
+    setTestAuth();
 });
 
 afterEach(() => {
     server.resetHandlers();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
     localStorage.clear();
+    resetStores();
 });
 
 afterAll(() => {
@@ -60,18 +100,13 @@ describe('Customer Booking Flow', () => {
 
     const renderPage = () => {
         window.history.pushState({}, 'Customer Booking', `/customer/book?siteId=${siteId}`);
-        // console.log('[Test] URL before render:', window.location.href);
         render(<CustomerBookingPage />);
-        // screen.debug(); // Print initial render
     };
 
     it('should complete a booking successfully (Happy Path)', async () => {
         const user = userEvent.setup();
         const driver = new BookingFlowDriver(user);
         renderPage();
-
-        console.log('[Test] Debugging DOM before driver action');
-        // console.log(document.body.innerHTML); 
 
         await driver.completeCustomerBooking({
             checkInDate: '2026-07-01',
@@ -102,7 +137,14 @@ describe('Customer Booking Flow', () => {
 
         await driver.reviewAndConfirm();
 
-        const errorMessage = await screen.findByText(/simulated api error/i);
-        expect(errorMessage).toBeInTheDocument();
+        try {
+            const errorMessage = await screen.findByText(/Failed to create booking/i);
+            expect(errorMessage).toBeInTheDocument();
+        } catch (e) {
+            const html = document.body.innerHTML;
+            const fs = await import('fs');
+            fs.writeFileSync('customer-debug.html', String(html));
+            throw e;
+        }
     });
 });

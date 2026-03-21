@@ -8,15 +8,15 @@ import React from 'react';
 export interface DatePickerProps {
   selected: Date;
   onChange: (date: Date | null) => void;
-  minDate?: Date;
-  maxDate?: Date;
-  selectsStart?: boolean;
-  selectsEnd?: boolean;
-  startDate?: Date;
-  endDate?: Date;
-  className?: string;
-  disabled?: boolean;
-  placeholder?: string;
+  minDate?: Date | undefined;
+  maxDate?: Date | undefined;
+  selectsStart?: boolean | undefined;
+  selectsEnd?: boolean | undefined;
+  startDate?: Date | undefined;
+  endDate?: Date | undefined;
+  className?: string | undefined;
+  disabled?: boolean | undefined;
+  placeholder?: string | undefined;
 }
 
 export const DatePicker: React.FC<DatePickerProps> = ({

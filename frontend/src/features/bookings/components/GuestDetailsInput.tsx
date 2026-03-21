@@ -13,7 +13,7 @@ export interface GuestDetail {
     firstName: string;
     lastName: string;
     isChild: boolean;
-    age?: number; // Optional, mainly for children
+    age?: number | undefined; // Optional, mainly for children
 }
 
 interface GuestDetailsInputProps {
@@ -24,8 +24,8 @@ interface GuestDetailsInputProps {
     primaryGuestInfo?: {
         firstName: string;
         lastName: string;
-    };
-    errors?: Record<string, string>;
+    } | undefined;
+    errors?: Record<string, string | undefined>;
 }
 
 export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
@@ -72,7 +72,6 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                 firstName: '',
                 lastName: '',
                 isChild: true,
-                age: undefined,
             });
         }
 

@@ -4,39 +4,19 @@
  */
 
 import { get, post, put, del } from './client';
-import type { Site, SiteType, SiteStatus, PaginatedResponse, ApiResponse } from '@/types';
-
-export interface SiteFilters {
-  type?: SiteType[];
-  status?: SiteStatus[];
-  amenities?: string[];
-  priceRange?: { min: number; max: number };
-  capacity?: { min: number; max: number };
-  searchTerm?: string;
-  isPetFriendly?: boolean;
-  hasElectricity?: boolean;
-  hasWater?: boolean;
-  hasSewer?: boolean;
-  hasWifi?: boolean;
-}
-
-export interface AvailabilityParams {
-  startDate: string;
-  endDate: string;
-  siteType?: SiteType;
-  guests?: number;
-}
-
-export interface SiteAvailability extends Site {
-  isAvailable: boolean;
-  unavailableDates?: string[];
-  nextAvailableDate?: string;
-}
+import type {
+  Site,
+  SiteFilters,
+  AvailabilityParams,
+  SiteAvailability,
+  PaginatedResponse,
+  ApiResponse
+} from '@/types';
 
 /**
  * Get all sites with optional filters
  */
-export const getSites = async (filters?: SiteFilters): Promise<Site[]> => {
+export const getSites = async (filters?: SiteFilters | undefined): Promise<Site[]> => {
   const response = await get<ApiResponse<Site[]>>('/sites', { params: filters });
   return response.data || [];
 };
@@ -47,7 +27,7 @@ export const getSites = async (filters?: SiteFilters): Promise<Site[]> => {
 export const getSitesPaginated = async (
   page: number = 1,
   limit: number = 10,
-  filters?: SiteFilters
+  filters?: SiteFilters | undefined
 ): Promise<PaginatedResponse<Site>> => {
   const response = await get<PaginatedResponse<Site>>('/sites/paginated', {
     params: { page, limit, ...filters },
@@ -140,7 +120,7 @@ export const checkSiteAvailability = async (
   siteId: string,
   startDate: string,
   endDate: string,
-  excludeBookingId?: string
+  excludeBookingId?: string | undefined
 ): Promise<boolean> => {
   const response = await get<ApiResponse<{ available: boolean }>>(`/sites/${siteId}/check-availability`, {
     params: { startDate, endDate, excludeBookingId },

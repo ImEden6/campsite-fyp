@@ -57,7 +57,7 @@ describe('Authentication Flow', () => {
     // Wait for successful login
     await waitFor(() => {
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'auth-tokens',
+        'campsite_auth_token',
         expect.any(String)
       );
     });
@@ -118,11 +118,11 @@ describe('Authentication Flow', () => {
 
     // Step 3: Submit registration
     await waitFor(() => {
-      const submitButton = screen.getByRole('button', { name: /register|submit|complete/i });
+      const submitButton = screen.getByRole('button', { name: /register|submit|complete|create/i });
       expect(submitButton).toBeInTheDocument();
     });
 
-    const submitButton = screen.getByRole('button', { name: /register|submit|complete/i });
+    const submitButton = screen.getByRole('button', { name: /register|submit|complete|create/i });
     await user.click(submitButton);
 
     await waitFor(() => {

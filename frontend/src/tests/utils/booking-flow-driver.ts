@@ -120,7 +120,7 @@ export class BookingFlowDriver {
     }
 
     async skipEquipment() {
-        await this.assertOnStep(/equipment rentals/i);
+        await this.assertOnStep(/enhancements|equipment/i);
         await this.clickNext();
     }
 

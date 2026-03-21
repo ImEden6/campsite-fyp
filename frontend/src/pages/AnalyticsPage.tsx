@@ -30,6 +30,7 @@ import {
   type DateRange,
 } from '@/features/analytics';
 import { formatCurrency } from '@/utils/currency';
+import Button from '@/components/ui/Button';
 
 // Lazy load heavy chart components
 const RevenueChart = lazy(() =>
@@ -281,36 +282,34 @@ const AnalyticsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-nature-bg dark:bg-night-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-600 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
+              <p className="text-sm text-secondary-600 dark:text-secondary-400">
                 Track revenue, occupancy, and customer insights
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="outline"
               onClick={handleRefresh}
               disabled={isRefetching}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
               Refresh
-            </button>
-            <button
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
+            </Button>
+            <Button>
+              <Download className="w-4 h-4 mr-2" />
               Export Report
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -347,13 +346,13 @@ const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Quick Stats Footer */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg p-6 text-white">
+        <div className="bg-gradient-to-r from-primary-600 to-accent-700 rounded-xl p-6 text-white shadow-lg shadow-primary-600/20">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8" />
               <div>
-                <h3 className="text-lg font-semibold">Performance Summary</h3>
-                <p className="text-blue-100 text-sm">
+                <h3 className="font-heading text-lg font-semibold">Performance Summary</h3>
+                <p className="text-white/80 text-sm">
                   Revenue is up {metrics?.revenueChange?.toFixed(1) ?? '0.0'}% compared to last period
                 </p>
               </div>
@@ -361,15 +360,15 @@ const AnalyticsPage: React.FC = () => {
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-2xl font-bold">{metrics?.activeBookings ?? 0}</p>
-                <p className="text-blue-100 text-xs">Active Bookings</p>
+                <p className="text-white/80 text-xs">Active Bookings</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{metrics?.occupancyRate?.toFixed(0) ?? 0}%</p>
-                <p className="text-blue-100 text-xs">Occupancy</p>
+                <p className="text-white/80 text-xs">Occupancy</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{formatCurrency(metrics?.averageBookingValue ?? 0, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
-                <p className="text-blue-100 text-xs">Avg Booking</p>
+                <p className="text-white/80 text-xs">Avg Booking</p>
               </div>
             </div>
           </div>

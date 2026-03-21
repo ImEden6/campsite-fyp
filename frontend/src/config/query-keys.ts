@@ -9,7 +9,57 @@
  * - Hierarchical key structure
  */
 
-import type { DateRange, BookingFilters, EquipmentFilters } from '@/types';
+import type {
+  DateRange,
+  BookingFilters,
+  EquipmentFilters,
+  SiteFilters,
+  AvailabilityParams,
+  UserFilters,
+  // Add other types if they exist in @/types, otherwise define safely or keep loosely typed if needed
+} from '@/types';
+
+// Define missing types locally with strict optionality or import if available
+interface PaymentFilters {
+  status?: string[] | undefined;
+  dateRange?: DateRange | undefined;
+  bookingId?: string | undefined;
+  userId?: string | undefined;
+}
+
+interface EquipmentAvailabilityParams {
+  startDate: string;
+  endDate: string;
+  equipmentId?: string | undefined;
+  category?: string | undefined;
+}
+
+interface RevenueParams {
+  dateRange: DateRange;
+  groupBy?: 'day' | 'week' | 'month' | undefined;
+  siteType?: string | undefined;
+}
+
+interface OccupancyParams {
+  dateRange: DateRange;
+  siteType?: string | undefined;
+}
+
+interface CustomerInsightsParams {
+  dateRange?: DateRange | undefined;
+  segment?: string | undefined;
+}
+
+interface SitePerformanceParams {
+  dateRange?: DateRange | undefined;
+  siteId?: string | undefined;
+}
+
+interface NotificationFilters {
+  type?: string[] | undefined;
+  read?: boolean | undefined;
+  dateRange?: DateRange | undefined;
+}
 
 /**
  * Booking Query Keys
@@ -25,7 +75,7 @@ export const bookingKeys = {
   history: (userId?: string) => [...bookingKeys.all, 'history', userId] as const,
   stats: (dateRange?: DateRange) => [...bookingKeys.all, 'stats', dateRange] as const,
   myBookings: () => [...bookingKeys.all, 'my-bookings'] as const,
-  guest: (bookingNumber: string, token?: string) => 
+  guest: (bookingNumber: string, token?: string) =>
     [...bookingKeys.all, 'guest', bookingNumber, token] as const,
 };
 
@@ -66,7 +116,7 @@ export const paymentKeys = {
   list: (filters?: PaymentFilters) => [...paymentKeys.lists(), filters] as const,
   details: () => [...paymentKeys.all, 'detail'] as const,
   detail: (id: string) => [...paymentKeys.details(), id] as const,
-  history: (bookingId?: string, userId?: string) => 
+  history: (bookingId?: string, userId?: string) =>
     [...paymentKeys.all, 'history', { bookingId, userId }] as const,
   methods: (userId: string) => [...paymentKeys.all, 'methods', userId] as const,
   receipt: (paymentId: string) => [...paymentKeys.all, 'receipt', paymentId] as const,
@@ -81,7 +131,7 @@ export const equipmentKeys = {
   list: (filters?: EquipmentFilters) => [...equipmentKeys.lists(), filters] as const,
   details: () => [...equipmentKeys.all, 'detail'] as const,
   detail: (id: string) => [...equipmentKeys.details(), id] as const,
-  availability: (params: EquipmentAvailabilityParams) => 
+  availability: (params: EquipmentAvailabilityParams) =>
     [...equipmentKeys.all, 'availability', params] as const,
   categories: () => [...equipmentKeys.all, 'categories'] as const,
   rentals: (bookingId?: string) => [...equipmentKeys.all, 'rentals', bookingId] as const,
@@ -96,7 +146,7 @@ export const analyticsKeys = {
   dashboard: (dateRange?: DateRange) => [...analyticsKeys.all, 'dashboard', dateRange] as const,
   revenue: (params: RevenueParams) => [...analyticsKeys.all, 'revenue', params] as const,
   occupancy: (params: OccupancyParams) => [...analyticsKeys.all, 'occupancy', params] as const,
-  customers: (params?: CustomerInsightsParams) => 
+  customers: (params?: CustomerInsightsParams) =>
     [...analyticsKeys.all, 'customers', params] as const,
   sites: (params?: SitePerformanceParams) => [...analyticsKeys.all, 'sites', params] as const,
   reports: () => [...analyticsKeys.all, 'reports'] as const,
@@ -152,67 +202,7 @@ interface CalendarParams {
   view?: 'month' | 'week' | 'day';
 }
 
-interface SiteFilters {
-  type?: string[];
-  status?: string[];
-  amenities?: string[];
-  priceRange?: { min: number; max: number };
-  capacity?: { min: number; max: number };
-}
 
-interface AvailabilityParams {
-  startDate: string;
-  endDate: string;
-  siteType?: string;
-  guests?: number;
-}
-
-interface UserFilters {
-  role?: string[];
-  status?: string[];
-  searchTerm?: string;
-}
-
-interface PaymentFilters {
-  status?: string[];
-  dateRange?: DateRange;
-  bookingId?: string;
-  userId?: string;
-}
-
-interface EquipmentAvailabilityParams {
-  startDate: string;
-  endDate: string;
-  equipmentId?: string;
-  category?: string;
-}
-
-interface RevenueParams {
-  dateRange: DateRange;
-  groupBy?: 'day' | 'week' | 'month';
-  siteType?: string;
-}
-
-interface OccupancyParams {
-  dateRange: DateRange;
-  siteType?: string;
-}
-
-interface CustomerInsightsParams {
-  dateRange?: DateRange;
-  segment?: string;
-}
-
-interface SitePerformanceParams {
-  dateRange?: DateRange;
-  siteId?: string;
-}
-
-interface NotificationFilters {
-  type?: string[];
-  read?: boolean;
-  dateRange?: DateRange;
-}
 
 /**
  * Helper function to invalidate related queries

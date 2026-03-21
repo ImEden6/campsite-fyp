@@ -11,8 +11,8 @@ import { formatCurrency } from '@/utils/currency';
 
 interface EquipmentCardProps {
   equipment: Equipment;
-  onSelect?: (equipment: Equipment) => void;
-  onEdit?: (equipment: Equipment) => void;
+  onSelect?: ((equipment: Equipment) => void) | undefined;
+  onEdit?: ((equipment: Equipment) => void) | undefined;
   showActions?: boolean;
 }
 

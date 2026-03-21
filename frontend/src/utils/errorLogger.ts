@@ -27,10 +27,10 @@ export interface ErrorLogEntry {
   severity: ErrorSeverity;
   category: ErrorCategory;
   message: string;
-  details?: unknown;
-  stack?: string;
-  userId?: string;
-  sessionId?: string;
+  details?: unknown | undefined;
+  stack?: string | undefined;
+  userId?: string | undefined;
+  sessionId?: string | undefined;
 }
 
 class ErrorLogger {

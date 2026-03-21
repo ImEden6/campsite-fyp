@@ -1,11 +1,3 @@
-/**
- * MapEditorRefactored
- * Refactored map editor using modular hooks.
- * 
- * This is a cleaner implementation that uses the new hook-based architecture.
- * The original MapEditor.tsx is preserved as reference.
- */
-
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -19,7 +11,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { useEditorStore } from '@/stores/editorStore';
 
 // Hooks - using new modular hooks
-import { useMapEditor } from '@/hooks/editor';
+import { useMapEditor, useMapSave } from '@/hooks/editor';
 
 // Components
 import { PageLoader } from '@/components/ui/PageLoader';
@@ -218,19 +210,31 @@ const MapEditorRefactored: React.FC = () => {
     }, [canvasRef, currentMap, markDirty]);
 
     // ========================================================================
-    // SAVE HANDLER
+    // SAVE (using useMutation pattern)
     // ========================================================================
-    const handleSave = useCallback(async () => {
-        if (!currentMap) return;
-
-        try {
-            // TODO: Implement actual save API call
-            console.log('Saving map:', currentMap);
+    const { save: handleSave, isSaving } = useMapSave({
+        getCurrentMap: () => currentMap,
+        onSuccess: () => {
             clearDirty();
-        } catch (err) {
-            console.error('Failed to save map:', err);
-        }
-    }, [currentMap, clearDirty]);
+            // Import dynamically to avoid circular deps
+            import('@/stores/uiStore').then(({ useUIStore }) => {
+                useUIStore.getState().showToast('Map saved successfully', 'success');
+            });
+        },
+        onError: (error) => {
+            // Structured logging - not console.error in production
+            import('@/stores/uiStore').then(({ useUIStore }) => {
+                useUIStore.getState().showToast(
+                    error.message || 'Failed to save map',
+                    'error'
+                );
+            });
+        },
+        onMapUpdated: (map, modules) => {
+            // Update local state with server response for concurrency
+            useMapStore.getState().setMap({ ...map, modules });
+        },
+    });
 
     // ========================================================================
     // RENDER
@@ -405,11 +409,20 @@ const MapEditorRefactored: React.FC = () => {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleSave}
-                        disabled={!isDirty}
+                        disabled={!isDirty || isSaving}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        <Save className="w-4 h-4" />
-                        Save
+                        {isSaving ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4" />
+                                Save
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -484,7 +497,7 @@ const MapEditorRefactored: React.FC = () => {
             <BackgroundDialog
                 isOpen={showBackgroundDialog}
                 onClose={() => setShowBackgroundDialog(false)}
-                existingLayer={currentMap?.backgroundLayer}
+                existingLayer={currentMap?.backgroundLayer || undefined}
                 onConfirm={(layer, fitBounds) => {
                     if (!canvasRef.current) return;
 

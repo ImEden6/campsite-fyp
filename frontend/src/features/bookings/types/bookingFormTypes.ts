@@ -18,7 +18,7 @@ export interface GuestDetail {
     firstName: string;
     lastName: string;
     isChild: boolean;
-    age?: number;
+    age?: number | undefined;
 }
 
 // ============================================================================

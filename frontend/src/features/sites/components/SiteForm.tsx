@@ -12,10 +12,10 @@ import { AmenitySelector } from './AmenitySelector';
 import { ImageUpload } from './ImageUpload';
 
 interface SiteFormProps {
-  site?: Site;
+  site?: Site | undefined;
   onSubmit: (data: SiteFormData) => void | Promise<void>;
   onCancel: () => void;
-  isLoading?: boolean;
+  isLoading?: boolean | undefined;
 }
 
 export interface SiteFormData {
