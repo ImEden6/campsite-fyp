@@ -199,12 +199,18 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 dark:from-primary-950 dark:via-gray-900 dark:to-gray-950 text-white py-20 lg:py-32 overflow-hidden">
-        {/* Background Pattern - Trees/Nature */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M40 10 L50 30 L30 30 Z'/%3E%3Cpath d='M40 25 L55 50 L25 50 Z'/%3E%3Crect x='37' y='50' width='6' height='10'/%3E%3Ccircle cx='15' cy='65' r='3'/%3E%3Ccircle cx='65' cy='70' r='2'/%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
+      <section className="relative text-white py-20 lg:py-32 overflow-hidden">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/images/hero.png" 
+            alt="Scenic campsite at sunrise" 
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-[1px]" />
+          {/* Gradient overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-nature-surface-alt/10 dark:to-gray-900/20" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -224,14 +230,14 @@ const HomePage: React.FC = () => {
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
+            <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 border border-transparent dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Search Sites
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5 focus-within:text-primary-500" />
                     <Input
                       type="text"
                       placeholder="Search by name, location, or amenities..."
@@ -252,7 +258,7 @@ const HomePage: React.FC = () => {
                     Check In
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5" />
                     <Input
                       type="date"
                       value={checkInDate}
@@ -268,7 +274,7 @@ const HomePage: React.FC = () => {
                     Check Out
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5" />
                     <Input
                       type="date"
                       value={checkOutDate}
