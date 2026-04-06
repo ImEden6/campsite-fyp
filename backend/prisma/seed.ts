@@ -585,7 +585,7 @@ async function main() {
         await prisma.equipmentItem.create({
           data: {
             equipmentId: equip.id,
-            internalId: `${itemDef.name.substring(0, 3).toUpperCase()}-${1000 + i}`,
+            internalId: `EQ-${equip.id.replace(/-/g, '').substring(0, 12).toUpperCase()}-${String(i).padStart(3, '0')}`,
             status: EquipmentItemStatus.AVAILABLE,
             condition: EquipmentCondition.GOOD,
             purchaseDate: pDate,

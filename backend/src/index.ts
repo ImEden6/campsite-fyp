@@ -77,6 +77,11 @@ app.use(cookieParser());
 // - paymentRateLimit on /payments/intent
 // - bookingRateLimit defined in security.ts for booking creation
 
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/campsites', campsiteRoutes);
