@@ -160,10 +160,8 @@ export function useEditorShortcuts(
     // ========================================================================
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        // Track pressed key (local tracking only)
         pressedKeysRef.current.add(e.key.toLowerCase());
 
-        // Don't handle shortcuts if typing in an input
         const target = e.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
             return;
@@ -172,56 +170,27 @@ export function useEditorShortcuts(
         const shortcut = matchShortcut(e);
         if (!shortcut) return;
 
-        // Prevent default for handled shortcuts
         e.preventDefault();
 
-        switch (shortcut.action) {
-            case 'undo':
-                undo?.();
-                break;
-            case 'redo':
-                redo?.();
-                break;
-            case 'delete':
-                deleteSelected?.();
-                break;
-            case 'copy':
-                copySelected?.();
-                break;
-            case 'paste':
-                paste?.();
-                break;
-            case 'duplicate':
-                duplicateSelected?.();
-                break;
-            case 'selectAll':
-                selectAll?.();
-                break;
-            case 'clearSelection':
-                clearSelection?.();
-                break;
-            case 'zoomIn':
-                zoomIn?.();
-                break;
-            case 'zoomOut':
-                zoomOut?.();
-                break;
-            case 'fitToScreen':
-                fitToScreen?.();
-                break;
-            case 'togglePan':
-                togglePanMode?.();
-                break;
-            case 'toggleGrid':
-                toggleGrid();
-                break;
-            case 'save':
-                save?.();
-                break;
-            case 'showHelp':
-                shortcutsDialogVisibleRef.current = true;
-                break;
-        }
+        const actionMap: Record<string, () => void> = {
+            undo: () => undo?.(),
+            redo: () => redo?.(),
+            delete: () => deleteSelected?.(),
+            copy: () => copySelected?.(),
+            paste: () => paste?.(),
+            duplicate: () => duplicateSelected?.(),
+            selectAll: () => selectAll?.(),
+            clearSelection: () => clearSelection?.(),
+            zoomIn: () => zoomIn?.(),
+            zoomOut: () => zoomOut?.(),
+            fitToScreen: () => fitToScreen?.(),
+            togglePan: () => togglePanMode?.(),
+            toggleGrid: () => toggleGrid(),
+            save: () => save?.(),
+            showHelp: () => { shortcutsDialogVisibleRef.current = true; },
+        };
+
+        actionMap[shortcut.action]?.();
     }, [
         matchShortcut, undo, redo, deleteSelected, copySelected, paste,
         duplicateSelected, selectAll, clearSelection, zoomIn, zoomOut,

@@ -32,6 +32,33 @@ interface Filters {
   searchTerm: string;
 }
 
+function matchesAvailabilityFilters(site: Site, filters: Filters): boolean {
+  if (filters.type !== 'ALL' && site.type !== filters.type) return false;
+
+  if (filters.minPrice && site.basePrice < parseFloat(filters.minPrice)) return false;
+  if (filters.maxPrice && site.basePrice > parseFloat(filters.maxPrice)) return false;
+
+  if (filters.minCapacity && site.capacity < parseInt(filters.minCapacity)) return false;
+
+  if (filters.hasElectricity && !site.hasElectricity) return false;
+  if (filters.hasWater && !site.hasWater) return false;
+  if (filters.hasSewer && !site.hasSewer) return false;
+  if (filters.hasWifi && !site.hasWifi) return false;
+  if (filters.isPetFriendly && !site.isPetFriendly) return false;
+
+  if (filters.searchTerm) {
+    const searchLower = filters.searchTerm.toLowerCase();
+    const matchesName = site.name.toLowerCase().includes(searchLower);
+    const matchesDescription = site.description?.toLowerCase().includes(searchLower);
+    const matchesAmenities = site.amenities.some((amenity) =>
+      amenity.toLowerCase().includes(searchLower)
+    );
+    if (!matchesName && !matchesDescription && !matchesAmenities) return false;
+  }
+
+  return true;
+}
+
 const initialFilters: Filters = {
   type: 'ALL',
   minPrice: '',
@@ -54,49 +81,8 @@ export const SiteAvailabilityGrid: React.FC<SiteAvailabilityGridProps> = ({
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filter sites based on current filters
   const filteredSites = useMemo(() => {
-    return sites.filter((site) => {
-      // Type filter
-      if (filters.type !== 'ALL' && site.type !== filters.type) {
-        return false;
-      }
-
-      // Price filter
-      if (filters.minPrice && site.basePrice < parseFloat(filters.minPrice)) {
-        return false;
-      }
-      if (filters.maxPrice && site.basePrice > parseFloat(filters.maxPrice)) {
-        return false;
-      }
-
-      // Capacity filter
-      if (filters.minCapacity && site.capacity < parseInt(filters.minCapacity)) {
-        return false;
-      }
-
-      // Amenity filters
-      if (filters.hasElectricity && !site.hasElectricity) return false;
-      if (filters.hasWater && !site.hasWater) return false;
-      if (filters.hasSewer && !site.hasSewer) return false;
-      if (filters.hasWifi && !site.hasWifi) return false;
-      if (filters.isPetFriendly && !site.isPetFriendly) return false;
-
-      // Search term
-      if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase();
-        const matchesName = site.name.toLowerCase().includes(searchLower);
-        const matchesDescription = site.description?.toLowerCase().includes(searchLower);
-        const matchesAmenities = site.amenities.some((amenity) =>
-          amenity.toLowerCase().includes(searchLower)
-        );
-        if (!matchesName && !matchesDescription && !matchesAmenities) {
-          return false;
-        }
-      }
-
-      return true;
-    });
+    return sites.filter((site) => matchesAvailabilityFilters(site, filters));
   }, [sites, filters]);
 
   const handleFilterChange = (key: keyof Filters, value: string | boolean) => {

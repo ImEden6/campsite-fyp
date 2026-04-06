@@ -9,3 +9,5 @@ export { EquipmentDetailView } from './EquipmentDetailView';
 export { EquipmentRentalForm } from './EquipmentRentalForm';
 export { EquipmentCheckInOut } from './EquipmentCheckInOut';
 export { InventoryManager } from './InventoryManager';
+export { EquipmentFormModal } from './EquipmentFormModal';
+export { EquipmentFilters } from './EquipmentFilters';

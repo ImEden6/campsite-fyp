@@ -12,6 +12,28 @@ import { RefreshTokenResponse } from './types';
 import { addBreadcrumb, captureException } from '@/config/sentry';
 
 /**
+ * Date fields that should be transformed from strings to Date objects
+ */
+const DATE_FIELDS = new Set([
+  'checkInDate',
+  'checkOutDate',
+  'createdAt',
+  'updatedAt',
+  'checkInTime',
+  'checkOutTime',
+  'startDate',
+  'endDate',
+  'sentAt',
+  'readAt',
+  'processedAt',
+  'refundedAt',
+  'returnedAt',
+  'lastLoginAt',
+  'emailVerifiedAt',
+  'phoneVerifiedAt',
+]);
+
+/**
  * Transform date strings to Date objects in API responses
  * Handles nested objects and arrays
  */
@@ -20,26 +42,17 @@ const transformDates = (data: unknown): unknown => {
     return data;
   }
 
-  // Handle arrays
   if (Array.isArray(data)) {
     return data.map(transformDates);
   }
 
-  // Handle objects
   if (typeof data === 'object') {
     const transformed: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(data)) {
-      // Convert date fields
-      if ((key === 'checkInDate' || key === 'checkOutDate' || key === 'createdAt' ||
-        key === 'updatedAt' || key === 'checkInTime' || key === 'checkOutTime' ||
-        key === 'startDate' || key === 'endDate' || key === 'sentAt' || key === 'readAt' ||
-        key === 'processedAt' || key === 'refundedAt' || key === 'returnedAt' ||
-        key === 'lastLoginAt' || key === 'emailVerifiedAt' || key === 'phoneVerifiedAt') &&
-        typeof value === 'string') {
+      if (DATE_FIELDS.has(key) && typeof value === 'string') {
         transformed[key] = new Date(value);
       } else if (typeof value === 'object') {
-        // Recursively transform nested objects
         transformed[key] = transformDates(value);
       } else {
         transformed[key] = value;

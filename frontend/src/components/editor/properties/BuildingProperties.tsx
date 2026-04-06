@@ -3,11 +3,13 @@
  * Property editor for building modules with operating hours and services
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import type { BuildingModule } from '@/types';
 import { PropertySection } from './PropertySection';
 import { NumberStepper, MultiSelectChips, Select } from '@/components/ui';
 import { validateCapacity, validateName, parseTimeString, formatTimeString } from './propertyValidation';
+import { usePropertyValidation } from '@/hooks/editor/usePropertyValidation';
+import { ValidatedTextInput } from './ValidatedTextInput';
 import { Building } from 'lucide-react';
 
 // Building type options
@@ -57,40 +59,10 @@ export const BuildingProperties: React.FC<BuildingPropertiesProps> = ({
         [metadata.operatingHours.close]
     );
 
-    // Validation state
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [validFields, setValidFields] = useState<Set<string>>(new Set());
-
-    const handleValidation = useCallback((field: string, value: unknown) => {
-        let result: { valid: boolean; error?: string } = { valid: true };
-
-        switch (field) {
-            case 'name':
-                result = validateName(value as string);
-                break;
-            case 'capacity':
-                result = validateCapacity(value as number, 1, 500);
-                break;
-        }
-
-        if (result.valid) {
-            setErrors(prev => {
-                const next = { ...prev };
-                delete next[field];
-                return next;
-            });
-            setValidFields(prev => new Set(prev).add(field));
-        } else {
-            setErrors(prev => ({ ...prev, [field]: result.error || 'Invalid value' }));
-            setValidFields(prev => {
-                const next = new Set(prev);
-                next.delete(field);
-                return next;
-            });
-        }
-
-        return result.valid;
-    }, []);
+    const { errors, validFields, validate } = usePropertyValidation({
+        name: (v) => validateName(v as string),
+        capacity: (v) => validateCapacity(v as number, 1, 500),
+    });
 
     const handleTimeChange = useCallback((
         type: 'open' | 'close',
@@ -110,33 +82,16 @@ export const BuildingProperties: React.FC<BuildingPropertiesProps> = ({
 
     return (
         <PropertySection title="Building Details" icon={Building} defaultExpanded>
-            {/* Name */}
-            <div className={`properties-panel__field ${errors.name ? 'properties-panel__field--error' : validFields.has('name') ? 'properties-panel__field--valid' : ''}`}>
-                <label>Name</label>
-                <input
-                    type="text"
-                    value={metadata.name}
-                    onChange={(e) => onUpdate({ name: e.target.value })}
-                    onBlur={(e) => handleValidation('name', e.target.value)}
-                    disabled={disabled}
-                    readOnly={false}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.focus();
-                    }}
-                    onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.select();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onFocus={(e) => {
-                        e.stopPropagation();
-                    }}
-                />
-                {errors.name && <p className="properties-panel__field-error">{errors.name}</p>}
-            </div>
+            <ValidatedTextInput
+                label="Name"
+                value={metadata.name}
+                fieldName="name"
+                errors={errors}
+                validFields={validFields}
+                onChange={(v) => onUpdate({ name: v })}
+                onBlur={(v) => validate('name', v)}
+                disabled={disabled}
+            />
 
             {/* Building Type */}
             <Select
@@ -154,7 +109,7 @@ export const BuildingProperties: React.FC<BuildingPropertiesProps> = ({
                 min={1}
                 max={500}
                 onChange={(v) => {
-                    if (handleValidation('capacity', v)) {
+                    if (validate('capacity', v)) {
                         onUpdate({ capacity: v });
                     }
                 }}

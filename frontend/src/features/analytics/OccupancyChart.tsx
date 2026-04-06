@@ -7,7 +7,7 @@ import React, { useState, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import type { ChartOptions, ChartData } from 'chart.js';
 import { Calendar, TrendingUp } from 'lucide-react';
-import type { OccupancyMetrics } from '@/services/api/analytics';
+import type { OccupancyMetrics } from '@campsite-management/shared';
 import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
 import { useDarkMode } from '@/hooks/useDarkMode';
 

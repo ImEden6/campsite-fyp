@@ -129,7 +129,6 @@ export function getSnapPosition(
     let didSnapX = false;
     let didSnapY = false;
 
-    // Calculate object edges and center
     const edges = {
         left: position.x,
         right: position.x + size.width,
@@ -141,48 +140,47 @@ export function getSnapPosition(
 
     for (const guide of guides) {
         if (guide.orientation === 'vertical' && !didSnapX) {
-            // Check left, center, right edges against vertical guide
-            if (Math.abs(edges.left - guide.position) <= threshold) {
-                snappedX = guide.position;
-                snapLines.push({ orientation: 'v', position: guide.position });
-                didSnapX = true;
-            } else if (Math.abs(edges.centerX - guide.position) <= threshold) {
-                snappedX = guide.position - size.width / 2;
-                snapLines.push({ orientation: 'v', position: guide.position });
-                didSnapX = true;
-            } else if (Math.abs(edges.right - guide.position) <= threshold) {
-                snappedX = guide.position - size.width;
+            const snapResult = snapToGuide(edges.left, edges.centerX, edges.right, guide.position, size.width, threshold);
+            if (snapResult) {
+                snappedX = snapResult.snapped;
                 snapLines.push({ orientation: 'v', position: guide.position });
                 didSnapX = true;
             }
         }
 
         if (guide.orientation === 'horizontal' && !didSnapY) {
-            // Check top, center, bottom edges against horizontal guide
-            if (Math.abs(edges.top - guide.position) <= threshold) {
-                snappedY = guide.position;
-                snapLines.push({ orientation: 'h', position: guide.position });
-                didSnapY = true;
-            } else if (Math.abs(edges.centerY - guide.position) <= threshold) {
-                snappedY = guide.position - size.height / 2;
-                snapLines.push({ orientation: 'h', position: guide.position });
-                didSnapY = true;
-            } else if (Math.abs(edges.bottom - guide.position) <= threshold) {
-                snappedY = guide.position - size.height;
+            const snapResult = snapToGuide(edges.top, edges.centerY, edges.bottom, guide.position, size.height, threshold);
+            if (snapResult) {
+                snappedY = snapResult.snapped;
                 snapLines.push({ orientation: 'h', position: guide.position });
                 didSnapY = true;
             }
         }
     }
 
-    if (snapLines.length === 0) {
-        return null;
-    }
+    if (snapLines.length === 0) return null;
 
-    return {
-        snapped: { x: snappedX, y: snappedY },
-        snapLines,
-    };
+    return { snapped: { x: snappedX, y: snappedY }, snapLines };
+}
+
+function snapToGuide(
+    edge1: number,
+    edgeCenter: number,
+    edge2: number,
+    guidePos: number,
+    dimension: number,
+    threshold: number
+): { snapped: number } | null {
+    if (Math.abs(edge1 - guidePos) <= threshold) {
+        return { snapped: guidePos };
+    }
+    if (Math.abs(edgeCenter - guidePos) <= threshold) {
+        return { snapped: guidePos - dimension / 2 };
+    }
+    if (Math.abs(edge2 - guidePos) <= threshold) {
+        return { snapped: guidePos - dimension };
+    }
+    return null;
 }
 
 /**

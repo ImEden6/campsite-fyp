@@ -3,10 +3,12 @@
  * Property editor for custom modules with dynamic key-value properties
  */
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import type { CustomModule } from '@/types';
 import { PropertySection } from './PropertySection';
 import { validateName, validateDescription } from './propertyValidation';
+import { usePropertyValidation } from '@/hooks/editor/usePropertyValidation';
+import { ValidatedTextInput } from './ValidatedTextInput';
 import { Puzzle } from 'lucide-react';
 
 export interface CustomPropertiesProps {
@@ -22,130 +24,54 @@ export const CustomProperties: React.FC<CustomPropertiesProps> = ({
 }) => {
     const { metadata } = module;
 
-    // Validation state
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [validFields, setValidFields] = useState<Set<string>>(new Set());
-
-    const handleValidation = useCallback((field: string, value: unknown) => {
-        let result: { valid: boolean; error?: string } = { valid: true };
-
-        switch (field) {
-            case 'name':
-                result = validateName(value as string);
-                break;
-            case 'description':
-                result = validateDescription(value as string);
-                break;
-        }
-
-        if (result.valid) {
-            setErrors(prev => {
-                const next = { ...prev };
-                delete next[field];
-                return next;
-            });
-            setValidFields(prev => new Set(prev).add(field));
-        } else {
-            setErrors(prev => ({ ...prev, [field]: result.error || 'Invalid value' }));
-            setValidFields(prev => {
-                const next = new Set(prev);
-                next.delete(field);
-                return next;
-            });
-        }
-
-        return result.valid;
-    }, []);
+    const { errors, validFields, validate } = usePropertyValidation({
+        name: (v) => validateName(v as string),
+        description: (v) => validateDescription(v as string),
+    });
 
     // Get property entries for display
     const propertyEntries = Object.entries(metadata.properties || {});
 
     return (
         <PropertySection title="Custom Details" icon={Puzzle} defaultExpanded>
-            {/* Name */}
-            <div className={`properties-panel__field ${errors.name ? 'properties-panel__field--error' : validFields.has('name') ? 'properties-panel__field--valid' : ''}`}>
-                <label>Name</label>
-                <input
-                    type="text"
-                    value={metadata.name}
-                    onChange={(e) => onUpdate({ name: e.target.value })}
-                    onBlur={(e) => handleValidation('name', e.target.value)}
-                    disabled={disabled}
-                    readOnly={false}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.focus();
-                    }}
-                    onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.select();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onFocus={(e) => {
-                        e.stopPropagation();
-                    }}
-                />
-                {errors.name && <p className="properties-panel__field-error">{errors.name}</p>}
-            </div>
+            <ValidatedTextInput
+                label="Name"
+                value={metadata.name}
+                fieldName="name"
+                errors={errors}
+                validFields={validFields}
+                onChange={(v) => onUpdate({ name: v })}
+                onBlur={(v) => validate('name', v)}
+                disabled={disabled}
+            />
 
             {/* Custom Type */}
-            <div className="properties-panel__field">
-                <label>Custom Type</label>
-                <input
-                    type="text"
-                    value={metadata.customType}
-                    onChange={(e) => onUpdate({ customType: e.target.value })}
-                    placeholder="e.g., Landmark, Sign, Boundary"
-                    disabled={disabled}
-                    readOnly={false}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.focus();
-                    }}
-                    onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.select();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onFocus={(e) => {
-                        e.stopPropagation();
-                    }}
-                />
-            </div>
+            <ValidatedTextInput
+                label="Custom Type"
+                value={metadata.customType}
+                fieldName="customType"
+                errors={errors}
+                validFields={validFields}
+                onChange={(v) => onUpdate({ customType: v })}
+                onBlur={() => {}}
+                disabled={disabled}
+                placeholder="e.g., Landmark, Sign, Boundary"
+            />
 
             {/* Description */}
-            <div className={`properties-panel__field ${errors.description ? 'properties-panel__field--error' : validFields.has('description') ? 'properties-panel__field--valid' : ''}`}>
-                <label>Description</label>
-                <textarea
-                    className="properties-panel__textarea"
-                    value={metadata.description}
-                    onChange={(e) => onUpdate({ description: e.target.value })}
-                    onBlur={(e) => handleValidation('description', e.target.value)}
-                    placeholder="Describe this custom module..."
-                    rows={3}
-                    disabled={disabled}
-                    readOnly={false}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.focus();
-                    }}
-                    onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.select();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onFocus={(e) => {
-                        e.stopPropagation();
-                    }}
-                />
-                {errors.description && <p className="properties-panel__field-error">{errors.description}</p>}
-            </div>
+            <ValidatedTextInput
+                label="Description"
+                value={metadata.description}
+                fieldName="description"
+                errors={errors}
+                validFields={validFields}
+                onChange={(v) => onUpdate({ description: v })}
+                onBlur={(v) => validate('description', v)}
+                disabled={disabled}
+                placeholder="Describe this custom module..."
+                as="textarea"
+                rows={3}
+            />
 
             {/* Dynamic Properties (read-only for now, simplified) */}
             {propertyEntries.length > 0 && (

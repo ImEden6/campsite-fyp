@@ -3,11 +3,13 @@
  * Property editor for road modules - simpler, validates basic flow
  */
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import type { RoadModule } from '@/types';
 import { PropertySection } from './PropertySection';
 import { NumberStepper, Select } from '@/components/ui';
 import { validateName, validateWidth, validateSpeedLimit } from './propertyValidation';
+import { usePropertyValidation } from '@/hooks/editor/usePropertyValidation';
+import { ValidatedTextInput } from './ValidatedTextInput';
 import { Route } from 'lucide-react';
 
 // Road type options
@@ -46,73 +48,24 @@ export const RoadProperties: React.FC<RoadPropertiesProps> = ({
 }) => {
     const { metadata } = module;
 
-    // Validation state
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [validFields, setValidFields] = useState<Set<string>>(new Set());
-
-    const handleValidation = useCallback((field: string, value: unknown) => {
-        let result: { valid: boolean; error?: string } = { valid: true };
-
-        switch (field) {
-            case 'name':
-                result = validateName(value as string);
-                break;
-            case 'width':
-                result = validateWidth(value as number);
-                break;
-            case 'speedLimit':
-                result = validateSpeedLimit(value as number);
-                break;
-        }
-
-        if (result.valid) {
-            setErrors(prev => {
-                const next = { ...prev };
-                delete next[field];
-                return next;
-            });
-            setValidFields(prev => new Set(prev).add(field));
-        } else {
-            setErrors(prev => ({ ...prev, [field]: result.error || 'Invalid value' }));
-            setValidFields(prev => {
-                const next = new Set(prev);
-                next.delete(field);
-                return next;
-            });
-        }
-
-        return result.valid;
-    }, []);
+    const { errors, validFields, validate } = usePropertyValidation({
+        name: (v) => validateName(v as string),
+        width: (v) => validateWidth(v as number),
+        speedLimit: (v) => validateSpeedLimit(v as number),
+    });
 
     return (
         <PropertySection title="Road Details" icon={Route} defaultExpanded>
-            {/* Name */}
-            <div className={`properties-panel__field ${errors.name ? 'properties-panel__field--error' : validFields.has('name') ? 'properties-panel__field--valid' : ''}`}>
-                <label>Name</label>
-                <input
-                    type="text"
-                    value={metadata.name}
-                    onChange={(e) => onUpdate({ name: e.target.value })}
-                    onBlur={(e) => handleValidation('name', e.target.value)}
-                    disabled={disabled}
-                    readOnly={false}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.focus();
-                    }}
-                    onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.select();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onFocus={(e) => {
-                        e.stopPropagation();
-                    }}
-                />
-                {errors.name && <p className="properties-panel__field-error">{errors.name}</p>}
-            </div>
+            <ValidatedTextInput
+                label="Name"
+                value={metadata.name}
+                fieldName="name"
+                errors={errors}
+                validFields={validFields}
+                onChange={(v) => onUpdate({ name: v })}
+                onBlur={(v) => validate('name', v)}
+                disabled={disabled}
+            />
 
             {/* Road Type */}
             <Select
@@ -141,7 +94,7 @@ export const RoadProperties: React.FC<RoadPropertiesProps> = ({
                     max={20}
                     step={0.5}
                     onChange={(v) => {
-                        if (handleValidation('width', v)) {
+                        if (validate('width', v)) {
                             onUpdate({ width: v });
                         }
                     }}
@@ -156,7 +109,7 @@ export const RoadProperties: React.FC<RoadPropertiesProps> = ({
                     max={50}
                     step={5}
                     onChange={(v) => {
-                        if (handleValidation('speedLimit', v)) {
+                        if (validate('speedLimit', v)) {
                             onUpdate({ speedLimit: v });
                         }
                     }}

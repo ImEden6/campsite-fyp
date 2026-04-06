@@ -7,7 +7,7 @@ import React, { useState, useMemo } from 'react';
 import { Line, Bar, Pie } from 'react-chartjs-2';
 import type { ChartOptions, ChartData } from 'chart.js';
 import { TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
-import type { RevenueMetrics } from '@/services/api/analytics';
+import type { RevenueMetrics } from '@campsite-management/shared';
 import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { formatCurrency as formatMYR } from '@/utils/currency';

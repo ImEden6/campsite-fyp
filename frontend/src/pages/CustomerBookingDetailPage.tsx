@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Users, CreditCard, Ban, FileText, MapPin } from 'lucide-react';
+import { ArrowLeft, CreditCard, Ban, FileText, MapPin } from 'lucide-react';
 import { getBookingById, cancelBooking, calculateCancellationRefund, type CancellationRefund } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, PaymentStatus } from '@/types';
@@ -10,8 +10,8 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
 import { PaymentModal } from '@/features/payments/components/PaymentModal';
 import { useUIStore } from '@/stores/uiStore';
-import { format } from 'date-fns';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { BookingDetailsCard, HelpSidebarCard } from '@/features/bookings/components';
 
 const CustomerBookingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -147,56 +147,14 @@ const CustomerBookingDetailPage: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Booking Details */}
-            <GlassCard className="p-6 md:p-8">
-              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary-500" />
-                Reservation Details
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-in</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
-                        <Calendar className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <span className="text-lg font-medium">{format(new Date(booking.checkInDate), 'EEE, MMM dd, yyyy')}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-out</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
-                        <Calendar className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <span className="text-lg font-medium">{format(new Date(booking.checkOutDate), 'EEE, MMM dd, yyyy')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Guests</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
-                        <Users className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <span className="text-lg font-medium">
-                        {booking.guests.adults} Adults
-                        {booking.guests.children > 0 && `, ${booking.guests.children} Children`}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Duration</div>
-                    <div className="text-lg font-medium text-gray-900 dark:text-gray-100 pl-2">
-                      {nights} Nights
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
+            <BookingDetailsCard
+              checkInDate={booking.checkInDate}
+              checkOutDate={booking.checkOutDate}
+              guests={booking.guests}
+              nights={nights}
+              title="Reservation Details"
+              icon={FileText}
+            />
 
             {/* Payment History */}
             <GlassCard className="p-6 md:p-8">
@@ -251,17 +209,11 @@ const CustomerBookingDetailPage: React.FC = () => {
               </div>
             </GlassCard>
 
-            <GlassCard className="p-6 bg-primary-600/5 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
-              <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Need Assistance?
-              </h3>
-              <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-4">
-                Have questions about your upcoming stay? We're here to help.
-              </p>
-              <Button variant="outline" className="w-full bg-white dark:bg-transparent" onClick={() => navigate('/contact')}>
-                Contact Support
-              </Button>
-            </GlassCard>
+            <HelpSidebarCard
+              title="Need Assistance?"
+              description="Have questions about your upcoming stay? We're here to help."
+              onButtonClick={() => navigate('/contact')}
+            />
           </div>
         </div>
 

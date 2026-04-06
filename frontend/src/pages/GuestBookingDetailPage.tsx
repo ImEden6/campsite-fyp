@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Users, UserPlus, MapPin, CheckCircle } from 'lucide-react';
+import { ArrowLeft, UserPlus, MapPin, CheckCircle } from 'lucide-react';
 import { verifyGuestBookingEmail, getGuestBooking } from '@/services/api/bookings';
 import Button from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { format } from 'date-fns';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { BookingDetailsCard, HelpSidebarCard } from '@/features/bookings/components';
 
 const GuestBookingDetailPage: React.FC = () => {
   const { bookingNumber } = useParams<{ bookingNumber: string }>();
@@ -153,56 +154,13 @@ const GuestBookingDetailPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Booking Details */}
           <div className="lg:col-span-2 space-y-6">
-            <GlassCard className="p-6 md:p-8">
-              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                Booking Details
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-in</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
-                        <Calendar className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <span className="text-lg font-medium">{format(new Date(booking.checkInDate), 'EEE, MMM dd, yyyy')}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-out</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
-                        <Calendar className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <span className="text-lg font-medium">{format(new Date(booking.checkOutDate), 'EEE, MMM dd, yyyy')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Guests</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                      <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
-                        <Users className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <span className="text-lg font-medium">
-                        {booking.guests.adults} Adults
-                        {booking.guests.children > 0 && `, ${booking.guests.children} Children`}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Length of Stay</div>
-                    <div className="text-lg font-medium text-gray-900 dark:text-gray-100 pl-2">
-                      {nights} Nights
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+            <BookingDetailsCard
+              checkInDate={booking.checkInDate}
+              checkOutDate={booking.checkOutDate}
+              guests={booking.guests}
+              nights={nights}
+              durationLabel="Length of Stay"
+            >
               <div className="mt-8 pt-6 border-t border-secondary-200 dark:border-gray-700">
                 <div className="flex justify-between items-center">
                   <div>
@@ -222,32 +180,27 @@ const GuestBookingDetailPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </GlassCard>
+            </BookingDetailsCard>
+          </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-secondary-500">Total Amount</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </BookingDetailsCard>
           </div>
 
           {/* Sidebar Area */}
           <div className="lg:col-span-1 space-y-6">
-            <GlassCard className="p-6 bg-primary-600/5 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800">
-              <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                Need Help?
-              </h3>
-              <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-4">
-                If you need to modify or cancel your booking, please contact support or create an account.
-              </p>
-              <Button variant="outline" className="w-full bg-white dark:bg-transparent" onClick={() => navigate('/contact')}>
-                Contact Support
-              </Button>
-            </GlassCard>
-
-            <GlassCard className="p-6 text-center" intensity="light">
-              <h3 className="font-sans text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Check-in / Check-out
-              </h3>
-              <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-3">
-                Check-in time is 3:00 PM. <br />
-                Check-out time is 11:00 AM.
-              </p>
-            </GlassCard>
+            <HelpSidebarCard
+              title="Need Help?"
+              description="If you need to modify or cancel your booking, please contact support or create an account."
+              onButtonClick={() => navigate('/contact')}
+            />
           </div>
         </div>
       </div>

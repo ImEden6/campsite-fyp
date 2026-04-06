@@ -304,45 +304,6 @@ export const authorizeBookingOwnership = authorizeCustom(async (user, req) => {
   return booking?.userId === user.id;
 });
 
-// Middleware to check if user can manage a site
-export const authorizeSiteManagement = authorizeCustom(async (user, req) => {
-  return user.role === 'ADMIN' || user.role === 'MANAGER';
-});
-
-// Middleware to check if user can access analytics
-export const authorizeAnalytics = authorizeCustom(async (user, req) => {
-  return user.role === 'ADMIN' || user.role === 'MANAGER';
-});
-
-// Middleware to check if user can manage equipment
-export const authorizeEquipmentManagement = authorizeCustom(async (user, req) => {
-  return user.role === 'ADMIN' || user.role === 'MANAGER' || user.role === 'STAFF';
-});
-
-// Middleware to check if user can manage other users
-export const authorizeUserManagement = authorizeCustom(async (user, req) => {
-  if (user.role === 'ADMIN') {
-    return true;
-  }
-
-  if (user.role === 'MANAGER') {
-    const targetUserId = req.params.userId || req.params.id;
-    if (!targetUserId) {
-      return false;
-    }
-
-    const targetUser = await prisma.user.findUnique({
-      where: { id: targetUserId },
-      select: { role: true },
-    });
-
-    // Managers can manage staff and customers, but not other managers or admins
-    return targetUser?.role === 'STAFF' || targetUser?.role === 'CUSTOMER';
-  }
-
-  return false;
-});
-
 // Middleware to validate API key for external integrations
 export const validateApiKey = async (
   req: Request,
@@ -503,10 +464,6 @@ export default {
   authorizeOwnership,
   authorizeCustom,
   authorizeBookingOwnership,
-  authorizeSiteManagement,
-  authorizeAnalytics,
-  authorizeEquipmentManagement,
-  authorizeUserManagement,
   validateApiKey,
   requireApiKeyPermission,
   requireEmailVerification,

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Users, Calendar, Percent } from 'lucide-react';
-import type { DashboardMetrics as DashboardMetricsType } from '@/services/api/analytics';
+import type { DashboardMetrics as DashboardMetricsType } from '@campsite-management/shared';
 import { formatCurrency } from '@/utils/currency';
 
 interface DashboardMetricsProps {

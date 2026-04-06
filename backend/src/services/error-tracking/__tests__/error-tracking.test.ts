@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConsoleErrorTracker } from '../console';
-import { ErrorTrackerConfig } from '@campsite/shared';
+import { ErrorTrackerConfig } from '@campsite-management/shared';
 
 describe('Error Tracking Service', () => {
   let tracker: ConsoleErrorTracker;

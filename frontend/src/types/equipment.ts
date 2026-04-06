@@ -3,7 +3,7 @@
  * Unified types for equipment filtering, availability, and rental operations
  */
 
-import type { EquipmentCategory, EquipmentStatus } from './index';
+import type { EquipmentCategory, EquipmentStatus } from '@campsite-management/shared';
 
 /**
  * Unified EquipmentFilters interface

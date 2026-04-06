@@ -7,5 +7,4 @@ export { cn } from './cn';
 export * from './imageOptimization';
 export * from './errorLogging';
 export * from './accessibility';
-export * from './keyboardHandler';
 export * from './generateModulesFromSites';

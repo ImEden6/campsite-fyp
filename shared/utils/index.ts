@@ -1,7 +1,7 @@
 // Utilities for Campsite Management System
 
 import { REGEX_PATTERNS, DATE_FORMATS, VALIDATION_RULES } from '../constants';
-import { Booking, Site, Payment, SiteType, UserRole, ValidationError } from '../types';
+import { Booking, Site, Payment, SiteType, UserRole, ValidationErrorDetail } from '../types';
 
 // Date Utilities
 export const dateUtils = {
@@ -687,15 +687,15 @@ export const businessUtils = {
 
 // Error Handling Utilities
 export const errorUtils = {
-  createValidationError(field: string, message: string, code: string): ValidationError {
+  createValidationError(field: string, message: string, code: string): ValidationErrorDetail {
     return { field, message, code };
   },
 
-  formatValidationErrors(errors: ValidationError[]): string {
+  formatValidationErrors(errors: ValidationErrorDetail[]): string {
     return errors.map(error => `${error.field}: ${error.message}`).join(', ');
   },
 
-  isValidationError(error: unknown): error is ValidationError {
+  isValidationError(error: unknown): error is ValidationErrorDetail {
     return error !== null && typeof error === 'object' &&
       'field' in error && 'message' in error && 'code' in error;
   },

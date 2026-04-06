@@ -3,11 +3,13 @@
  * Property editor for campsite modules - the most complex module type
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import type { CampsiteModule } from '@/types';
 import { PropertySection } from './PropertySection';
 import { NumberStepper, MultiSelectChips, FieldWithTooltip, Switch } from '@/components/ui';
 import { validateCapacity, validatePrice, validateMultiplier, validateName } from './propertyValidation';
+import { usePropertyValidation } from '@/hooks/editor/usePropertyValidation';
+import { ValidatedTextInput } from './ValidatedTextInput';
 import { Tent } from 'lucide-react';
 
 // Predefined amenities options
@@ -37,49 +39,15 @@ export const CampsiteProperties: React.FC<CampsitePropertiesProps> = ({
 }) => {
     const { metadata } = module;
 
-    // Validation state
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [validFields, setValidFields] = useState<Set<string>>(new Set());
-
-    const handleValidation = useCallback((field: string, value: unknown) => {
-        let result: { valid: boolean; error?: string } = { valid: true };
-
-        switch (field) {
-            case 'name':
-                result = validateName(value as string);
-                break;
-            case 'capacity':
-                result = validateCapacity(value as number);
-                break;
-            case 'basePrice':
-                result = validatePrice(value as number);
-                break;
-            case 'seasonalMultiplier':
-                result = validateMultiplier(value as number);
-                break;
-        }
-
-        if (result.valid) {
-            setErrors(prev => {
-                const next = { ...prev };
-                delete next[field];
-                return next;
-            });
-            setValidFields(prev => new Set(prev).add(field));
-        } else {
-            setErrors(prev => ({ ...prev, [field]: result.error || 'Invalid value' }));
-            setValidFields(prev => {
-                const next = new Set(prev);
-                next.delete(field);
-                return next;
-            });
-        }
-
-        return result.valid;
-    }, []);
+    const { errors, validFields, validate } = usePropertyValidation({
+        name: (v) => validateName(v as string),
+        capacity: (v) => validateCapacity(v as number),
+        basePrice: (v) => validatePrice(v as number),
+        seasonalMultiplier: (v) => validateMultiplier(v as number),
+    });
 
     const handleChange = useCallback((field: string, value: unknown) => {
-        if (handleValidation(field, value)) {
+        if (validate(field, value)) {
             if (field === 'basePrice' || field === 'seasonalMultiplier') {
                 onUpdate({
                     pricing: {
@@ -91,37 +59,20 @@ export const CampsiteProperties: React.FC<CampsitePropertiesProps> = ({
                 onUpdate({ [field]: value });
             }
         }
-    }, [handleValidation, metadata.pricing, onUpdate]);
+    }, [validate, metadata.pricing, onUpdate]);
 
     return (
         <PropertySection title="Campsite Details" icon={Tent} defaultExpanded>
-            {/* Name */}
-            <div className={`properties-panel__field ${errors.name ? 'properties-panel__field--error' : validFields.has('name') ? 'properties-panel__field--valid' : ''}`}>
-                <label>Name</label>
-                <input
-                    type="text"
-                    value={metadata.name}
-                    onChange={(e) => onUpdate({ name: e.target.value })}
-                    onBlur={(e) => handleValidation('name', e.target.value)}
-                    disabled={disabled}
-                    readOnly={false}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.focus();
-                    }}
-                    onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.select();
-                    }}
-                    onMouseDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                    onFocus={(e) => {
-                        e.stopPropagation();
-                    }}
-                />
-                {errors.name && <p className="properties-panel__field-error">{errors.name}</p>}
-            </div>
+            <ValidatedTextInput
+                label="Name"
+                value={metadata.name}
+                fieldName="name"
+                errors={errors}
+                validFields={validFields}
+                onChange={(v) => onUpdate({ name: v })}
+                onBlur={(v) => validate('name', v)}
+                disabled={disabled}
+            />
 
             {/* Capacity */}
             <NumberStepper

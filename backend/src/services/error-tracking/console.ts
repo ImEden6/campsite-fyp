@@ -10,7 +10,7 @@ import {
   UserContext,
   Breadcrumb,
   ErrorLevel,
-} from './types';
+} from '@campsite-management/shared';
 
 export class ConsoleErrorTracker implements IErrorTracker {
   private enabled: boolean = false;

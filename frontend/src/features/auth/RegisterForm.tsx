@@ -48,14 +48,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     const errors: Partial<RegistrationData> = {};
 
     if (step === 1) {
-      // Email validation
       if (!formData.email) {
         errors.email = 'Email is required';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         errors.email = 'Please enter a valid email address';
       }
 
-      // Password validation
       if (!formData.password) {
         errors.password = 'Password is required';
       } else if (formData.password.length < 8) {
@@ -64,7 +62,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         errors.password = 'Password must contain uppercase, lowercase, and number';
       }
 
-      // Confirm password validation
       if (!formData.confirmPassword) {
         errors.confirmPassword = 'Please confirm your password';
       } else if (formData.password !== formData.confirmPassword) {
@@ -73,21 +70,18 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     }
 
     if (step === 2) {
-      // First name validation
       if (!formData.firstName) {
         errors.firstName = 'First name is required';
       } else if (formData.firstName.length < 2) {
         errors.firstName = 'First name must be at least 2 characters';
       }
 
-      // Last name validation
       if (!formData.lastName) {
         errors.lastName = 'Last name is required';
       } else if (formData.lastName.length < 2) {
         errors.lastName = 'Last name must be at least 2 characters';
       }
 
-      // Phone validation
       if (!formData.phone) {
         errors.phone = 'Phone number is required';
       } else if (!/^\+?[\d\s\-()]+$/.test(formData.phone)) {

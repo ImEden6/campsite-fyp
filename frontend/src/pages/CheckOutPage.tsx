@@ -5,8 +5,8 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, CheckCircle, DollarSign, AlertCircle, ArrowLeft, RefreshCw, Calculator, User, MapPin } from 'lucide-react';
-import { Button, Input, Badge } from '@/components/ui';
+import { CheckCircle, DollarSign, AlertCircle, ArrowLeft, Calculator, User, MapPin } from 'lucide-react';
+import { Button, Input, ErrorAlert } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { getBookings, checkOutBooking } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
@@ -14,6 +14,7 @@ import { Booking, BookingStatus } from '@/types';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { formatCurrency } from '@/utils/currency';
 import { useNavigate } from 'react-router-dom';
+import { BookingSearchPanel } from '@/features/bookings/components';
 
 const CheckOutPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,10 +48,6 @@ const CheckOutPage: React.FC = () => {
       setSelectedBooking(updatedBooking);
     },
   });
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-  };
 
   const handleSelectBooking = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -97,80 +94,6 @@ const CheckOutPage: React.FC = () => {
       additionalCharges,
       finalTotal,
     };
-  };
-
-  const renderSearchResults = () => {
-    if (searchTerm.length < 3) {
-      return (
-        <div className="text-center py-12 text-secondary-500">
-          <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Enter at least 3 characters to search</p>
-        </div>
-      );
-    }
-
-    if (searchLoading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <RefreshCw className="w-8 h-8 animate-spin text-primary-500" />
-        </div>
-      );
-    }
-
-    if (bookings.length === 0) {
-      return (
-        <div className="text-center py-12 text-secondary-500">
-          <p>No checked-in bookings found</p>
-          <p className="text-sm mt-1">Try searching by guest name, booking number, or site</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-3">
-        {bookings.map((booking) => (
-          <div
-            key={booking.id}
-            className="cursor-pointer"
-            onClick={() => handleSelectBooking(booking)}
-          >
-            <GlassCard
-              className={`p-4 transition-all hover:bg-primary-50/50 dark:hover:bg-primary-900/10 ${selectedBooking?.id === booking.id ? 'ring-2 ring-primary-500 border-primary-500' : ''}`}
-              intensity="light"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-bold text-gray-900 dark:text-gray-100">
-                      {booking.user?.firstName} {booking.user?.lastName}
-                    </h4>
-                    <Badge variant="success" className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300">{booking.bookingNumber}</Badge>
-                  </div>
-                  <div className="text-sm text-secondary-600 dark:text-secondary-400 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-secondary-400" />
-                      {booking.site?.name || `Site ${booking.siteId}`}
-                    </div>
-                    <div className="text-xs text-secondary-500">
-                      Checked in: {booking.checkInTime ? format(new Date(booking.checkInTime), 'MMM d, h:mm a') : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-secondary-500">
-                    {differenceInDays(
-                      booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate),
-                      booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate)
-                    )}{' '}
-                    nights
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-        ))}
-      </div>
-    );
   };
 
   const renderBookingDetails = () => {
@@ -380,36 +303,43 @@ const CheckOutPage: React.FC = () => {
         </div>
 
         {!showSuccess && (
-          <GlassCard className="p-6 mb-8" intensity="medium">
-            <form onSubmit={handleSearch} className="mb-6">
-              <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                Search Guest
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by guest name, booking number, or site..."
-                  className="pl-11 py-3"
-                />
+          <BookingSearchPanel
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            bookings={bookings}
+            isLoading={searchLoading}
+            selectedBooking={selectedBooking}
+            onSelectBooking={handleSelectBooking}
+            emptyMessage="No checked-in bookings found"
+            badgeVariant="success"
+            renderSecondaryInfo={(booking) => (
+              <>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-secondary-400" />
+                  {booking.site?.name || `Site ${booking.siteId}`}
+                </div>
+                <div className="text-xs text-secondary-500">
+                  Checked in: {booking.checkInTime ? format(new Date(booking.checkInTime), 'MMM d, h:mm a') : 'N/A'}
+                </div>
+              </>
+            )}
+            renderRightPanel={(booking) => (
+              <div className="text-sm font-medium text-secondary-500">
+                {differenceInDays(
+                  booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate),
+                  booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate)
+                )}{' '}
+                nights
               </div>
-            </form>
-
-            {renderSearchResults()}
-          </GlassCard>
+            )}
+          />
         )}
 
         {selectedBooking && !showSuccess && renderBookingDetails()}
         {showSuccess && renderSuccess()}
 
         {checkOutMutation.isError && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <p className="text-sm text-red-800 dark:text-red-200 font-medium">
-              Failed to check out: {(checkOutMutation.error as Error)?.message || 'Unknown error'}
-            </p>
-          </div>
+          <ErrorAlert message={`Failed to check out: ${(checkOutMutation.error as Error)?.message || 'Unknown error'}`} />
         )}
       </div>
     </div>

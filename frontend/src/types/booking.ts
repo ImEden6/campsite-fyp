@@ -3,7 +3,7 @@
  * Consolidated types for booking-related functionality
  */
 
-import type { BookingStatus, PaymentStatus } from '@/types';
+import type { BookingStatus, PaymentStatus } from '@campsite-management/shared';
 import type { DateRange } from './common';
 
 /**
@@ -106,57 +106,27 @@ export interface BookingFilters {
  * ```
  */
 export function isBookingFilters(obj: unknown): obj is BookingFilters {
-  console.log('[BookingFilters] Validating object:', obj);
-
-  if (typeof obj !== 'object' || obj === null) {
-    console.log('[BookingFilters] Validation failed: not an object or null');
-    return false;
-  }
+  if (typeof obj !== 'object' || obj === null) return false;
 
   const record = obj as Record<string, unknown>;
 
-  // Check optional properties have correct types if present
-  if (record.status !== undefined && !Array.isArray(record.status)) {
-    console.log('[BookingFilters] Validation failed: status is not an array', record.status);
-    return false;
-  }
-
-  if (record.paymentStatus !== undefined && !Array.isArray(record.paymentStatus)) {
-    console.log('[BookingFilters] Validation failed: paymentStatus is not an array', record.paymentStatus);
-    return false;
-  }
+  if (record.status !== undefined && !Array.isArray(record.status)) return false;
+  if (record.paymentStatus !== undefined && !Array.isArray(record.paymentStatus)) return false;
 
   if (record.dateRange !== undefined) {
     const dateRange = record.dateRange as { startDate?: unknown; endDate?: unknown };
     if (typeof dateRange !== 'object' ||
       typeof dateRange.startDate !== 'string' ||
       typeof dateRange.endDate !== 'string') {
-      console.log('[BookingFilters] Validation failed: invalid dateRange', record.dateRange);
       return false;
     }
   }
 
-  if (record.siteType !== undefined && !Array.isArray(record.siteType)) {
-    console.log('[BookingFilters] Validation failed: siteType is not an array', record.siteType);
-    return false;
-  }
+  if (record.siteType !== undefined && !Array.isArray(record.siteType)) return false;
+  if (record.searchTerm !== undefined && typeof record.searchTerm !== 'string') return false;
+  if (record.userId !== undefined && typeof record.userId !== 'string') return false;
+  if (record.siteId !== undefined && typeof record.siteId !== 'string') return false;
 
-  if (record.searchTerm !== undefined && typeof record.searchTerm !== 'string') {
-    console.log('[BookingFilters] Validation failed: searchTerm is not a string', record.searchTerm);
-    return false;
-  }
-
-  if (record.userId !== undefined && typeof record.userId !== 'string') {
-    console.log('[BookingFilters] Validation failed: userId is not a string', record.userId);
-    return false;
-  }
-
-  if (record.siteId !== undefined && typeof record.siteId !== 'string') {
-    console.log('[BookingFilters] Validation failed: siteId is not a string', record.siteId);
-    return false;
-  }
-
-  console.log('[BookingFilters] Validation passed ✓');
   return true;
 }
 
@@ -172,8 +142,7 @@ export function isBookingFilters(obj: unknown): obj is BookingFilters {
  * ```
  */
 export function createEmptyBookingFilters(): BookingFilters {
-  console.log('[BookingFilters] Creating empty filters');
-  const filters = {
+  return {
     status: undefined,
     paymentStatus: undefined,
     dateRange: undefined,
@@ -182,8 +151,6 @@ export function createEmptyBookingFilters(): BookingFilters {
     userId: undefined,
     siteId: undefined,
   };
-  console.log('[BookingFilters] Empty filters created:', filters);
-  return filters;
 }
 
 /**
@@ -202,19 +169,7 @@ export function createEmptyBookingFilters(): BookingFilters {
  * ```
  */
 export function hasActiveFilters(filters: BookingFilters): boolean {
-  console.log('[BookingFilters] Checking for active filters:', filters);
-
-  const activeFilters = {
-    status: filters.status?.length || 0,
-    paymentStatus: filters.paymentStatus?.length || 0,
-    dateRange: !!filters.dateRange,
-    siteType: filters.siteType?.length || 0,
-    searchTerm: !!filters.searchTerm,
-    userId: !!filters.userId,
-    siteId: !!filters.siteId,
-  };
-
-  const hasActive = !!(
+  return !!(
     filters.status?.length ||
     filters.paymentStatus?.length ||
     filters.dateRange ||
@@ -223,9 +178,4 @@ export function hasActiveFilters(filters: BookingFilters): boolean {
     filters.userId ||
     filters.siteId
   );
-
-  console.log('[BookingFilters] Active filters breakdown:', activeFilters);
-  console.log('[BookingFilters] Has active filters:', hasActive);
-
-  return hasActive;
 }

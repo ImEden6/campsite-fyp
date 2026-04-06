@@ -7,7 +7,7 @@ import React, { useMemo } from 'react';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import type { ChartOptions, ChartData } from 'chart.js';
 import { Users, TrendingUp, DollarSign, Repeat } from 'lucide-react';
-import type { CustomerInsights as CustomerInsightsType } from '@/services/api/analytics';
+import type { CustomerInsights as CustomerInsightsType } from '@campsite-management/shared';
 import { getChartColors, CHART_COLORS } from '@/utils/chartColors';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { formatCurrency as formatMYR } from '@/utils/currency';

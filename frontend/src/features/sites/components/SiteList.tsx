@@ -33,6 +33,29 @@ interface SiteFilters {
   maxPrice: string;
 }
 
+function matchesSiteFilters(site: Site, filters: SiteFilters): boolean {
+  if (filters.searchTerm) {
+    const searchLower = filters.searchTerm.toLowerCase();
+    const matchesSearch =
+      site.name.toLowerCase().includes(searchLower) ||
+      site.description?.toLowerCase().includes(searchLower);
+    if (!matchesSearch) return false;
+  }
+
+  if (filters.type !== 'ALL' && site.type !== filters.type) return false;
+  if (filters.status !== 'ALL' && site.status !== filters.status) return false;
+
+  if (filters.hasElectricity !== null && site.hasElectricity !== filters.hasElectricity) return false;
+  if (filters.hasWater !== null && site.hasWater !== filters.hasWater) return false;
+  if (filters.hasSewer !== null && site.hasSewer !== filters.hasSewer) return false;
+  if (filters.isPetFriendly !== null && site.isPetFriendly !== filters.isPetFriendly) return false;
+
+  if (filters.minPrice && site.basePrice < parseFloat(filters.minPrice)) return false;
+  if (filters.maxPrice && site.basePrice > parseFloat(filters.maxPrice)) return false;
+
+  return true;
+}
+
 export const SiteList: React.FC<SiteListProps> = ({
   sites,
   isLoading = false,
@@ -72,50 +95,7 @@ export const SiteList: React.FC<SiteListProps> = ({
     });
   };
 
-  const filteredSites = sites.filter((site) => {
-    // Search term filter
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      const matchesSearch =
-        site.name.toLowerCase().includes(searchLower) ||
-        site.description?.toLowerCase().includes(searchLower);
-      if (!matchesSearch) return false;
-    }
-
-    // Type filter
-    if (filters.type !== 'ALL' && site.type !== filters.type) {
-      return false;
-    }
-
-    // Status filter
-    if (filters.status !== 'ALL' && site.status !== filters.status) {
-      return false;
-    }
-
-    // Amenity filters
-    if (filters.hasElectricity !== null && site.hasElectricity !== filters.hasElectricity) {
-      return false;
-    }
-    if (filters.hasWater !== null && site.hasWater !== filters.hasWater) {
-      return false;
-    }
-    if (filters.hasSewer !== null && site.hasSewer !== filters.hasSewer) {
-      return false;
-    }
-    if (filters.isPetFriendly !== null && site.isPetFriendly !== filters.isPetFriendly) {
-      return false;
-    }
-
-    // Price range filter
-    if (filters.minPrice && site.basePrice < parseFloat(filters.minPrice)) {
-      return false;
-    }
-    if (filters.maxPrice && site.basePrice > parseFloat(filters.maxPrice)) {
-      return false;
-    }
-
-    return true;
-  });
+  const filteredSites = sites.filter((site) => matchesSiteFilters(site, filters));
 
   const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'searchTerm') return false;

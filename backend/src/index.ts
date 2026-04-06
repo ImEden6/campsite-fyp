@@ -18,7 +18,6 @@ import { logger } from './utils/logger';
 import { connectDatabase } from './database';
 import { errorHandler } from './utils/errors';
 import { authMiddleware } from './middleware/auth';
-import { securityMiddleware } from './middleware/security';
 import { initializeErrorTracking, getErrorTracker } from './services/error-tracking';
 import { startCleanupJobs, stopCleanupJobs } from './jobs/cleanup';
 

@@ -59,15 +59,11 @@ export enum VehicleType {
 }
 
 export enum MeasurementUnit {
-  FEET = 'feet',
-  METERS = 'meters'
+  FEET = 'feet'
 }
 
 export enum GroupBookingStatus {
-  INQUIRY = 'inquiry',
-  QUOTED = 'quoted',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled'
+  INQUIRY = 'inquiry'
 }
 
 export interface User {
@@ -479,34 +475,8 @@ export interface GroupBooking {
 
 // ============================================================================
 // Analytics and Reporting Types
+// (Detailed analytics types are exported from ./analytics.ts)
 // ============================================================================
-
-export interface RevenueMetrics {
-  totalRevenue: number;
-  bookingRevenue: number;
-  equipmentRevenue: number;
-  averageBookingValue: number;
-  revenueByMonth: { month: string; revenue: number }[];
-  revenueByType: { type: string; revenue: number }[];
-}
-
-export interface OccupancyMetrics {
-  totalSites: number;
-  occupiedSites: number;
-  occupancyRate: number;
-  averageStayDuration: number;
-  occupancyByMonth: { month: string; occupancy: number }[];
-  occupancyByType: { type: SiteType; occupancy: number }[];
-}
-
-export interface CustomerMetrics {
-  totalCustomers: number;
-  newCustomers: number;
-  returningCustomers: number;
-  customerRetentionRate: number;
-  averageCustomerValue: number;
-  customersByMonth: { month: string; customers: number }[];
-}
 
 // Notification Types
 export enum NotificationType {
@@ -640,7 +610,7 @@ export interface SocketEvents {
 }
 
 // Error Types
-export interface ValidationError {
+export interface ValidationErrorDetail {
   field: string;
   message: string;
   code: string;
@@ -649,7 +619,15 @@ export interface ValidationError {
 export interface ApiError {
   code?: string | undefined;
   message: string;
-  details?: ValidationError[] | undefined;
+  details?: ValidationErrorDetail[] | undefined;
+  timestamp: Date;
+  statusCode?: number | undefined;
+}
+
+export interface ApiError {
+  code?: string | undefined;
+  message: string;
+  details?: ValidationErrorDetail[] | undefined;
   timestamp: Date;
   statusCode?: number | undefined;
 }
@@ -858,4 +836,7 @@ export type ApiCalendarEvent = Omit<CalendarEvent, 'startDate' | 'endDate' | 'cr
 
 // Export error tracking types
 export * from './error-tracking';
+
+// Export analytics types
+export * from './analytics';
 

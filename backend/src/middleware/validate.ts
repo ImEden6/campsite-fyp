@@ -5,18 +5,12 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError, ZodSchema } from 'zod';
-import { ApiError } from '@/utils/errors';
+import { ApiError, ValidationErrorDetail } from '@/utils/errors';
 import logger from '@/utils/logger';
 
 // ============================================================
 // Centralized Error Response Type
 // ============================================================
-
-export interface ValidationErrorDetail {
-    code: string;
-    field: string;
-    message: string;
-}
 
 export interface ValidationErrorResponse {
     success: false;

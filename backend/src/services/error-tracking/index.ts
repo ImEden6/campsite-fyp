@@ -3,7 +3,7 @@
  * Factory for creating error tracker instances
  */
 
-import { IErrorTracker, ErrorTrackerConfig } from './types';
+import { IErrorTracker, ErrorTrackerConfig } from '@campsite-management/shared';
 import { SentryErrorTracker } from './sentry';
 import { ConsoleErrorTracker } from './console';
 import { config } from '@/config';

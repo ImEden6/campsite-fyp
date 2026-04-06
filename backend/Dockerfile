@@ -10,7 +10,8 @@ COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
 # Install all dependencies (including devDependencies)
-RUN npm ci
+# Delete lock file to fetch Alpine-specific Prisma binaries
+RUN rm -f package-lock.json && npm install
 
 # Copy sources (for initial build if needed, though volumes will override)
 COPY shared/ ./shared/
@@ -36,7 +37,8 @@ COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
 # Install all dependencies
-RUN npm ci
+# Delete lock file to fetch Alpine-specific Prisma binaries
+RUN rm -f package-lock.json && npm install
 
 # Copy sources for built packages
 COPY shared/ ./shared/
@@ -60,7 +62,7 @@ COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
 # Install production dependencies and curl for healthcheck
 RUN apk add --no-cache curl && \
-  npm ci --only=production
+  npm install --omit=dev --ignore-scripts
 
 # Copy built applications
 COPY --from=builder /app/shared/dist ./shared/dist
@@ -68,6 +70,7 @@ COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/prisma ./backend/prisma
 COPY --from=builder /app/backend/prisma.config.js ./backend/prisma.config.js
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs

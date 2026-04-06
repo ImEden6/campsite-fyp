@@ -82,25 +82,34 @@ const normalizeTokens = (payload: LegacyLoginPayload): AuthTokens | null => {
 const isLoginResponse = (value: unknown): value is LoginResponse =>
   isRecord(value) && isUserLike(value.user) && isAuthTokensLike(value.tokens);
 
-const parseLoginResponse = (raw: RawLoginResponse): LoginResponse => {
-  if (isLoginResponse(raw)) {
-    return raw;
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof ApiException) {
+    if (error.statusCode === 401) return 'Invalid email or password.';
+    if (error.statusCode === 404) return 'Login endpoint not found. Please check backend configuration.';
+    if (error.message) return error.message;
   }
+  if (error instanceof Error) {
+    if (error.message.includes('Network Error') || error.message.includes('ECONNREFUSED')) {
+      return 'Cannot connect to server. Please ensure the backend is running.';
+    }
+    return error.message;
+  }
+  if (typeof error === 'string' && error.trim()) return error;
+  return 'Login failed. Please try again.';
+};
+
+const parseLoginResponse = (raw: RawLoginResponse): LoginResponse => {
+  if (isLoginResponse(raw)) return raw;
 
   if (isRecord(raw) && 'data' in raw) {
     const nested = (raw as { data?: LegacyLoginPayload | undefined }).data;
     if (nested) {
-      if (isLoginResponse(nested)) {
-        return nested;
-      }
+      if (isLoginResponse(nested)) return nested;
 
       if (isRecord(nested)) {
         const tokens = normalizeTokens(nested);
         if (isUserLike(nested.user) && tokens) {
-          return {
-            user: nested.user,
-            tokens,
-          };
+          return { user: nested.user, tokens };
         }
       }
     }
@@ -109,10 +118,7 @@ const parseLoginResponse = (raw: RawLoginResponse): LoginResponse => {
   if (isRecord(raw)) {
     const tokens = normalizeTokens(raw);
     if (isUserLike(raw.user) && tokens) {
-      return {
-        user: raw.user,
-        tokens,
-      };
+      return { user: raw.user, tokens };
     }
   }
 
@@ -135,37 +141,28 @@ export const useAuthStore = create<AuthStore>()(
         const user = getUserData<User>();
 
         if (token && user) {
-          // Validate token format (basic check)
           try {
-            // JWT tokens have 3 parts separated by dots
             const parts = token.split('.');
             if (parts.length !== 3) {
-              console.warn('[AuthStore] Invalid token format, clearing auth');
               clearAuthTokens();
               return;
             }
 
-            // Decode payload to check expiration
             const payloadPart = parts[1];
             if (!payloadPart) {
-              console.warn('[AuthStore] Invalid token structure');
               clearAuthTokens();
               return;
             }
             const payload = JSON.parse(atob(payloadPart));
-            const expiresAt = payload.exp * 1000; // Convert to milliseconds
+            const expiresAt = payload.exp * 1000;
             const now = Date.now();
 
             if (expiresAt < now) {
-              console.warn('[AuthStore] Token expired, clearing auth');
               clearAuthTokens();
               window.dispatchEvent(new CustomEvent('auth:session-expired'));
               return;
             }
-
-            console.log('[AuthStore] Token valid, expires in', Math.round((expiresAt - now) / 1000 / 60), 'minutes');
-          } catch (error) {
-            console.error('[AuthStore] Error validating token:', error);
+          } catch {
             clearAuthTokens();
             return;
           }
@@ -180,7 +177,6 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
           });
 
-          // Set user context in Sentry
           setUserContext({
             id: user.id,
             email: user.email,
@@ -196,74 +192,32 @@ export const useAuthStore = create<AuthStore>()(
         try {
           let response: LoginResponse;
 
-          // Use mock auth if enabled or backend is unavailable
           if (shouldUseMockAuth()) {
-            console.log('Using mock authentication');
             response = await mockLogin(credentials.email, credentials.password);
           } else {
-            console.log('[AuthStore] Calling login API...');
             const apiResponse = await post<RawLoginResponse>('/auth/login', credentials);
-            console.log('[AuthStore] API Response:', apiResponse);
             response = parseLoginResponse(apiResponse);
           }
 
-          console.log('[AuthStore] Parsed response:', response);
           const { user, tokens } = response;
-          console.log('[AuthStore] User:', user);
-          console.log('[AuthStore] Tokens:', tokens);
 
-          // Validate response structure
           if (!user || !tokens || !tokens.accessToken) {
-            console.error('[AuthStore] Missing user or tokens!', { user, tokens });
             throw new Error('Invalid response from server. Please ensure the backend API is running and properly configured.');
           }
 
-          // Save tokens to localStorage
           saveAuthTokens(tokens);
           setUserData(user);
 
-          // Set user context in Sentry
           setUserContext({
             id: user.id,
             email: user.email,
             role: user.role,
           });
 
-          set({
-            user,
-            tokens,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
+          set({ user, tokens, isAuthenticated: true, isLoading: false, error: null });
         } catch (error: unknown) {
-          let errorMessage = 'Login failed. Please try again.';
-
-          if (error instanceof ApiException) {
-            if (error.statusCode === 401) {
-              errorMessage = 'Invalid email or password.';
-            } else if (error.statusCode === 404) {
-              errorMessage = 'Login endpoint not found. Please check backend configuration.';
-            } else if (error.message) {
-              errorMessage = error.message;
-            }
-          } else if (error instanceof Error) {
-            if (error.message.includes('Network Error') || error.message.includes('ECONNREFUSED')) {
-              errorMessage = 'Cannot connect to server. Please ensure the backend is running.';
-            } else if (error.message.includes('Invalid response')) {
-              errorMessage = error.message;
-            } else if (error.message) {
-              errorMessage = error.message;
-            }
-          } else if (typeof error === 'string' && error.trim()) {
-            errorMessage = error;
-          }
-
-          set({
-            isLoading: false,
-            error: errorMessage,
-            isAuthenticated: false,
-          });
+          const errorMessage = getErrorMessage(error);
+          set({ isLoading: false, error: errorMessage, isAuthenticated: false });
           throw error;
         }
       },

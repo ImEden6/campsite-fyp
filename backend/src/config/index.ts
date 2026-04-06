@@ -309,32 +309,6 @@ export const validateConfig = (): void => {
   }
 };
 
-// Export individual configuration sections for convenience
-export const {
-  server: serverConfig,
-  database: databaseConfig,
-  jwt: jwtConfig,
-  redis: redisConfig,
-  email: emailConfig,
-  sms: smsConfig,
-  stripe: stripeConfig,
-  upload: uploadConfig,
-  weather: weatherConfig,
-  google: googleConfig,
-  session: sessionConfig,
-  security: securityConfig,
-  logging: loggingConfig,
-  jobs: jobsConfig,
-  monitoring: monitoringConfig,
-  features: featureFlags,
-  cache: cacheConfig,
-  pagination: paginationConfig,
-  business: businessConfig,
-  notifications: notificationsConfig,
-  api: apiConfig,
-  development: developmentConfig,
-} = config;
-
 // Validate configuration on module load
 validateConfig();
 

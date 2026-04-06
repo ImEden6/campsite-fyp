@@ -5,14 +5,14 @@
 
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import {
+import type {
   IErrorTracker,
   ErrorTrackerConfig,
   ErrorContext,
   UserContext,
   Breadcrumb,
   ErrorLevel,
-} from './types';
+} from '@campsite-management/shared';
 
 export class SentryErrorTracker implements IErrorTracker {
   private enabled: boolean = false;

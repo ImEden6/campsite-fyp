@@ -4,8 +4,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, ChevronDown } from 'lucide-react';
-import type { ReportType, ReportParameter } from '@/services/api/analytics';
+import type { ReportParameter, ReportType } from '@/services/api/analytics';
+import {
+  DateField,
+  DateRangeField,
+  SelectField,
+  MultiSelectField,
+  NumberField,
+  TextField,
+} from './components';
 
 interface ReportParameterFormProps {
   reportType: ReportType;
@@ -64,169 +71,26 @@ export const ReportParameterForm: React.FC<ReportParameterFormProps> = ({
     }
   };
 
+  const FIELD_COMPONENTS: Record<ReportParameter['type'], React.FC<{ param: ReportParameter; value: unknown; error?: string; onChange: (name: string, value: unknown) => void }>> = {
+    date: DateField,
+    dateRange: DateRangeField,
+    select: SelectField,
+    multiSelect: MultiSelectField,
+    number: NumberField,
+    text: TextField,
+  };
+
   const renderField = (param: ReportParameter) => {
-    const value = parameters[param.name];
-    const error = errors[param.name];
-
-    switch (param.type) {
-      case 'date':
-        return (
-          <div key={param.name} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {param.label}
-              {param.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={typeof value === 'string' ? value : ''}
-                onChange={(e) => handleChange(param.name, e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  error ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              <Calendar className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />
-            </div>
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-        );
-
-      case 'dateRange':
-        return (
-          <div key={param.name} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {param.label}
-              {param.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <input
-                  type="date"
-                  value={(value && typeof value === 'object' && 'startDate' in value && typeof value.startDate === 'string') ? value.startDate : ''}
-                  onChange={(e) =>
-                    handleChange(param.name, { ...(typeof value === 'object' ? value : {}), startDate: e.target.value })
-                  }
-                  placeholder="Start Date"
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    error ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-              </div>
-              <div>
-                <input
-                  type="date"
-                  value={(value && typeof value === 'object' && 'endDate' in value && typeof value.endDate === 'string') ? value.endDate : ''}
-                  onChange={(e) =>
-                    handleChange(param.name, { ...(typeof value === 'object' ? value : {}), endDate: e.target.value })
-                  }
-                  placeholder="End Date"
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    error ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-              </div>
-            </div>
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-        );
-
-      case 'select':
-        return (
-          <div key={param.name} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {param.label}
-              {param.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="relative">
-              <select
-                value={typeof value === 'string' || typeof value === 'number' ? value : ''}
-                onChange={(e) => handleChange(param.name, e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  error ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select {param.label}</option>
-                {param.options?.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />
-            </div>
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-        );
-
-      case 'multiSelect':
-        return (
-          <div key={param.name} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {param.label}
-              {param.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto">
-              {param.options?.map((option) => (
-                <label key={option.value} className="flex items-center mb-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={Array.isArray(value) && value.includes(option.value)}
-                    onChange={(e) => {
-                      const currentValues = Array.isArray(value) ? value : [];
-                      const newValues = e.target.checked
-                        ? [...currentValues, option.value]
-                        : currentValues.filter((v: string) => v !== option.value);
-                      handleChange(param.name, newValues);
-                    }}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{option.label}</span>
-                </label>
-              ))}
-            </div>
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-        );
-
-      case 'number':
-        return (
-          <div key={param.name} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {param.label}
-              {param.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <input
-              type="number"
-              value={typeof value === 'number' ? value : ''}
-              onChange={(e) => handleChange(param.name, parseFloat(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                error ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-        );
-
-      case 'text':
-      default:
-        return (
-          <div key={param.name} className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {param.label}
-              {param.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <input
-              type="text"
-              value={typeof value === 'string' ? value : ''}
-              onChange={(e) => handleChange(param.name, e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                error ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-        );
-    }
+    const FieldComponent = FIELD_COMPONENTS[param.type];
+    return (
+      <FieldComponent
+        key={param.name}
+        param={param}
+        value={parameters[param.name]}
+        error={errors[param.name]}
+        onChange={handleChange}
+      />
+    );
   };
 
   return (

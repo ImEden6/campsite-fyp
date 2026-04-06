@@ -59,13 +59,6 @@ export class AuthenticationError extends ApiError {
   }
 }
 
-// Authorization Error class
-export class AuthorizationError extends ApiError {
-  constructor(message = 'Insufficient permissions') {
-    super(403, message, 'AUTHORIZATION_ERROR');
-  }
-}
-
 // Not Found Error class
 export class NotFoundError extends ApiError {
   constructor(resource?: string) {
@@ -416,7 +409,6 @@ export default {
   ApiError,
   ValidationError,
   AuthenticationError,
-  AuthorizationError,
   NotFoundError,
   ConflictError,
   RateLimitError,

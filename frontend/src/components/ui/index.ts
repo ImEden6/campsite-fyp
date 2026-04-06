@@ -41,6 +41,9 @@ export { default as Switch } from './Switch';
 export { default as MultiSelectChips } from './MultiSelectChips';
 export type { MultiSelectChipsProps } from './MultiSelectChips';
 
+export { ErrorAlert } from './ErrorAlert';
+export type { ErrorAlertProps } from './ErrorAlert';
+
 export { default as NumberStepper } from './NumberStepper';
 export type { NumberStepperProps } from './NumberStepper';
 
