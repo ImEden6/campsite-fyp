@@ -136,7 +136,7 @@ describe('Staff Check-in/Check-out Flow', () => {
       expect(screen.getAllByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))[0]).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    const bookingCard = screen.getAllByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))[0].closest('div[class*="cursor-pointer"]');
+    const bookingCard = screen.getAllByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))[0]!.closest('div[class*="cursor-pointer"]');
     if (bookingCard) {
       await user.click(bookingCard);
     }

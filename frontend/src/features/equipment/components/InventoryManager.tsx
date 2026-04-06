@@ -5,11 +5,8 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  getEquipment,
-  type Equipment,
-  type EquipmentStatus,
-} from '@/types';
+import { getEquipment } from '@/services/api/equipment';
+import type { Equipment, EquipmentStatus } from '@/types';
 import { queryKeys } from '@/config/query-keys';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -124,7 +121,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.data.map((equipment) => (
+                {data.data.map((equipment: Equipment) => (
                   <tr
                     key={equipment.id}
                     className="hover:bg-gray-50 cursor-pointer"

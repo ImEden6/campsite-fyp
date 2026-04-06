@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, UserPlus, MapPin, CheckCircle } from 'lucide-react';
+import { ArrowLeft, UserPlus, MapPin, Users } from 'lucide-react';
 import { verifyGuestBookingEmail, getGuestBooking } from '@/services/api/bookings';
 import Button from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { format } from 'date-fns';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
 import { BookingDetailsCard, HelpSidebarCard } from '@/features/bookings/components';
 

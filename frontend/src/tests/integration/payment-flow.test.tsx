@@ -230,8 +230,8 @@ describe('Payment Flow', () => {
     const submitButton = await screen.findByRole('button', { name: /Pay RM|submit|confirm/i });
     
     // Make confirmPayment slow
-    let resolvePayment: (value: any) => void;
-    const paymentPromise = new Promise((resolve) => {
+    let resolvePayment: (value: { paymentIntent: { id: string; status: string } }) => void;
+    const paymentPromise = new Promise<{ paymentIntent: { id: string; status: string } }>((resolve) => {
       resolvePayment = resolve;
     });
     mockStripe.confirmPayment.mockReturnValueOnce(paymentPromise);
@@ -242,7 +242,7 @@ describe('Payment Flow', () => {
     expect(screen.getByText(/processing|loading/i)).toBeInTheDocument();
 
     // Resolve it
-    resolvePayment!({ paymentIntent: { status: 'succeeded' } });
+    resolvePayment!({ paymentIntent: { id: 'pi_123', status: 'succeeded' } });
   });
 
   it('should validate required fields', async () => {

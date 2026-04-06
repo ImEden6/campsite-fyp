@@ -6,7 +6,7 @@ import { EquipmentCategory } from '@campsite-management/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createEquipment, updateEquipment, deleteEquipment } from '@/services/api/equipment';
 import { queryKeys } from '@/config/query-keys';
-import type { Equipment, CreateEquipmentRequest } from '@/types';
+import type { Equipment } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -16,7 +16,7 @@ import { CATEGORY_OPTIONS } from '../utils/equipmentConstants';
 
 const equipmentFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  description: z.string().optional().default(''),
+  description: z.string().transform((val) => val || ''),
   category: z.nativeEnum(EquipmentCategory),
   quantity: z.number().min(1, 'Quantity must be at least 1'),
   dailyRate: z.number().min(0, 'Daily rate cannot be negative'),
@@ -50,7 +50,7 @@ export const EquipmentFormModal: React.FC<EquipmentFormModalProps> = ({
     setValue,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<EquipmentFormData>({
+  } = useForm({
     resolver: zodResolver(equipmentFormSchema),
     defaultValues: {
       name: '',
@@ -91,7 +91,7 @@ export const EquipmentFormModal: React.FC<EquipmentFormModalProps> = ({
   }, [equipment, reset]);
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateEquipmentRequest) => createEquipment(data),
+    mutationFn: (data: EquipmentFormData) => createEquipment(data),
     onSuccess: () => {
       showToast('Equipment created successfully', 'success');
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
@@ -103,7 +103,7 @@ export const EquipmentFormModal: React.FC<EquipmentFormModalProps> = ({
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: CreateEquipmentRequest) => updateEquipment(equipment!.id, data),
+    mutationFn: (data: EquipmentFormData) => updateEquipment(equipment!.id, data),
     onSuccess: () => {
       showToast('Equipment updated successfully', 'success');
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });

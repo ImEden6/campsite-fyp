@@ -8,9 +8,7 @@ import type { ApiResponse } from './types';
 import type {
   DateRange,
   DashboardMetrics,
-  RevenueDataPoint,
   RevenueMetrics,
-  OccupancyDataPoint,
   OccupancyMetrics,
   CustomerInsights,
   SitePerformance,

@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { getSites, deleteSite } from '@/services/api/sites';
 import { getDashboardMetrics } from '@/services/api/analytics';
-import { GlassCard } from '@/components/ui/GlassCard';
+import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 
 import { SiteType, SiteStatus } from '@/types';
@@ -87,7 +87,7 @@ const MapBox: React.FC<MapBoxProps> = ({
     <MotionDiv
       {...(motion ? { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } } : {})}
     >
-      <GlassCard className="overflow-hidden" intensity="strong">
+      <Card className="overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-secondary-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -188,7 +188,7 @@ const MapBox: React.FC<MapBoxProps> = ({
             Add New {type === SiteType.TENT ? 'Tent Site' : type === SiteType.RV ? 'RV Site' : 'Cabin'}
           </Button>
         </div>
-      </GlassCard>
+                  </Card>
     </MotionDiv>
   );
 };
@@ -382,7 +382,7 @@ export const AdminDashboardPage: React.FC = () => {
                     transition: { duration: 0.3, delay: index * 0.1 }
                   } : {})}
                 >
-                  <GlassCard className="p-6" intensity="medium">
+                  <Card className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">{stat.name}</p>
@@ -402,7 +402,7 @@ export const AdminDashboardPage: React.FC = () => {
                         <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
                       </div>
                     </div>
-                  </GlassCard>
+      </Card>
                 </MotionDiv>
               ))}
             </div>

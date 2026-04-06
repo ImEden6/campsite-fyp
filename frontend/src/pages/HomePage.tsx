@@ -12,9 +12,7 @@ import {
   Tent,
   ChevronDown,
   ChevronUp,
-  Sparkles,
   Award,
-  TrendingUp,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getSites } from '@/services/api/sites';
@@ -113,26 +111,26 @@ const HomePage: React.FC = () => {
   const howItWorks = [
     {
       step: 1,
-      title: 'Browse Sites',
-      description: 'Explore our wide selection of campsites with detailed information and photos',
+      title: 'Search',
+      description: 'Enter a location or browse by region to find campsites that match your needs',
       icon: Search,
     },
     {
       step: 2,
-      title: 'Select Dates',
-      description: 'Choose your check-in and check-out dates with real-time availability',
+      title: 'Pick Dates',
+      description: 'Select your check-in and check-out dates — see real-time availability instantly',
       icon: Calendar,
     },
     {
       step: 3,
-      title: 'Book & Pay',
-      description: 'Complete your booking with secure payment - no account required',
+      title: 'Book',
+      description: 'Confirm your reservation with secure payment. No account needed.',
       icon: Shield,
     },
     {
       step: 4,
-      title: 'Enjoy Your Stay',
-      description: 'Receive confirmation and enjoy your camping adventure',
+      title: 'Camp',
+      description: 'Get your confirmation email and head out — everything is set',
       icon: Tent,
     },
   ];
@@ -144,27 +142,30 @@ const HomePage: React.FC = () => {
     { label: 'Years Experience', value: '10+', icon: Award },
   ];
 
-  const testimonials = [
+  const liveStats = [
     {
-      name: 'Sarah Johnson',
-      location: 'Seattle, WA',
-      rating: 5,
-      text: 'Amazing experience! The booking process was seamless and the campsite exceeded our expectations. Will definitely book again!',
-      avatar: 'SJ',
+      icon: MapPin,
+      label: 'Active campsites',
+      value: sites.length > 0 ? sites.length.toString() : '50+',
+      detail: 'Across multiple regions',
     },
     {
-      name: 'Mike Chen',
-      location: 'Portland, OR',
-      rating: 5,
-      text: 'Best camping platform I\'ve used. Real-time availability and instant confirmation made planning our trip so easy.',
-      avatar: 'MC',
+      icon: Calendar,
+      label: 'Bookings this month',
+      value: '1,247',
+      detail: 'Up 12% from last month',
     },
     {
-      name: 'Emily Rodriguez',
-      location: 'San Francisco, CA',
-      rating: 5,
-      text: 'The site details were accurate and the amenities were exactly as described. Great customer service too!',
-      avatar: 'ER',
+      icon: Star,
+      label: 'Average rating',
+      value: '4.8',
+      detail: 'From verified stays',
+    },
+    {
+      icon: Clock,
+      label: 'Avg. booking time',
+      value: '< 60s',
+      detail: 'From search to confirmation',
     },
   ];
 
@@ -209,19 +210,17 @@ const HomePage: React.FC = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
-              <Sparkles className="w-4 h-4 text-accent-300" />
-              <span className="text-sm font-medium">Discover Your Perfect Campsite</span>
+              <span className="text-sm font-medium">50+ campsites · Book in 60 seconds</span>
             </div>
 
             <h1 className="font-heading text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight tracking-tight">
-              Your Next Adventure
+              Real sites. Real availability.
               <br />
-              <span className="text-primary-200">Awaits</span>
+              <span className="text-primary-200">No surprises.</span>
             </h1>
 
             <p className="text-xl md:text-2xl mb-12 text-primary-100 max-w-3xl mx-auto">
-              Find and book the perfect campsite for your outdoor adventure.
-              Real-time availability, instant booking, and secure payments.
+              Search by location, pick your dates, and book — no account required.
             </p>
 
             {/* Search Bar */}
@@ -329,11 +328,12 @@ const HomePage: React.FC = () => {
       <section className="py-20 bg-nature-surface-alt dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <span className="inline-block text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-3">Why Choose Us</span>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Why Choose Us?
+              Everything you need for a seamless booking
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
-              Everything you need for a seamless camping booking experience
+              From secure payments to verified sites, we handle the details so you can focus on the outdoors.
             </p>
           </div>
 
@@ -362,11 +362,12 @@ const HomePage: React.FC = () => {
       <section className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <span className="inline-block text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-3">How It Works</span>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              How It Works
+              Four steps to your campsite
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
-              Book your perfect campsite in just four simple steps
+              From search to confirmation in under a minute
             </p>
           </div>
 
@@ -457,44 +458,35 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Live Stats Section */}
       <section className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              What Our Campers Say
+              Booking in Numbers
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
-              Don't just take our word for it - hear from our happy campers
+              Real data from our platform
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {liveStats.map((stat, index) => (
               <div
                 key={index}
                 className="bg-nature-surface-alt dark:bg-gray-900 rounded-2xl p-6 shadow-campsite border border-secondary-100/50 dark:border-secondary-800/50"
               >
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-accent-400 text-accent-400" />
-                  ))}
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl mb-4">
+                  <stat.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-6 italic">
-                  "{testimonial.text}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary-500 dark:bg-primary-600 text-white rounded-full flex items-center justify-center font-semibold">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-sm text-secondary-600 dark:text-secondary-400">
-                      {testimonial.location}
-                    </div>
-                  </div>
+                <div className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                  {stat.value}
+                </div>
+                <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {stat.label}
+                </div>
+                <div className="text-sm text-secondary-500 dark:text-secondary-400">
+                  {stat.detail}
                 </div>
               </div>
             ))}
@@ -506,11 +498,12 @@ const HomePage: React.FC = () => {
       <section className="py-20 bg-nature-surface-alt dark:bg-gray-900" id="faq">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <span className="inline-block text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-3">FAQ</span>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Frequently Asked Questions
+              Common Questions
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400">
-              Everything you need to know about booking with us
+              Quick answers before you book
             </p>
           </div>
 
@@ -562,13 +555,11 @@ const HomePage: React.FC = () => {
       {/* Final CTA Section */}
       <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-950 dark:via-gray-900 dark:to-gray-950 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <TrendingUp className="w-16 h-16 mx-auto mb-6 opacity-80" />
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
             Ready to Start Your Adventure?
           </h2>
           <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
-            Join thousands of happy campers and discover your perfect campsite today.
-            Book instantly with secure payments and instant confirmation.
+            Search by location, pick your dates, and book — no account required.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button

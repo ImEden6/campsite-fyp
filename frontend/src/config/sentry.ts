@@ -179,7 +179,7 @@ export const addBreadcrumb = async (
     message,
     category,
     level,
-    data: data as any,
+    data: data as Record<string, unknown>,
   });
 };
 

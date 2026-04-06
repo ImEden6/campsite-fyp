@@ -23,7 +23,6 @@ import {
   getSitePerformance,
 } from '@/services/api/analytics';
 import type { SitePerformance } from '@campsite-management/shared';
-import type { SitePerformance } from '@campsite-management/shared';
 import { queryKeys } from '@/config/query-keys';
 import {
   DashboardMetrics,

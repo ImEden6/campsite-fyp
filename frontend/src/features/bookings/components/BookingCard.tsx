@@ -28,36 +28,36 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+        return 'bg-green-200/80 dark:bg-green-900/50 text-green-900 dark:text-green-200';
       case 'PENDING':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+        return 'bg-yellow-200/80 dark:bg-yellow-900/50 text-yellow-900 dark:text-yellow-200';
       case 'CHECKED_IN':
-        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+        return 'bg-blue-200/80 dark:bg-blue-900/50 text-blue-900 dark:text-blue-200';
       case 'CHECKED_OUT':
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+        return 'bg-gray-200/80 dark:bg-gray-700/60 text-gray-900 dark:text-gray-200';
       case 'CANCELLED':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+        return 'bg-red-200/80 dark:bg-red-900/50 text-red-900 dark:text-red-200';
       case 'NO_SHOW':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+        return 'bg-red-200/80 dark:bg-red-900/50 text-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+        return 'bg-gray-200/80 dark:bg-gray-700/60 text-gray-900 dark:text-gray-200';
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case 'PAID':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+        return 'bg-green-200/80 dark:bg-green-900/50 text-green-900 dark:text-green-200';
       case 'PARTIAL':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+        return 'bg-yellow-200/80 dark:bg-yellow-900/50 text-yellow-900 dark:text-yellow-200';
       case 'PENDING':
-        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
+        return 'bg-orange-200/80 dark:bg-orange-900/50 text-orange-900 dark:text-orange-200';
       case 'REFUNDED':
-        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+        return 'bg-blue-200/80 dark:bg-blue-900/50 text-blue-900 dark:text-blue-200';
       case 'FAILED':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+        return 'bg-red-200/80 dark:bg-red-900/50 text-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+        return 'bg-gray-200/80 dark:bg-gray-700/60 text-gray-900 dark:text-gray-200';
     }
   };
 

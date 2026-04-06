@@ -24,8 +24,12 @@ export default [
       'postcss.config.js',
       'src/tests/**',
       'src/**/__tests__/**',
-      'preview-console.mjs'
-    ]
+      'preview-console.mjs',
+      'clean_fails.js',
+      'extract-failures.js',
+      'get_fails.js',
+      'parse_fails.js',
+    ],
   },
 
   // Base JavaScript and TypeScript recommended rules

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SiteForm } from '../SiteForm';
+import { SiteType, SiteStatus, MeasurementUnit } from '@/types';
 
 const defaultProps = {
   onSubmit: vi.fn(),
@@ -45,8 +46,8 @@ describe('SiteForm', () => {
     const existingSite = {
       id: 'site-1',
       name: 'Existing Site',
-      type: 'TENT' as const,
-      status: 'AVAILABLE' as const,
+      type: SiteType.TENT,
+      status: SiteStatus.AVAILABLE,
       capacity: 6,
       description: 'A nice site',
       basePrice: 50,
@@ -59,10 +60,10 @@ describe('SiteForm', () => {
       hasWifi: true,
       amenities: [],
       images: [],
-      size: { length: 30, width: 20, unit: 'feet' as const },
+      size: { length: 30, width: 20, unit: MeasurementUnit.FEET },
       location: { latitude: 0, longitude: 0, mapPosition: { x: 0, y: 0 } },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     render(<SiteForm {...defaultProps} site={existingSite} onSubmit={handleSubmit} />);
@@ -86,8 +87,8 @@ describe('SiteForm', () => {
     const existingSite = {
       id: 'site-1',
       name: 'Existing Site',
-      type: 'TENT' as const,
-      status: 'AVAILABLE' as const,
+      type: SiteType.TENT,
+      status: SiteStatus.AVAILABLE,
       capacity: 6,
       description: 'A nice site',
       basePrice: 50,
@@ -100,10 +101,10 @@ describe('SiteForm', () => {
       hasWifi: true,
       amenities: ['fire-pit'],
       images: ['/image1.jpg'],
-      size: { length: 30, width: 20, unit: 'feet' as const },
+      size: { length: 30, width: 20, unit: MeasurementUnit.FEET },
       location: { latitude: 51.5074, longitude: -0.1278, mapPosition: { x: 100, y: 200 } },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     render(<SiteForm {...defaultProps} site={existingSite} />);

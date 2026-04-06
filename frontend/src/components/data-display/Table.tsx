@@ -3,8 +3,6 @@ import { cn } from '@/utils/cn';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { LoadingState } from './LoadingState';
 import { EmptyState } from './EmptyState';
-import { LoadingState } from './LoadingState';
-import { EmptyState } from './EmptyState';
 
 export type SortDirection = 'asc' | 'desc' | null;
 

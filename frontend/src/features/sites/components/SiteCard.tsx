@@ -181,39 +181,47 @@ export const SiteCard: React.FC<SiteCardProps> = ({
         {/* Amenities Preview */}
         <div className="flex items-center gap-3 mb-5 py-3 border-t border-b border-secondary-100 dark:border-secondary-800">
           <div className="flex -space-x-2 overflow-hidden">
-            {/* Amenity Icons */}
+            {/* Amenity Icons — unified neutral palette */}
             {site.hasElectricity && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 border-2 border-white dark:border-gray-800" title="Electricity">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Electricity">
                 <Zap className="w-4 h-4" />
               </div>
             )}
             {site.hasWater && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 border-2 border-white dark:border-gray-800" title="Water">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Water">
                 <Droplet className="w-4 h-4" />
               </div>
             )}
             {site.hasWifi && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 border-2 border-white dark:border-gray-800" title="WiFi">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="WiFi">
                 <Wifi className="w-4 h-4" />
               </div>
             )}
             {site.isPetFriendly && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-50 text-rose-600 border-2 border-white dark:border-gray-800" title="Pets Allowed">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Pets Allowed">
                 <Heart className="w-4 h-4" />
               </div>
             )}
 
             {/* Capacity Badge in the stack */}
-            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 border-2 border-white dark:border-gray-800" title={`Capacity: ${site.capacity}`}>
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title={`Capacity: ${site.capacity}`}>
               <span className="text-xs font-bold">{site.capacity}</span>
             </div>
           </div>
 
           <span className="text-xs text-secondary-500 ml-auto">
-            {site.amenities.filter(a => !['electricity', 'water', 'wifi', 'pets'].includes(a.toLowerCase())).length > 0
-              ? `+${site.amenities.length} amenities`
-              : 'All essentials included'
-            }
+            {(() => {
+              const trackedCount = [
+                site.hasElectricity,
+                site.hasWater,
+                site.hasWifi,
+                site.isPetFriendly,
+              ].filter(Boolean).length;
+              const extraCount = Math.max(0, site.amenities.length - trackedCount);
+              return extraCount > 0
+                ? `+${extraCount} more`
+                : 'All essentials included';
+            })()}
           </span>
         </div>
 

@@ -55,7 +55,7 @@ export const transformAxiosError = (error: AxiosError): ApiError => {
       messages.map(msg => ({ field, message: msg, code: 'VALIDATION_ERROR' }))
     );
   } else if (Array.isArray(errorData?.details)) {
-    details = (errorData?.details as any[]).map(d => ({
+    details = (errorData?.details as Array<{ field: string; message: string; code?: string }>).map(d => ({
       field: d.field,
       message: d.message,
       code: d.code || 'VALIDATION_ERROR'
@@ -105,7 +105,7 @@ export const isAuthError = (error: ApiError): boolean => {
  * Check if error is a validation error
  */
 export const isValidationError = (error: ApiError): boolean => {
-  return error.statusCode === 400 && (!!error.details || !!(error as any).errors);
+  return error.statusCode === 400 && (!!error.details || !!(error as unknown as Record<string, unknown>).errors);
 };
 
 /**
@@ -134,7 +134,8 @@ export const getUserFriendlyErrorMessage = (error: ApiError): string => {
     if (error.details) {
       return error.details.map(d => `${d.field}: ${d.message}`).join('\n');
     }
-    return (error as any).errors ? formatValidationErrors((error as any).errors) : error.message;
+    const err = error as unknown as Record<string, unknown>;
+    return err.errors ? formatValidationErrors(err.errors as Record<string, string[]>) : error.message;
   }
 
   return error.message;

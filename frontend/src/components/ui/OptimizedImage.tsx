@@ -133,7 +133,7 @@ export function OptimizedImage({
             animate={{ opacity: isLoaded ? 1 : 0 }}
             transition={{ duration: 0.3 }}
             className={`w-full h-full object-cover ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-            style={props.style as any}
+            style={props.style as unknown as Record<string, string | number>}
             title={props.title}
             id={props.id}
             draggable={props.draggable}
@@ -151,7 +151,7 @@ export function OptimizedImage({
             onLoad={handleLoad}
             onError={handleError}
             className={`w-full h-full object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-            style={props.style as any}
+            style={props.style as unknown as Record<string, string | number>}
             title={props.title}
             id={props.id}
             draggable={props.draggable}

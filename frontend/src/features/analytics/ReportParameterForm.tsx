@@ -71,7 +71,7 @@ export const ReportParameterForm: React.FC<ReportParameterFormProps> = ({
     }
   };
 
-  const FIELD_COMPONENTS: Record<ReportParameter['type'], React.FC<{ param: ReportParameter; value: unknown; error?: string; onChange: (name: string, value: unknown) => void }>> = {
+    const FIELD_COMPONENTS: Record<ReportParameter['type'], React.FC<{ param: ReportParameter; value: unknown; error?: string | undefined; onChange: (name: string, value: unknown) => void }>> = {
     date: DateField,
     dateRange: DateRangeField,
     select: SelectField,

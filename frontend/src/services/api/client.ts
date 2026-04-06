@@ -326,7 +326,7 @@ export const uploadFile = async <T = unknown>(
   file: File,
   fieldName: string = 'file',
   additionalData?: Record<string, unknown>,
-  onUploadProgress?: (progressEvent: any) => void
+  onUploadProgress?: (progressEvent: unknown) => void
 ): Promise<T> => {
   const formData = new FormData();
   formData.append(fieldName, file);
@@ -345,7 +345,7 @@ export const uploadFile = async <T = unknown>(
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data',
-    } as any,
+    } satisfies Record<string, string>,
     onUploadProgress,
   } as AxiosRequestConfig);
 };

@@ -1,12 +1,11 @@
 import { Calendar, ChevronDown } from 'lucide-react';
 import type { ReportParameter } from '@/services/api/analytics';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 
 interface ReportFieldProps {
   param: ReportParameter;
   value: unknown;
-  error?: string;
+  error?: string | undefined;
   onChange: (name: string, value: unknown) => void;
 }
 

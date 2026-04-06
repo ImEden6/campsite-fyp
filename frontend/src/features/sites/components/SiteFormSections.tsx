@@ -1,4 +1,5 @@
 import type { SiteType, SiteStatus, MeasurementUnit } from '@/types';
+import type { SiteFormData } from './SiteForm';
 import { Input } from '@/components/ui/Input';
 import { AmenitySelector } from './AmenitySelector';
 import { ImageUpload } from './ImageUpload';
@@ -20,7 +21,7 @@ interface BasicInfoData {
 
 interface BasicInfoSectionProps extends SiteSectionBase {
   data: BasicInfoData;
-  onChange: <K extends keyof BasicInfoData>(field: K, value: BasicInfoData[K]) => void;
+  onChange: <K extends keyof SiteFormData>(field: K, value: SiteFormData[K]) => void;
 }
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ data, onChange, errors }) => {
@@ -154,7 +155,7 @@ interface DimensionsSectionProps extends SiteSectionBase {
   onChange: <K extends keyof DimensionsData>(field: K, value: DimensionsData[K]) => void;
 }
 
-export const DimensionsSection: React.FC<DimensionsSectionProps> = ({ data, onChange, errors }) => {
+export const DimensionsSection: React.FC<DimensionsSectionProps> = ({ data, onChange, errors: _errors }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
@@ -209,7 +210,7 @@ interface AmenitiesData {
 
 interface AmenitiesSectionProps {
   data: AmenitiesData;
-  onChange: <K extends keyof AmenitiesData>(field: K, value: AmenitiesData[K]) => void;
+  onChange: <K extends keyof SiteFormData>(field: K, value: SiteFormData[K]) => void;
 }
 
 export const AmenitiesSection: React.FC<AmenitiesSectionProps> = ({ data, onChange }) => {
@@ -284,7 +285,7 @@ interface ImagesSectionProps {
 
 export const ImagesSection: React.FC<ImagesSectionProps> = ({
   images,
-  newImages,
+  newImages: _newImages,
   onImagesChange,
   onNewImagesChange,
 }) => {

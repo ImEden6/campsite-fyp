@@ -25,7 +25,7 @@ export const CATEGORY_LABELS: Record<EquipmentCategory, string> = {
   [EquipmentCategory.MAINTENANCE]: 'Maintenance',
 };
 
-export const STATUS_BADGE_COLORS: Record<EquipmentStatus, string> = {
+export const STATUS_BADGE_COLORS: Record<EquipmentStatus, 'success' | 'warning' | 'info' | 'error'> = {
   [EquipmentStatus.AVAILABLE]: 'success',
   [EquipmentStatus.RENTED]: 'warning',
   [EquipmentStatus.MAINTENANCE]: 'info',

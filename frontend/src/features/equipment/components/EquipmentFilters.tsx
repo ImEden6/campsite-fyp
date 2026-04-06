@@ -1,13 +1,13 @@
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import type { EquipmentFilters } from '@/types';
+import type { EquipmentFilters as EquipmentFilterState } from '@/types';
 import { CATEGORY_OPTIONS, STATUS_OPTIONS } from '../utils/equipmentConstants';
 
 interface EquipmentFiltersProps {
-  filters: EquipmentFilters;
+  filters: EquipmentFilterState;
   searchTerm: string;
-  onFilterChange: (key: keyof EquipmentFilters, value: string | number | boolean | string[]) => void;
+  onFilterChange: (key: keyof EquipmentFilterState, value: string | number | boolean | string[]) => void;
   onSearch: (value: string) => void;
   onClear: () => void;
 }
