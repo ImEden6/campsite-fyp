@@ -182,17 +182,6 @@ const GuestBookingDetailPage: React.FC = () => {
               </div>
             </BookingDetailsCard>
           </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-secondary-500">Total Amount</div>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </BookingDetailsCard>
-          </div>
 
           {/* Sidebar Area */}
           <div className="lg:col-span-1 space-y-6">
