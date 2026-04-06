@@ -28,7 +28,7 @@ services:
     environment:
       # Note: Re-using the same connection string logic. 
       # In real prod this would be strictly secret.
-      - DATABASE_URL=postgresql://campsite_user:campsite_password@postgres:5432/campsite_db
+      - DATABASE_URL=postgresql://campsite_user:${POSTGRES_PASSWORD}@postgres:5432/campsite_db
     networks:
       - campsite_network
     depends_on:

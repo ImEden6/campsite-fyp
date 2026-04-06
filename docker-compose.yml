@@ -52,7 +52,6 @@ services:
     container_name: campsite_backend
     restart: unless-stopped
     environment:
-      - DATABASE_URL=postgresql://campsite_user:campsite_password@postgres:5432/campsite_db
       - REDIS_URL=redis://redis:6379
       - PORT=5000
       - FRONTEND_URL=http://localhost:3000
