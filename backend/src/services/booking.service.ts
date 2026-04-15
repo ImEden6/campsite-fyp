@@ -143,7 +143,6 @@ export class BookingService {
 
           return {
             ...equipmentData,
-            availableQuantity,
             available: availableQuantity > 0,
             conflictingBookings: conflictingBookings.length > 0 ? conflictingBookings : undefined,
           };

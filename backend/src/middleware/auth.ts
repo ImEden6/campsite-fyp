@@ -7,6 +7,7 @@ import { config } from '@/config';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import { apiKeyService } from '@/services/api-key';
+import cacheService from '@/services/cache.service';
 
 type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
 
@@ -69,19 +70,30 @@ export const authenticate = async (
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
 
-    // Check if user exists and is active
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
+    // Check cache first for user profile
+    const cacheKey = `user:${decoded.userId}:profile`;
+    let user = await cacheService.get(cacheKey);
+
+    // Cache miss - query database
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          isActive: true,
+          isEmailVerified: true,
+        },
+      });
+
+      // Cache the user profile for future requests (1 hour TTL)
+      if (user) {
+        await cacheService.set(cacheKey, user, config.cache.userProfileTtl);
+      }
+    }
 
     if (!user) {
       logger.authFailure(decoded.email, 'User not found', req.get('User-Agent'), req.ip);
@@ -139,18 +151,30 @@ export const optionalAuthenticate = async (
 
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
+    // Check cache first for user profile
+    const cacheKey = `user:${decoded.userId}:profile`;
+    let user = await cacheService.get(cacheKey);
+
+    // Cache miss - query database
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          isActive: true,
+          isEmailVerified: true,
+        },
+      });
+
+      // Cache the user profile for future requests (1 hour TTL)
+      if (user) {
+        await cacheService.set(cacheKey, user, config.cache.userProfileTtl);
+      }
+    }
 
     if (user && user.isActive) {
       req.user = user;

@@ -13,7 +13,7 @@ import session from 'express-session';
 dotenv.config();
 
 // Import configuration and services
-import { config } from './config';
+import { config, validateConfig } from './config';
 import { logger } from './utils/logger';
 import { connectDatabase } from './database';
 import { errorHandler } from './utils/errors';
@@ -31,6 +31,7 @@ import apiKeyRoutes from './routes/api-key.routes';
 import equipmentRoutes from './routes/equipment.routes';
 import paymentRoutes from './routes/payment.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import publicRoutes from './routes/public.routes';
 
 // Initialize error tracking first
 const errorTracker = initializeErrorTracking();
@@ -92,6 +93,7 @@ app.use('/api/v1', uploadRoutes);
 app.use('/api/v1/admin/api-keys', apiKeyRoutes);
 app.use('/api/v1/equipment', equipmentRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/public', publicRoutes);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
@@ -126,6 +128,9 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
+    // Validate configuration
+    validateConfig();
+
     // Connect to database
     await connectDatabase();
 

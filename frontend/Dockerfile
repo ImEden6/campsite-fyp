@@ -24,7 +24,7 @@ COPY shared/ ./shared/
 COPY frontend/ ./frontend/
 
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--workspace=@campsite-management/frontend", "--", "--host", "0.0.0.0"]
+CMD ["npm", "run", "dev", "-w", "@campsite-management/frontend", "--", "--host", "0.0.0.0"]
 
 
 # =============================================================================

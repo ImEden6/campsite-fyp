@@ -17,7 +17,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   return (
     <div className="min-h-screen bg-nature-bg dark:bg-night-bg">
       {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-b border-secondary-200/50 dark:border-secondary-800/50 sticky top-0 z-50 backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
+      <nav className="bg-white dark:bg-night-surface border-b border-secondary-200/50 dark:border-secondary-800/50 sticky top-0 z-50 backdrop-blur-sm bg-white/95 dark:bg-night-surface/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -31,7 +31,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <div className="hidden md:flex items-center space-x-6">
               <Link
                 to="/sites"
-                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                className="text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 Browse Sites
               </Link>
@@ -41,21 +41,21 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   {user?.role === 'CUSTOMER' ? (
                     <Link
                       to="/customer/dashboard"
-                      className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      className="text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     >
                       Dashboard
                     </Link>
                   ) : (
                     <Link
                       to="/dashboard"
-                      className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      className="text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     >
                       Dashboard
                     </Link>
                   )}
                   <button
                     onClick={handleLogout}
-                    className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     Logout
                   </button>
@@ -64,7 +64,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 <>
                   <Link
                     to="/customer/login"
-                    className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="flex items-center space-x-1 text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     <LogIn className="w-4 h-4" />
                     <span>Login</span>
@@ -91,9 +91,9 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  <X className="w-6 h-6 text-gray-600 dark:text-secondary-300" />
                 ) : (
-                  <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  <Menu className="w-6 h-6 text-gray-600 dark:text-secondary-300" />
                 )}
               </button>
             </div>
@@ -107,7 +107,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
               <Link
                 to="/sites"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                className="block text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 Browse Sites
               </Link>
@@ -118,7 +118,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     <Link
                       to="/customer/dashboard"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      className="block text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     >
                       Dashboard
                     </Link>
@@ -126,7 +126,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     <Link
                       to="/dashboard"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      className="block text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     >
                       Dashboard
                     </Link>
@@ -136,7 +136,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="block w-full text-left text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     Logout
                   </button>
@@ -146,7 +146,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                   <Link
                     to="/customer/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="flex items-center space-x-2 text-gray-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     <LogIn className="w-4 h-4" />
                     <span>Login</span>
@@ -171,7 +171,7 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t border-secondary-200/50 dark:border-secondary-800/50 mt-auto">
+      <footer className="bg-white dark:bg-night-surface border-t border-secondary-200/50 dark:border-secondary-800/50 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-secondary-600 dark:text-secondary-400">
             <p>&copy; {new Date().getFullYear()} Campsite Management. All rights reserved.</p>

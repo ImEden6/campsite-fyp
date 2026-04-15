@@ -203,7 +203,7 @@ export const config = {
   // Caching configuration
   cache: {
     defaultTtl: parseInt(process.env.CACHE_DEFAULT_TTL || '3600', 10), // 1 hour
-    userProfileTtl: parseInt(process.env.CACHE_USER_PROFILE_TTL || '1800', 10), // 30 minutes
+    userProfileTtl: parseInt(process.env.CACHE_USER_PROFILE_TTL || '3600', 10), // 1 hour
     siteAvailabilityTtl: parseInt(process.env.CACHE_SITE_AVAILABILITY_TTL || '300', 10), // 5 minutes
     analyticsDataTtl: parseInt(process.env.CACHE_ANALYTICS_DATA_TTL || '900', 10), // 15 minutes
   },
@@ -308,8 +308,5 @@ export const validateConfig = (): void => {
     throw new Error(`Configuration validation failed: ${errors.join(', ')}`);
   }
 };
-
-// Validate configuration on module load
-validateConfig();
 
 export default config;

@@ -92,7 +92,7 @@ const Select: React.FC<SelectProps> = ({
   return (
     <div className={cn('relative w-full', className)} ref={containerRef}>
       {label && (
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="mb-1.5 block text-sm font-medium text-secondary-700 dark:text-secondary-300">
           {label}
         </label>
       )}
@@ -102,20 +102,20 @@ const Select: React.FC<SelectProps> = ({
         onKeyDown={handleKeyDown}
         disabled={disabled}
         className={cn(
-          'flex w-full items-center justify-between rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-left text-sm text-gray-900 dark:text-gray-100',
-          'focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400',
-          'disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600',
-          error && 'border-red-500 dark:border-red-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-red-500 dark:focus:ring-red-400'
+          'flex w-full items-center justify-between rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-night-surface px-3 py-2.5 text-left text-sm text-secondary-900 dark:text-primary-100',
+          'focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20',
+          'disabled:cursor-not-allowed disabled:bg-secondary-100 dark:disabled:bg-night-bg disabled:text-secondary-500 dark:disabled:text-secondary-400',
+          error && 'border-error-500 dark:border-error-400 focus:border-error-500 dark:focus:border-error-400 focus:ring-error-500/20 dark:focus:ring-error-400/20'
         )}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={label || placeholder}
       >
-        <span className={cn(!selectedOption && 'text-gray-400 dark:text-gray-500')}>
+        <span className={cn(!selectedOption && 'text-secondary-500 dark:text-secondary-400')}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg
-          className={cn('h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform', isOpen && 'rotate-180')}
+          className={cn('h-5 w-5 text-secondary-500 dark:text-secondary-400 transition-transform', isOpen && 'rotate-180')}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
@@ -129,9 +129,9 @@ const Select: React.FC<SelectProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+        <div className="absolute z-50 mt-1 w-full rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-night-surface shadow-lg">
           {searchable && (
-            <div className="border-b border-gray-200 dark:border-gray-700 p-2">
+            <div className="border-b border-secondary-200 dark:border-secondary-700 p-2">
               <input
                 ref={searchInputRef}
                 type="text"
@@ -139,7 +139,7 @@ const Select: React.FC<SelectProps> = ({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search..."
-                className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-2 py-1 text-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
+                className="w-full rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-night-surface text-secondary-900 dark:text-primary-100 placeholder-secondary-500 dark:placeholder-secondary-400 px-3 py-2 text-sm focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20"
               />
             </div>
           )}
@@ -149,7 +149,7 @@ const Select: React.FC<SelectProps> = ({
             tabIndex={-1}
           >
             {filteredOptions.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No options found</li>
+              <li className="px-3 py-2 text-sm text-secondary-500 dark:text-secondary-400">No options found</li>
             ) : (
               filteredOptions.map((option) => (
                 <li
@@ -161,10 +161,10 @@ const Select: React.FC<SelectProps> = ({
                   onKeyDown={(e) => handleOptionKeyDown(e, option.value, option.disabled)}
                   tabIndex={option.disabled ? -1 : 0}
                   className={cn(
-                    'cursor-pointer px-3 py-2 text-sm text-gray-900 dark:text-gray-100',
-                    option.value === value && 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300',
-                    !option.disabled && 'hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none',
-                    option.disabled && 'cursor-not-allowed text-gray-400 dark:text-gray-600'
+                    'cursor-pointer px-3 py-2 text-sm text-secondary-900 dark:text-primary-100',
+                    option.value === value && 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300',
+                    !option.disabled && 'hover:bg-secondary-100 dark:hover:bg-night-surface-alt focus:bg-secondary-100 dark:focus:bg-night-surface-alt focus:outline-none',
+                    option.disabled && 'cursor-not-allowed text-secondary-400 dark:text-secondary-500'
                   )}
                 >
                   {option.label}

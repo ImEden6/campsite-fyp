@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { Calendar, AlertCircle } from 'lucide-react';
+import DatePicker from '@/components/forms/DatePicker';
 import Input from '@/components/ui/Input';
 import type { Site } from '@/types';
 import type { BookingFormData, BookingFormErrors } from '../../types';
@@ -36,8 +37,8 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
 
     return (
         <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <Calendar size={20} className="text-blue-600 dark:text-blue-400" />
+            <h2 className="text-xl font-bold text-secondary-900 dark:text-primary-100 flex items-center gap-2">
+                <Calendar size={20} className="text-primary-600 dark:text-primary-400" />
                 Select Dates & Guests
             </h2>
 
@@ -46,52 +47,32 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
                 <div>
                     <label
                         htmlFor="checkInDate"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
                     >
                         Check-in Date *
                     </label>
-                    <Input
-                        id="checkInDate"
-                        type="date"
-                        value={formData.checkInDate}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            onUpdate('checkInDate', e.target.value)
-                        }
-                        min={today}
-                        className={errors.checkInDate ? 'border-red-500 dark:border-red-500' : ''}
+                    <DatePicker
+                        value={formData.checkInDate ? new Date(formData.checkInDate) : null}
+                        onChange={(date) => onUpdate('checkInDate', (date ? date.toISOString().split('T')[0] : '') as BookingFormData['checkInDate'])}
+                        minDate={new Date(today)}
+                        error={errors.checkInDate}
                     />
-                    {errors.checkInDate && (
-                        <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-                            <AlertCircle size={14} />
-                            {errors.checkInDate}
-                        </p>
-                    )}
                 </div>
 
                 {/* Check-out Date */}
                 <div>
                     <label
                         htmlFor="checkOutDate"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
                     >
                         Check-out Date *
                     </label>
-                    <Input
-                        id="checkOutDate"
-                        type="date"
-                        value={formData.checkOutDate}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            onUpdate('checkOutDate', e.target.value)
-                        }
-                        min={formData.checkInDate || today}
-                        className={errors.checkOutDate ? 'border-red-500 dark:border-red-500' : ''}
+                    <DatePicker
+                        value={formData.checkOutDate ? new Date(formData.checkOutDate) : null}
+                        onChange={(date) => onUpdate('checkOutDate', (date ? date.toISOString().split('T')[0] : '') as BookingFormData['checkOutDate'])}
+                        minDate={formData.checkInDate ? new Date(formData.checkInDate) : new Date(today)}
+                        error={errors.checkOutDate}
                     />
-                    {errors.checkOutDate && (
-                        <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-                            <AlertCircle size={14} />
-                            {errors.checkOutDate}
-                        </p>
-                    )}
                 </div>
             </div>
 
@@ -100,7 +81,7 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
                 <div>
                     <label
                         htmlFor="adults"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
                     >
                         Adults (18+) *
                     </label>
@@ -113,7 +94,7 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
                         }
                         min="1"
                         max={site.capacity}
-                        className={errors.adults ? 'border-red-500 dark:border-red-500' : ''}
+                        className={errors.adults ? 'border-error-500 dark:border-error-400' : ''}
                     />
                     {errors.adults && (
                         <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
@@ -127,7 +108,7 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
                 <div>
                     <label
                         htmlFor="children"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
                     >
                         Children (0-17)
                     </label>
@@ -147,7 +128,7 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
                 <div>
                     <label
                         htmlFor="pets"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5"
                     >
                         Pets
                     </label>
@@ -163,15 +144,15 @@ export const DateGuestsStep: React.FC<DateGuestsStepProps> = ({
                         disabled={!site.isPetFriendly}
                     />
                     {!site.isPetFriendly && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-secondary-500 dark:text-secondary-400 mt-1">
                             Pets not allowed at this site
                         </p>
                     )}
                 </div>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 p-4 rounded-lg">
-                <p className="text-sm text-blue-900 dark:text-blue-200 font-medium">
+            <div className="bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 p-4 rounded-xl">
+                <p className="text-sm text-primary-900 dark:text-primary-200 font-medium">
                     <strong>Site Capacity:</strong> {site.capacity} guests |{' '}
                     <strong>Total Selected:</strong> {totalGuests} guest
                     {totalGuests !== 1 ? 's' : ''}

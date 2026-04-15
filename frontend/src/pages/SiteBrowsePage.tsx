@@ -158,9 +158,9 @@ const SiteBrowsePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-nature-bg dark:bg-night-bg">
       {/* Hero / Header Section */}
-      <div className="bg-nature-surface border-b border-secondary-200/60 dark:bg-gray-900 dark:border-secondary-800">
+      <div className="bg-nature-surface border-b border-secondary-200/60 dark:bg-night-bg dark:border-secondary-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4 tracking-tight">
+          <h1 className="font-heading text-4xl md:text-5xl font-bold text-gray-900 dark:text-primary-100 mb-4 tracking-tight">
             Find Your <span className="text-primary-600 dark:text-primary-400">Perfect Spot</span>
           </h1>
           <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl font-light">
@@ -181,7 +181,7 @@ const SiteBrowsePage: React.FC = () => {
                 placeholder="Search sites..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white dark:bg-gray-800 rounded-xl border-secondary-200"
+                className="pl-10 bg-white dark:bg-night-surface rounded-xl border-secondary-200"
               />
             </div>
             <Button
@@ -204,9 +204,9 @@ const SiteBrowsePage: React.FC = () => {
              lg:w-80 flex-shrink-0 lg:block
              ${showFilters ? 'block' : 'hidden'}
           `}>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-secondary-200/60 dark:border-secondary-700 shadow-sm sticky top-24">
+            <div className="bg-white dark:bg-night-surface p-6 rounded-2xl border border-secondary-200/60 dark:border-secondary-700 shadow-sm sticky top-24">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-primary-100 flex items-center gap-2">
                   <Filter className="w-5 h-5 text-primary-500" />
                   Filters
                 </h3>
@@ -332,10 +332,10 @@ const SiteBrowsePage: React.FC = () => {
             {/* Sort / View Toggle Header */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-secondary-600 dark:text-secondary-400">
-                Showing <span className="font-bold text-gray-900 dark:text-gray-100">{filteredSites.length}</span> results
+                Showing <span className="font-bold text-gray-900 dark:text-primary-100">{filteredSites.length}</span> results
               </p>
 
-              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-secondary-200 dark:border-secondary-700 rounded-lg p-1">
+              <div className="flex items-center gap-2 bg-white dark:bg-night-surface border border-secondary-200 dark:border-secondary-700 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid'
@@ -375,11 +375,11 @@ const SiteBrowsePage: React.FC = () => {
                 </p>
               </div>
             ) : filteredSites.length === 0 ? (
-              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl border border-secondary-200 border-dashed">
+              <div className="text-center py-20 bg-white dark:bg-night-surface rounded-3xl border border-secondary-200 border-dashed">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary-50 mb-4">
                   <Search className="w-8 h-8 text-secondary-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-primary-100 mb-2">
                   No campsites found
                 </h3>
                 <p className="text-secondary-500 max-w-md mx-auto mb-6">
@@ -405,7 +405,7 @@ const SiteBrowsePage: React.FC = () => {
                 {filteredSites.map((site) => (
                   <div
                     key={site.id}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-all border border-secondary-200/60 p-4 flex gap-6 cursor-pointer group"
+                    className="bg-white dark:bg-night-surface rounded-2xl shadow-sm hover:shadow-md transition-all border border-secondary-200/60 p-4 flex gap-6 cursor-pointer group"
                     onClick={() => handleSiteClick(site)}
                   >
                     {site.images && site.images.length > 0 && (
@@ -421,7 +421,7 @@ const SiteBrowsePage: React.FC = () => {
                       <div>
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{site.name}</h3>
+                            <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-primary-100 mb-1">{site.name}</h3>
                             <p className="text-sm text-secondary-500 flex items-center gap-1">
                               <span className="capitalize">{site.type.toLowerCase()}</span> • {site.size.length}x{site.size.width} {site.size.unit}
                             </p>

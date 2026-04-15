@@ -88,7 +88,7 @@ const GuestBookingPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center p-4">
         <GlassCard className="max-w-md w-full p-8 text-center">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+          <p className="text-lg font-medium text-secondary-900 dark:text-primary-100 mb-4">
             Site not found
           </p>
           <Button onClick={() => navigate('/sites')}>Back to Sites</Button>
@@ -126,7 +126,7 @@ const GuestBookingPage: React.FC = () => {
             {step === 'guest-info' && (
               <GlassCard className="p-6 md:p-8">
                 <div className="mb-6">
-                  <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  <h1 className="font-heading text-3xl font-bold text-secondary-900 dark:text-primary-100 mb-2">
                     Enter Guest Information
                   </h1>
                   <p className="text-secondary-600 dark:text-secondary-400">
@@ -137,7 +137,7 @@ const GuestBookingPage: React.FC = () => {
                 <form onSubmit={handleGuestInfoSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                      <label htmlFor="firstName" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
                         First Name *
                       </label>
                       <Input
@@ -147,11 +147,11 @@ const GuestBookingPage: React.FC = () => {
                         value={guestInfo.firstName}
                         onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
                         icon={<User className="text-secondary-400 w-5 h-5" />}
-                        className="bg-white/50 dark:bg-gray-800/50"
+                        className="bg-white/50 dark:bg-night-surface/50"
                       />
                     </div>
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                      <label htmlFor="lastName" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
                         Last Name *
                       </label>
                       <Input
@@ -161,12 +161,12 @@ const GuestBookingPage: React.FC = () => {
                         value={guestInfo.lastName}
                         onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
                         icon={<User className="text-secondary-400 w-5 h-5" />}
-                        className="bg-white/50 dark:bg-gray-800/50"
+                        className="bg-white/50 dark:bg-night-surface/50"
                       />
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label htmlFor="email" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
                       Email Address *
                     </label>
                     <Input
@@ -176,11 +176,11 @@ const GuestBookingPage: React.FC = () => {
                       value={guestInfo.email}
                       onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
                       icon={<Mail className="text-secondary-400 w-5 h-5" />}
-                      className="bg-white/50 dark:bg-gray-800/50"
+                      className="bg-white/50 dark:bg-night-surface/50"
                     />
                   </div>
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label htmlFor="phone" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
                       Phone Number *
                     </label>
                     <Input
@@ -190,7 +190,7 @@ const GuestBookingPage: React.FC = () => {
                       value={guestInfo.phone}
                       onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
                       icon={<Phone className="text-secondary-400 w-5 h-5" />}
-                      className="bg-white/50 dark:bg-gray-800/50"
+                      className="bg-white/50 dark:bg-night-surface/50"
                     />
                   </div>
 
@@ -203,7 +203,7 @@ const GuestBookingPage: React.FC = () => {
                       className="mt-1 h-4 w-4 rounded border-primary-300 text-primary-600 focus:ring-primary-500"
                     />
                     <label htmlFor="createAccount" className="text-sm">
-                      <span className="block font-medium text-gray-900 dark:text-gray-100">Create an account</span>
+                      <span className="block font-medium text-secondary-900 dark:text-primary-100">Create an account</span>
                       <span className="block text-secondary-500">Save your details for faster bookings next time</span>
                     </label>
                   </div>
@@ -275,7 +275,7 @@ const GuestBookingPage: React.FC = () => {
                       <CalendarIcon className="w-4 h-4 mr-2" />
                       <span className="text-sm">Dates</span>
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="text-sm font-semibold text-secondary-900 dark:text-primary-100">
                       {checkInDate && checkOutDate ? (
                         <div className="text-right">
                           <div>{checkInDate}</div>
@@ -289,7 +289,7 @@ const GuestBookingPage: React.FC = () => {
                       <User className="w-4 h-4 mr-2" />
                       <span className="text-sm">Guests</span>
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="text-sm font-semibold text-secondary-900 dark:text-primary-100">
                       {initialGuests} Guests
                     </div>
                   </div>

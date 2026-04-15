@@ -50,7 +50,7 @@ const GuestBookingDetailPage: React.FC = () => {
             <div className="mx-auto w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4">
               <Users className="w-6 h-6" />
             </div>
-            <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="font-heading text-2xl font-bold text-secondary-900 dark:text-primary-100 mb-2">
               Access Your Booking
             </h1>
             <p className="text-secondary-600 dark:text-secondary-400">
@@ -60,7 +60,7 @@ const GuestBookingDetailPage: React.FC = () => {
 
           <form onSubmit={handleEmailVerification} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
                 Email Address
               </label>
               <input
@@ -68,7 +68,7 @@ const GuestBookingDetailPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 border border-secondary-300 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-secondary-300 dark:border-secondary-600 rounded-xl bg-white/50 dark:bg-night-surface-alt text-secondary-900 dark:text-primary-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 placeholder="name@example.com"
               />
             </div>
@@ -93,7 +93,7 @@ const GuestBookingDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center p-4">
         <GlassCard className="max-w-md w-full p-8 text-center" intensity="light">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+          <p className="text-lg font-medium text-secondary-900 dark:text-primary-100 mb-4">
             Booking not found or access denied.
           </p>
           <div className="flex flex-col gap-3">
@@ -123,7 +123,7 @@ const GuestBookingDetailPage: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Home</span>
             </button>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <h1 className="font-heading text-3xl font-bold text-secondary-900 dark:text-primary-100 flex items-center gap-3">
               <span>Booking #{booking.bookingNumber}</span>
               <span className={`px-3 py-1 text-sm font-sans font-medium rounded-full ${booking.status === 'CONFIRMED'
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -143,7 +143,7 @@ const GuestBookingDetailPage: React.FC = () => {
               <UserPlus className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Create an account</p>
+              <p className="text-sm font-medium text-secondary-900 dark:text-primary-100">Create an account</p>
               <p className="text-xs text-secondary-500">Manage bookings easily</p>
             </div>
             <Button size="sm" onClick={() => navigate('/register')}>Sign Up</Button>
@@ -173,7 +173,7 @@ const GuestBookingDetailPage: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-semibold text-secondary-500">Total Amount</div>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <div className="text-2xl font-bold text-secondary-900 dark:text-primary-100">
                       {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
                     </div>
                   </div>

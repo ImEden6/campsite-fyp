@@ -61,7 +61,7 @@ const AppLayout: React.FC = () => {
   }, [showToast]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+    <div className="min-h-screen bg-secondary-50 dark:bg-night-surface dark:bg-night-bg flex">
       {/* Skip Navigation Links */}
       <SkipNavigation />
 
@@ -80,7 +80,7 @@ const AppLayout: React.FC = () => {
         {/* Page Content */}
         <main 
           id="main-content" 
-          className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900"
+          className="flex-1 overflow-auto bg-secondary-50 dark:bg-night-surface dark:bg-night-bg"
           role="main"
           aria-label="Main content"
         >

@@ -522,9 +522,9 @@ export class AuthService {
       }]);
     }
 
-    // Check if new password is different from current
-    const isSamePassword = await this.verifyPassword(newPassword, user.password);
-    if (isSamePassword) {
+    // Check if new password is same as current (don't reuse password)
+    const hashedNewPassword = await this.hashPassword(newPassword);
+    if (hashedNewPassword === user.password) {
       throw new ValidationError([{
         field: 'newPassword',
         message: 'New password must be different from current password',
@@ -668,9 +668,27 @@ export class AuthService {
   }
 
   // Sanitize user object (remove sensitive data)
-  private sanitizeUser(user: any): User {
-    const { password, ...sanitizedUser } = user;
-    return sanitizedUser;
+  private sanitizeUser(user: any) {
+    const sanitized = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+      isActive: user.isActive,
+      isEmailVerified: user.isEmailVerified,
+      isPhoneVerified: user.isPhoneVerified,
+      avatar: user.avatar,
+      avatarKey: user.avatarKey,
+      emailVerifiedAt: user.emailVerifiedAt,
+      phoneVerifiedAt: user.phoneVerifiedAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      lastLoginAt: user.lastLoginAt,
+      preferences: user.preferences,
+    };
+    return sanitized as unknown as User;
   }
 
   // Validate user session

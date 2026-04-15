@@ -138,7 +138,7 @@ const generateOccupancyTimeSeries = (startDate: string, endDate: string): Occupa
 
         const variation = (seededRandom(combinedSeed) - 0.5) * 15;
         const occupancyRate = Math.min(100, Math.max(15, seasonalBase + weekendBase + variation));
-        const totalSites = 45;
+        const totalSites = 8;
         const occupiedSites = Math.round((occupancyRate / 100) * totalSites);
 
         return {
@@ -303,9 +303,9 @@ class AnalyticsService {
         return {
             overall: Math.round(overall * 10) / 10,
             byType: [
-                { siteType: 'Cabins', occupancyRate: Math.round((75 + seededRandom(seed) * 20) * 10) / 10, totalSites: 12, occupiedSites: Math.round(12 * (0.7 + seededRandom(seed + 1) * 0.25)) },
-                { siteType: 'RV Sites', occupancyRate: Math.round((55 + seededRandom(seed + 2) * 25) * 10) / 10, totalSites: 20, occupiedSites: Math.round(20 * (0.5 + seededRandom(seed + 3) * 0.3)) },
-                { siteType: 'Tent Sites', occupancyRate: Math.round((40 + seededRandom(seed + 4) * 30) * 10) / 10, totalSites: 13, occupiedSites: Math.round(13 * (0.35 + seededRandom(seed + 5) * 0.35)) },
+                { siteType: 'Cabins', occupancyRate: Math.round((75 + seededRandom(seed) * 20) * 10) / 10, totalSites: 2, occupiedSites: Math.round(2 * (0.7 + seededRandom(seed + 1) * 0.25)) },
+                { siteType: 'RV Sites', occupancyRate: Math.round((55 + seededRandom(seed + 2) * 25) * 10) / 10, totalSites: 3, occupiedSites: Math.round(3 * (0.5 + seededRandom(seed + 3) * 0.3)) },
+                { siteType: 'Tent Sites', occupancyRate: Math.round((40 + seededRandom(seed + 4) * 30) * 10) / 10, totalSites: 3, occupiedSites: Math.round(3 * (0.35 + seededRandom(seed + 5) * 0.35)) },
             ],
             timeSeries,
             peakDays,

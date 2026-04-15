@@ -103,7 +103,7 @@ async function main() {
   // 4. SITES (Migrated from frontend/src/services/api/mock-sites.ts)
   console.log('Seeding Sites...');
   const sitesData = [
-    // Cabins
+    // Cabins (2)
     {
       name: 'Lakeside Cabin A',
       type: SiteType.CABIN,
@@ -142,45 +142,7 @@ async function main() {
       sizeLength: 40, sizeWidth: 30, sizeUnit: 'feet',
       latitude: 34.0612, longitude: -118.2537, mapPositionX: 300, mapPositionY: 150,
     },
-    {
-      name: 'Sunset Cabin',
-      type: SiteType.CABIN,
-      status: SiteStatus.AVAILABLE,
-      capacity: 4,
-      description: 'Cozy cabin perfect for couples or small families. West-facing windows offer spectacular sunset views. Features a queen bed loft and pull-out sofa.',
-      amenities: ['WiFi', 'Kitchenette', 'Fireplace', 'BBQ Grill', 'Patio', 'Heating'],
-      images: ['/images/sites/cabin-sunset-1.jpg'],
-      basePrice: 145.00,
-      maxVehicles: 1,
-      maxTents: 0,
-      isPetFriendly: false,
-      hasElectricity: true,
-      hasWater: true,
-      hasSewer: true,
-      hasWifi: true,
-      sizeLength: 24, sizeWidth: 20, sizeUnit: 'feet',
-      latitude: 34.0502, longitude: -118.2600, mapPositionX: 450, mapPositionY: 300,
-    },
-    {
-      name: 'Forest Retreat Cabin',
-      type: SiteType.CABIN,
-      status: SiteStatus.MAINTENANCE,
-      capacity: 6,
-      description: 'Secluded cabin nestled deep in the forest. Offers complete privacy and connection with nature. Recently renovated with modern fixtures while maintaining rustic charm.',
-      amenities: ['WiFi', 'Kitchen', 'Fireplace', 'Outdoor Shower', 'Hammocks', 'Heating'],
-      images: ['/images/sites/cabin-forest-1.jpg'],
-      basePrice: 175.00,
-      maxVehicles: 2,
-      maxTents: 0,
-      isPetFriendly: true,
-      hasElectricity: true,
-      hasWater: true,
-      hasSewer: true,
-      hasWifi: true,
-      sizeLength: 28, sizeWidth: 22, sizeUnit: 'feet',
-      latitude: 34.0650, longitude: -118.2400, mapPositionX: 550, mapPositionY: 400,
-    },
-    // RV Sites
+    // RV Sites (3)
     {
       name: 'Premium RV Spot 1',
       type: SiteType.RV,
@@ -238,26 +200,7 @@ async function main() {
       sizeLength: 75, sizeWidth: 30, sizeUnit: 'feet',
       latitude: 34.0580, longitude: -118.2620, mapPositionX: 480, mapPositionY: 250,
     },
-    {
-      name: 'Meadow RV Site',
-      type: SiteType.RV,
-      status: SiteStatus.AVAILABLE,
-      capacity: 4,
-      description: 'Open meadow RV site surrounded by wildflowers in season. Basic hookups with water and electric. Great for stargazing.',
-      amenities: ['Water Hookup', 'Electric Hookup', 'Picnic Table', 'Fire Ring', '30 Amp Service'],
-      images: ['/images/sites/rv-meadow-1.jpg'],
-      basePrice: 45.00,
-      maxVehicles: 1,
-      maxTents: 1,
-      isPetFriendly: true,
-      hasElectricity: true,
-      hasWater: true,
-      hasSewer: false,
-      hasWifi: false,
-      sizeLength: 55, sizeWidth: 25, sizeUnit: 'feet',
-      latitude: 34.0545, longitude: -118.2380, mapPositionX: 600, mapPositionY: 350,
-    },
-    // Tent Sites
+    // Tent Sites (3)
     {
       name: 'Forest Tent Site A',
       type: SiteType.TENT,
@@ -315,47 +258,11 @@ async function main() {
       sizeLength: 40, sizeWidth: 30, sizeUnit: 'feet',
       latitude: 34.0570, longitude: -118.2350, mapPositionX: 650, mapPositionY: 200,
     },
-    {
-      name: 'Wilderness Tent Site',
-      type: SiteType.TENT,
-      status: SiteStatus.AVAILABLE,
-      capacity: 4,
-      description: 'Remote back-country style tent site for adventurous campers. Minimal amenities for a truly unplugged experience. Short hike from parking area.',
-      amenities: ['Fire Ring', 'Bear Box'],
-      images: ['/images/sites/tent-wilderness-1.jpg'],
-      basePrice: 25.00,
-      maxVehicles: 1,
-      maxTents: 2,
-      isPetFriendly: false,
-      hasElectricity: false,
-      hasWater: false,
-      hasSewer: false,
-      hasWifi: false,
-      sizeLength: 25, sizeWidth: 20, sizeUnit: 'feet',
-      latitude: 34.0620, longitude: -118.2300, mapPositionX: 700, mapPositionY: 100,
-    },
-    {
-      name: 'Family Tent Site',
-      type: SiteType.TENT,
-      status: SiteStatus.AVAILABLE,
-      capacity: 8,
-      description: 'Extra-large tent site designed for family camping. Close to restrooms and playground. Multiple tent pads with shared fire pit area.',
-      amenities: ['Fire Ring', 'Picnic Table', 'Bear Box', 'Near Restrooms', 'Near Playground'],
-      images: ['/images/sites/tent-family-1.jpg'],
-      basePrice: 50.00,
-      maxVehicles: 2,
-      maxTents: 4,
-      isPetFriendly: true,
-      hasElectricity: false,
-      hasWater: true,
-      hasSewer: false,
-      hasWifi: false,
-      sizeLength: 50, sizeWidth: 40, sizeUnit: 'feet',
-      latitude: 34.0530, longitude: -118.2420, mapPositionX: 180, mapPositionY: 300,
-    },
   ];
 
   const siteMap = new Map();
+
+  console.log(`Creating ${sitesData.length} sites...`);
 
   for (const siteDef of sitesData) {
     const site = await prisma.site.create({
@@ -363,6 +270,8 @@ async function main() {
     });
     siteMap.set(site.name, site);
   }
+  
+  console.log(`Created ${siteMap.size} sites`);
 
   // 5. EQUIPMENT CATALOG & ITEMS (Migrated from frontend/src/services/api/mock-equipment.ts)
   console.log('Seeding Equipment & Assets...');

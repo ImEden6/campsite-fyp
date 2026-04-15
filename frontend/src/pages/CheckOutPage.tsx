@@ -105,7 +105,7 @@ const CheckOutPage: React.FC = () => {
     return (
       <div className="space-y-6">
         <GlassCard className="p-8" intensity="strong">
-          <h3 className="font-heading text-xl font-bold mb-6 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-4">Booking Details</h3>
+          <h3 className="font-heading text-xl font-bold mb-6 text-secondary-900 dark:text-primary-100 border-b border-gray-200 dark:border-gray-700 pb-4">Booking Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -148,10 +148,10 @@ const CheckOutPage: React.FC = () => {
 
           {selectedBooking.equipmentReservations && selectedBooking.equipmentReservations.length > 0 && (
             <div className="mb-6">
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Equipment Rentals</div>
+              <div className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-3">Equipment Rentals</div>
               <div className="space-y-2">
                 {selectedBooking.equipmentReservations.map((rental, index) => (
-                  <div key={index} className="text-sm bg-gray-50/50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700 flex justify-between">
+                  <div key={index} className="text-sm bg-gray-50/50 dark:bg-night-surface/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700 flex justify-between">
                     <span>
                       {rental.equipment?.name} x{rental.quantity}
                     </span>
@@ -166,12 +166,12 @@ const CheckOutPage: React.FC = () => {
         <GlassCard className="p-8" intensity="medium">
           <div className="flex items-center gap-2 mb-6">
             <Calculator className="w-5 h-5 text-primary-500" />
-            <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100">Additional Charges</h3>
+            <h3 className="font-heading text-xl font-bold text-secondary-900 dark:text-primary-100">Additional Charges</h3>
           </div>
 
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Charge Amount</label>
+              <label className="block text-sm font-medium mb-2 text-secondary-700 dark:text-gray-300">Charge Amount</label>
               <div className="relative group">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
                 <Input
@@ -187,12 +187,12 @@ const CheckOutPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Description</label>
+              <label className="block text-sm font-medium mb-2 text-secondary-700 dark:text-gray-300">Description</label>
               <textarea
                 value={chargeDescription}
                 onChange={(e) => setChargeDescription(e.target.value)}
                 placeholder="Reason for additional charges (e.g., damages, late checkout, extra services)"
-                className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-secondary-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-gray-900 dark:text-gray-100"
+                className="w-full px-4 py-3 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border border-secondary-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-secondary-900 dark:text-primary-100"
                 rows={3}
               />
             </div>
@@ -200,7 +200,7 @@ const CheckOutPage: React.FC = () => {
         </GlassCard>
 
         <GlassCard className="p-8" intensity="strong">
-          <h3 className="font-heading text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">Final Charges</h3>
+          <h3 className="font-heading text-xl font-bold mb-6 text-secondary-900 dark:text-primary-100">Final Charges</h3>
 
           <div className="space-y-3 mb-6">
             <div className="flex justify-between text-base">
@@ -266,15 +266,15 @@ const CheckOutPage: React.FC = () => {
         <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
         </div>
-        <h3 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Check-out Successful!</h3>
+        <h3 className="font-heading text-2xl font-bold text-secondary-900 dark:text-primary-100 mb-2">Check-out Successful!</h3>
         <p className="text-green-700 dark:text-green-300 mb-8 max-w-lg mx-auto">
           <span className="font-semibold">{selectedBooking.user?.firstName} {selectedBooking.user?.lastName}</span> has been successfully checked out from <span className="font-semibold">{selectedBooking.site?.name}</span>.
         </p>
 
         {charges.finalTotal > 0 && (
-          <div className="mb-8 p-6 bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 inline-block min-w-[280px]">
+          <div className="mb-8 p-6 bg-white dark:bg-night-surface/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 inline-block min-w-[280px]">
             <div className="text-xs uppercase tracking-wider text-secondary-500 mb-2">Final Charges Collected</div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(charges.finalTotal)}</div>
+            <div className="text-3xl font-bold text-secondary-900 dark:text-primary-100">{formatCurrency(charges.finalTotal)}</div>
             <div className="text-sm text-secondary-500 mt-2">
               {additionalCharges > 0 && `Includes ${formatCurrency(additionalCharges)} in additional charges`}
             </div>
@@ -293,7 +293,7 @@ const CheckOutPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Guest Check-Out</h1>
+            <h1 className="font-heading text-3xl font-bold mb-2 text-secondary-900 dark:text-primary-100">Guest Check-Out</h1>
             <p className="text-secondary-600 dark:text-secondary-400">Search for and check out guests with final charges</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate('/staff/dashboard')}>

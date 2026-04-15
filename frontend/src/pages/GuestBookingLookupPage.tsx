@@ -51,7 +51,7 @@ const GuestBookingLookupPage: React.FC = () => {
             <div className="w-14 h-14 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="w-7 h-7 text-primary-600 dark:text-primary-400" />
             </div>
-            <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="font-heading text-2xl font-bold text-secondary-900 dark:text-primary-100 mb-2">
               Find Your Booking
             </h1>
             <p className="text-secondary-600 dark:text-secondary-400">
@@ -61,7 +61,7 @@ const GuestBookingLookupPage: React.FC = () => {
 
           <form onSubmit={handleLookup} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-2">
                 Booking Reference Number
               </label>
               <div className="relative group">
@@ -72,12 +72,12 @@ const GuestBookingLookupPage: React.FC = () => {
                   value={bookingNumber}
                   onChange={(e) => setBookingNumber(e.target.value.toUpperCase())}
                   placeholder="e.g. BK-001"
-                  className="pl-11 py-2.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-secondary-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500/50"
+                  className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500/50"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-2">
                 Email Address
               </label>
               <div className="relative group">
@@ -88,7 +88,7 @@ const GuestBookingLookupPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="pl-11 py-2.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-secondary-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500/50"
+                  className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500/50"
                 />
               </div>
             </div>

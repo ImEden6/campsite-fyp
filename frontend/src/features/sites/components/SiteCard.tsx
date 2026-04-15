@@ -62,7 +62,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
   return (
     <div
       className={cn(
-        "group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden transition-all duration-300",
+        "group relative bg-white dark:bg-night-surface rounded-2xl overflow-hidden transition-all duration-300",
         "border border-secondary-200/60 dark:border-secondary-700",
         "hover:shadow-lg hover:-translate-y-1 hover:border-primary-300 dark:hover:border-primary-700",
         className
@@ -71,7 +71,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Gallery */}
-      <div className="relative h-56 bg-secondary-100 dark:bg-gray-700 overflow-hidden">
+      <div className="relative h-56 bg-secondary-100 dark:bg-night-surface-alt overflow-hidden">
         {site.images && site.images.length > 0 ? (
           <>
             <div
@@ -155,7 +155,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
       <div className="p-5">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+            <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-primary-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
               {site.name}
             </h3>
             <div className="flex items-center gap-1 text-sm text-secondary-500 dark:text-secondary-400 mt-1">
@@ -174,7 +174,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
         </div>
 
         {/* Description */}
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-gray-600 dark:text-secondary-300 mb-4 line-clamp-2 leading-relaxed">
           {site.description || "Experience the outdoors at this beautiful campsite location."}
         </p>
 

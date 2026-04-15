@@ -10,7 +10,6 @@ import {
   Heart,
   ArrowLeft,
   CheckCircle,
-  Calendar,
   Share2,
   ChevronLeft,
   ChevronRight
@@ -22,8 +21,8 @@ import { SiteType } from '@/types';
 import Button from '@/components/ui/Button';
 
 import { Badge } from '@/components/ui/Badge';
+import DatePicker from '@/components/forms/DatePicker';
 import { useAuthStore } from '@/stores/authStore';
-import { format } from 'date-fns';
 import { cn } from '@/utils/cn';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
 
@@ -38,6 +37,19 @@ const SiteDetailPage: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'unavailable' | null>(null);
+
+  const handleCheckInChange = (date: Date | null) => {
+    const newValue = date ? date.toISOString().split('T')[0] : '';
+    setCheckInDate(newValue || '');
+    if (checkOutDate && newValue && newValue > checkOutDate) {
+      setCheckOutDate('');
+    }
+  };
+
+  const handleCheckOutChange = (date: Date | null) => {
+    const newValue = date ? date.toISOString().split('T')[0] : '';
+    setCheckOutDate(newValue || '');
+  };
 
   // Fetch site details
   const { data: site, isLoading } = useQuery({
@@ -107,8 +119,8 @@ const SiteDetailPage: React.FC = () => {
   if (!site) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-nature-bg dark:bg-night-bg p-4">
-        <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-secondary-200 text-center max-w-md w-full">
-          <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-gray-100 mb-2">Site Not Found</h2>
+        <div className="text-center bg-white dark:bg-night-surface p-8 rounded-2xl shadow-lg border border-secondary-200 text-center max-w-md w-full">
+          <h2 className="text-2xl font-heading font-bold text-secondary-900 dark:text-primary-100 mb-2">Site Not Found</h2>
           <p className="text-secondary-600 mb-6">We couldn't find the campsite you're looking for.</p>
           <Button onClick={() => navigate('/sites')} className="w-full">Back to Sites</Button>
         </div>
@@ -119,7 +131,7 @@ const SiteDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-nature-bg dark:bg-night-bg pb-12">
       {/* Navigation Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-secondary-200/60 dark:border-secondary-800 sticky top-0 z-10">
+      <div className="bg-white dark:bg-night-surface border-b border-secondary-200/60 dark:border-secondary-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <button
             onClick={() => navigate('/sites')}
@@ -146,7 +158,7 @@ const SiteDetailPage: React.FC = () => {
           <div className="lg:col-span-2 space-y-8">
 
             {/* Image Gallery */}
-            <div className="relative aspect-video bg-secondary-100 dark:bg-gray-800 rounded-3xl overflow-hidden shadow-md group">
+            <div className="relative aspect-video bg-secondary-100 dark:bg-night-surface rounded-3xl overflow-hidden shadow-md group">
               {site.images && site.images.length > 0 ? (
                 <>
                   <img
@@ -159,13 +171,13 @@ const SiteDetailPage: React.FC = () => {
                     <>
                       <button
                         onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 backdrop-blur text-gray-800 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 backdrop-blur text-night-surface hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 backdrop-blur text-gray-800 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 backdrop-blur text-night-surface hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
@@ -198,7 +210,7 @@ const SiteDetailPage: React.FC = () => {
             <div>
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                 <div>
-                  <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  <h1 className="font-heading text-3xl md:text-4xl font-bold text-secondary-900 dark:text-primary-100 mb-2">
                     {site.name}
                   </h1>
                   <div className="flex items-center gap-3 text-secondary-600 dark:text-secondary-400">
@@ -219,25 +231,25 @@ const SiteDetailPage: React.FC = () => {
 
               {/* Quick Specs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-secondary-100 dark:border-secondary-800">
-                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                <div className="p-3 rounded-2xl bg-white dark:bg-night-surface border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
                   <Users className="w-5 h-5 text-primary-500 mb-2" />
                   <span className="text-xs text-secondary-500 uppercase tracking-wide">Capacity</span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.capacity} Guests</span>
+                  <span className="font-semibold text-secondary-900 dark:text-primary-100">{site.capacity} Guests</span>
                 </div>
-                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                <div className="p-3 rounded-2xl bg-white dark:bg-night-surface border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
                   <MapPin className="w-5 h-5 text-primary-500 mb-2" />
                   <span className="text-xs text-secondary-500 uppercase tracking-wide">Size</span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.size.length}' x {site.size.width}'</span>
+                  <span className="font-semibold text-secondary-900 dark:text-primary-100">{site.size.length}' x {site.size.width}'</span>
                 </div>
-                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                <div className="p-3 rounded-2xl bg-white dark:bg-night-surface border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
                   <Zap className="w-5 h-5 text-primary-500 mb-2" />
                   <span className="text-xs text-secondary-500 uppercase tracking-wide">Electric</span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.hasElectricity ? 'Yes' : 'No'}</span>
+                  <span className="font-semibold text-secondary-900 dark:text-primary-100">{site.hasElectricity ? 'Yes' : 'No'}</span>
                 </div>
-                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
+                <div className="p-3 rounded-2xl bg-white dark:bg-night-surface border border-secondary-100 dark:border-secondary-700 flex flex-col items-center text-center">
                   <Heart className="w-5 h-5 text-primary-500 mb-2" />
                   <span className="text-xs text-secondary-500 uppercase tracking-wide">Pets</span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{site.isPetFriendly ? 'Allowed' : 'No'}</span>
+                  <span className="font-semibold text-secondary-900 dark:text-primary-100">{site.isPetFriendly ? 'Allowed' : 'No'}</span>
                 </div>
               </div>
             </div>
@@ -264,7 +276,7 @@ const SiteDetailPage: React.FC = () => {
                 ].map((item, idx) => (
                   <div key={idx} className={cn(
                     "flex items-center gap-3 p-3 rounded-xl transition-colors",
-                    item.active ? "bg-primary-50/50 dark:bg-primary-900/10 text-gray-900 dark:text-gray-100" : "opacity-40 text-gray-400"
+                    item.active ? "bg-primary-50/50 dark:bg-primary-900/10 text-secondary-900 dark:text-primary-100" : "opacity-40 text-gray-400"
                   )}>
                     <item.icon className={cn("w-5 h-5", item.active ? "text-primary-600" : "text-gray-400")} />
                     <span className="font-medium">{item.label}</span>
@@ -277,13 +289,13 @@ const SiteDetailPage: React.FC = () => {
 
           {/* Sidebar Booking Widget */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-white dark:bg-gray-800 rounded-3xl shadow-xl shadow-primary-900/5 border border-secondary-200/60 dark:border-secondary-700 p-6 overflow-hidden">
+            <div className="sticky top-24 bg-white dark:bg-night-surface rounded-3xl shadow-xl shadow-primary-900/5 border border-secondary-200/60 dark:border-secondary-700 p-6 overflow-hidden">
 
               {/* Header Pattern */}
               <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary-400 to-primary-600" />
 
               <div className="mb-6">
-                <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Book your stay</h2>
+                <h2 className="font-heading text-xl font-bold text-secondary-900 dark:text-primary-100 mb-1">Book your stay</h2>
                 <p className="text-sm text-secondary-500">Select dates to check availability</p>
               </div>
 
@@ -292,29 +304,21 @@ const SiteDetailPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase text-secondary-500 tracking-wider">Check In</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
-                      <input
-                        type="date"
-                        value={checkInDate}
-                        onChange={(e) => setCheckInDate(e.target.value)}
-                        min={format(new Date(), 'yyyy-MM-dd')}
-                        className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/50 border border-secondary-200 dark:border-secondary-600 rounded-xl focus:ring-2 focus:ring-primary-500/20"
-                      />
-                    </div>
+                    <DatePicker
+                      value={checkInDate ? new Date(checkInDate) : null}
+                      onChange={handleCheckInChange}
+                      minDate={new Date()}
+                      placeholder="Select check-in"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase text-secondary-500 tracking-wider">Check Out</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
-                      <input
-                        type="date"
-                        value={checkOutDate}
-                        onChange={(e) => setCheckOutDate(e.target.value)}
-                        min={checkInDate || format(new Date(), 'yyyy-MM-dd')}
-                        className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-700/50 border border-secondary-200 dark:border-secondary-600 rounded-xl focus:ring-2 focus:ring-primary-500/20"
-                      />
-                    </div>
+                    <DatePicker
+                      value={checkOutDate ? new Date(checkOutDate) : null}
+                      onChange={handleCheckOutChange}
+                      minDate={checkInDate ? new Date(checkInDate) : new Date()}
+                      placeholder="Select check-out"
+                    />
                   </div>
                 </div>
 
@@ -370,7 +374,7 @@ const SiteDetailPage: React.FC = () => {
                       <span>Service fee</span>
                       <span>$15.00</span>
                     </div>
-                    <div className="border-t border-secondary-200 dark:border-secondary-700 pt-3 flex justify-between font-bold text-gray-900 dark:text-gray-100">
+                    <div className="border-t border-secondary-200 dark:border-secondary-700 pt-3 flex justify-between font-bold text-secondary-900 dark:text-primary-100">
                       <span>Total</span>
                       <span>${(site.basePrice * Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)) + 15).toFixed(2)}</span>
                     </div>

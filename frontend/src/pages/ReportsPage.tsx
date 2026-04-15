@@ -138,7 +138,7 @@ export const ReportsPage: React.FC = () => {
                 <FileText className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
-                <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100">Reports</h1>
+                <h1 className="font-heading text-2xl font-bold text-secondary-900 dark:text-primary-100">Reports</h1>
                 <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   {currentStep === 'select' && 'Select a report type to generate'}
                   {currentStep === 'configure' && 'Configure report parameters'}
@@ -167,7 +167,7 @@ export const ReportsPage: React.FC = () => {
               >
                 1
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Select Type</span>
+              <span className="ml-2 text-sm font-medium text-secondary-900 dark:text-primary-100">Select Type</span>
             </div>
             <div className="w-16 h-0.5 bg-secondary-300 dark:bg-gray-700"></div>
             <div className="flex items-center">
@@ -181,7 +181,7 @@ export const ReportsPage: React.FC = () => {
               >
                 2
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Configure</span>
+              <span className="ml-2 text-sm font-medium text-secondary-900 dark:text-primary-100">Configure</span>
             </div>
             <div className="w-16 h-0.5 bg-secondary-300 dark:bg-gray-700"></div>
             <div className="flex items-center">
@@ -193,7 +193,7 @@ export const ReportsPage: React.FC = () => {
               >
                 3
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Download</span>
+              <span className="ml-2 text-sm font-medium text-secondary-900 dark:text-primary-100">Download</span>
             </div>
           </div>
         </div>

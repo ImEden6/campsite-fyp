@@ -4,7 +4,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import authService from '@/services/auth.service';
 import { authenticate } from '@/middleware/auth';
 import { authRateLimit, registerRateLimit } from '@/middleware/security';
-import { validateBody, loginSchema, registerSchema, refreshTokenSchema, LoginInput, RegisterInput } from '@/middleware/validate';
+import { validateBody, loginSchema, registerSchema, refreshTokenSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, verifyEmailSchema, resendVerificationSchema, LoginInput, RegisterInput, ForgotPasswordInput, ResetPasswordInput, ChangePasswordInput, VerifyEmailInput, ResendVerificationInput } from '@/middleware/validate';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 
@@ -131,6 +131,102 @@ router.get('/me', authenticate, async (req: Request, res: Response, next: NextFu
     res.json({
       success: true,
       data: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /auth/forgot-password
+ * Request password reset email
+ */
+router.post('/forgot-password', authRateLimit, validateBody(forgotPasswordSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body as ForgotPasswordInput;
+
+    const result = await authService.requestPasswordReset(email);
+
+    res.json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /auth/reset-password
+ * Reset password with token
+ */
+router.post('/reset-password', authRateLimit, validateBody(resetPasswordSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, newPassword } = req.body as ResetPasswordInput;
+
+    const result = await authService.resetPassword({ token, newPassword });
+
+    res.json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /auth/change-password
+ * Change password (authenticated)
+ */
+router.post('/change-password', authenticate, validateBody(changePasswordSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { currentPassword, newPassword } = req.body as ChangePasswordInput;
+    const userId = req.user!.id;
+
+    const result = await authService.changePassword(userId, { currentPassword, newPassword });
+
+    res.json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /auth/verify-email
+ * Verify email with token
+ */
+router.post('/verify-email', validateBody(verifyEmailSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token } = req.body as VerifyEmailInput;
+
+    const result = await authService.verifyEmail(token);
+
+    res.json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /auth/resend-verification
+ * Resend verification email
+ */
+router.post('/resend-verification', registerRateLimit, validateBody(resendVerificationSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body as ResendVerificationInput;
+
+    const result = await authService.resendVerificationEmail(email);
+
+    res.json({
+      success: true,
+      message: result.message,
     });
   } catch (error) {
     next(error);

@@ -60,11 +60,11 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
     filters.isEmailVerified !== 'ALL';
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+    <div className="bg-white dark:bg-night-surface p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</h3>
+          <Filter className="h-5 w-5 text-secondary-500 dark:text-gray-400" />
+          <h3 className="text-sm font-medium text-secondary-700 dark:text-gray-300">Filters</h3>
         </div>
         {hasActiveFilters && (
           <button
@@ -78,12 +78,12 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-2">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="search" className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
             Search
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <Search className="h-5 w-5 text-gray-400 dark:text-secondary-500" />
             </div>
             <input
               type="text"
@@ -97,7 +97,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="role" className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
             Role
           </label>
           <select
@@ -114,7 +114,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
         </div>
 
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="status" className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
             Status
           </label>
           <select

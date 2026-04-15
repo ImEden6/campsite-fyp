@@ -16,21 +16,35 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getSites } from '@/services/api/sites';
+import { get } from '@/services/api/client';
 import { queryKeys } from '@/config/query-keys';
 
 import { useAuthStore } from '@/stores/authStore';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { format } from 'date-fns';
+import DatePicker from '@/components/forms/DatePicker';
 import { SiteCard } from '@/features/sites/components/SiteCard';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
+  const [checkInDate, setCheckInDate] = useState<string>('');
+  const [checkOutDate, setCheckOutDate] = useState<string>('');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  const handleCheckInChange = (date: Date | null) => {
+    const newValue = date ? date.toISOString().split('T')[0] : '';
+    setCheckInDate(newValue || '');
+    if (checkOutDate && newValue && newValue > checkOutDate) {
+      setCheckOutDate('');
+    }
+  };
+
+  const handleCheckOutChange = (date: Date | null) => {
+    const newValue = date ? date.toISOString().split('T')[0] : '';
+    setCheckOutDate(newValue || '');
+  };
 
   // Fetch featured sites
   const { data: sites = [], isLoading: isLoadingSites, error: sitesError } = useQuery({
@@ -42,6 +56,15 @@ const HomePage: React.FC = () => {
       } catch {
         return [];
       }
+    },
+  });
+
+  // Fetch public stats
+  const { data: publicStats } = useQuery({
+    queryKey: ['publicStats'],
+    queryFn: async () => {
+      const response = await get<{ data: { siteCount: number; activeBookings: number; totalCustomers: number } }>('/public/stats');
+      return response.data;
     },
   });
 
@@ -136,24 +159,24 @@ const HomePage: React.FC = () => {
   ];
 
   const stats = [
-    { label: 'Available Sites', value: sites.length > 0 ? sites.length.toString() : '50+', icon: MapPin },
-    { label: 'Happy Campers', value: '10,000+', icon: Users },
+    { label: 'Available Sites', value: publicStats?.siteCount?.toString() || '8', icon: MapPin },
+    { label: 'Happy Campers', value: '500+', icon: Users },
     { label: 'Average Rating', value: '4.8', icon: Star },
-    { label: 'Years Experience', value: '10+', icon: Award },
+    { label: 'Years Experience', value: '3+', icon: Award },
   ];
 
   const liveStats = [
     {
       icon: MapPin,
       label: 'Active campsites',
-      value: sites.length > 0 ? sites.length.toString() : '50+',
-      detail: 'Across multiple regions',
+      value: publicStats?.siteCount?.toString() || sites.length.toString(),
+      detail: 'At one location',
     },
     {
       icon: Calendar,
       label: 'Bookings this month',
-      value: '1,247',
-      detail: 'Up 12% from last month',
+      value: publicStats?.activeBookings?.toString() || '0',
+      detail: 'Booked this month',
     },
     {
       icon: Star,
@@ -206,38 +229,41 @@ const HomePage: React.FC = () => {
             src="/images/hero.png" 
             alt="Scenic campsite at sunrise" 
             className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
           />
-          {/* Overlay for better text readability */}
-          <div className="absolute inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-[1px]" />
-          {/* Gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-nature-surface-alt/10 dark:to-gray-900/20" />
+          {/* Warm sunset overlay - replaces cold gray */}
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary-950/50 via-gray-900/30 to-primary-950/40" />
+          {/* Atmospheric haze */}
+          <div className="absolute inset-0 bg-gradient-to-t from-secondary-900/20 via-transparent to-nature-bg/30" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
-              <span className="text-sm font-medium">50+ campsites · Book in 60 seconds</span>
+            {/* Warm amber badge - more inviting than neutral */}
+            <div className="inline-flex items-center gap-2 bg-secondary-500/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-secondary-400/30">
+              <span className="text-sm font-medium text-secondary-100">{publicStats?.siteCount || 8} sites · Book in 60 seconds</span>
             </div>
 
             <h1 className="font-heading text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight tracking-tight">
               Real sites. Real availability.
               <br />
-              <span className="text-primary-200">No surprises.</span>
+              <span className="text-accent-300">No surprises.</span>
             </h1>
 
-            <p className="text-xl md:text-2xl mb-12 text-primary-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl mb-12 text-secondary-100 max-w-3xl mx-auto">
               Search by location, pick your dates, and book — no account required.
             </p>
 
-            {/* Search Bar */}
-            <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 border border-transparent dark:border-gray-700">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search Bar - warmer surface tint */}
+            <div className="max-w-5xl mx-auto bg-nature-surface/95 dark:bg-night-surface/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 border border-secondary-200/30 dark:border-secondary-700/30">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Search Sites
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
+                    Search
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5 focus-within:text-primary-500" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-500 w-5 h-5" />
                     <Input
                       type="text"
                       placeholder="Search by name, location, or amenities..."
@@ -248,42 +274,32 @@ const HomePage: React.FC = () => {
                           handleSearch();
                         }
                       }}
-                      className="pl-10 text-gray-900 dark:text-gray-100"
+                      className="pl-10 text-primary-900 dark:text-primary-100 border-secondary-200 focus:border-secondary-400"
                       aria-label="Search sites"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <div>
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
                     Check In
                   </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5" />
-                    <Input
-                      type="date"
-                      value={checkInDate}
-                      onChange={(e) => setCheckInDate(e.target.value)}
-                      min={format(new Date(), 'yyyy-MM-dd')}
-                      className="pl-10 text-gray-900 dark:text-gray-100"
-                      aria-label="Check-in date"
-                    />
-                  </div>
+                  <DatePicker
+                    value={checkInDate ? new Date(checkInDate) : null}
+                    onChange={handleCheckInChange}
+                    minDate={new Date()}
+                    placeholder="Select check-in"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
                     Check Out
                   </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5" />
-                    <Input
-                      type="date"
-                      value={checkOutDate}
-                      onChange={(e) => setCheckOutDate(e.target.value)}
-                      min={checkInDate || format(new Date(), 'yyyy-MM-dd')}
-                      className="pl-10 text-gray-900 dark:text-gray-100"
-                      aria-label="Check-out date"
-                    />
-                  </div>
+                  <DatePicker
+                    value={checkOutDate ? new Date(checkOutDate) : null}
+                    onChange={handleCheckOutChange}
+                    minDate={checkInDate ? new Date(checkInDate) : new Date()}
+                    placeholder="Select check-out"
+                  />
                 </div>
               </div>
               <div className="mt-6 flex gap-3">
@@ -310,7 +326,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-nature-surface-alt dark:bg-night-surface-alt border-b border-secondary-200/50 dark:border-secondary-800/50">
+      <section className="py-12 bg-primary-50 dark:bg-night-surface-alt border-b border-primary-100/30 dark:border-secondary-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -318,7 +334,7 @@ const HomePage: React.FC = () => {
                 <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-3 ring-4 ring-primary-50 dark:ring-primary-950/50">
                   <stat.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                <div className="font-heading text-3xl font-bold text-primary-900 dark:text-primary-100 mb-1">
                   {stat.value}
                 </div>
                 <div className="text-sm text-secondary-600 dark:text-secondary-400">
@@ -331,11 +347,11 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-nature-surface-alt dark:bg-gray-900">
+      <section className="py-20 bg-nature-surface-alt dark:bg-night-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-3">Why Choose Us</span>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100 mb-4">
               Everything you need for a seamless booking
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
@@ -347,12 +363,12 @@ const HomePage: React.FC = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-campsite hover:shadow-organic transition-all duration-300 hover:-translate-y-1 border border-secondary-100/50 dark:border-secondary-800/50"
+                className="group bg-white dark:bg-night-surface rounded-2xl p-6 shadow-campsite hover:shadow-organic transition-all duration-300 hover:-translate-y-1 border border-secondary-100/50 dark:border-secondary-800/50"
               >
-                <div className={`inline-flex items-center justify-center w-14 h-14 ${feature.bgColor} rounded-2xl mb-4 ring-4 ring-white dark:ring-gray-700 transition-transform duration-300 group-hover:scale-110`}>
+                <div className={`inline-flex items-center justify-center w-14 h-14 ${feature.bgColor} rounded-2xl mb-4 ring-4 ring-white dark:ring-night-surface-alt transition-transform duration-300 group-hover:scale-110`}>
                   <feature.icon className={`w-7 h-7 ${feature.color}`} />
                 </div>
-                <h3 className="font-heading text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="font-heading text-xl font-semibold text-gray-900 dark:text-primary-100 mb-2">
                   {feature.title}
                 </h3>
                 <p className="text-secondary-600 dark:text-secondary-400">
@@ -365,11 +381,11 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
+      <section className="py-20 bg-white dark:bg-night-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-3">How It Works</span>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100 mb-4">
               Four steps to your campsite
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
@@ -390,7 +406,7 @@ const HomePage: React.FC = () => {
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-4">
                     <step.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <h3 className="font-heading text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  <h3 className="font-heading text-xl font-semibold text-gray-900 dark:text-primary-100 mb-2">
                     {step.title}
                   </h3>
                   <p className="text-secondary-600 dark:text-secondary-400">
@@ -404,11 +420,11 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Featured Sites Section */}
-      <section className="py-20 bg-nature-surface-alt dark:bg-gray-900">
+      <section className="py-20 bg-nature-surface-alt dark:bg-night-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              <h2 className="font-heading text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100 mb-4">
                 Popular Campsites
               </h2>
               <p className="text-lg text-secondary-600 dark:text-secondary-400">
@@ -427,12 +443,12 @@ const HomePage: React.FC = () => {
 
           {isLoadingSites ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-400">Loading sites...</p>
+              <p className="text-gray-600 dark:text-secondary-400">Loading sites...</p>
             </div>
           ) : sitesError ? (
             <div className="text-center py-12">
               <p className="text-red-600 dark:text-red-400 mb-2">Failed to load sites</p>
-              <p className="text-gray-600 dark:text-gray-400">Please try again later</p>
+              <p className="text-gray-600 dark:text-secondary-400">Please try again later</p>
             </div>
           ) : popularSites.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -448,7 +464,7 @@ const HomePage: React.FC = () => {
           ) : (
             <div className="text-center py-12">
               <MapPin className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">No sites available at the moment</p>
+              <p className="text-gray-600 dark:text-secondary-400">No sites available at the moment</p>
             </div>
           )}
 
@@ -465,10 +481,10 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Live Stats Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
+      <section className="py-20 bg-white dark:bg-night-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100 mb-4">
               Booking in Numbers
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400 max-w-2xl mx-auto">
@@ -480,15 +496,15 @@ const HomePage: React.FC = () => {
             {liveStats.map((stat, index) => (
               <div
                 key={index}
-                className="bg-nature-surface-alt dark:bg-gray-900 rounded-2xl p-6 shadow-campsite border border-secondary-100/50 dark:border-secondary-800/50"
+                className="bg-nature-surface-alt dark:bg-night-bg rounded-2xl p-6 shadow-campsite border border-secondary-100/50 dark:border-secondary-800/50"
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl mb-4">
                   <stat.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
-                <div className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                <div className="font-heading text-3xl font-bold text-primary-900 dark:text-primary-100 mb-1">
                   {stat.value}
                 </div>
-                <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <div className="font-medium text-gray-700 dark:text-secondary-300 mb-1">
                   {stat.label}
                 </div>
                 <div className="text-sm text-secondary-500 dark:text-secondary-400">
@@ -501,11 +517,11 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-nature-surface-alt dark:bg-gray-900" id="faq">
+      <section className="py-20 bg-nature-surface-alt dark:bg-night-bg" id="faq">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-3">FAQ</span>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-primary-900 dark:text-primary-100 mb-4">
               Common Questions
             </h2>
             <p className="text-xl text-secondary-600 dark:text-secondary-400">
@@ -517,7 +533,7 @@ const HomePage: React.FC = () => {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border transition-all duration-300 ${openFaqIndex === index
+                className={`bg-white dark:bg-night-surface rounded-2xl shadow-sm border transition-all duration-300 ${openFaqIndex === index
                     ? 'border-primary-500 shadow-md ring-1 ring-primary-500/20'
                     : 'border-secondary-100 dark:border-secondary-800 hover:border-primary-300 dark:hover:border-primary-700'
                   }`}
@@ -528,11 +544,11 @@ const HomePage: React.FC = () => {
                   aria-expanded={openFaqIndex === index}
                   aria-controls={`faq-answer-${index}`}
                 >
-                  <span className={`font-semibold text-lg transition-colors duration-200 ${openFaqIndex === index ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                  <span className={`font-semibold text-lg transition-colors duration-200 ${openFaqIndex === index ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-primary-100'
                     }`}>
                     {faq.question}
                   </span>
-                  <div className={`flex-shrink-0 ml-4 p-1 rounded-full transition-colors duration-200 ${openFaqIndex === index ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:text-primary-500'
+                  <div className={`flex-shrink-0 ml-4 p-1 rounded-full transition-colors duration-200 ${openFaqIndex === index ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600' : 'bg-primary-100 dark:bg-primary-900/30 text-secondary-500 group-hover:text-primary-500'
                     }`}>
                     {openFaqIndex === index ? (
                       <ChevronUp className="w-5 h-5" aria-hidden="true" />
@@ -559,7 +575,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-950 dark:via-gray-900 dark:to-gray-950 text-white">
+      <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-950 dark:via-night-bg dark:to-night-bg text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
             Ready to Start Your Adventure?

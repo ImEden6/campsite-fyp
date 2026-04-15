@@ -17,18 +17,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-secondary-700 dark:text-secondary-300">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-secondary-500 dark:text-secondary-400">
               {icon}
             </div>
           )}
           {prefix && (
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-500 dark:text-gray-400">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-secondary-500 dark:text-secondary-400">
               {prefix}
             </div>
           )}
@@ -37,9 +37,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={type}
             className={cn(
-              'block w-full rounded-xl border border-nature-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500',
+              'block w-full rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-night-surface px-4 py-2.5 text-sm text-secondary-900 dark:text-primary-100 placeholder:text-secondary-500 dark:placeholder:text-secondary-400',
               'focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20',
-              'disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-600',
+              'disabled:cursor-not-allowed disabled:bg-secondary-100 dark:disabled:bg-night-bg disabled:text-secondary-500 dark:disabled:text-secondary-400',
               'transition-all duration-200',
               error && 'border-error-500 dark:border-error-400 focus:border-error-500 dark:focus:border-error-400 focus:ring-error-500/20 dark:focus:ring-error-400/20',
               icon && 'pl-10',
@@ -52,7 +52,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {suffix && (
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-gray-500 dark:text-gray-400">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-secondary-500 dark:text-secondary-400">
               {suffix}
             </div>
           )}
@@ -63,7 +63,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-secondary-500 dark:text-secondary-400">
             {helperText}
           </p>
         )}

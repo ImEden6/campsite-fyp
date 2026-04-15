@@ -254,14 +254,14 @@ const MapEditorRefactored: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="flex flex-col h-screen bg-secondary-100 dark:bg-night-surface-alt dark:bg-night-bg">
             {/* Toolbar */}
-            <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-night-surface border-b border-gray-200 dark:border-secondary-700">
                 {/* Left: Back + Title */}
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-secondary-100 dark:bg-night-surface-alt dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
@@ -272,7 +272,7 @@ const MapEditorRefactored: React.FC = () => {
                 </div>
 
                 {/* Center: Tools */}
-                <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700 rounded-lg p-1">
+                <div className="flex items-center gap-1 bg-secondary-50 dark:bg-night-surface-alt dark:bg-gray-700 rounded-lg p-1">
                     {/* Undo/Redo */}
                     <Tooltip content="Undo (Ctrl+Z)" placement="bottom">
                         <button
@@ -529,7 +529,7 @@ const MapEditorRefactored: React.FC = () => {
             />
 
             {/* Status Bar */}
-            <div className="flex items-center justify-between px-4 py-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-between px-4 py-1 bg-white dark:bg-night-surface border-t border-gray-200 dark:border-secondary-700 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-4">
                     <span>Modules: {currentMap?.modules.length ?? 0}</span>
                     <span>Selected: {selectedCount}</span>

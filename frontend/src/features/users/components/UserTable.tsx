@@ -25,7 +25,7 @@ const getRoleBadgeColor = (role: UserRole): string => {
     case UserRole.STAFF:
       return 'bg-green-100 text-green-800';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-100 text-night-surface';
   }
 };
 
@@ -62,39 +62,39 @@ export const UserTable: React.FC<UserTableProps> = ({
   if (users.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400">No users found</p>
+        <p className="text-secondary-500 dark:text-secondary-400">No users found</p>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-900">
+      <table className="min-w-full divide-y divide-secondary-200 dark:divide-night-surface dark:divide-gray-700">
+        <thead className="bg-secondary-50 dark:bg-night-bg dark:bg-gray-900">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               User
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               Role
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               Contact
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               Last Login
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="bg-white dark:bg-night-surface divide-y divide-secondary-200 dark:divide-night-surface dark:divide-gray-700">
           {users.map((user) => (
-            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <tr key={user.id} className="hover:bg-secondary-50 dark:bg-night-bg bg-secondary-100 dark:hover:bg-night-surface-alt">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
                   <div className="shrink-0 h-10 w-10">
@@ -105,8 +105,8 @@ export const UserTable: React.FC<UserTableProps> = ({
                         alt={`${user.firstName} ${user.lastName}`}
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                        <span className="text-gray-600 dark:text-gray-300 font-medium">
+                      <div className="h-10 w-10 rounded-full bg-secondary-200 dark:bg-night-surface-alt dark:bg-gray-700 flex items-center justify-center">
+                        <span className="text-secondary-600 dark:text-gray-300 font-medium">
                           {user.firstName[0]}{user.lastName[0]}
                         </span>
                       </div>
@@ -116,7 +116,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {user.firstName} {user.lastName}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+                    <div className="text-sm text-secondary-500 dark:text-secondary-400">{user.email}</div>
                   </div>
                 </div>
               </td>
@@ -138,17 +138,17 @@ export const UserTable: React.FC<UserTableProps> = ({
                   )}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-secondary-400">
                 {user.phone || 'N/A'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-secondary-400">
                 {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="relative inline-block text-left">
                   <button
                     onClick={() => toggleMenu(user.id)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                    className="text-secondary-400 hover:text-secondary-600 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <MoreVertical className="h-5 w-5" />
                   </button>
@@ -159,14 +159,14 @@ export const UserTable: React.FC<UserTableProps> = ({
                         className="fixed inset-0 z-10"
                         onClick={() => setOpenMenuId(null)}
                       ></div>
-                      <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-20">
+                      <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-night-surface ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-20">
                         <div className="py-1" role="menu">
                           <button
                             onClick={() => {
                               onEdit(user);
                               setOpenMenuId(null);
                             }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-secondary-200 hover:bg-gray-100 bg-secondary-100 dark:hover:bg-night-surface-alt"
                           >
                             <Edit className="h-4 w-4 mr-2" />
                             Edit User
@@ -176,7 +176,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                               onToggleStatus(user);
                               setOpenMenuId(null);
                             }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-secondary-200 hover:bg-gray-100 bg-secondary-100 dark:hover:bg-night-surface-alt"
                           >
                             {user.isActive ? (
                               <>
@@ -195,7 +195,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                               onResetPassword(user);
                               setOpenMenuId(null);
                             }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-secondary-200 hover:bg-gray-100 bg-secondary-100 dark:hover:bg-night-surface-alt"
                           >
                             <Mail className="h-4 w-4 mr-2" />
                             Reset Password
