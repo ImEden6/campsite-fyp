@@ -129,7 +129,7 @@ export const ReportsPage: React.FC = () => {
               {currentStep !== 'select' && (
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/50 dark:hover:bg-night-surface/50 rounded-lg transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
                 </button>
@@ -169,26 +169,26 @@ export const ReportsPage: React.FC = () => {
               </div>
               <span className="ml-2 text-sm font-medium text-secondary-900 dark:text-primary-100">Select Type</span>
             </div>
-            <div className="w-16 h-0.5 bg-secondary-300 dark:bg-gray-700"></div>
+            <div className="w-16 h-0.5 bg-secondary-300 dark:bg-night-surface-alt"></div>
             <div className="flex items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === 'configure'
                     ? 'bg-primary-600 text-white'
                     : currentStep === 'display'
                       ? 'bg-green-600 text-white'
-                      : 'bg-secondary-300 dark:bg-gray-700 text-secondary-600 dark:text-gray-400'
+                      : 'bg-secondary-300 dark:bg-night-surface-alt text-secondary-600 dark:text-secondary-400'
                   }`}
               >
                 2
               </div>
               <span className="ml-2 text-sm font-medium text-secondary-900 dark:text-primary-100">Configure</span>
             </div>
-            <div className="w-16 h-0.5 bg-secondary-300 dark:bg-gray-700"></div>
+            <div className="w-16 h-0.5 bg-secondary-300 dark:bg-night-surface-alt"></div>
             <div className="flex items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === 'display'
                     ? 'bg-primary-600 text-white'
-                    : 'bg-secondary-300 dark:bg-gray-700 text-secondary-600 dark:text-gray-400'
+                    : 'bg-secondary-300 dark:bg-night-surface-alt text-secondary-600 dark:text-secondary-400'
                   }`}
               >
                 3

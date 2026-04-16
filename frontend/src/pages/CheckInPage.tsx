@@ -81,7 +81,7 @@ const CheckInPage: React.FC = () => {
 
     return (
       <GlassCard className="p-8" intensity="strong">
-        <h3 className="font-heading text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-4">Booking Details</h3>
+        <h3 className="font-heading text-2xl font-bold mb-6 text-gray-900 dark:text-primary-100 border-b border-gray-200 dark:border-secondary-700 pb-4">Booking Details</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div>
@@ -132,13 +132,13 @@ const CheckInPage: React.FC = () => {
 
         {selectedBooking.vehicles && selectedBooking.vehicles.length > 0 && (
           <div className="mb-8">
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">Vehicles</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-primary-100 mb-3 border-b border-gray-100 dark:border-secondary-800 pb-2">Vehicles</div>
             <div className="space-y-2">
               {selectedBooking.vehicles.map((vehicle, index) => (
-                <div key={index} className="text-sm bg-gray-50/50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{vehicle.year} {vehicle.make} {vehicle.model}</span>
-                  <span className="mx-2 text-gray-300">|</span>
-                  <span className="font-mono text-gray-600 dark:text-gray-400">{vehicle.licensePlate} ({vehicle.state})</span>
+                <div key={index} className="text-sm bg-gray-50/50 dark:bg-night-surface/50 p-3 rounded-lg border border-gray-100 dark:border-secondary-700">
+                  <span className="font-medium text-gray-900 dark:text-primary-100">{vehicle.year} {vehicle.make} {vehicle.model}</span>
+                  <span className="mx-2 text-secondary-300">|</span>
+                  <span className="font-mono text-gray-600 dark:text-secondary-400">{vehicle.licensePlate} ({vehicle.state})</span>
                 </div>
               ))}
             </div>
@@ -147,7 +147,7 @@ const CheckInPage: React.FC = () => {
 
         {selectedBooking.specialRequests && (
           <div className="mb-8">
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">Special Requests</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-primary-100 mb-3 border-b border-gray-100 dark:border-secondary-800 pb-2">Special Requests</div>
             <div className="text-sm bg-yellow-50/50 dark:bg-yellow-900/10 p-4 rounded-lg border border-yellow-100 dark:border-yellow-800/30 text-yellow-800 dark:text-yellow-200">
               {selectedBooking.specialRequests}
             </div>
@@ -155,7 +155,7 @@ const CheckInPage: React.FC = () => {
         )}
 
         {!showSuccess && (
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-secondary-700">
             <Button variant="ghost" onClick={handleReset}>
               Cancel
             </Button>
@@ -180,9 +180,9 @@ const CheckInPage: React.FC = () => {
         <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
         </div>
-        <h3 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Check-in Successful!</h3>
+        <h3 className="font-heading text-2xl font-bold text-gray-900 dark:text-primary-100 mb-2">Check-in Successful!</h3>
         <p className="text-secondary-600 dark:text-secondary-400 mb-8 max-w-md mx-auto">
-          <span className="font-semibold text-gray-900 dark:text-gray-200">{selectedBooking.user?.firstName} {selectedBooking.user?.lastName}</span> has been successfully checked into <span className="font-semibold text-gray-900 dark:text-gray-200">{selectedBooking.site?.name}</span>.
+          <span className="font-semibold text-gray-900 dark:text-secondary-200">{selectedBooking.user?.firstName} {selectedBooking.user?.lastName}</span> has been successfully checked into <span className="font-semibold text-gray-900 dark:text-secondary-200">{selectedBooking.site?.name}</span>.
         </p>
 
         {qrCode && (
@@ -207,7 +207,7 @@ const CheckInPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Guest Check-In</h1>
+            <h1 className="font-heading text-3xl font-bold mb-2 text-gray-900 dark:text-primary-100">Guest Check-In</h1>
             <p className="text-secondary-600 dark:text-secondary-400">Search for and check in confirmed bookings</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate('/staff/dashboard')}>

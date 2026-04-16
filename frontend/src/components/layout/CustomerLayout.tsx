@@ -39,7 +39,7 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
   };
 
   return (
-    <div className="min-h-screen bg-secondary-50 dark:bg-night-surface dark:bg-gray-900">
+    <div className="min-h-screen bg-secondary-50 dark:bg-night-surface dark:bg-night-bg">
       <SkipNavigation />
 
 
@@ -132,7 +132,7 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
           {/* User section */}
           <div className="px-4 py-4 border-t border-gray-200 dark:border-secondary-700">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-secondary-300 dark:bg-night-surface-alt dark:bg-gray-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-secondary-300 dark:bg-night-surface-alt dark:bg-night-surface-alt rounded-full flex items-center justify-center">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
@@ -147,7 +147,7 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
                 <p className="text-sm font-medium text-secondary-900 dark:text-primary-100 truncate">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                <p className="text-xs text-gray-500 dark:text-secondary-400 truncate">{user?.email}</p>
               </div>
             </div>
             <button

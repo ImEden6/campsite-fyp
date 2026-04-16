@@ -183,28 +183,28 @@ export const SiteCard: React.FC<SiteCardProps> = ({
           <div className="flex -space-x-2 overflow-hidden">
             {/* Amenity Icons — unified neutral palette */}
             {site.hasElectricity && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Electricity">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-secondary-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Electricity">
                 <Zap className="w-4 h-4" />
               </div>
             )}
             {site.hasWater && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Water">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-secondary-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Water">
                 <Droplet className="w-4 h-4" />
               </div>
             )}
             {site.hasWifi && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="WiFi">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-secondary-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="WiFi">
                 <Wifi className="w-4 h-4" />
               </div>
             )}
             {site.isPetFriendly && (
-              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Pets Allowed">
+              <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-secondary-800 dark:bg-secondary-800/70 dark:text-secondary-300" title="Pets Allowed">
                 <Heart className="w-4 h-4" />
               </div>
             )}
 
             {/* Capacity Badge in the stack */}
-            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-gray-800 dark:bg-secondary-800/70 dark:text-secondary-300" title={`Capacity: ${site.capacity}`}>
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-100 text-secondary-600 border-2 border-white dark:border-secondary-800 dark:bg-secondary-800/70 dark:text-secondary-300" title={`Capacity: ${site.capacity}`}>
               <span className="text-xs font-bold">{site.capacity}</span>
             </div>
           </div>

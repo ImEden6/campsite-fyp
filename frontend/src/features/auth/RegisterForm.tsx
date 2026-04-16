@@ -173,7 +173,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               'flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium',
               currentStep >= step
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                : 'bg-gray-200 dark:bg-night-surface-alt text-gray-600 dark:text-secondary-400'
             )}
           >
             {step}
@@ -182,7 +182,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <div
               className={cn(
                 'mx-2 h-1 w-12',
-                currentStep > step ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                currentStep > step ? 'bg-blue-600' : 'bg-gray-200 dark:bg-night-surface-alt'
               )}
             />
           )}
@@ -199,10 +199,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
           </div>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-primary-100">
           Registration successful!
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-secondary-400">
           Your account has been created. Redirecting to login...
         </p>
       </div>
@@ -212,8 +212,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Create Staff Account</h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-primary-100">Create Staff Account</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-secondary-400">
           Register a new staff member for the campsite management system
         </p>
       </div>
@@ -324,22 +324,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Step 3: Review and confirm */}
         {currentStep === 3 && (
           <div className="space-y-4">
-            <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
-              <h3 className="mb-3 font-medium text-gray-900 dark:text-gray-100">Review your information</h3>
+            <div className="rounded-lg bg-gray-50 dark:bg-night-surface p-4">
+              <h3 className="mb-3 font-medium text-gray-900 dark:text-primary-100">Review your information</h3>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-400">Email:</dt>
-                  <dd className="font-medium text-gray-900 dark:text-gray-100">{formData.email}</dd>
+                  <dt className="text-gray-600 dark:text-secondary-400">Email:</dt>
+                  <dd className="font-medium text-gray-900 dark:text-primary-100">{formData.email}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-400">Name:</dt>
-                  <dd className="font-medium text-gray-900 dark:text-gray-100">
+                  <dt className="text-gray-600 dark:text-secondary-400">Name:</dt>
+                  <dd className="font-medium text-gray-900 dark:text-primary-100">
                     {formData.firstName} {formData.lastName}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-400">Phone:</dt>
-                  <dd className="font-medium text-gray-900 dark:text-gray-100">{formData.phone}</dd>
+                  <dt className="text-gray-600 dark:text-secondary-400">Phone:</dt>
+                  <dd className="font-medium text-gray-900 dark:text-primary-100">{formData.phone}</dd>
                 </div>
               </dl>
             </div>
@@ -391,7 +391,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         </div>
 
         {/* Login link */}
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-center text-sm text-gray-600 dark:text-secondary-400">
           Already have an account?{' '}
           <Link
             to="/customer/login"

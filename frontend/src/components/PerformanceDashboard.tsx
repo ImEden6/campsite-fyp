@@ -105,7 +105,7 @@ export const PerformanceDashboard: React.FC = () => {
               localStorage.setItem('show-performance-dashboard', 'false');
               setIsVisible(false);
             }}
-            className="text-white hover:text-gray-200"
+            className="text-white hover:text-secondary-200"
           >
             ×
           </button>

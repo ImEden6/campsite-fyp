@@ -26,7 +26,7 @@ export const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ pricing, loa
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-4 flex items-center gap-2">
         <DollarSign size={20} />
         Pricing Breakdown
       </h3>
@@ -34,10 +34,10 @@ export const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ pricing, loa
       <div className="space-y-3">
         {/* Nightly Breakdown */}
         {pricing.breakdown && pricing.breakdown.length > 0 && (
-          <div className="border-b border-gray-200 dark:border-gray-700 pb-3">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nightly Rates</h4>
+          <div className="border-b border-gray-200 dark:border-secondary-700 pb-3">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-secondary-300 mb-2">Nightly Rates</h4>
             {pricing.breakdown.map((item, index) => (
-              <div key={index} className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+              <div key={index} className="flex justify-between text-sm text-gray-600 dark:text-secondary-400">
                 <span>
                   {new Date(item.date).toLocaleDateString()} - {item.description}
                 </span>
@@ -48,7 +48,7 @@ export const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ pricing, loa
         )}
 
         {/* Base Price */}
-        <div className="flex justify-between text-gray-700 dark:text-gray-300">
+        <div className="flex justify-between text-gray-700 dark:text-secondary-300">
           <span>
             Base Price ({pricing.nights} night{pricing.nights !== 1 ? 's' : ''})
           </span>
@@ -57,7 +57,7 @@ export const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ pricing, loa
 
         {/* Equipment */}
         {pricing.equipmentTotal > 0 && (
-          <div className="flex justify-between text-gray-700 dark:text-gray-300">
+          <div className="flex justify-between text-gray-700 dark:text-secondary-300">
             <span>Equipment Rentals</span>
             <span>{CURRENCY_SYMBOL}{pricing.equipmentTotal.toFixed(2)}</span>
           </div>
@@ -72,19 +72,19 @@ export const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ pricing, loa
         )}
 
         {/* Tax */}
-        <div className="flex justify-between text-gray-700 dark:text-gray-300">
+        <div className="flex justify-between text-gray-700 dark:text-secondary-300">
           <span>Tax</span>
           <span>{CURRENCY_SYMBOL}{pricing.taxAmount.toFixed(2)}</span>
         </div>
 
         {/* Deposit */}
-        <div className="flex justify-between text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <div className="flex justify-between text-gray-700 dark:text-secondary-300 border-t border-gray-200 dark:border-secondary-700 pt-3">
           <span className="font-medium">Deposit Required</span>
           <span className="font-medium">{CURRENCY_SYMBOL}{pricing.depositAmount.toFixed(2)}</span>
         </div>
 
         {/* Total */}
-        <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100 border-t-2 border-gray-300 dark:border-gray-600 pt-3">
+        <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-primary-100 border-t-2 border-gray-300 dark:border-secondary-600 pt-3">
           <span>Total Amount</span>
           <span>{CURRENCY_SYMBOL}{pricing.totalAmount.toFixed(2)}</span>
         </div>

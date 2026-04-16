@@ -69,9 +69,9 @@ export const MockPaymentForm = ({
       </div>
 
       {/* Amount Display */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+      <div className="bg-gray-50 dark:bg-night-surface p-4 rounded-lg">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-gray-700 dark:text-secondary-300">
             Total Amount
           </span>
           <span className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -83,7 +83,7 @@ export const MockPaymentForm = ({
       {/* Mock Card Form */}
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
             Card Number
           </label>
           <div className="relative">
@@ -91,35 +91,35 @@ export const MockPaymentForm = ({
               type="text"
               value={cardNumber}
               onChange={(e) => setCardNumber(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-secondary-600 rounded-lg bg-white dark:bg-night-surface-alt text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="4242 4242 4242 4242"
             />
-            <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
               Expiry Date
             </label>
             <input
               type="text"
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-secondary-600 rounded-lg bg-white dark:bg-night-surface-alt text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="MM/YY"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
               CVC
             </label>
             <input
               type="text"
               value={cvc}
               onChange={(e) => setCvc(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-secondary-600 rounded-lg bg-white dark:bg-night-surface-alt text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="123"
             />
           </div>
@@ -159,7 +159,7 @@ export const MockPaymentForm = ({
         </Button>
       </div>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <p className="text-xs text-gray-500 dark:text-secondary-400 text-center">
         This is a simulated payment for testing purposes.
       </p>
     </form>

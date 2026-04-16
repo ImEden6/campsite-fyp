@@ -77,8 +77,8 @@ const GeneralSettings: React.FC = () => {
                 <CardBody>
                     <div className="flex items-center justify-between">
                         <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Maintenance Mode</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100">Maintenance Mode</h4>
+                            <p className="text-sm text-gray-500 dark:text-secondary-400">
                                 Disable access to the public site while you make changes
                             </p>
                         </div>

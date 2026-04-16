@@ -32,7 +32,7 @@ export const BookingProgressStepper: React.FC<BookingProgressStepperProps> = ({
     steps = BOOKING_STEPS,
 }) => {
     return (
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div className="mb-6 bg-white dark:bg-night-surface rounded-lg border border-gray-200 dark:border-secondary-700 p-4 shadow-sm">
             <div className="flex items-center justify-between">
                 {steps.map((step, index) => {
                     const Icon = step.icon;
@@ -45,7 +45,7 @@ export const BookingProgressStepper: React.FC<BookingProgressStepperProps> = ({
                                 <div
                                     className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${isActive
                                             ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md'
-                                            : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                                            : 'bg-gray-200 dark:bg-night-surface-alt text-gray-600 dark:text-secondary-400'
                                         }`}
                                     aria-current={currentStep === step.num ? 'step' : undefined}
                                 >
@@ -53,8 +53,8 @@ export const BookingProgressStepper: React.FC<BookingProgressStepperProps> = ({
                                 </div>
                                 <div
                                     className={`text-xs mt-2 text-center font-medium transition-colors ${isActive
-                                            ? 'text-gray-900 dark:text-gray-100'
-                                            : 'text-gray-600 dark:text-gray-400'
+                                            ? 'text-gray-900 dark:text-primary-100'
+                                            : 'text-gray-600 dark:text-secondary-400'
                                         }`}
                                 >
                                     {step.label}
@@ -64,7 +64,7 @@ export const BookingProgressStepper: React.FC<BookingProgressStepperProps> = ({
                                 <div
                                     className={`h-1 flex-1 mx-2 rounded transition-all duration-200 ${isCompleted
                                             ? 'bg-blue-600 dark:bg-blue-500'
-                                            : 'bg-gray-200 dark:bg-gray-700'
+                                            : 'bg-gray-200 dark:bg-night-surface-alt'
                                         }`}
                                 />
                             )}

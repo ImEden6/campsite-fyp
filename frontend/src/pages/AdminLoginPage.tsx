@@ -27,7 +27,7 @@ const AdminLoginPage: React.FC = () => {
                 <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                     <Tent className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <span className="font-heading font-bold text-xl text-gray-900 dark:text-gray-100">CampSite</span>
+                <span className="font-heading font-bold text-xl text-gray-900 dark:text-primary-100">CampSite</span>
             </div>
 
             {/* Login form container */}

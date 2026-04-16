@@ -34,13 +34,13 @@ export const BookingCard: React.FC<BookingCardProps> = ({
       case 'CHECKED_IN':
         return 'bg-blue-200/80 dark:bg-blue-900/50 text-blue-900 dark:text-blue-200';
       case 'CHECKED_OUT':
-        return 'bg-gray-200/80 dark:bg-gray-700/60 text-gray-900 dark:text-gray-200';
+        return 'bg-gray-200/80 dark:bg-night-surface-alt/60 text-gray-900 dark:text-secondary-200';
       case 'CANCELLED':
         return 'bg-red-200/80 dark:bg-red-900/50 text-red-900 dark:text-red-200';
       case 'NO_SHOW':
         return 'bg-red-200/80 dark:bg-red-900/50 text-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-200/80 dark:bg-gray-700/60 text-gray-900 dark:text-gray-200';
+        return 'bg-gray-200/80 dark:bg-night-surface-alt/60 text-gray-900 dark:text-secondary-200';
     }
   };
 
@@ -57,7 +57,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
       case 'FAILED':
         return 'bg-red-200/80 dark:bg-red-900/50 text-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-200/80 dark:bg-gray-700/60 text-gray-900 dark:text-gray-200';
+        return 'bg-gray-200/80 dark:bg-night-surface-alt/60 text-gray-900 dark:text-secondary-200';
     }
   };
 
@@ -84,10 +84,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100">
               Booking #{booking.bookingNumber}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-600 dark:text-secondary-400 mt-1">
               {booking.site?.name || 'Site information unavailable'}
             </p>
           </div>
@@ -101,15 +101,15 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <Calendar size={18} className="text-gray-400" />
+          <div className="flex items-center gap-2 text-gray-700 dark:text-secondary-300">
+            <Calendar size={18} className="text-secondary-400" />
             <div>
               <div className="text-sm font-medium">Check-in</div>
               <div className="text-sm">{formatDate(booking.checkInDate)}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-            <Calendar size={18} className="text-gray-400" />
+          <div className="flex items-center gap-2 text-gray-700 dark:text-secondary-300">
+            <Calendar size={18} className="text-secondary-400" />
             <div>
               <div className="text-sm font-medium">Check-out</div>
               <div className="text-sm">{formatDate(booking.checkOutDate)}</div>
@@ -119,17 +119,17 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Details */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-400">
             <Clock size={16} />
             <span>{calculateNights()} nights</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-400">
             <Users size={16} />
             <span>
               {booking.guests.adults + booking.guests.children} guests
             </span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-400">
             <DollarSign size={16} />
             <span>{CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}</span>
           </div>
@@ -147,7 +147,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Actions */}
         {showActions && (
-          <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-secondary-700">
             <Button
               variant="outline"
               size="sm"

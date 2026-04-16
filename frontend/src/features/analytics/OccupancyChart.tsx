@@ -110,10 +110,10 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-night-surface rounded-lg shadow p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-night-surface-alt rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-night-surface-alt rounded"></div>
         </div>
       </div>
     );
@@ -127,11 +127,11 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
   const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-night-surface rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Occupancy Rate</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100">Occupancy Rate</h3>
+          <p className="text-sm text-gray-600 dark:text-secondary-400 mt-1">
             Overall: {formatPercentage(data.overall)}
           </p>
         </div>
@@ -140,7 +140,7 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
             onClick={() => setViewType('chart')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${viewType === 'chart'
               ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+              : 'bg-gray-100 dark:bg-night-surface-alt text-gray-600 dark:text-secondary-400 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
               }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-1" />
@@ -150,7 +150,7 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
             onClick={() => setViewType('heatmap')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${viewType === 'heatmap'
               ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+              : 'bg-gray-100 dark:bg-night-surface-alt text-gray-600 dark:text-secondary-400 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
               }`}
           >
             <Calendar className="w-4 h-4 inline mr-1" />
@@ -167,14 +167,14 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             {data.byType.map((item) => (
-              <div key={item.siteType} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">{item.siteType}</h4>
+              <div key={item.siteType} className="border border-gray-200 dark:border-secondary-700 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100 mb-2">{item.siteType}</h4>
                 <div className="flex items-baseline gap-2">
                   <span className={`text-2xl font-bold ${getOccupancyTextColor(item.occupancyRate)}`}>
                     {formatPercentage(item.occupancyRate)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-600 dark:text-secondary-400 mt-1">
                   {item.occupiedSites} / {item.totalSites} sites occupied
                 </p>
               </div>
@@ -211,41 +211,41 @@ export const OccupancyChart: React.FC<OccupancyChartProps> = ({ data, loading })
             })}
           </div>
 
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-secondary-700">
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Legend:</span>
+              <span className="text-gray-600 dark:text-secondary-400">Legend:</span>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">0-25%</span>
+                  <span className="text-xs text-gray-600 dark:text-secondary-400">0-25%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-green-500 rounded"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">25-50%</span>
+                  <span className="text-xs text-gray-600 dark:text-secondary-400">25-50%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">50-75%</span>
+                  <span className="text-xs text-gray-600 dark:text-secondary-400">50-75%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">75-90%</span>
+                  <span className="text-xs text-gray-600 dark:text-secondary-400">75-90%</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">90-100%</span>
+                  <span className="text-xs text-gray-600 dark:text-secondary-400">90-100%</span>
                 </div>
               </div>
             </div>
           </div>
 
           {data.peakDays.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Peak Occupancy Days</h4>
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-secondary-700">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-primary-100 mb-3">Peak Occupancy Days</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {data.peakDays.slice(0, 3).map((peak, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(peak.date)}</span>
+                    <span className="text-sm text-gray-900 dark:text-primary-100">{formatDate(peak.date)}</span>
                     <span className="text-sm font-semibold text-red-700 dark:text-red-400">
                       {formatPercentage(peak.occupancyRate)}
                     </span>

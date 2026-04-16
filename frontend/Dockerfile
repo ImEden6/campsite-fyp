@@ -17,7 +17,7 @@ COPY package*.json ./
 COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
-RUN npm ci
+RUN npm install
 
 # Copy sources provided by volumes in dev, but for the image itself:
 COPY shared/ ./shared/
@@ -42,8 +42,8 @@ COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
 # Install dependencies directly to ensure correctness
-# Attempt to force install the native binary for Alpine/musl as requested
-RUN npm ci && npm install lightningcss-linux-x64-musl --save-optional
+# Use npm install to avoid lock file issues
+RUN npm install && npm install lightningcss-linux-x64-musl --save-optional
 
 # =============================================================================
 # Stage 2: Builder - Compile the application

@@ -241,7 +241,7 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                 {currentStep === 2 && (
                     <div className="space-y-6">
                         <div className="border-b border-secondary-200/50 pb-4 mb-4">
-                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-primary-100 flex items-center gap-3">
                                 <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
                                     <Users size={24} />
                                 </div>
@@ -274,7 +274,7 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                 {currentStep === 3 && (
                     <div className="space-y-6">
                         <div className="border-b border-secondary-200/50 pb-4 mb-4">
-                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-primary-100 flex items-center gap-3">
                                 <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
                                     <Car size={24} />
                                 </div>
@@ -300,9 +300,9 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                             </div>
                         )}
 
-                        <div className="bg-secondary-50 dark:bg-gray-800/50 border border-secondary-200 dark:border-gray-700 p-4 rounded-xl flex justify-between items-center text-sm">
+                        <div className="bg-secondary-50 dark:bg-night-surface/50 border border-secondary-200 dark:border-secondary-700 p-4 rounded-xl flex justify-between items-center text-sm">
                             <span className="text-secondary-600 dark:text-secondary-400">Parking Capacity</span>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                            <span className="font-medium text-gray-900 dark:text-primary-100">
                                 {formData.vehicles.length} / {site.maxVehicles} Vehicles
                             </span>
                         </div>
@@ -313,7 +313,7 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                 {currentStep === 4 && (
                     <div className="space-y-6">
                         <div className="border-b border-secondary-200/50 pb-4 mb-4">
-                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                            <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-primary-100 flex items-center gap-3">
                                 <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
                                     <Package size={24} />
                                 </div>
@@ -348,7 +348,7 @@ export const MultiStepBookingForm: React.FC<MultiStepBookingFormProps> = ({
                 )}
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8 pt-6 border-t border-secondary-200/50 dark:border-gray-700">
+                <div className="flex justify-between mt-8 pt-6 border-t border-secondary-200/50 dark:border-secondary-700">
                     <div>
                         {currentStep > 1 && (
                             <Button variant="outline" onClick={handleBack} className="min-w-[100px]">

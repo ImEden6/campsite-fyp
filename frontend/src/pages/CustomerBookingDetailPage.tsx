@@ -79,7 +79,7 @@ const CustomerBookingDetailPage: React.FC = () => {
             {bookingError ? 'Failed to load booking' : 'Booking not found'}
           </p>
           {bookingError && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-600 dark:text-secondary-400 mb-4">
               {bookingError instanceof Error ? bookingError.message : 'An unexpected error occurred'}
             </p>
           )}
@@ -109,7 +109,7 @@ const CustomerBookingDetailPage: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               <span>Back to bookings</span>
             </button>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100 flex items-center gap-3">
               <span>Booking #{booking.bookingNumber}</span>
               <span className={`px-3 py-1 text-sm font-sans font-medium rounded-full ${booking.status === 'CONFIRMED'
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -158,7 +158,7 @@ const CustomerBookingDetailPage: React.FC = () => {
 
             {/* Payment History */}
             <GlassCard className="p-6 md:p-8">
-              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+              <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-primary-100 mb-6 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-primary-500" />
                 Payment History
               </h2>
@@ -170,7 +170,7 @@ const CustomerBookingDetailPage: React.FC = () => {
           <div className="space-y-6">
             {/* Price Summary */}
             <GlassCard className="p-6">
-              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-primary-100 mb-4">
                 Price Breakdown
               </h2>
               <div className="space-y-3">
@@ -182,14 +182,14 @@ const CustomerBookingDetailPage: React.FC = () => {
                   <span>Tax</span>
                   <span>{CURRENCY_SYMBOL}{booking.taxAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between pt-3 border-t border-secondary-200/50 dark:border-gray-700">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">Total</span>
+                <div className="flex justify-between pt-3 border-t border-secondary-200/50 dark:border-secondary-700">
+                  <span className="font-semibold text-gray-900 dark:text-primary-100">Total</span>
                   <span className="font-bold text-xl text-primary-700 dark:text-primary-400">
                     {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
                   </span>
                 </div>
 
-                <div className="pt-4 mt-2 border-t border-secondary-200/50 dark:border-gray-700 space-y-2">
+                <div className="pt-4 mt-2 border-t border-secondary-200/50 dark:border-secondary-700 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Amount Paid</span>
                     <span className="font-semibold text-green-600 dark:text-green-400">
@@ -221,22 +221,22 @@ const CustomerBookingDetailPage: React.FC = () => {
         {showCancelDialog && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <GlassCard className="max-w-md w-full p-6 animate-in fade-in zoom-in duration-200" intensity="strong">
-              <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              <h3 className="font-heading text-xl font-bold text-gray-900 dark:text-primary-100 mb-4">
                 Cancel Booking
               </h3>
               {refundInfo && (
                 <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/30">
                   <div className="flex justify-between mb-1">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Refund Amount:</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)}</span>
+                    <span className="text-sm text-gray-600 dark:text-secondary-300">Refund Amount:</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{refundInfo.refundAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Cancellation Fee:</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{refundInfo.cancellationFee.toFixed(2)}</span>
+                    <span className="text-sm text-gray-600 dark:text-secondary-300">Cancellation Fee:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{refundInfo.cancellationFee.toFixed(2)}</span>
                   </div>
                 </div>
               )}
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-gray-600 dark:text-secondary-300 mb-6">
                 Are you sure you want to cancel this booking? This action cannot be undone.
               </p>
               <div className="flex gap-3">

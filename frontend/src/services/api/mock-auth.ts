@@ -7,6 +7,21 @@ import { LoginResponse, User, UserRole } from '@/types';
 
 // Mocking users database
 const mockUsers: Record<string, { user: User; password: string }> = {
+  'user@campsite.com': {
+    password: 'user123',
+    user: {
+      id: '2',
+      email: 'user@campsite.com',
+      firstName: 'Test',
+      lastName: 'User',
+      role: UserRole.CUSTOMER,
+      isActive: true,
+      isEmailVerified: true,
+      isPhoneVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  },
   'admin@campsite.com': {
     password: 'admin123',
     user: {

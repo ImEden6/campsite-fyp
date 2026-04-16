@@ -62,7 +62,7 @@ const Header: React.FC = () => {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group relative overflow-hidden"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-night-surface transition-all duration-200 group relative overflow-hidden"
             aria-label="Toggle theme"
             title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
@@ -128,7 +128,7 @@ const Header: React.FC = () => {
                 <Link
                   to="/profile"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-secondary-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-secondary-300 hover:bg-gray-100 dark:hover:bg-night-surface-alt"
                 >
                   <UserIcon className="w-4 h-4" />
                   <span>Profile</span>
@@ -137,7 +137,7 @@ const Header: React.FC = () => {
                 <Link
                   to="/admin/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-secondary-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-secondary-300 hover:bg-gray-100 dark:hover:bg-night-surface-alt"
                 >
                   <Settings className="w-4 h-4" />
                   <span>Settings</span>

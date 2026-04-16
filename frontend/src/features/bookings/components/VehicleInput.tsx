@@ -71,7 +71,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">
                     Make *
                   </label>
                   <Input
@@ -83,7 +83,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">
                     Model *
                   </label>
                   <Input
@@ -95,7 +95,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">
                     Year *
                   </label>
                   <Input
@@ -123,7 +123,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">
                     License Plate *
                   </label>
                   <Input
@@ -135,7 +135,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">
                     Color *
                   </label>
                   <Input
@@ -163,7 +163,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
                 <p className="font-medium text-secondary-900 dark:text-primary-100">
                   {vehicle.year} {vehicle.make} {vehicle.model}
                 </p>
-                <p className="text-sm text-secondary-600 dark:text-gray-400">
+                <p className="text-sm text-secondary-600 dark:text-secondary-400">
                   {vehicle.licensePlate} - {vehicle.type} - {vehicle.color}
                 </p>
               </div>
@@ -188,7 +188,7 @@ export const VehicleInput: React.FC<VehicleInputProps> = ({
       )}
 
       {vehicles.length === 0 && editingIndex === null && (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-8 text-gray-500 dark:text-secondary-400">
           <p>No vehicles added yet</p>
           <p className="text-sm mt-1">You can skip this step if you're not bringing a vehicle</p>
           <Button variant="outline" onClick={handleAdd} className="mt-4">

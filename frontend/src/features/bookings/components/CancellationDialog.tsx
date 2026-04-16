@@ -130,7 +130,7 @@ export const CancellationDialog: React.FC<CancellationDialogProps> = ({
         {/* Refund Information */}
         {loadingRefund ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 size={32} className="animate-spin text-gray-400" />
+            <Loader2 size={32} className="animate-spin text-secondary-400" />
           </div>
         ) : refundInfo ? (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

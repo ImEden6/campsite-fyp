@@ -61,34 +61,34 @@ const GuestBookingLookupPage: React.FC = () => {
 
           <form onSubmit={handleLookup} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
                 Booking Reference Number
               </label>
               <div className="relative group">
-                <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors w-5 h-5" />
+                <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-secondary-400 group-focus-within:text-primary-500 transition-colors w-5 h-5" />
                 <Input
                   type="text"
                   required
                   value={bookingNumber}
                   onChange={(e) => setBookingNumber(e.target.value.toUpperCase())}
                   placeholder="e.g. BK-001"
-                  className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500/50"
+                  className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-secondary-600 focus:ring-2 focus:ring-primary-500/50"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-2">
                 Email Address
               </label>
               <div className="relative group">
-                <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors w-5 h-5" />
+                <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-secondary-400 group-focus-within:text-primary-500 transition-colors w-5 h-5" />
                 <Input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500/50"
+                  className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-secondary-600 focus:ring-2 focus:ring-primary-500/50"
                 />
               </div>
             </div>
@@ -110,7 +110,7 @@ const GuestBookingLookupPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-secondary-200 dark:border-gray-700/50 text-center">
+          <div className="mt-8 pt-6 border-t border-secondary-200 dark:border-secondary-700/50 text-center">
             <p className="text-sm text-secondary-600 dark:text-secondary-400 mb-3">
               Don't have a booking number?
             </p>

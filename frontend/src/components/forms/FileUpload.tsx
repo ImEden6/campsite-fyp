@@ -169,7 +169,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
         <div className="flex flex-col items-center gap-2">
           <svg
-            className="h-12 w-12 text-gray-400"
+            className="h-12 w-12 text-secondary-400"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -213,7 +213,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100">
                   <svg
-                    className="h-6 w-6 text-gray-400"
+                    className="h-6 w-6 text-secondary-400"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -238,7 +238,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   e.stopPropagation();
                   handleRemoveFile(index);
                 }}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-600"
+                className="rounded p-1 text-secondary-400 hover:bg-gray-100 hover:text-red-600"
                 aria-label="Remove file"
               >
                 <svg

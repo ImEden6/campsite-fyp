@@ -54,8 +54,8 @@ const NotificationSettings: React.FC = () => {
                 <CardBody className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Booking Alerts</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100">Booking Alerts</h4>
+                            <p className="text-sm text-gray-500 dark:text-secondary-400">
                                 Receive emails when new bookings are made
                             </p>
                         </div>
@@ -64,10 +64,10 @@ const NotificationSettings: React.FC = () => {
                             onChange={(checked) => setValue('emailNotifications', checked, { shouldDirty: true })}
                         />
                     </div>
-                    <div className="border-t border-gray-100 dark:border-gray-800 pt-6 flex items-center justify-between">
+                    <div className="border-t border-gray-100 dark:border-secondary-800 pt-6 flex items-center justify-between">
                         <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Marketing Updates</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100">Marketing Updates</h4>
+                            <p className="text-sm text-gray-500 dark:text-secondary-400">
                                 Receive news and product updates
                             </p>
                         </div>
@@ -86,8 +86,8 @@ const NotificationSettings: React.FC = () => {
                 <CardBody>
                     <div className="flex items-center justify-between">
                         <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Browser Notifications</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100">Browser Notifications</h4>
+                            <p className="text-sm text-gray-500 dark:text-secondary-400">
                                 Receive real-time alerts in your browser
                             </p>
                         </div>

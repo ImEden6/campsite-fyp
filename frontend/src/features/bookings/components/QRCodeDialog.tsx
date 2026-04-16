@@ -198,7 +198,7 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({
         <div className="flex flex-col items-center justify-center py-8">
           {isLoading ? (
             <div className="flex flex-col items-center gap-4">
-              <Loader2 size={48} className="animate-spin text-gray-400" />
+              <Loader2 size={48} className="animate-spin text-secondary-400" />
               <p className="text-gray-600">Generating QR code...</p>
             </div>
           ) : error ? (

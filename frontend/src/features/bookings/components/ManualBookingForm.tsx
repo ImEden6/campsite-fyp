@@ -146,7 +146,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-4">
           Booking Details
         </h3>
 
@@ -170,8 +170,8 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
           {/* Check-in Date */}
           <div>
-            <label className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              <Calendar size={16} className="text-gray-700 dark:text-gray-300" />
+            <label className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
+              <Calendar size={16} className="text-gray-700 dark:text-secondary-300" />
               Check-in Date *
             </label>
             <Input
@@ -180,14 +180,14 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
               onChange={(e) => updateField('checkInDate', e.target.value)}
               required
               min={today}
-              icon={<Calendar size={18} className="text-gray-700 dark:text-gray-300" />}
+              icon={<Calendar size={18} className="text-gray-700 dark:text-secondary-300" />}
             />
           </div>
 
           {/* Check-out Date */}
           <div>
-            <label className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              <Calendar size={16} className="text-gray-700 dark:text-gray-300" />
+            <label className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
+              <Calendar size={16} className="text-gray-700 dark:text-secondary-300" />
               Check-out Date *
             </label>
             <Input
@@ -196,13 +196,13 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
               onChange={(e) => updateField('checkOutDate', e.target.value)}
               required
               min={formData.checkInDate || today}
-              icon={<Calendar size={18} className="text-gray-700 dark:text-gray-300" />}
+              icon={<Calendar size={18} className="text-gray-700 dark:text-secondary-300" />}
             />
           </div>
 
           {/* Adults */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
               Adults *
             </label>
             <Input
@@ -216,7 +216,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
           {/* Children */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
               Children
             </label>
             <Input
@@ -229,7 +229,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
           {/* Pets */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
               Pets
             </label>
             <Input
@@ -255,13 +255,13 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
           {/* Special Requests */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
               Special Requests / Notes
             </label>
             <textarea
               value={formData.specialRequests}
               onChange={(e) => updateField('specialRequests', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface text-gray-900 dark:text-primary-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               rows={3}
               placeholder="Any special requests or notes..."
             />
@@ -271,7 +271,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
       {/* Guest Details */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-4 flex items-center gap-2">
           <Users size={20} className="text-blue-600 dark:text-blue-400" />
           Guest Information
         </h3>
@@ -285,7 +285,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
       {/* Vehicles */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-4">
           Vehicles (Optional)
         </h3>
         <VehicleInput
@@ -297,7 +297,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
 
       {/* Equipment Rentals */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-4">
           Equipment Rentals (Optional)
         </h3>
         <EquipmentSelector
@@ -311,7 +311,7 @@ const ManualBookingForm: React.FC<ManualBookingFormProps> = ({ onSuccess, onCanc
       {/* Pricing */}
       {pricing && (
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-4">
             Pricing Summary
           </h3>
           <PricingBreakdown pricing={pricing} />

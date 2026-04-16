@@ -27,7 +27,7 @@ const GuestBookingConfirmPage: React.FC = () => {
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white dark:ring-night-surface">
               <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
-            <h1 className="font-heading text-4xl font-bold text-secondary-900 dark:text-gray-100 mb-3">
+            <h1 className="font-heading text-4xl font-bold text-secondary-900 dark:text-primary-100 mb-3">
               Booking Confirmed!
             </h1>
             <p className="text-lg text-secondary-600 dark:text-secondary-400">
@@ -41,7 +41,7 @@ const GuestBookingConfirmPage: React.FC = () => {
                 <Mail className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
-                <p className="text-base font-semibold text-secondary-900 dark:text-gray-100 mb-1">
+                <p className="text-base font-semibold text-secondary-900 dark:text-primary-100 mb-1">
                   Confirmation Email Sent
                 </p>
                 <p className="text-sm text-secondary-600 dark:text-secondary-400 leading-relaxed">

@@ -25,7 +25,7 @@ const MapsListPage: React.FC = () => {
               <Map className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Maps</h1>
+              <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Maps</h1>
               <p className="text-secondary-600 dark:text-secondary-400">Manage campsite maps</p>
             </div>
           </div>
@@ -44,7 +44,7 @@ const MapsListPage: React.FC = () => {
             <div className="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-6">
               <Map className="w-12 h-12 text-primary-600 dark:text-primary-400" />
             </div>
-            <h2 className="font-heading text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <h2 className="font-heading text-2xl font-semibold text-gray-900 dark:text-primary-100 mb-2">
               Maps List
             </h2>
             <p className="text-secondary-600 dark:text-secondary-400 text-center max-w-md mb-8">

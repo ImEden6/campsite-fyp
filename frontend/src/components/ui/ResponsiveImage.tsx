@@ -65,7 +65,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
     return (
       <div
         className={cn(
-          'flex items-center justify-center bg-gray-100 text-gray-400',
+          'flex items-center justify-center bg-gray-100 text-secondary-400',
           aspectRatio && aspectRatioClasses[aspectRatio],
           className
         )}

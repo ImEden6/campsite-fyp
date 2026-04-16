@@ -21,14 +21,14 @@ const AppearanceSettings: React.FC = () => {
                 relative flex flex-col items-center p-4 rounded-xl border-2 transition-all
                 ${theme === Theme.LIGHT
                                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                    : 'border-gray-200 dark:border-secondary-700 hover:border-gray-300 dark:hover:border-secondary-600'
                                 }
               `}
                         >
                             <div className="p-3 rounded-full bg-white shadow-sm mb-3">
                                 <Sun className="w-6 h-6 text-yellow-500" />
                             </div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">Light Mode</span>
+                            <span className="font-medium text-gray-900 dark:text-primary-100">Light Mode</span>
                         </button>
 
                         <button
@@ -37,24 +37,24 @@ const AppearanceSettings: React.FC = () => {
                 relative flex flex-col items-center p-4 rounded-xl border-2 transition-all
                 ${theme === Theme.DARK
                                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                    : 'border-gray-200 dark:border-secondary-700 hover:border-gray-300 dark:hover:border-secondary-600'
                                 }
               `}
                         >
                             <div className="p-3 rounded-full bg-gray-900 shadow-sm mb-3">
                                 <Moon className="w-6 h-6 text-primary-400" />
                             </div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">Dark Mode</span>
+                            <span className="font-medium text-gray-900 dark:text-primary-100">Dark Mode</span>
                         </button>
 
                         <button
                             disabled
-                            className="relative flex flex-col items-center p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed"
+                            className="relative flex flex-col items-center p-4 rounded-xl border-2 border-gray-200 dark:border-secondary-700 opacity-50 cursor-not-allowed"
                         >
-                            <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 shadow-sm mb-3">
+                            <div className="p-3 rounded-full bg-gray-100 dark:bg-night-surface shadow-sm mb-3">
                                 <Smartphone className="w-6 h-6 text-gray-500" />
                             </div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">System (Coming Soon)</span>
+                            <span className="font-medium text-gray-900 dark:text-primary-100">System (Coming Soon)</span>
                         </button>
                     </div>
                 </CardBody>

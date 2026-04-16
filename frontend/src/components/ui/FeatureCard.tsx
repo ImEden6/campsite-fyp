@@ -49,7 +49,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
     return (
         <div
             className={cn(
-                'group p-6 rounded-2xl bg-white dark:bg-gray-800 border border-secondary-100 dark:border-secondary-800',
+                'group p-6 rounded-2xl bg-white dark:bg-night-surface border border-secondary-100 dark:border-secondary-800',
                 'shadow-campsite transition-all duration-300',
                 'hover:shadow-organic hover:-translate-y-1',
                 className
@@ -69,7 +69,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
             </div>
 
             {/* Title */}
-            <h3 className="font-heading text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <h3 className="font-heading text-lg font-semibold text-gray-900 dark:text-primary-100 mb-2">
                 {title}
             </h3>
 

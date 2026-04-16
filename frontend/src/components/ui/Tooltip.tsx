@@ -125,7 +125,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const tooltipContent = isVisible && content && (
     <div
       ref={tooltipRef}
-      className="fixed z-[110] px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-800 rounded-md shadow-lg pointer-events-none whitespace-nowrap"
+      className="fixed z-[110] px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-night-surface rounded-md shadow-lg pointer-events-none whitespace-nowrap"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -137,12 +137,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {content}
       <div
         className={`absolute ${placement === 'top'
-          ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800'
+          ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-night-surface'
           : placement === 'bottom'
-            ? 'top-0 left-1/2 -translate-x-1/2 -translate-y-full border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-gray-800'
+            ? 'top-0 left-1/2 -translate-x-1/2 -translate-y-full border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900 dark:border-b-night-surface'
             : placement === 'left'
-              ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900 dark:border-l-gray-800'
-              : 'left-0 top-1/2 -translate-y-1/2 -translate-x-full border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900 dark:border-r-gray-800'
+              ? 'right-0 top-1/2 -translate-y-1/2 translate-x-full border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900 dark:border-l-night-surface'
+              : 'left-0 top-1/2 -translate-y-1/2 -translate-x-full border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900 dark:border-r-night-surface'
           }`}
       />
     </div>

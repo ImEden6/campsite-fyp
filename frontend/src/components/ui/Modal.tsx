@@ -114,7 +114,7 @@ const Modal: React.FC<ModalProps> = ({
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-md p-1.5 text-secondary-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label="Close modal"
                 >
                   <svg
@@ -164,23 +164,23 @@ const Modal: React.FC<ModalProps> = ({
       <div
         ref={modalRef}
         className={cn(
-          'relative w-full transform rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all my-8',
+          'relative w-full transform rounded-lg bg-white dark:bg-night-surface shadow-xl transition-all my-8',
           'animate-in fade-in-0 zoom-in-95 duration-200 max-h-[calc(100vh-4rem)]',
           sizes[size]
         )}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4 shrink-0">
+          <div className="flex items-center justify-between border-b border-gray-200 dark:border-secondary-700 px-6 py-4 shrink-0">
             {title && (
-              <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-primary-100">
                 {title}
               </h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="rounded-md p-1 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                className="rounded-md p-1 text-secondary-400 dark:text-secondary-500 hover:bg-gray-100 dark:hover:bg-night-surface-alt hover:text-gray-600 dark:hover:text-secondary-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 aria-label="Close modal"
               >
                 <svg
@@ -205,7 +205,7 @@ const Modal: React.FC<ModalProps> = ({
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 px-6 py-4 shrink-0 bg-gray-50 dark:bg-gray-900">
+          <div className="flex items-center justify-end gap-3 border-t border-gray-200 dark:border-secondary-700 px-6 py-4 shrink-0 bg-gray-50 dark:bg-night-bg">
             {footer}
           </div>
         )}

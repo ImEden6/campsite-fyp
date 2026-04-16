@@ -25,7 +25,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
       <div className="max-w-md w-full">
         <div className="text-center">
           {statusCode && (
-            <p className="text-6xl font-bold text-gray-300 mb-4">
+            <p className="text-6xl font-bold text-secondary-300 mb-4">
               {statusCode}
             </p>
           )}
@@ -34,11 +34,11 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-primary-100 mb-4">
             {title}
           </h1>
           
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
+          <p className="text-gray-600 dark:text-secondary-400 mb-8">
             {message}
           </p>
 

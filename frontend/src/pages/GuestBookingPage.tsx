@@ -137,7 +137,7 @@ const GuestBookingPage: React.FC = () => {
                 <form onSubmit={handleGuestInfoSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label htmlFor="firstName" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
+                      <label htmlFor="firstName" className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-1.5">
                         First Name *
                       </label>
                       <Input
@@ -151,7 +151,7 @@ const GuestBookingPage: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
+                      <label htmlFor="lastName" className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-1.5">
                         Last Name *
                       </label>
                       <Input
@@ -166,7 +166,7 @@ const GuestBookingPage: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
+                    <label htmlFor="email" className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-1.5">
                       Email Address *
                     </label>
                     <Input
@@ -180,7 +180,7 @@ const GuestBookingPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
+                    <label htmlFor="phone" className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-1.5">
                       Phone Number *
                     </label>
                     <Input

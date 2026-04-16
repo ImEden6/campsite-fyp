@@ -91,7 +91,7 @@ export const ErrorFeedback: React.FC<ErrorFeedbackProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-secondary-400 hover:text-gray-600"
           >
             <X className="w-5 h-5" />
           </button>

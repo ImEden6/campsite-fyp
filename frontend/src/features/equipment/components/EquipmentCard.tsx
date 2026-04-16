@@ -56,7 +56,7 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
+          <div className="w-full h-full flex items-center justify-center text-secondary-400">
             <svg
               className="w-16 h-16"
               fill="none"

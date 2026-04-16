@@ -257,7 +257,7 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                 {/* Basic Information */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b pb-2">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-secondary-300 border-b pb-2">
                         Basic Information
                     </h3>
 
@@ -270,11 +270,11 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                 Site Type
                             </label>
                             <select
-                                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full rounded-lg border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 {...register('type')}
                             >
                                 {Object.values(SiteType).map((type) => (
@@ -289,11 +289,11 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                 Status
                             </label>
                             <select
-                                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full rounded-lg border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 {...register('status')}
                             >
                                 {Object.values(SiteStatus).map((status) => (
@@ -328,11 +328,11 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                             Description
                         </label>
                         <textarea
-                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="w-full rounded-lg border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                             rows={3}
                             placeholder="Describe this site..."
                             {...register('description')}
@@ -342,7 +342,7 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                 {/* Limits */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b pb-2">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-secondary-300 border-b pb-2">
                         Limits
                     </h3>
 
@@ -367,7 +367,7 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                 {/* Features */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b pb-2">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-secondary-300 border-b pb-2">
                         Features
                     </h3>
 
@@ -388,7 +388,7 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     {...register(key as keyof SiteFormValues)}
                                 />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+                                <span className="text-sm text-gray-700 dark:text-secondary-300">{label}</span>
                             </label>
                         ))}
                     </div>
@@ -396,7 +396,7 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
 
                 {/* Amenities */}
                 <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b pb-2">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-secondary-300 border-b pb-2">
                         Amenities
                     </h3>
 
@@ -408,7 +408,7 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
                                 onClick={() => toggleAmenity(amenity)}
                                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedAmenities.includes(amenity)
                                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
-                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-night-surface-alt dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
                                     }`}
                             >
                                 {amenity}

@@ -80,7 +80,7 @@ const EquipmentPage: React.FC = () => {
       <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Equipment Management</h1>
             <p className="text-secondary-600 dark:text-secondary-400 mt-2">
               Manage rental equipment inventory and availability
             </p>
@@ -99,8 +99,8 @@ const EquipmentPage: React.FC = () => {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-primary-100">Equipment Management</h1>
+          <p className="text-gray-600 dark:text-secondary-400 mt-2">
             Manage rental equipment inventory and availability
           </p>
         </div>
@@ -124,15 +124,15 @@ const EquipmentPage: React.FC = () => {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-primary-100">Equipment Management</h1>
+          <p className="text-gray-600 dark:text-secondary-400 mt-2">
             Manage rental equipment inventory and availability
           </p>
         </div>
         <div className="text-center py-12">
-          <Package className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No equipment found</h3>
-          <p className="text-gray-600 dark:text-gray-400">Get started by adding equipment to your inventory.</p>
+          <Package className="w-16 h-16 text-secondary-400 dark:text-secondary-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-2">No equipment found</h3>
+          <p className="text-gray-600 dark:text-secondary-400">Get started by adding equipment to your inventory.</p>
         </div>
       </div>
     );
@@ -142,7 +142,7 @@ const EquipmentPage: React.FC = () => {
     <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
       <div className="max-w-7xl mx-auto space-y-8">
         <div>
-          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Equipment Management</h1>
+          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Equipment Management</h1>
           <p className="text-secondary-600 dark:text-secondary-400 mt-2">
             Manage rental equipment inventory and availability
           </p>
@@ -154,7 +154,7 @@ const EquipmentPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Total Items</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalItems}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-primary-100">{totalItems}</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                 <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -165,7 +165,7 @@ const EquipmentPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Available</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAvailable}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-primary-100">{totalAvailable}</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                 <span className="text-green-600 dark:text-green-400 font-bold text-xl">✓</span>
@@ -176,7 +176,7 @@ const EquipmentPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">Categories</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{categoryCount}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-primary-100">{categoryCount}</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                 <span className="text-purple-600 dark:text-purple-400 font-bold text-xl">#</span>
@@ -206,52 +206,52 @@ const EquipmentPage: React.FC = () => {
                         <Icon className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{item.name}</h3>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{formatCategory(item.category)}</span>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100">{item.name}</h3>
+                        <span className="text-xs text-gray-500 dark:text-secondary-400">{formatCategory(item.category)}</span>
                       </div>
                     </div>
                     {item.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-secondary-400 mb-4">{item.description}</p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Total Quantity:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{quantity}</span>
+                    <span className="text-gray-600 dark:text-secondary-400">Total Quantity:</span>
+                    <span className="font-medium text-gray-900 dark:text-primary-100">{quantity}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Available:</span>
+                    <span className="text-gray-600 dark:text-secondary-400">Available:</span>
                     <span className="font-medium text-green-600 dark:text-green-400">{available}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Daily Rate:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{(item.dailyRate || 0).toFixed(2)}</span>
+                    <span className="text-gray-600 dark:text-secondary-400">Daily Rate:</span>
+                    <span className="font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{(item.dailyRate || 0).toFixed(2)}</span>
                   </div>
                   {item.weeklyRate && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Weekly Rate:</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.weeklyRate.toFixed(2)}</span>
+                      <span className="text-gray-600 dark:text-secondary-400">Weekly Rate:</span>
+                      <span className="font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{item.weeklyRate.toFixed(2)}</span>
                     </div>
                   )}
                   {item.deposit && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Deposit:</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">{CURRENCY_SYMBOL}{item.deposit.toFixed(2)}</span>
+                      <span className="text-gray-600 dark:text-secondary-400">Deposit:</span>
+                      <span className="font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{item.deposit.toFixed(2)}</span>
                     </div>
                   )}
                 </div>
 
                 {quantity > 0 && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={available} aria-valuemin={0} aria-valuemax={quantity}>
+                  <div className="pt-4 border-t border-gray-200 dark:border-secondary-700">
+                    <div className="w-full bg-gray-200 dark:bg-night-surface-alt rounded-full h-2" role="progressbar" aria-valuenow={available} aria-valuemin={0} aria-valuemax={quantity}>
                       <div
                         className="bg-green-500 h-2 rounded-full transition-all"
                         style={{ width: `${availabilityPercentage}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                    <p className="text-xs text-gray-500 dark:text-secondary-400 mt-1 text-center">
                       {available} of {quantity} available
                     </p>
                   </div>

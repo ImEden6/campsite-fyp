@@ -69,7 +69,7 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition"
+              className="text-secondary-400 hover:text-gray-600 transition"
               aria-label="Close"
             >
               <X size={24} />
@@ -120,7 +120,7 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
                 )}
               </div>
             ) : (
-              <div className="h-96 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400">
+              <div className="h-96 bg-gray-200 rounded-lg flex items-center justify-center text-secondary-400">
                 No images available
               </div>
             )}
@@ -158,7 +158,7 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Site Details</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin size={20} className="text-gray-400" />
+                  <MapPin size={20} className="text-secondary-400" />
                   <div>
                     <div className="text-sm font-medium">Size</div>
                     <div className="text-sm">
@@ -167,14 +167,14 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
-                  <Car size={20} className="text-gray-400" />
+                  <Car size={20} className="text-secondary-400" />
                   <div>
                     <div className="text-sm font-medium">Max Vehicles</div>
                     <div className="text-sm">{site.maxVehicles}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
-                  <Tent size={20} className="text-gray-400" />
+                  <Tent size={20} className="text-secondary-400" />
                   <div>
                     <div className="text-sm font-medium">Max Tents</div>
                     <div className="text-sm">{site.maxTents}</div>
@@ -282,7 +282,7 @@ export const SiteDetailView: React.FC<SiteDetailViewProps> = ({
           <div className="relative h-full bg-black flex items-center justify-center">
             <button
               onClick={() => setShowImageModal(false)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 transition z-10"
+              className="absolute top-4 right-4 text-white hover:text-secondary-300 transition z-10"
               aria-label="Close"
             >
               <X size={32} />

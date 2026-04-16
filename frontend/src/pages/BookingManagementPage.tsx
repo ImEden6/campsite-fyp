@@ -79,20 +79,20 @@ const BookingManagementPage: React.FC = () => {
       [BookingStatus.PENDING]: 'text-yellow-600 dark:text-yellow-400',
       [BookingStatus.CONFIRMED]: 'text-blue-600 dark:text-blue-400',
       [BookingStatus.CHECKED_IN]: 'text-green-600 dark:text-green-400',
-      [BookingStatus.CHECKED_OUT]: 'text-gray-600 dark:text-gray-400',
+      [BookingStatus.CHECKED_OUT]: 'text-gray-600 dark:text-secondary-400',
       [BookingStatus.CANCELLED]: 'text-red-600 dark:text-red-400',
       [BookingStatus.NO_SHOW]: 'text-orange-600 dark:text-orange-400',
     };
-    return colors[status] || 'text-gray-600 dark:text-gray-400';
+    return colors[status] || 'text-gray-600 dark:text-secondary-400';
   };
 
   const renderListView = () => {
     if (bookings.length === 0) {
       return (
-        <Card className="p-12 text-center dark:bg-gray-800 dark:border-gray-700">
-          <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">No bookings found</h3>
-          <p className="text-gray-500 dark:text-gray-500 mb-4">
+        <Card className="p-12 text-center dark:bg-night-surface dark:border-secondary-700">
+          <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-secondary-300 dark:text-secondary-600" />
+          <h3 className="text-lg font-semibold text-gray-600 dark:text-secondary-400 mb-2">No bookings found</h3>
+          <p className="text-gray-500 dark:text-secondary-500 mb-4">
             {searchTerm ? 'Try adjusting your search criteria' : 'Create your first booking to get started'}
           </p>
           <Button onClick={() => setShowCreateModal(true)}>
@@ -112,47 +112,47 @@ const BookingManagementPage: React.FC = () => {
               className="cursor-pointer"
               onClick={() => handleBookingClick(booking)}
             >
-              <Card className="p-4 hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-750">
+              <Card className="p-4 hover:shadow-md transition-shadow dark:bg-night-surface dark:border-secondary-700 dark:hover:bg-night-surface">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-primary-100">
                         {booking.site?.name || `Site ${booking.siteId}`}
                       </h3>
                       <span className={`text-sm font-medium ${getStatusColor(booking.status)}`}>
                         {booking.status}
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-secondary-400">
                       <div>
-                        <div className="font-medium text-gray-700 dark:text-gray-300">Guest</div>
+                        <div className="font-medium text-gray-700 dark:text-secondary-300">Guest</div>
                         <div>
                           {booking.user?.firstName} {booking.user?.lastName}
                         </div>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-700 dark:text-gray-300">Booking #</div>
+                        <div className="font-medium text-gray-700 dark:text-secondary-300">Booking #</div>
                         <div>{booking.bookingNumber}</div>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-700 dark:text-gray-300">Check-in</div>
+                        <div className="font-medium text-gray-700 dark:text-secondary-300">Check-in</div>
                         <div>{new Date(booking.checkInDate).toLocaleDateString()}</div>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-700 dark:text-gray-300">Check-out</div>
+                        <div className="font-medium text-gray-700 dark:text-secondary-300">Check-out</div>
                         <div>{new Date(booking.checkOutDate).toLocaleDateString()}</div>
                       </div>
                     </div>
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="mt-2 text-sm text-gray-600 dark:text-secondary-400">
                       {booking.guests.adults} adults, {booking.guests.children} children
                       {booking.guests.pets > 0 && `, ${booking.guests.pets} pets`}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="text-lg font-semibold text-gray-900 dark:text-primary-100">
                       {formatCurrency(booking.totalAmount)}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-500 dark:text-secondary-400">
                       {booking.paymentStatus === 'PAID' ? 'Paid' : `${formatCurrency(booking.paidAmount)} paid`}
                     </div>
                   </div>
@@ -164,8 +164,8 @@ const BookingManagementPage: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4 gap-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 dark:border-secondary-700 pt-4 gap-4">
+            <div className="text-sm text-gray-600 dark:text-secondary-400">
               Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} bookings
             </div>
             <div className="flex gap-2 items-center flex-wrap justify-center">
@@ -196,7 +196,7 @@ const BookingManagementPage: React.FC = () => {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-1 text-sm rounded transition-colors ${currentPage === pageNum
                         ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
+                        : 'bg-white dark:bg-night-surface text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt border border-gray-300 dark:border-secondary-600'
                         }`}
                     >
                       {pageNum}
@@ -229,7 +229,7 @@ const BookingManagementPage: React.FC = () => {
             <CalendarIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Booking Management</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Booking Management</h1>
             <p className="text-secondary-600 dark:text-secondary-400">Manage all campsite bookings and reservations</p>
           </div>
         </div>
@@ -240,11 +240,11 @@ const BookingManagementPage: React.FC = () => {
             <BookingSearchBar onSearch={handleSearch} defaultValue={searchTerm} />
           </div>
           <div className="flex gap-2 flex-wrap">
-            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+            <div className="flex border border-gray-300 dark:border-secondary-600 rounded-md overflow-hidden">
               <button
                 className={`px-4 py-2 text-sm flex items-center gap-2 transition-colors ${viewMode === 'calendar'
                   ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'bg-white dark:bg-night-surface text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt'
                   }`}
                 onClick={() => setViewMode('calendar')}
               >
@@ -252,9 +252,9 @@ const BookingManagementPage: React.FC = () => {
                 Calendar
               </button>
               <button
-                className={`px-4 py-2 text-sm flex items-center gap-2 border-l border-gray-300 dark:border-gray-600 transition-colors ${viewMode === 'list'
+                className={`px-4 py-2 text-sm flex items-center gap-2 border-l border-gray-300 dark:border-secondary-600 transition-colors ${viewMode === 'list'
                   ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'bg-white dark:bg-night-surface text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt'
                   }`}
                 onClick={() => setViewMode('list')}
               >

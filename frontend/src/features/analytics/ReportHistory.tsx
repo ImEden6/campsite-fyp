@@ -68,7 +68,7 @@ export const ReportHistory: React.FC<ReportHistoryProps> = ({
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Report History</h3>
         <div className="text-center py-8">
-          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <FileText className="w-12 h-12 text-secondary-400 mx-auto mb-3" />
           <p className="text-gray-600">No reports generated yet</p>
           <p className="text-sm text-gray-500 mt-1">
             Generate your first report to see it here

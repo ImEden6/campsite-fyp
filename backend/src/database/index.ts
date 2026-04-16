@@ -1,33 +1,17 @@
 // Database Connection and Prisma Client Setup
 
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
-// Prisma Client instance & DB Pool
+// Prisma Client instance
 let prisma: PrismaClient;
-let pool: Pool;
 
 // Initialize Prisma Client
 const initializePrisma = (): PrismaClient => {
   if (!prisma) {
-    // 1. Create a `pg` Pool
-    pool = new Pool({
-      connectionString: config.database.url,
-      // You can also add more pool options here if needed, e.g.:
-      // max: 20,
-      // idleTimeoutMillis: 30000,
-      // connectionTimeoutMillis: 2000,
-    });
-
-    // 2. Create the driver adapter
-    const adapter = new PrismaPg(pool);
-
-    // 3. Pass the adapter to `PrismaClient`
+    // Use default Prisma client (no adapter needed for Prisma 6.x)
     prisma = new PrismaClient({
-      adapter,
       log: config.server.nodeEnv === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
 
@@ -35,7 +19,6 @@ const initializePrisma = (): PrismaClient => {
       logger.info(`Cleaning up database connections... (${reason})`);
       try {
         if (prisma) await prisma.$disconnect();
-        if (pool) await pool.end();
         logger.info('Database cleanup finished.');
       } catch (err) {
         logger.error('Error during database cleanup', err);
@@ -83,15 +66,11 @@ export const connectDatabase = async (): Promise<void> => {
 export const disconnectDatabase = async (): Promise<void> => {
   try {
     if (prisma) {
-      // Prisma $disconnect should be sufficient, but we also ensure pool is closed in cleanup handlers.
-      // Explicitly closing prisma disconnects the adapter.
       await prisma.$disconnect();
-      if (pool) await pool.end();
       logger.info('Database disconnected successfully');
     }
   } catch (error) {
     logger.error('Database disconnection failed:', error);
-    throw error;
   }
 };
 

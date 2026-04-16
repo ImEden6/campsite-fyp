@@ -44,7 +44,7 @@ const CustomerProfilePage: React.FC = () => {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 className="font-heading text-3xl font-bold text-secondary-900 dark:text-gray-100">Profile</h1>
+          <h1 className="font-heading text-3xl font-bold text-secondary-900 dark:text-primary-100">Profile</h1>
           <p className="text-secondary-600 dark:text-secondary-400 mt-1">
             Manage your account information
           </p>
@@ -57,7 +57,7 @@ const CustomerProfilePage: React.FC = () => {
               <User className="w-8 h-8 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <h2 className="font-heading text-xl font-semibold text-secondary-900 dark:text-gray-100">
+              <h2 className="font-heading text-xl font-semibold text-secondary-900 dark:text-primary-100">
                 {user?.firstName} {user?.lastName}
               </h2>
               <p className="text-secondary-600 dark:text-secondary-400">{user?.email}</p>
@@ -67,7 +67,7 @@ const CustomerProfilePage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-gray-300 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
                   <User className="w-4 h-4 text-secondary-400" />
                   First Name
                 </label>
@@ -79,7 +79,7 @@ const CustomerProfilePage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-gray-300 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
                   <User className="w-4 h-4 text-secondary-400" />
                   Last Name
                 </label>
@@ -91,7 +91,7 @@ const CustomerProfilePage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-gray-300 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
                   <Mail className="w-4 h-4 text-secondary-400" />
                   Email
                 </label>
@@ -101,14 +101,14 @@ const CustomerProfilePage: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                   disabled
-                  className="bg-gray-50 dark:bg-gray-700/50"
+                  className="bg-gray-50 dark:bg-night-surface-alt/50"
                 />
                 <p className="text-xs text-secondary-500 dark:text-secondary-400 mt-1.5">
                   Email cannot be changed
                 </p>
               </div>
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-gray-300 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-2">
                   <Phone className="w-4 h-4 text-secondary-400" />
                   Phone
                 </label>

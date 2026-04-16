@@ -463,7 +463,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <MapPin className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <MapPin className="w-16 h-16 mx-auto text-secondary-400 mb-4" />
               <p className="text-gray-600 dark:text-secondary-400">No sites available at the moment</p>
             </div>
           )}

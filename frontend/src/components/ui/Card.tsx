@@ -16,14 +16,14 @@ const Card: React.FC<CardProps> = ({ children, className, loading = false, hover
         'rounded-2xl border border-secondary-200/50 dark:border-secondary-700/50 shadow-campsite',
         glass
           ? 'bg-white/80 dark:bg-night-surface/80 backdrop-blur-md'
-          : 'bg-white dark:bg-gray-800',
+          : 'bg-white dark:bg-night-surface',
         hover && 'transition-all duration-200 hover:shadow-organic hover:-translate-y-0.5',
         loading && 'relative overflow-hidden',
         className
       )}
     >
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-75 dark:bg-opacity-75">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white dark:bg-night-surface bg-opacity-75 dark:bg-opacity-75">
           <div className="flex flex-col items-center gap-2">
             <svg
               className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"
@@ -45,7 +45,7 @@ const Card: React.FC<CardProps> = ({ children, className, loading = false, hover
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span className="text-sm text-gray-600 dark:text-gray-400">Loading...</span>
+            <span className="text-sm text-gray-600 dark:text-secondary-400">Loading...</span>
           </div>
         </div>
       )}
@@ -61,7 +61,7 @@ export interface CardHeaderProps {
 
 const CardHeader: React.FC<CardHeaderProps> = ({ children, className }) => {
   return (
-    <div className={cn('border-b border-gray-200 dark:border-gray-700 px-6 py-4', className)}>
+    <div className={cn('border-b border-gray-200 dark:border-secondary-700 px-6 py-4', className)}>
       {children}
     </div>
   );
@@ -74,7 +74,7 @@ export interface CardTitleProps {
 
 const CardTitle: React.FC<CardTitleProps> = ({ children, className }) => {
   return (
-    <h3 className={cn('text-lg font-semibold text-gray-900 dark:text-gray-100', className)}>
+    <h3 className={cn('text-lg font-semibold text-gray-900 dark:text-primary-100', className)}>
       {children}
     </h3>
   );
@@ -96,7 +96,7 @@ export interface CardFooterProps {
 
 const CardFooter: React.FC<CardFooterProps> = ({ children, className }) => {
   return (
-    <div className={cn('border-t border-gray-200 dark:border-gray-700 px-6 py-4', className)}>
+    <div className={cn('border-t border-gray-200 dark:border-secondary-700 px-6 py-4', className)}>
       {children}
     </div>
   );

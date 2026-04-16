@@ -69,7 +69,7 @@ const SettingsPage: React.FC = () => {
             <Settings className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Settings</h1>
             <p className="text-secondary-600 dark:text-secondary-400">
               Manage your application preferences and system configurations
             </p>
@@ -91,7 +91,7 @@ const SettingsPage: React.FC = () => {
                       w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors
                       ${isActive
                         ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400'
-                        : 'text-gray-700 hover:bg-white/50 dark:text-gray-300 dark:hover:bg-gray-800/50'
+                        : 'text-gray-700 hover:bg-white/50 dark:text-secondary-300 dark:hover:bg-night-surface/50'
                       }
                     `}
                   >

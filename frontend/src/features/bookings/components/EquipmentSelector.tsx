@@ -89,11 +89,11 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="animate-spin text-blue-600 dark:text-blue-400 mr-2" size={24} />
-          <span className="text-gray-600 dark:text-gray-400">Loading available equipment...</span>
+          <span className="text-gray-600 dark:text-secondary-400">Loading available equipment...</span>
         </div>
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="bg-gray-200 dark:bg-gray-700 h-32 rounded-lg" />
+            <div className="bg-gray-200 dark:bg-night-surface-alt h-32 rounded-lg" />
           </div>
         ))}
       </div>
@@ -105,7 +105,7 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
       <div className="text-center py-8">
         <Package size={48} className="mx-auto mb-2 text-red-400 dark:text-red-500" />
         <p className="text-red-600 dark:text-red-400">Failed to load equipment availability</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Please try again later</p>
+        <p className="text-sm text-gray-500 dark:text-secondary-400 mt-1">Please try again later</p>
       </div>
     );
   }
@@ -138,8 +138,8 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
 
       {/* Equipment List */}
       {filteredEquipment.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          <Package size={48} className="mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+        <div className="text-center py-8 text-gray-500 dark:text-secondary-400">
+          <Package size={48} className="mx-auto mb-2 text-secondary-400 dark:text-secondary-500" />
           <p>No equipment available in this category</p>
         </div>
       ) : (
@@ -152,8 +152,8 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
               <Card key={item.id} className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.name}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-primary-100">{item.name}</h4>
+                    <p className="text-sm text-gray-600 dark:text-secondary-400 mt-1">{item.description}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary">{item.category.replace('_', ' ')}</Badge>
                       {item.available ? (
@@ -171,7 +171,7 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
 
                 <div className="flex items-center justify-between mt-4">
                   <div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    <div className="text-lg font-bold text-gray-900 dark:text-primary-100">
                       {CURRENCY_SYMBOL}{item.dailyRate}/night
                     </div>
                     {quantity > 0 && (
@@ -190,7 +190,7 @@ export const EquipmentSelector: React.FC<EquipmentSelectorProps> = ({
                     >
                       <Minus size={16} />
                     </Button>
-                    <span className="w-8 text-center font-medium text-gray-900 dark:text-gray-100">{quantity}</span>
+                    <span className="w-8 text-center font-medium text-gray-900 dark:text-primary-100">{quantity}</span>
                     <Button
                       variant="outline"
                       size="sm"

@@ -100,7 +100,7 @@ export function OptimizedImage({
         className={`flex items-center justify-center bg-gray-100 ${className}`}
         style={{ width, height }}
       >
-        <div className="flex flex-col items-center gap-2 text-gray-400">
+        <div className="flex flex-col items-center gap-2 text-secondary-400">
           <ImageOff className="w-8 h-8" />
           <span className="text-xs">Failed to load image</span>
         </div>

@@ -173,7 +173,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
         <div className="flex flex-col items-center gap-2">
           <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-            <Upload className="text-gray-400" size={24} />
+            <Upload className="text-secondary-400" size={24} />
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700">
@@ -259,7 +259,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       {totalImages === 0 && (
         <div className="text-center py-8">
           <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-            <ImageIcon className="text-gray-400" size={32} />
+            <ImageIcon className="text-secondary-400" size={32} />
           </div>
           <p className="text-sm text-gray-500">No images uploaded yet</p>
         </div>

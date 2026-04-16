@@ -114,7 +114,7 @@ export const CircularProgress: React.FC<{
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="none"
-          className="text-gray-200"
+          className="text-secondary-200"
         />
         {/* Progress circle */}
         <circle

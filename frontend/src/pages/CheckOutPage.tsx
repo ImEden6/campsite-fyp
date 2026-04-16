@@ -105,7 +105,7 @@ const CheckOutPage: React.FC = () => {
     return (
       <div className="space-y-6">
         <GlassCard className="p-8" intensity="strong">
-          <h3 className="font-heading text-xl font-bold mb-6 text-secondary-900 dark:text-primary-100 border-b border-gray-200 dark:border-gray-700 pb-4">Booking Details</h3>
+          <h3 className="font-heading text-xl font-bold mb-6 text-secondary-900 dark:text-primary-100 border-b border-gray-200 dark:border-secondary-700 pb-4">Booking Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -151,7 +151,7 @@ const CheckOutPage: React.FC = () => {
               <div className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-3">Equipment Rentals</div>
               <div className="space-y-2">
                 {selectedBooking.equipmentReservations.map((rental, index) => (
-                  <div key={index} className="text-sm bg-gray-50/50 dark:bg-night-surface/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700 flex justify-between">
+                  <div key={index} className="text-sm bg-gray-50/50 dark:bg-night-surface/50 p-3 rounded-lg border border-gray-100 dark:border-secondary-700 flex justify-between">
                     <span>
                       {rental.equipment?.name} x{rental.quantity}
                     </span>
@@ -171,9 +171,9 @@ const CheckOutPage: React.FC = () => {
 
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary-700 dark:text-gray-300">Charge Amount</label>
+              <label className="block text-sm font-medium mb-2 text-secondary-700 dark:text-secondary-300">Charge Amount</label>
               <div className="relative group">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500" />
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-secondary-400 group-focus-within:text-primary-500" />
                 <Input
                   type="number"
                   value={additionalCharges}
@@ -187,12 +187,12 @@ const CheckOutPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary-700 dark:text-gray-300">Description</label>
+              <label className="block text-sm font-medium mb-2 text-secondary-700 dark:text-secondary-300">Description</label>
               <textarea
                 value={chargeDescription}
                 onChange={(e) => setChargeDescription(e.target.value)}
                 placeholder="Reason for additional charges (e.g., damages, late checkout, extra services)"
-                className="w-full px-4 py-3 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border border-secondary-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-secondary-900 dark:text-primary-100"
+                className="w-full px-4 py-3 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border border-secondary-300 dark:border-secondary-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-secondary-900 dark:text-primary-100"
                 rows={3}
               />
             </div>
@@ -221,7 +221,7 @@ const CheckOutPage: React.FC = () => {
                 <span className="font-medium text-orange-600 dark:text-orange-400">+{formatCurrency(charges.additionalCharges)}</span>
               </div>
             )}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex justify-between items-center">
+            <div className="border-t border-gray-200 dark:border-secondary-700 pt-3 flex justify-between items-center">
               <span className="font-bold text-lg">Final Total</span>
               <span className={`font-bold text-2xl ${hasBalance ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                 {formatCurrency(charges.finalTotal)}
@@ -238,7 +238,7 @@ const CheckOutPage: React.FC = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700/50">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-secondary-700/50">
             <Button variant="ghost" onClick={handleReset}>
               Cancel
             </Button>
@@ -272,7 +272,7 @@ const CheckOutPage: React.FC = () => {
         </p>
 
         {charges.finalTotal > 0 && (
-          <div className="mb-8 p-6 bg-white dark:bg-night-surface/80 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 inline-block min-w-[280px]">
+          <div className="mb-8 p-6 bg-white dark:bg-night-surface/80 rounded-2xl shadow-sm border border-gray-100 dark:border-secondary-700 inline-block min-w-[280px]">
             <div className="text-xs uppercase tracking-wider text-secondary-500 mb-2">Final Charges Collected</div>
             <div className="text-3xl font-bold text-secondary-900 dark:text-primary-100">{formatCurrency(charges.finalTotal)}</div>
             <div className="text-sm text-secondary-500 mt-2">

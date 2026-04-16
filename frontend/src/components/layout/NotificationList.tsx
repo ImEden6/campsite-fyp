@@ -126,7 +126,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 px-4">
-            <Bell className="w-12 h-12 text-gray-300 mb-2" />
+            <Bell className="w-12 h-12 text-secondary-300 mb-2" />
             <p className="text-sm text-gray-500 text-center">
               {filter === 'all'
                 ? 'No notifications yet'
@@ -207,7 +207,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => 
         <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">
           {notification.message}
         </p>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="text-xs text-secondary-400 mt-1">
           {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
         </p>
       </div>

@@ -31,7 +31,7 @@ export const BookingDetailsCard: React.FC<BookingDetailsCardProps> = ({
     children,
 }) => (
     <GlassCard className="p-6 md:p-8">
-        <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
+        <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-primary-100 mb-6 flex items-center gap-2">
             <Icon className="w-5 h-5 text-green-500" />
             {title}
         </h2>
@@ -40,8 +40,8 @@ export const BookingDetailsCard: React.FC<BookingDetailsCardProps> = ({
             <div className="space-y-6">
                 <div>
                     <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-in</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                        <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-3 text-gray-900 dark:text-primary-100">
+                        <div className="p-2 bg-primary-50 dark:bg-night-surface rounded-lg">
                             <Calendar className="w-5 h-5 text-primary-600" />
                         </div>
                         <span className="text-lg font-medium">{format(new Date(checkInDate), 'EEE, MMM dd, yyyy')}</span>
@@ -49,8 +49,8 @@ export const BookingDetailsCard: React.FC<BookingDetailsCardProps> = ({
                 </div>
                 <div>
                     <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Check-out</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                        <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-3 text-gray-900 dark:text-primary-100">
+                        <div className="p-2 bg-primary-50 dark:bg-night-surface rounded-lg">
                             <Calendar className="w-5 h-5 text-primary-600" />
                         </div>
                         <span className="text-lg font-medium">{format(new Date(checkOutDate), 'EEE, MMM dd, yyyy')}</span>
@@ -61,8 +61,8 @@ export const BookingDetailsCard: React.FC<BookingDetailsCardProps> = ({
             <div className="space-y-6">
                 <div>
                     <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">Guests</div>
-                    <div className="flex items-center space-x-3 text-gray-900 dark:text-gray-100">
-                        <div className="p-2 bg-primary-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-3 text-gray-900 dark:text-primary-100">
+                        <div className="p-2 bg-primary-50 dark:bg-night-surface rounded-lg">
                             <Users className="w-5 h-5 text-primary-600" />
                         </div>
                         <span className="text-lg font-medium">
@@ -73,7 +73,7 @@ export const BookingDetailsCard: React.FC<BookingDetailsCardProps> = ({
                 </div>
                 <div>
                     <div className="text-sm font-semibold text-secondary-500 uppercase tracking-wider mb-1">{durationLabel}</div>
-                    <div className="text-lg font-medium text-gray-900 dark:text-gray-100 pl-2">
+                    <div className="text-lg font-medium text-gray-900 dark:text-primary-100 pl-2">
                         {nights} Nights
                     </div>
                 </div>

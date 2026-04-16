@@ -44,7 +44,7 @@ export const Switch: React.FC<SwitchProps> = ({
                     className={`
             relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
             transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-            ${checked ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}
+            ${checked ? 'bg-primary-600' : 'bg-gray-200 dark:bg-night-surface-alt'}
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           `}
                 >
@@ -64,14 +64,14 @@ export const Switch: React.FC<SwitchProps> = ({
                     {label && (
                         <label
                             onClick={handleToggle}
-                            className={`font-medium text-gray-900 dark:text-gray-100 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                            className={`font-medium text-gray-900 dark:text-primary-100 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                                 }`}
                         >
                             {label}
                         </label>
                     )}
                     {description && (
-                        <p className="text-gray-500 dark:text-gray-400">{description}</p>
+                        <p className="text-gray-500 dark:text-secondary-400">{description}</p>
                     )}
                 </div>
             )}

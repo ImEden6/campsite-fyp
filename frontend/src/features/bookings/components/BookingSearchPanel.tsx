@@ -85,7 +85,7 @@ export const BookingSearchPanel: React.FC<BookingSearchPanelProps> = ({
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <h4 className="font-bold text-gray-900 dark:text-gray-100">
+                                        <h4 className="font-bold text-gray-900 dark:text-primary-100">
                                             {booking.user?.firstName} {booking.user?.lastName}
                                         </h4>
                                         <Badge variant={badgeVariant} className={
@@ -112,11 +112,11 @@ export const BookingSearchPanel: React.FC<BookingSearchPanelProps> = ({
     return (
         <GlassCard className="p-6 mb-8" intensity="medium">
             <form className="mb-6">
-                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-secondary-300">
                     {searchLabel}
                 </label>
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-400" />
                     <Input
                         type="text"
                         value={searchTerm}

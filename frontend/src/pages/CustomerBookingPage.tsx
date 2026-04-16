@@ -40,7 +40,7 @@ const CustomerBookingPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="text-center py-12">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+          <p className="text-lg font-medium text-gray-900 dark:text-primary-100 mb-2">
             Site ID is required
           </p>
           <button
@@ -58,7 +58,7 @@ const CustomerBookingPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-gray-600 dark:text-secondary-400">Loading...</p>
         </div>
       </div>
     );
@@ -71,7 +71,7 @@ const CustomerBookingPage: React.FC = () => {
           <p className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
             Failed to load site
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-600 dark:text-secondary-400 mb-4">
             {error instanceof Error ? error.message : 'An unexpected error occurred'}
           </p>
           <button
@@ -89,7 +89,7 @@ const CustomerBookingPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center p-4">
         <GlassCard className="max-w-md w-full p-8 text-center" intensity="light">
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+          <p className="text-lg font-medium text-gray-900 dark:text-primary-100 mb-4">
             Site not found
           </p>
           <Button onClick={() => navigate('/sites')}>Back to Sites</Button>
@@ -102,7 +102,7 @@ const CustomerBookingPage: React.FC = () => {
     <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 md:py-12 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100 mb-2">
             Secure Your Reservation
           </h1>
           <p className="text-secondary-600 dark:text-secondary-400">

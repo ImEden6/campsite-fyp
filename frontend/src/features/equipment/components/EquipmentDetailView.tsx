@@ -85,7 +85,7 @@ export const EquipmentDetailView: React.FC<EquipmentDetailViewProps> = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <div className="w-full h-full flex items-center justify-center text-secondary-400">
                   <svg
                     className="w-24 h-24"
                     fill="none"

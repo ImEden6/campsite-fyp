@@ -117,7 +117,7 @@ const Sidebar: React.FC = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={toggleMobileMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white dark:bg-night-surface shadow-md hover:bg-gray-100 dark:hover:bg-night-surface-alt text-gray-900 dark:text-primary-100"
         aria-label="Toggle menu"
       >
         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -138,7 +138,7 @@ const Sidebar: React.FC = () => {
         role="navigation"
         aria-label="Main navigation"
         className={`
-          fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40
+          fixed top-0 left-0 h-full bg-white dark:bg-night-surface border-r border-gray-200 dark:border-secondary-700 z-40
           transition-all duration-300 ease-in-out transform
           ${sidebarCollapsed ? 'w-16' : 'w-64'}
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -150,13 +150,13 @@ const Sidebar: React.FC = () => {
       >
         <div className="flex flex-col h-full">
           {/* Logo/Brand */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-secondary-700">
             {!sidebarCollapsed && (
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
                   <Map className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Campsite</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-primary-100">Campsite</h1>
               </div>
             )}
 
@@ -191,7 +191,7 @@ const Sidebar: React.FC = () => {
                         flex items-center px-3 py-2.5 rounded-lg transition-colors
                         ${active
                           ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          : 'text-gray-700 dark:text-secondary-300 hover:bg-gray-100 dark:hover:bg-night-surface-alt'
                         }
                         ${sidebarCollapsed ? 'justify-center' : 'space-x-3'}
                       `}
@@ -199,7 +199,7 @@ const Sidebar: React.FC = () => {
                       aria-label={item.label}
                       aria-current={active ? 'page' : undefined}
                     >
-                      <Icon className={`w-5 h-5 ${active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} />
+                      <Icon className={`w-5 h-5 ${active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-secondary-400'}`} />
                       {!sidebarCollapsed && <span>{item.label}</span>}
                     </Link>
                   </li>
@@ -210,16 +210,16 @@ const Sidebar: React.FC = () => {
 
           {/* User Profile Section */}
           {user && (
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="border-t border-gray-200 dark:border-secondary-700 p-4">
               <Link
                 to="/profile"
                 className={`
-                  flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                  flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-night-surface-alt transition-colors
                   ${sidebarCollapsed ? 'justify-center p-2' : 'space-x-3 p-3'}
                 `}
                 title={sidebarCollapsed ? user.firstName : undefined}
               >
-                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 bg-gray-300 dark:bg-night-surface-alt rounded-full flex items-center justify-center shrink-0">
                   {user.avatar ? (
                     <img
                       src={user.avatar}
@@ -227,15 +227,15 @@ const Sidebar: React.FC = () => {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <UserIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                    <UserIcon className="w-4 h-4 text-gray-600 dark:text-secondary-300" />
                   )}
                 </div>
                 {!sidebarCollapsed && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-primary-100 truncate">
                       {user.firstName} {user.lastName}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.role}</p>
+                    <p className="text-xs text-gray-500 dark:text-secondary-400 truncate">{user.role}</p>
                   </div>
                 )}
               </Link>

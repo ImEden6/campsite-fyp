@@ -276,9 +276,9 @@ const SiteDetailPage: React.FC = () => {
                 ].map((item, idx) => (
                   <div key={idx} className={cn(
                     "flex items-center gap-3 p-3 rounded-xl transition-colors",
-                    item.active ? "bg-primary-50/50 dark:bg-primary-900/10 text-secondary-900 dark:text-primary-100" : "opacity-40 text-gray-400"
+                    item.active ? "bg-primary-50/50 dark:bg-primary-900/10 text-secondary-900 dark:text-primary-100" : "opacity-40 text-secondary-400"
                   )}>
-                    <item.icon className={cn("w-5 h-5", item.active ? "text-primary-600" : "text-gray-400")} />
+                    <item.icon className={cn("w-5 h-5", item.active ? "text-primary-600" : "text-secondary-400")} />
                     <span className="font-medium">{item.label}</span>
                   </div>
                 ))}

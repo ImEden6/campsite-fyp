@@ -69,8 +69,8 @@ export const UserTable: React.FC<UserTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-secondary-200 dark:divide-night-surface dark:divide-gray-700">
-        <thead className="bg-secondary-50 dark:bg-night-bg dark:bg-gray-900">
+      <table className="min-w-full divide-y divide-secondary-200 dark:divide-night-surface dark:divide-secondary-700">
+        <thead className="bg-secondary-50 dark:bg-night-bg dark:bg-night-bg">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-secondary-400 uppercase tracking-wider">
               User
@@ -92,7 +92,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-night-surface divide-y divide-secondary-200 dark:divide-night-surface dark:divide-gray-700">
+        <tbody className="bg-white dark:bg-night-surface divide-y divide-secondary-200 dark:divide-night-surface dark:divide-secondary-700">
           {users.map((user) => (
             <tr key={user.id} className="hover:bg-secondary-50 dark:bg-night-bg bg-secondary-100 dark:hover:bg-night-surface-alt">
               <td className="px-6 py-4 whitespace-nowrap">
@@ -105,8 +105,8 @@ export const UserTable: React.FC<UserTableProps> = ({
                         alt={`${user.firstName} ${user.lastName}`}
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-secondary-200 dark:bg-night-surface-alt dark:bg-gray-700 flex items-center justify-center">
-                        <span className="text-secondary-600 dark:text-gray-300 font-medium">
+                      <div className="h-10 w-10 rounded-full bg-secondary-200 dark:bg-night-surface-alt dark:bg-night-surface-alt flex items-center justify-center">
+                        <span className="text-secondary-600 dark:text-secondary-300 font-medium">
                           {user.firstName[0]}{user.lastName[0]}
                         </span>
                       </div>
@@ -148,7 +148,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                 <div className="relative inline-block text-left">
                   <button
                     onClick={() => toggleMenu(user.id)}
-                    className="text-secondary-400 hover:text-secondary-600 dark:hover:text-gray-300 focus:outline-none"
+                    className="text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 focus:outline-none"
                   >
                     <MoreVertical className="h-5 w-5" />
                   </button>
@@ -159,7 +159,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         className="fixed inset-0 z-10"
                         onClick={() => setOpenMenuId(null)}
                       ></div>
-                      <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-night-surface ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-20">
+                      <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-night-surface ring-1 ring-black ring-opacity-5 dark:ring-secondary-700 z-20">
                         <div className="py-1" role="menu">
                           <button
                             onClick={() => {

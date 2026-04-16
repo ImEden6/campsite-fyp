@@ -19,13 +19,13 @@ const Badge: React.FC<BadgeProps> = ({
   const baseStyles = 'inline-flex items-center font-medium rounded-full border';
 
   const variants = {
-    default: 'border-transparent bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100',
+    default: 'border-transparent bg-gray-200 text-gray-900 dark:bg-night-surface-alt dark:text-primary-100',
     success: 'border-transparent bg-green-200 text-green-900 dark:bg-green-700 dark:text-green-100',
     warning: 'border-transparent bg-yellow-200 text-yellow-900 dark:bg-yellow-600 dark:text-yellow-50',
     error: 'border-transparent bg-red-200 text-red-900 dark:bg-red-700 dark:text-red-100',
     info: 'border-transparent bg-blue-200 text-blue-900 dark:bg-blue-700 dark:text-blue-100',
     secondary: 'border-transparent bg-purple-200 text-purple-900 dark:bg-purple-700 dark:text-purple-100',
-    outline: 'bg-transparent border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300',
+    outline: 'bg-transparent border-gray-200 text-gray-700 dark:border-secondary-700 dark:text-secondary-300',
   };
 
   const sizes = {

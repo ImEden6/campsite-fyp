@@ -35,7 +35,7 @@ export const PaymentPage = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Payment</h1>
+          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Payment</h1>
           <p className="text-secondary-600 dark:text-secondary-400 mt-2">
             Manage payments for your booking
           </p>
@@ -45,13 +45,13 @@ export const PaymentPage = () => {
           {/* Payment Action Card */}
           <GlassCard intensity="medium" className="p-6">
             <div className="mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Make a Payment</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-primary-100">Make a Payment</h2>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-500 dark:text-secondary-400 mb-1">
-                  Booking ID: <span className="font-mono text-gray-700 dark:text-gray-300">{bookingId || 'N/A'}</span>
+                  Booking ID: <span className="font-mono text-gray-700 dark:text-secondary-300">{bookingId || 'N/A'}</span>
                 </p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-sm font-medium text-gray-500 transform -translate-y-1">Total Due:</span>
@@ -84,7 +84,7 @@ export const PaymentPage = () => {
           <div className="bg-primary-50/80 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-xl p-4 flex items-start gap-3">
             <ShieldCheck className="w-5 h-5 text-primary-600 dark:text-primary-400 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Secure Payment</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-primary-100 mb-1">Secure Payment</p>
               <p className="text-sm text-secondary-600 dark:text-secondary-400">
                 All payments are processed securely through Stripe. We never
                 store your card details on our servers.

@@ -126,7 +126,7 @@ export const SiteList: React.FC<SiteListProps> = ({
       <Card className="p-4">
         <div className="flex gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-400" size={20} />
             <Input
               type="text"
               placeholder="Search sites by name or description..."

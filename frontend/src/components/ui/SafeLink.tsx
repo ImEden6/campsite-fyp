@@ -40,7 +40,7 @@ const SafeLink: React.FC<SafeLinkProps> = ({
   if (!isSafeUrl(to)) {
     console.warn('Unsafe URL blocked:', to);
     return (
-      <span className={cn('cursor-not-allowed text-gray-400', className)} title="Invalid link">
+      <span className={cn('cursor-not-allowed text-secondary-400', className)} title="Invalid link">
         {children}
       </span>
     );
@@ -107,7 +107,7 @@ export const ExternalLink: React.FC<ExternalLinkProps> = ({
   if (!isSafeUrl(href)) {
     console.warn('Unsafe URL blocked:', href);
     return (
-      <span className={cn('cursor-not-allowed text-gray-400', className)} title="Invalid link">
+      <span className={cn('cursor-not-allowed text-secondary-400', className)} title="Invalid link">
         {children}
       </span>
     );

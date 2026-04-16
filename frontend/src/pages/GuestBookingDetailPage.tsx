@@ -60,7 +60,7 @@ const GuestBookingDetailPage: React.FC = () => {
 
           <form onSubmit={handleEmailVerification} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-secondary-700 dark:text-gray-300 mb-1.5">
+              <label className="block text-sm font-semibold text-secondary-700 dark:text-secondary-300 mb-1.5">
                 Email Address
               </label>
               <input
@@ -160,7 +160,7 @@ const GuestBookingDetailPage: React.FC = () => {
               nights={nights}
               durationLabel="Length of Stay"
             >
-              <div className="mt-8 pt-6 border-t border-secondary-200 dark:border-gray-700">
+              <div className="mt-8 pt-6 border-t border-secondary-200 dark:border-secondary-700">
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="text-sm font-semibold text-secondary-500">Payment Status</div>

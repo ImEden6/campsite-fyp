@@ -94,10 +94,10 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <div className="bg-white dark:bg-night-surface rounded-lg shadow p-4">
       <div className="flex items-center gap-2 mb-4">
-        <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Date Range</h3>
+        <Calendar className="w-5 h-5 text-gray-600 dark:text-secondary-400" />
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-primary-100">Date Range</h3>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -105,7 +105,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
           onClick={() => handlePresetChange('today')}
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${selectedPreset === 'today'
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            : 'bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
             }`}
         >
           Today
@@ -114,7 +114,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
           onClick={() => handlePresetChange('week')}
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${selectedPreset === 'week'
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            : 'bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
             }`}
         >
           Last 7 Days
@@ -123,7 +123,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
           onClick={() => handlePresetChange('month')}
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${selectedPreset === 'month'
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            : 'bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
             }`}
         >
           Last 30 Days
@@ -132,7 +132,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
           onClick={() => handlePresetChange('quarter')}
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${selectedPreset === 'quarter'
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            : 'bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
             }`}
         >
           Last 3 Months
@@ -141,7 +141,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
           onClick={() => handlePresetChange('year')}
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${selectedPreset === 'year'
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            : 'bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
             }`}
         >
           Last Year
@@ -150,7 +150,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
           onClick={() => handlePresetChange('custom')}
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${selectedPreset === 'custom'
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            : 'bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-300 hover:bg-gray-200 dark:hover:bg-night-surface-alt'
             }`}
         >
           Custom
@@ -158,27 +158,27 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ value, onChang
       </div>
 
       {showCustom && (
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-secondary-700">
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-xs font-medium text-gray-700 dark:text-secondary-300 mb-1">
               Start Date
             </label>
             <input
               type="date"
               value={value.startDate}
               onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface-alt text-gray-900 dark:text-primary-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-xs font-medium text-gray-700 dark:text-secondary-300 mb-1">
               End Date
             </label>
             <input
               type="date"
               value={value.endDate}
               onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface-alt text-gray-900 dark:text-primary-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>

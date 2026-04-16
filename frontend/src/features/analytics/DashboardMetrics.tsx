@@ -32,7 +32,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, for
     : value;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-night-surface rounded-lg shadow p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
           {icon}
@@ -43,20 +43,20 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon, for
           {Math.abs(change).toFixed(1)}%
         </div>
       </div>
-      <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">{title}</h3>
-      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{formattedValue}</p>
+      <h3 className="text-gray-600 dark:text-secondary-400 text-sm font-medium mb-1">{title}</h3>
+      <p className="text-2xl font-bold text-gray-900 dark:text-primary-100">{formattedValue}</p>
     </div>
   );
 };
 
 const SkeletonCard: React.FC = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
+  <div className="bg-white dark:bg-night-surface rounded-lg shadow p-6 animate-pulse">
     <div className="flex items-center justify-between mb-4">
-      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-      <div className="w-16 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="w-12 h-12 bg-gray-200 dark:bg-night-surface-alt rounded-lg"></div>
+      <div className="w-16 h-5 bg-gray-200 dark:bg-night-surface-alt rounded"></div>
     </div>
-    <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-    <div className="w-32 h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    <div className="w-24 h-4 bg-gray-200 dark:bg-night-surface-alt rounded mb-2"></div>
+    <div className="w-32 h-8 bg-gray-200 dark:bg-night-surface-alt rounded"></div>
   </div>
 );
 

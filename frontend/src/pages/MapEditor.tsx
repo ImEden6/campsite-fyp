@@ -261,7 +261,7 @@ const MapEditorRefactored: React.FC = () => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-secondary-100 dark:bg-night-surface-alt dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-secondary-100 dark:bg-night-surface-alt dark:hover:bg-night-surface-alt rounded-lg transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
@@ -272,13 +272,13 @@ const MapEditorRefactored: React.FC = () => {
                 </div>
 
                 {/* Center: Tools */}
-                <div className="flex items-center gap-1 bg-secondary-50 dark:bg-night-surface-alt dark:bg-gray-700 rounded-lg p-1">
+                <div className="flex items-center gap-1 bg-secondary-50 dark:bg-night-surface-alt dark:bg-night-surface-alt rounded-lg p-1">
                     {/* Undo/Redo */}
                     <Tooltip content="Undo (Ctrl+Z)" placement="bottom">
                         <button
                             onClick={undo}
                             disabled={!canUndo}
-                            className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <Undo2 className="w-4 h-4" />
                         </button>
@@ -287,17 +287,17 @@ const MapEditorRefactored: React.FC = () => {
                         <button
                             onClick={redo}
                             disabled={!canRedo}
-                            className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <Redo2 className="w-4 h-4" />
                         </button>
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+                    <div className="w-px h-6 bg-gray-300 dark:bg-night-surface-alt mx-1" />
 
                     {/* Zoom */}
                     <Tooltip content="Zoom Out (Ctrl+-)" placement="bottom">
-                        <button onClick={zoomOut} className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 transition-colors">
+                        <button onClick={zoomOut} className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt transition-colors">
                             <ZoomOut className="w-4 h-4" />
                         </button>
                     </Tooltip>
@@ -305,17 +305,17 @@ const MapEditorRefactored: React.FC = () => {
                         {Math.round(zoom * 100)}%
                     </span>
                     <Tooltip content="Zoom In (Ctrl++)" placement="bottom">
-                        <button onClick={zoomIn} className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 transition-colors">
+                        <button onClick={zoomIn} className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt transition-colors">
                             <ZoomIn className="w-4 h-4" />
                         </button>
                     </Tooltip>
                     <Tooltip content="Fit to Screen (Ctrl+0)" placement="bottom">
-                        <button onClick={fitToScreen} className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 transition-colors">
+                        <button onClick={fitToScreen} className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt transition-colors">
                             <Maximize2 className="w-4 h-4" />
                         </button>
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+                    <div className="w-px h-6 bg-gray-300 dark:bg-night-surface-alt mx-1" />
 
                     {/* Grid */}
                     <Tooltip content="Toggle Grid (Ctrl+G)" placement="bottom">
@@ -323,7 +323,7 @@ const MapEditorRefactored: React.FC = () => {
                             onClick={toggleGrid}
                             className={`p-2 rounded-md transition-colors ${showGrid
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                                : 'hover:bg-white dark:hover:bg-gray-600'
+                                : 'hover:bg-white dark:hover:bg-night-surface-alt'
                                 }`}
                         >
                             <Grid3X3 className="w-4 h-4" />
@@ -334,14 +334,14 @@ const MapEditorRefactored: React.FC = () => {
                             onClick={toggleSnapToGrid}
                             className={`p-2 rounded-md transition-colors ${snapToGrid
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                                : 'hover:bg-white dark:hover:bg-gray-600'
+                                : 'hover:bg-white dark:hover:bg-night-surface-alt'
                                 }`}
                         >
                             <Magnet className="w-4 h-4" />
                         </button>
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+                    <div className="w-px h-6 bg-gray-300 dark:bg-night-surface-alt mx-1" />
 
                     {/* Pan Mode */}
                     <Tooltip content="Pan Mode (Space)" placement="bottom">
@@ -349,14 +349,14 @@ const MapEditorRefactored: React.FC = () => {
                             onClick={togglePanMode}
                             className={`p-2 rounded-md transition-colors ${isPanMode
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                                : 'hover:bg-white dark:hover:bg-gray-600'
+                                : 'hover:bg-white dark:hover:bg-night-surface-alt'
                                 }`}
                         >
                             <Hand className="w-4 h-4" />
                         </button>
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+                    <div className="w-px h-6 bg-gray-300 dark:bg-night-surface-alt mx-1" />
 
                     {/* Panels */}
                     <Tooltip content="Toggle Layers Panel" placement="bottom">
@@ -364,7 +364,7 @@ const MapEditorRefactored: React.FC = () => {
                             onClick={() => setShowLayersPanel(!showLayersPanel)}
                             className={`p-2 rounded-md transition-colors ${showLayersPanel
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                                : 'hover:bg-white dark:hover:bg-gray-600'
+                                : 'hover:bg-white dark:hover:bg-night-surface-alt'
                                 }`}
                         >
                             <Layers className="w-4 h-4" />
@@ -375,20 +375,20 @@ const MapEditorRefactored: React.FC = () => {
                             onClick={() => setShowRulers(!showRulers)}
                             className={`p-2 rounded-md transition-colors ${showRulers
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                                : 'hover:bg-white dark:hover:bg-gray-600'
+                                : 'hover:bg-white dark:hover:bg-night-surface-alt'
                                 }`}
                         >
                             <Ruler className="w-4 h-4" />
                         </button>
                     </Tooltip>
 
-                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+                    <div className="w-px h-6 bg-gray-300 dark:bg-night-surface-alt mx-1" />
 
                     {/* Export */}
                     <Tooltip content="Export Map" placement="bottom">
                         <button
                             onClick={() => setShowExportDialog(true)}
-                            className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 transition-colors"
+                            className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt transition-colors"
                         >
                             <Download className="w-4 h-4" />
                         </button>
@@ -398,7 +398,7 @@ const MapEditorRefactored: React.FC = () => {
                     <Tooltip content="Background Image" placement="bottom">
                         <button
                             onClick={() => setShowBackgroundDialog(true)}
-                            className="p-2 rounded-md hover:bg-white dark:hover:bg-gray-600 transition-colors"
+                            className="p-2 rounded-md hover:bg-white dark:hover:bg-night-surface-alt transition-colors"
                         >
                             <ImageIcon className="w-4 h-4" />
                         </button>
@@ -529,7 +529,7 @@ const MapEditorRefactored: React.FC = () => {
             />
 
             {/* Status Bar */}
-            <div className="flex items-center justify-between px-4 py-1 bg-white dark:bg-night-surface border-t border-gray-200 dark:border-secondary-700 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-between px-4 py-1 bg-white dark:bg-night-surface border-t border-gray-200 dark:border-secondary-700 text-xs text-gray-500 dark:text-secondary-400">
                 <div className="flex items-center gap-4">
                     <span>Modules: {currentMap?.modules.length ?? 0}</span>
                     <span>Selected: {selectedCount}</span>

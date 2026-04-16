@@ -43,7 +43,7 @@ export const DateField: React.FC<ReportFieldProps> = ({ param, value, error, onC
             error ? 'border-red-500' : 'border-gray-300'
           }`}
         />
-        <Calendar className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />
+        <Calendar className="absolute right-3 top-2.5 w-5 h-5 text-secondary-400 pointer-events-none" />
       </div>
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </FieldWrapper>
@@ -110,7 +110,7 @@ export const SelectField: React.FC<ReportFieldProps> = ({ param, value, error, o
             </option>
           ))}
         </select>
-        <ChevronDown className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />
+        <ChevronDown className="absolute right-3 top-2.5 w-5 h-5 text-secondary-400 pointer-events-none" />
       </div>
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </FieldWrapper>

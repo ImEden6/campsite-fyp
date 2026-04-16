@@ -30,14 +30,16 @@ import { getSites, deleteSite } from '@/services/api/sites';
 import { getDashboardMetrics } from '@/services/api/analytics';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import { useAuthStore } from '@/stores/authStore';
 
-import { SiteType, SiteStatus } from '@/types';
+import { SiteType, SiteStatus, UserRole } from '@/types';
 import type { Site } from '@/types';
 import { formatCurrency, CURRENCY_SYMBOL } from '@/utils/currency';
 
 interface MapBoxProps {
   type: SiteType;
   sites: Site[];
+  isAdmin: boolean;
   onAddSite: () => void;
   onEditSite: (site: Site) => void;
   onDeleteSite: (siteId: string) => void;
@@ -47,6 +49,7 @@ interface MapBoxProps {
 const MapBox: React.FC<MapBoxProps> = ({
   type,
   sites,
+  isAdmin,
   onAddSite,
   onEditSite,
   onDeleteSite,
@@ -89,14 +92,14 @@ const MapBox: React.FC<MapBoxProps> = ({
     >
       <Card className="overflow-hidden">
         {/* Header */}
-        <div className="p-5 border-b border-secondary-200 dark:border-gray-700">
+        <div className="p-5 border-b border-secondary-200 dark:border-secondary-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-xl ${config.bgColor} flex items-center justify-center`}>
                 <Icon className={`w-6 h-6 ${config.color}`} />
               </div>
               <div>
-                <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">{config.title}</h2>
+                <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-primary-100">{config.title}</h2>
                 <p className="text-sm text-secondary-600 dark:text-secondary-400">{sites.length} total sites</p>
               </div>
             </div>
@@ -111,7 +114,7 @@ const MapBox: React.FC<MapBoxProps> = ({
         </div>
 
         {/* Stats */}
-        <div className="p-4 grid grid-cols-3 gap-3 border-b border-secondary-200 dark:border-gray-700 bg-white/30 dark:bg-gray-800/30">
+        <div className="p-4 grid grid-cols-3 gap-3 border-b border-secondary-200 dark:border-secondary-700 bg-white/30 dark:bg-night-surface/30">
           <div className="text-center">
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">{availableSites}</p>
             <p className="text-xs text-secondary-600 dark:text-secondary-400">Available</p>
@@ -130,7 +133,7 @@ const MapBox: React.FC<MapBoxProps> = ({
         <div className="p-4 max-h-80 overflow-y-auto">
           {sites.length === 0 ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-full bg-secondary-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 rounded-full bg-secondary-100 dark:bg-night-surface-alt flex items-center justify-center mx-auto mb-3">
                 <MapPin className="w-8 h-8 text-secondary-400" />
               </div>
               <p className="text-secondary-600 dark:text-secondary-400">No sites yet</p>
@@ -140,11 +143,11 @@ const MapBox: React.FC<MapBoxProps> = ({
               {sites.map((site) => (
                 <div
                   key={site.id}
-                  className="flex items-center justify-between p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors"
+                  className="flex items-center justify-between p-3 bg-white/50 dark:bg-night-surface/50 rounded-lg hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">{site.name}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-primary-100">{site.name}</h3>
                       <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${site.status === 'AVAILABLE' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400' :
                         site.status === 'OCCUPIED' ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400' :
                           'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-400'
@@ -156,22 +159,24 @@ const MapBox: React.FC<MapBoxProps> = ({
                       Capacity: {site.capacity} | {CURRENCY_SYMBOL}{site.basePrice}/night
                     </p>
                   </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => onEditSite(site)}
-                      className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                      title="Edit Site"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => onDeleteSite(site.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      title="Delete Site"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => onEditSite(site)}
+                        className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                        title="Edit Site"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteSite(site.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        title="Delete Site"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -179,15 +184,17 @@ const MapBox: React.FC<MapBoxProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-secondary-200 dark:border-gray-700">
-          <Button
-            onClick={onAddSite}
-            className="w-full"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add New {type === SiteType.TENT ? 'Tent Site' : type === SiteType.RV ? 'RV Site' : 'Cabin'}
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="p-4 border-t border-secondary-200 dark:border-secondary-700">
+            <Button
+              onClick={onAddSite}
+              className="w-full"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add New {type === SiteType.TENT ? 'Tent Site' : type === SiteType.RV ? 'RV Site' : 'Cabin'}
+            </Button>
+          </div>
+        )}
                   </Card>
     </MotionDiv>
   );
@@ -198,6 +205,8 @@ export const AdminDashboardPage: React.FC = () => {
   const MotionDiv = motion?.div || 'div';
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === UserRole.ADMIN;
 
   // Fetch all sites (with mock data fallback)
   const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
@@ -325,7 +334,7 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Admin Dashboard</h1>
             <p className="text-secondary-600 dark:text-secondary-400">Overview and site management</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -344,13 +353,15 @@ export const AdminDashboardPage: React.FC = () => {
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/admin/maps')}
-            >
-              <Map className="w-4 h-4 mr-2" />
-              Maps
-            </Button>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin/maps')}
+              >
+                <Map className="w-4 h-4 mr-2" />
+                Maps
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => navigate('/admin/settings')}
@@ -387,7 +398,7 @@ export const AdminDashboardPage: React.FC = () => {
                       <div className="flex-1">
                         <p className="text-sm font-medium text-secondary-600 dark:text-secondary-400">{stat.name}</p>
                         <div className="flex items-baseline gap-2 mt-1">
-                          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stat.value}</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-primary-100">{stat.value}</p>
                           {stat.change !== undefined && (
                             <span className={`flex items-center text-xs font-medium ${stat.change >= 0 ? 'text-green-600' : 'text-red-600'
                               }`}>
@@ -412,6 +423,7 @@ export const AdminDashboardPage: React.FC = () => {
               <MapBox
                 type={SiteType.TENT}
                 sites={tentSites}
+                isAdmin={isAdmin}
                 onAddSite={() => handleAddSite(SiteType.TENT)}
                 onEditSite={handleEditSite}
                 onDeleteSite={handleDeleteSite}
@@ -420,6 +432,7 @@ export const AdminDashboardPage: React.FC = () => {
               <MapBox
                 type={SiteType.RV}
                 sites={rvSites}
+                isAdmin={isAdmin}
                 onAddSite={() => handleAddSite(SiteType.RV)}
                 onEditSite={handleEditSite}
                 onDeleteSite={handleDeleteSite}
@@ -428,6 +441,7 @@ export const AdminDashboardPage: React.FC = () => {
               <MapBox
                 type={SiteType.CABIN}
                 sites={cabinSites}
+                isAdmin={isAdmin}
                 onAddSite={() => handleAddSite(SiteType.CABIN)}
                 onEditSite={handleEditSite}
                 onDeleteSite={handleDeleteSite}

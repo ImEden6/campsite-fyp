@@ -413,14 +413,14 @@ const SitesPage: React.FC = () => {
               <div className="flex items-center gap-2 ml-4">
                 <button
                   onClick={() => handleEditSite(site)}
-                  className="p-2 text-gray-600 dark:text-secondary-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                  className="p-2 text-gray-600 dark:text-secondary-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-night-surface-alt rounded-md transition-colors"
                   title="Edit site"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDeleteSite(site.id)}
-                  className="p-2 text-gray-600 dark:text-secondary-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                  className="p-2 text-gray-600 dark:text-secondary-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-night-surface-alt rounded-md transition-colors"
                   title="Delete site"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -535,20 +535,20 @@ const SitesPage: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-secondary-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400 dark:text-secondary-500" />
             <input
               type="text"
               placeholder="Search sites..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-gray-600 rounded-lg text-primary-900 dark:text-primary-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-secondary-600 rounded-lg text-primary-900 dark:text-primary-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent"
             />
           </div>
 
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-night-surface-alt text-gray-700 dark:text-secondary-200 rounded-lg hover:bg-gray-200 dark:hover:bg-night-surface-alt transition-colors"
           >
             <Filter className="w-4 h-4" />
             Filters
@@ -559,14 +559,14 @@ const SitesPage: React.FC = () => {
           <div className="flex bg-gray-100 dark:bg-night-surface-alt rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded text-gray-700 dark:text-secondary-200 ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow' : ''}`}
+              className={`p-2 rounded text-gray-700 dark:text-secondary-200 ${viewMode === 'grid' ? 'bg-white dark:bg-night-surface-alt shadow' : ''}`}
               title="Grid view"
             >
               <Grid className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded text-gray-700 dark:text-secondary-200 ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow' : ''}`}
+              className={`p-2 rounded text-gray-700 dark:text-secondary-200 ${viewMode === 'list' ? 'bg-white dark:bg-night-surface-alt shadow' : ''}`}
               title="List view"
             >
               <List className="w-5 h-5" />
@@ -584,7 +584,7 @@ const SitesPage: React.FC = () => {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as SiteType | 'all')}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-primary-100"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-secondary-600 rounded-lg text-gray-900 dark:text-primary-100"
               >
                 <option value="all">All Types</option>
                 <option value={SiteType.CABIN}>Cabins</option>
@@ -599,7 +599,7 @@ const SitesPage: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as SiteStatus | 'all')}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-primary-100"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-secondary-600 rounded-lg text-gray-900 dark:text-primary-100"
               >
                 <option value="all">All Statuses</option>
                 <option value={SiteStatus.AVAILABLE}>Available</option>
@@ -615,7 +615,7 @@ const SitesPage: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-primary-100"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-night-surface-alt border border-gray-200 dark:border-secondary-600 rounded-lg text-gray-900 dark:text-primary-100"
               >
                 <option value="name">Name</option>
                 <option value="price">Price</option>
@@ -635,7 +635,7 @@ const SitesPage: React.FC = () => {
       {/* Sites Grid/List */}
       {filteredSites.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-night-surface rounded-lg">
-          <MapPin className="w-16 h-16 mx-auto text-gray-400 dark:text-secondary-500 mb-4" />
+          <MapPin className="w-16 h-16 mx-auto text-secondary-400 dark:text-secondary-500 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-primary-100 mb-2">
             No sites found
           </h3>

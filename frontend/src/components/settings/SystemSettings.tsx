@@ -61,24 +61,24 @@ const SystemSettings: React.FC = () => {
                 </CardHeader>
                 <CardBody className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Version</div>
-                            <div className="font-mono text-lg font-medium text-gray-900 dark:text-gray-100">v1.0.0-beta</div>
+                        <div className="p-4 bg-gray-50 dark:bg-night-surface-alt/50 rounded-lg">
+                            <div className="text-sm text-gray-500 dark:text-secondary-400">Version</div>
+                            <div className="font-mono text-lg font-medium text-gray-900 dark:text-primary-100">v1.0.0-beta</div>
                         </div>
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Environment</div>
-                            <div className="font-mono text-lg font-medium text-gray-900 dark:text-gray-100">Production</div>
+                        <div className="p-4 bg-gray-50 dark:bg-night-surface-alt/50 rounded-lg">
+                            <div className="text-sm text-gray-500 dark:text-secondary-400">Environment</div>
+                            <div className="font-mono text-lg font-medium text-gray-900 dark:text-primary-100">Production</div>
                         </div>
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Database Status</div>
+                        <div className="p-4 bg-gray-50 dark:bg-night-surface-alt/50 rounded-lg">
+                            <div className="text-sm text-gray-500 dark:text-secondary-400">Database Status</div>
                             <div className="flex items-center text-green-600 dark:text-green-400 font-medium">
                                 <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
                                 Connected
                             </div>
                         </div>
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Last Backup</div>
-                            <div className="font-medium text-gray-900 dark:text-gray-100">2 hours ago</div>
+                        <div className="p-4 bg-gray-50 dark:bg-night-surface-alt/50 rounded-lg">
+                            <div className="text-sm text-gray-500 dark:text-secondary-400">Last Backup</div>
+                            <div className="font-medium text-gray-900 dark:text-primary-100">2 hours ago</div>
                         </div>
                     </div>
                 </CardBody>
@@ -92,8 +92,8 @@ const SystemSettings: React.FC = () => {
                     <CardBody className="space-y-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Automatic Backups</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100">Automatic Backups</h4>
+                                <p className="text-sm text-gray-500 dark:text-secondary-400">
                                     Backup database every 24 hours
                                 </p>
                             </div>
@@ -103,7 +103,7 @@ const SystemSettings: React.FC = () => {
                             />
                         </div>
 
-                        <div className="border-t border-gray-100 dark:border-gray-800 pt-6">
+                        <div className="border-t border-gray-100 dark:border-secondary-800 pt-6">
                             <Button
                                 type="button"
                                 variant="outline"
@@ -162,7 +162,7 @@ const SystemSettings: React.FC = () => {
                         <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-secondary-400">
                             Are you sure you want to clear the system cache? This action may temporarily affect system performance while the cache is rebuilt. This action cannot be undone.
                         </p>
                     </div>

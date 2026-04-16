@@ -45,9 +45,9 @@ const CustomerInsights = lazy(() =>
 
 // Chart loading skeleton
 const ChartSkeleton: React.FC = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-    <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+  <div className="bg-white dark:bg-night-surface rounded-lg shadow p-6 animate-pulse">
+    <div className="h-6 bg-gray-200 dark:bg-night-surface-alt rounded w-1/4 mb-4"></div>
+    <div className="h-64 bg-gray-200 dark:bg-night-surface-alt rounded"></div>
   </div>
 );
 
@@ -80,7 +80,7 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
   });
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <Minus className="w-3 h-3 text-gray-400" />;
+    if (sortField !== field) return <Minus className="w-3 h-3 text-secondary-400" />;
     return sortDirection === 'asc'
       ? <ChevronUp className="w-4 h-4 text-blue-600" />
       : <ChevronDown className="w-4 h-4 text-blue-600" />;
@@ -88,11 +88,11 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+      <div className="bg-white dark:bg-night-surface rounded-lg shadow p-6 animate-pulse">
+        <div className="h-6 bg-gray-200 dark:bg-night-surface-alt rounded w-1/4 mb-4"></div>
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div key={i} className="h-12 bg-gray-200 dark:bg-night-surface-alt rounded"></div>
           ))}
         </div>
       </div>
@@ -107,28 +107,28 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
       case 'Cabin': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
       case 'RV': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'Tent': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-night-surface-alt dark:text-secondary-300';
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Site Performance</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Performance metrics by site</p>
+    <div className="bg-white dark:bg-night-surface rounded-lg shadow overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-secondary-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100">Site Performance</h3>
+        <p className="text-sm text-gray-600 dark:text-secondary-400 mt-1">Performance metrics by site</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+          <thead className="bg-gray-50 dark:bg-night-surface-alt">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">
                 Site
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">
                 Type
               </th>
               <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-secondary-200"
                 onClick={() => handleSort('revenue')}
               >
                 <span className="flex items-center gap-1">
@@ -136,7 +136,7 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
                 </span>
               </th>
               <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-secondary-200"
                 onClick={() => handleSort('bookings')}
               >
                 <span className="flex items-center gap-1">
@@ -144,7 +144,7 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
                 </span>
               </th>
               <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-secondary-200"
                 onClick={() => handleSort('occupancyRate')}
               >
                 <span className="flex items-center gap-1">
@@ -152,7 +152,7 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
                 </span>
               </th>
               <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-secondary-200"
                 onClick={() => handleSort('averageRating')}
               >
                 <span className="flex items-center gap-1">
@@ -161,14 +161,14 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-gray-200 dark:divide-secondary-700">
             {sortedData.map((site) => (
               <tr
                 key={site.siteId}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="hover:bg-gray-50 dark:hover:bg-night-surface-alt/50 transition-colors"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <div className="text-sm font-medium text-gray-900 dark:text-primary-100">
                     {site.siteName}
                   </div>
                 </td>
@@ -177,21 +177,21 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
                     {site.siteType}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-primary-100">
                   {formatCurrencyValue(site.revenue)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-secondary-400">
                   {site.bookings}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div className="w-16 bg-gray-200 dark:bg-night-surface-alt rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full"
                         style={{ width: `${site.occupancyRate}%` }}
                       />
                     </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-sm text-gray-600 dark:text-secondary-400">
                       {site.occupancyRate.toFixed(1)}%
                     </span>
                   </div>
@@ -199,7 +199,7 @@ const SitePerformanceTable: React.FC<SitePerformanceTableProps> = ({ data, loadi
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span className="text-sm font-medium text-gray-900 dark:text-primary-100">
                       {site.averageRating.toFixed(1)}
                     </span>
                   </div>
@@ -291,7 +291,7 @@ const AnalyticsPage: React.FC = () => {
               <BarChart3 className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
+              <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-primary-100">Analytics Dashboard</h1>
               <p className="text-sm text-secondary-600 dark:text-secondary-400">
                 Track revenue, occupancy, and customer insights
               </p>

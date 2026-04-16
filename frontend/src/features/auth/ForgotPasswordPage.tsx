@@ -65,7 +65,7 @@ const ForgotPasswordPage: React.FC = () => {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-night-bg px-4 py-12">
         <div className="w-full max-w-md text-center">
           <div className="mb-6 flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -73,15 +73,15 @@ const ForgotPasswordPage: React.FC = () => {
             </div>
           </div>
 
-          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-primary-100">
             Check your email
           </h2>
 
-          <p className="mb-6 text-gray-600 dark:text-gray-400">
-            We've sent a password reset link to <strong className="text-gray-900 dark:text-gray-100">{email}</strong>
+          <p className="mb-6 text-gray-600 dark:text-secondary-400">
+            We've sent a password reset link to <strong className="text-gray-900 dark:text-primary-100">{email}</strong>
           </p>
 
-          <p className="mb-8 text-sm text-gray-500 dark:text-gray-500">
+          <p className="mb-8 text-sm text-gray-500 dark:text-secondary-500">
             Didn't receive the email? Check your spam folder or try again.
           </p>
 
@@ -112,11 +112,11 @@ const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-night-bg px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Reset your password</h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-primary-100">Reset your password</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-secondary-400">
             Enter your email address and we'll send you a link to reset your password
           </p>
         </div>

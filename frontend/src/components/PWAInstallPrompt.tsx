@@ -92,7 +92,7 @@ export const PWAInstallPrompt = () => {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-slide-up">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4">
+      <div className="bg-white dark:bg-night-surface rounded-lg shadow-2xl border border-gray-200 dark:border-secondary-700 p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
@@ -102,21 +102,21 @@ export const PWAInstallPrompt = () => {
               <h3 className="font-semibold text-gray-900 dark:text-white">
                 Install App
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-secondary-400">
                 Add to home screen
               </p>
             </div>
           </div>
           <button
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="text-secondary-400 hover:text-gray-600 dark:hover:text-secondary-300 transition-colors"
             aria-label="Dismiss install prompt"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-600 dark:text-secondary-400 mb-4">
           Install Campsite Management System for quick access and offline support.
         </p>
         
@@ -129,7 +129,7 @@ export const PWAInstallPrompt = () => {
           </button>
           <button
             onClick={handleDismiss}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-2 px-4 rounded-lg transition-colors"
+            className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-night-surface-alt dark:hover:bg-night-surface-alt text-gray-700 dark:text-secondary-300 font-medium py-2 px-4 rounded-lg transition-colors"
           >
             Not Now
           </button>

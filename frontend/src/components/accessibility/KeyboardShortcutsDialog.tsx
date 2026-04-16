@@ -86,7 +86,7 @@ const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = ({ isOpe
                             {key}
                           </kbd>
                           {keyIndex < shortcut.keys.length - 1 && (
-                            <span className="text-gray-400 text-xs font-medium">+</span>
+                            <span className="text-secondary-400 text-xs font-medium">+</span>
                           )}
                         </React.Fragment>
                       ))}

@@ -37,34 +37,34 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 }) => {
     return (
         <div className="space-y-4">
-            <h2 className="text-xl font-bold text-secondary-900 dark:text-gray-100 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-secondary-900 dark:text-primary-100 flex items-center gap-2">
                 <DollarSign size={20} className="text-blue-600 dark:text-blue-400" />
                 Review & Confirm
             </h2>
 
             {/* Booking Summary */}
-            <div className="bg-gray-50 dark:bg-gray-700/50 border border-secondary-200 dark:border-secondary-600 dark:border-secondary-600 rounded-lg p-4 space-y-3">
+            <div className="bg-gray-50 dark:bg-night-surface-alt/50 border border-secondary-200 dark:border-secondary-600 dark:border-secondary-600 rounded-lg p-4 space-y-3">
                 {/* Site Information */}
                 <div className="border-b border-secondary-200 dark:border-secondary-600 dark:border-secondary-600 pb-3">
-                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-gray-100 mb-2">
+                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-2">
                         Site Information
                     </h3>
                     <p className="text-sm font-medium text-secondary-900 dark:text-white">{site.name}</p>
-                    <p className="text-xs text-secondary-600 dark:text-gray-300 mt-1 capitalize">
+                    <p className="text-xs text-secondary-600 dark:text-secondary-300 mt-1 capitalize">
                         {site.type.toLowerCase().replace('_', ' ')}
                     </p>
                 </div>
 
                 {/* Dates */}
                 <div className="border-b border-secondary-200 dark:border-secondary-600 dark:border-secondary-600 pb-3">
-                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-gray-100 mb-2">
+                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-2">
                         Dates
                     </h3>
                     <div className="flex items-center gap-2 text-sm">
                         <span className="text-secondary-900 dark:text-white">
                             {new Date(formData.checkInDate).toLocaleDateString()}
                         </span>
-                        <span className="text-secondary-500 dark:text-gray-300">→</span>
+                        <span className="text-secondary-500 dark:text-secondary-300">→</span>
                         <span className="text-secondary-900 dark:text-white">
                             {new Date(formData.checkOutDate).toLocaleDateString()}
                         </span>
@@ -73,7 +73,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
                 {/* Guests */}
                 <div className="border-b border-secondary-200 dark:border-secondary-600 dark:border-secondary-600 pb-3">
-                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-gray-100 mb-2">
+                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-2">
                         Guests
                     </h3>
                     <p className="text-sm text-secondary-900 dark:text-white mb-2">
@@ -90,7 +90,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                                 .map((guest, index) => (
                                     <p
                                         key={`adult-${index}`}
-                                        className="text-sm text-secondary-700 dark:text-gray-300"
+                                        className="text-sm text-secondary-700 dark:text-secondary-300"
                                     >
                                         {index === 0 ? '★' : '•'} {guest.firstName} {guest.lastName}{' '}
                                         {index === 0 && (
@@ -105,7 +105,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                                 .map((guest, index) => (
                                     <p
                                         key={`child-${index}`}
-                                        className="text-sm text-secondary-700 dark:text-gray-300"
+                                        className="text-sm text-secondary-700 dark:text-secondary-300"
                                     >
                                         • {guest.firstName} {guest.lastName}{' '}
                                         <span className="text-xs text-purple-600 dark:text-purple-400">
@@ -125,7 +125,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                             : 'pb-3'
                     }
                 >
-                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-gray-100 mb-2">
+                    <h3 className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-2">
                         Vehicles
                     </h3>
                     {formData.vehicles.length > 0 ? (
@@ -133,14 +133,14 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                             {formData.vehicles.map((vehicle: Omit<Vehicle, 'id'>, index: number) => (
                                 <p key={index} className="text-sm text-secondary-900 dark:text-white">
                                     • {vehicle.year} {vehicle.make} {vehicle.model}{' '}
-                                    <span className="text-secondary-600 dark:text-gray-300">
+                                    <span className="text-secondary-600 dark:text-secondary-300">
                                         ({vehicle.type})
                                     </span>
                                 </p>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-sm text-secondary-500 dark:text-gray-400 italic">
+                        <p className="text-sm text-secondary-500 dark:text-secondary-400 italic">
                             No vehicles added
                         </p>
                     )}
@@ -155,7 +155,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                                 : 'pb-3'
                         }
                     >
-                        <h3 className="text-sm font-semibold text-secondary-900 dark:text-gray-100 mb-2">
+                        <h3 className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-2">
                             Equipment Rentals
                         </h3>
                         <p className="text-sm text-secondary-900 dark:text-white">
@@ -167,10 +167,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                 {/* Special Requests */}
                 {formData.specialRequests && (
                     <div>
-                        <h3 className="text-sm font-semibold text-secondary-900 dark:text-gray-100 mb-2">
+                        <h3 className="text-sm font-semibold text-secondary-900 dark:text-primary-100 mb-2">
                             Special Requests
                         </h3>
-                        <p className="text-sm text-secondary-900 dark:text-white bg-white dark:bg-gray-600/50 p-3 rounded border border-secondary-200 dark:border-secondary-600 dark:border-gray-500">
+                        <p className="text-sm text-secondary-900 dark:text-white bg-white dark:bg-night-surface-alt/50 p-3 rounded border border-secondary-200 dark:border-secondary-600 dark:border-secondary-500">
                             {formData.specialRequests}
                         </p>
                     </div>
@@ -182,7 +182,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
             {/* Special Requests Input */}
             <div>
-                <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">
                     Special Requests (Optional)
                 </label>
                 <textarea
@@ -191,7 +191,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                         onUpdateSpecialRequests(e.target.value)
                     }
                     rows={3}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface text-secondary-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface text-secondary-900 dark:text-primary-100 placeholder-gray-500 dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
                     placeholder="Any special requests or requirements..."
                 />
             </div>

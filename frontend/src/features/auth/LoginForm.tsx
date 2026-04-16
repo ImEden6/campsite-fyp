@@ -140,8 +140,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
             Admin Portal
           </div>
         )}
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{title}</h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-primary-100">{title}</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-secondary-400">
           {description}
         </p>
       </div>
@@ -194,9 +194,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
               name="rememberMe"
               checked={formData.rememberMe}
               onChange={handleChange}
-              className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className="h-4 w-4 rounded border-gray-300 dark:border-secondary-600 bg-white dark:bg-night-surface text-blue-600 dark:text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Remember me</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-secondary-300">Remember me</span>
           </label>
 
           <Link
@@ -223,7 +223,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           <div className="mt-6 text-center">
             <Link
               to={alternativeLoginLink.path}
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 dark:text-secondary-400 dark:hover:text-secondary-200 transition-colors"
             >
               {alternativeLoginLink.text}
               <ArrowRight className="ml-1 h-3 w-3" />

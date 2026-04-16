@@ -209,7 +209,7 @@ export const UserManagementPage: React.FC = () => {
               <Users className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">
                 User Management
               </h1>
               <p className="text-secondary-600 dark:text-secondary-400">
@@ -228,8 +228,8 @@ export const UserManagementPage: React.FC = () => {
         </GlassCard>
 
         <GlassCard className="overflow-hidden" intensity="strong">
-          <div className="px-6 py-4 border-b border-secondary-200 dark:border-gray-700">
-            <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <div className="px-6 py-4 border-b border-secondary-200 dark:border-secondary-700">
+            <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-primary-100">
               Users ({filteredUsers.length})
             </h2>
           </div>

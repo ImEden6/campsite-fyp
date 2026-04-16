@@ -77,8 +77,8 @@ export const PaymentHistory = ({
   if (!payments || !Array.isArray(payments) || payments.length === 0) {
     return (
       <GlassCard className="w-full text-center py-12" intensity="medium">
-        <CreditCard className="w-12 h-12 text-secondary-300 dark:text-gray-600 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">No Payments Found</h3>
+        <CreditCard className="w-12 h-12 text-secondary-300 dark:text-secondary-600 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 mb-1">No Payments Found</h3>
         <p className="text-secondary-500 dark:text-secondary-400">There are no payment records to display.</p>
       </GlassCard>
     );
@@ -90,7 +90,7 @@ export const PaymentHistory = ({
       <GlassCard className="w-full">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Payment History</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-primary-100">Payment History</h3>
             <Button
               variant="outline"
               size="sm"
@@ -107,7 +107,7 @@ export const PaymentHistory = ({
             {payments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-4 border border-secondary-200 dark:border-gray-700/50 rounded-xl bg-white/50 dark:bg-gray-800/30 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors"
+                className="flex items-center justify-between p-4 border border-secondary-200 dark:border-secondary-700/50 rounded-xl bg-white/50 dark:bg-night-surface/30 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -117,7 +117,7 @@ export const PaymentHistory = ({
                     </span>
                   </div>
                   {payment.description && (
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    <p className="text-sm text-gray-700 dark:text-secondary-300 mb-1">
                       {payment.description}
                     </p>
                   )}
@@ -129,7 +129,7 @@ export const PaymentHistory = ({
 
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    <p className="text-lg font-bold text-gray-900 dark:text-primary-100">
                       {CURRENCY_SYMBOL}{(payment.amount / 100).toFixed(2)}
                     </p>
                     {payment.refundedAmount && payment.refundedAmount > 0 && (

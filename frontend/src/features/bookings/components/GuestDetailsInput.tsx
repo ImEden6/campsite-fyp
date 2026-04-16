@@ -114,7 +114,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
             {/* Adults Section */}
             {adults > 0 && (
                 <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 flex items-center gap-2">
                         <User size={20} className="text-blue-600 dark:text-blue-400" />
                         Adults ({adults})
                     </h3>
@@ -124,9 +124,9 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                         const isPrimary = index === 0 && primaryGuestInfo;
 
                         return (
-                            <Card key={`adult-${index}`} className="p-4 dark:bg-gray-800 dark:border-gray-700">
+                            <Card key={`adult-${index}`} className="p-4 dark:bg-night-surface dark:border-secondary-700">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <span className="text-sm font-medium text-gray-700 dark:text-secondary-300">
                                         {isPrimary ? 'Primary Guest (You)' : `Adult ${index + 1}`}
                                     </span>
                                     {isPrimary && (
@@ -138,7 +138,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor={`guest_${globalIndex}_firstName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_firstName`} className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                             First Name *
                                         </label>
                                         <Input
@@ -148,8 +148,8 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                             onChange={(e) => handleUpdate(globalIndex, 'firstName', e.target.value)}
                                             placeholder="First name"
                                             disabled={!!isPrimary}
-                                            className={isPrimary ? 'bg-gray-100 dark:bg-gray-700' : ''}
-                                            icon={<User className="text-gray-400 w-4 h-4" />}
+                                            className={isPrimary ? 'bg-gray-100 dark:bg-night-surface-alt' : ''}
+                                            icon={<User className="text-secondary-400 w-4 h-4" />}
                                         />
                                         {errors?.[`guest_${globalIndex}_firstName`] && (
                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
@@ -160,7 +160,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                     </div>
 
                                     <div>
-                                        <label htmlFor={`guest_${globalIndex}_lastName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_lastName`} className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                             Last Name *
                                         </label>
                                         <Input
@@ -170,8 +170,8 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                             onChange={(e) => handleUpdate(globalIndex, 'lastName', e.target.value)}
                                             placeholder="Last name"
                                             disabled={!!isPrimary}
-                                            className={isPrimary ? 'bg-gray-100 dark:bg-gray-700' : ''}
-                                            icon={<User className="text-gray-400 w-4 h-4" />}
+                                            className={isPrimary ? 'bg-gray-100 dark:bg-night-surface-alt' : ''}
+                                            icon={<User className="text-secondary-400 w-4 h-4" />}
                                         />
                                         {errors?.[`guest_${globalIndex}_lastName`] && (
                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
@@ -190,7 +190,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
             {/* Children Section */}
             {children > 0 && (
                 <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100 flex items-center gap-2">
                         <Baby size={20} className="text-purple-600 dark:text-purple-400" />
                         Children ({children})
                     </h3>
@@ -199,16 +199,16 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                         const globalIndex = adults + index;
 
                         return (
-                            <Card key={`child-${index}`} className="p-4 dark:bg-gray-800 dark:border-gray-700">
+                            <Card key={`child-${index}`} className="p-4 dark:bg-night-surface dark:border-secondary-700">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <span className="text-sm font-medium text-gray-700 dark:text-secondary-300">
                                         Child {index + 1}
                                     </span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label htmlFor={`guest_${globalIndex}_firstName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_firstName`} className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                             First Name *
                                         </label>
                                         <Input
@@ -217,7 +217,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                             value={guest.firstName}
                                             onChange={(e) => handleUpdate(globalIndex, 'firstName', e.target.value)}
                                             placeholder="First name"
-                                            icon={<User className="text-gray-400 w-4 h-4" />}
+                                            icon={<User className="text-secondary-400 w-4 h-4" />}
                                         />
                                         {errors?.[`guest_${globalIndex}_firstName`] && (
                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
@@ -228,7 +228,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                     </div>
 
                                     <div>
-                                        <label htmlFor={`guest_${globalIndex}_lastName`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_lastName`} className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                             Last Name *
                                         </label>
                                         <Input
@@ -237,7 +237,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                             value={guest.lastName}
                                             onChange={(e) => handleUpdate(globalIndex, 'lastName', e.target.value)}
                                             placeholder="Last name"
-                                            icon={<User className="text-gray-400 w-4 h-4" />}
+                                            icon={<User className="text-secondary-400 w-4 h-4" />}
                                         />
                                         {errors?.[`guest_${globalIndex}_lastName`] && (
                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
@@ -248,7 +248,7 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
                                     </div>
 
                                     <div>
-                                        <label htmlFor={`guest_${globalIndex}_age`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label htmlFor={`guest_${globalIndex}_age`} className="block text-sm font-medium text-gray-700 dark:text-secondary-300 mb-1">
                                             Age (Optional)
                                         </label>
                                         <Input
@@ -269,8 +269,8 @@ export const GuestDetailsInput: React.FC<GuestDetailsInputProps> = ({
             )}
 
             {/* Summary */}
-            <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 p-4 rounded-lg">
-                <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
+            <div className="bg-gray-50 dark:bg-night-surface-alt/50 border border-gray-200 dark:border-secondary-600 p-4 rounded-lg">
+                <p className="text-sm text-gray-900 dark:text-primary-100 font-medium">
                     <strong>Total Guests:</strong> {totalGuests} ({adults} adult{adults !== 1 ? 's' : ''}{children > 0 ? `, ${children} child${children !== 1 ? 'ren' : ''}` : ''})
                 </p>
             </div>

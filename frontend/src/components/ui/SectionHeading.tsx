@@ -21,7 +21,7 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
 }) => {
     return (
         <div className={cn(centered && 'text-center', className)}>
-            <h2 className="font-heading text-3xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
+            <h2 className="font-heading text-3xl md:text-4xl font-semibold text-gray-900 dark:text-primary-100 tracking-tight">
                 {title}
             </h2>
             {subtitle && (
