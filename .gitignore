@@ -91,3 +91,7 @@ ps.txt
 
 # Stuff
 stuff/*
+
+# Local scripts
+tss.sh
+tss.bat
