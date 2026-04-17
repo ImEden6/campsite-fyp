@@ -166,7 +166,7 @@ export function createMockRedisClient(): MockRedisClient {
 
         mset: vi.fn(async (...keyValues: string[]) => {
             for (let i = 0; i < keyValues.length; i += 2) {
-                store.set(keyValues[i], { value: keyValues[i + 1], expiresAt: null });
+                store.set(keyValues[i]!, { value: keyValues[i + 1]!, expiresAt: null });
             }
             return 'OK';
         }),
@@ -283,7 +283,7 @@ export function createMockRedisClient(): MockRedisClient {
             if (!hashStore.has(key)) hashStore.set(key, new Map());
             const hash = hashStore.get(key)!;
             for (let i = 0; i < fieldValues.length; i += 2) {
-                hash.set(fieldValues[i], fieldValues[i + 1]);
+                hash.set(fieldValues[i]!, fieldValues[i + 1]!);
             }
             return 'OK';
         }),

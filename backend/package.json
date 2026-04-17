@@ -10,8 +10,8 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "test:unit": "vitest run --include '**/*.unit.test.ts'",
-    "test:int": "vitest run --include '**/*.int.test.ts' --testTimeout=30000",
+    "test:unit": "vitest run \".unit.test.\"",
+    "test:int": "vitest run \".int.test.\" --testTimeout=30000",
     "test:ci": "vitest run --reporter=junit --outputFile=./test-results/junit.xml",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -54,7 +54,7 @@
     "twilio": "^4.23.0",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "zod": "^3.22.4"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

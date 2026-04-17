@@ -16,7 +16,7 @@ import {
     PaymentMethod,
     VehicleType,
     EquipmentCategory,
-    EquipmentStatus,
+    EquipmentItemStatus as EquipmentStatus,
     GuestType,
     CommunicationType,
     NotificationType,

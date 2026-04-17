@@ -111,11 +111,11 @@ export class DatabaseError extends ApiError {
 
 // Handle Zod validation errors
 export const handleZodError = (error: ZodError): ValidationError => {
-  const validationErrors: ValidationErrorDetail[] = error.errors.map((err) => ({
-    field: err.path.join('.'),
+  const validationErrors: ValidationErrorDetail[] = error.issues.map((err) => ({
+    field: err.path.map(String).join('.'),
     message: err.message,
     code: err.code,
-    value: (err as any).input,
+    value: (err as unknown as { input?: unknown }).input,
   }));
 
   return new ValidationError(validationErrors);

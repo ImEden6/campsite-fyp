@@ -66,10 +66,12 @@ function normalizeTestEnvironment(): void {
     process.env.SENTRY_DSN = '';
 
     // Set safe database URLs for unit tests (will be mocked anyway)
-    if (!process.env.DATABASE_URL) {
-        process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
+    // Use localhost:5433 for Docker on Windows/Mac, or postgres:5432 for Linux
+    const isDockerNetwork = process.env.DATABASE_URL?.includes('postgres:5432');
+    if (!process.env.DATABASE_URL || isDockerNetwork) {
+        process.env.DATABASE_URL = 'postgresql://campsite_user:d994371ace6e175a9160f147f08e1f55@localhost:5433/campsite_db';
     }
-    if (!process.env.REDIS_URL) {
+    if (!process.env.REDIS_URL || process.env.REDIS_URL.includes('redis:6379')) {
         process.env.REDIS_URL = 'redis://localhost:6379/15';
     }
 }
@@ -78,9 +80,10 @@ function normalizeTestEnvironment(): void {
 // GLOBAL HOOKS
 // =============================================================================
 
-beforeAll(() => {
-    normalizeTestEnvironment();
+// Run normalization immediately on load
+normalizeTestEnvironment();
 
+beforeAll(() => {
     // Only run production detection for unit tests
     // Integration tests may use real test databases
     const testPath = expect.getState().testPath || '';

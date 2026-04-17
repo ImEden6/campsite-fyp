@@ -67,6 +67,9 @@
       ],
       "@/websocket/*": [
         "src/websocket/*"
+      ],
+      "@tests/*": [
+        "tests/*"
       ]
     }
   },

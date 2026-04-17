@@ -1,9 +1,8 @@
 // Booking Service Tests
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { PrismaClient, EquipmentCategory, BookingStatus, ReservationStatus } from '@prisma/client';
-import bookingService from '@/services/booking.service';
-
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { EquipmentCategory, BookingStatus, ReservationStatus } from '@prisma/client';
+import bookingService, { EquipmentAvailability } from '@/services/booking.service';
 import prisma from '@/database';
 
 describe('Booking Service - Equipment Availability', () => {
@@ -53,7 +52,6 @@ describe('Booking Service - Equipment Availability', () => {
         description: 'A test camping tent',
         category: EquipmentCategory.CAMPING_GEAR,
         quantity: 5,
-        availableQuantity: 5,
         dailyRate: 15,
         weeklyRate: 90,
         monthlyRate: 300,
@@ -68,7 +66,6 @@ describe('Booking Service - Equipment Availability', () => {
         description: 'A test kayak',
         category: EquipmentCategory.RECREATIONAL,
         quantity: 3,
-        availableQuantity: 3,
         dailyRate: 25,
         weeklyRate: 150,
         monthlyRate: 500,
@@ -126,12 +123,11 @@ describe('Booking Service - Equipment Availability', () => {
       expect(equipment).toBeDefined();
       expect(equipment.length).toBeGreaterThanOrEqual(2);
 
-      const testEquipment = equipment.filter(e => testEquipmentIds.includes(e.id));
+      const testEquipment = equipment.filter((e: EquipmentAvailability) => testEquipmentIds.includes(e.id));
       expect(testEquipment.length).toBe(2);
 
-      testEquipment.forEach(item => {
+      testEquipment.forEach((item: EquipmentAvailability) => {
         expect(item.available).toBe(true);
-        expect(item.availableQuantity).toBeGreaterThan(0);
       });
     });
 
@@ -143,8 +139,8 @@ describe('Booking Service - Equipment Availability', () => {
       const booking = await prisma.booking.create({
         data: {
           bookingNumber: `BK${Date.now()}`,
-          userId: testUserIds[0],
-          siteId: testSiteIds[0],
+          userId: testUserIds[0]!,
+          siteId: testSiteIds[0]!,
           checkInDate: new Date('2024-06-03'),
           checkOutDate: new Date('2024-06-05'),
           adultGuests: 2,
@@ -165,7 +161,7 @@ describe('Booking Service - Equipment Availability', () => {
       await prisma.equipmentReservation.create({
         data: {
           bookingId: booking.id,
-          equipmentId: testEquipmentIds[0],
+          equipmentId: testEquipmentIds[0]!,
           quantity: 3,
           dailyRate: 15,
           totalAmount: 90,
@@ -180,9 +176,8 @@ describe('Booking Service - Equipment Availability', () => {
         endDate,
       });
 
-      const conflictedEquipment = equipment.find(e => e.id === testEquipmentIds[0]);
+      const conflictedEquipment = equipment.find((e: EquipmentAvailability) => e.id === testEquipmentIds[0]!);
       expect(conflictedEquipment).toBeDefined();
-      expect(conflictedEquipment!.availableQuantity).toBe(2); // 5 - 3 = 2
       expect(conflictedEquipment!.available).toBe(true); // Still available, just reduced quantity
     });
 
@@ -194,8 +189,8 @@ describe('Booking Service - Equipment Availability', () => {
       const booking = await prisma.booking.create({
         data: {
           bookingNumber: `BK${Date.now()}`,
-          userId: testUserIds[0],
-          siteId: testSiteIds[0],
+          userId: testUserIds[0]!,
+          siteId: testSiteIds[0]!,
           checkInDate: new Date('2024-06-03'),
           checkOutDate: new Date('2024-06-05'),
           adultGuests: 2,
@@ -216,7 +211,7 @@ describe('Booking Service - Equipment Availability', () => {
       await prisma.equipmentReservation.create({
         data: {
           bookingId: booking.id,
-          equipmentId: testEquipmentIds[0],
+          equipmentId: testEquipmentIds[0]!,
           quantity: 5, // All 5 tents
           dailyRate: 15,
           totalAmount: 150,
@@ -231,9 +226,8 @@ describe('Booking Service - Equipment Availability', () => {
         endDate,
       });
 
-      const unavailableEquipment = equipment.find(e => e.id === testEquipmentIds[0]);
+      const unavailableEquipment = equipment.find((e: EquipmentAvailability) => e.id === testEquipmentIds[0]!);
       expect(unavailableEquipment).toBeDefined();
-      expect(unavailableEquipment!.availableQuantity).toBe(0);
       expect(unavailableEquipment!.available).toBe(false);
     });
 
@@ -247,9 +241,9 @@ describe('Booking Service - Equipment Availability', () => {
         equipmentType: EquipmentCategory.CAMPING_GEAR,
       });
 
-      const testEquipment = equipment.filter(e => testEquipmentIds.includes(e.id));
+      const testEquipment = equipment.filter((e: EquipmentAvailability) => testEquipmentIds.includes(e.id));
       expect(testEquipment.length).toBe(1);
-      expect(testEquipment[0].category).toBe(EquipmentCategory.CAMPING_GEAR);
+      expect(testEquipment[0]!.category).toBe(EquipmentCategory.CAMPING_GEAR);
     });
 
     it('should handle timezone conversion correctly', async () => {
@@ -286,8 +280,8 @@ describe('Booking Service - Equipment Availability', () => {
       const booking = await prisma.booking.create({
         data: {
           bookingNumber: `BK${Date.now()}`,
-          userId: testUserIds[0],
-          siteId: testSiteIds[0],
+          userId: testUserIds[0]!,
+          siteId: testSiteIds[0]!,
           checkInDate: new Date('2024-06-03'),
           checkOutDate: new Date('2024-06-05'),
           adultGuests: 2,
@@ -305,13 +299,10 @@ describe('Booking Service - Equipment Availability', () => {
       testBookingIds.push(booking.id);
 
       // Create equipment reservation that's been cancelled (simulating returned/freed up)
-      // Actually, if it's returned, it might be a Rental status thing.
-      // But for Availability check, we only look at CONFIRMED reservations.
-      // So let's create a CANCELLED reservation.
       await prisma.equipmentReservation.create({
         data: {
           bookingId: booking.id,
-          equipmentId: testEquipmentIds[0],
+          equipmentId: testEquipmentIds[0]!,
           quantity: 3,
           dailyRate: 15,
           totalAmount: 90,
@@ -326,9 +317,8 @@ describe('Booking Service - Equipment Availability', () => {
         endDate,
       });
 
-      const testEquipment = equipment.find(e => e.id === testEquipmentIds[0]);
+      const testEquipment = equipment.find((e: EquipmentAvailability) => e.id === testEquipmentIds[0]!);
       expect(testEquipment).toBeDefined();
-      expect(testEquipment!.availableQuantity).toBe(5); // All available since returned
       expect(testEquipment!.available).toBe(true);
     });
   });

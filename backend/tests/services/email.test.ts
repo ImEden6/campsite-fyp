@@ -23,8 +23,8 @@ describe('Email Service', () => {
 
       const sentEmails = mockService.getSentEmails();
       expect(sentEmails).toHaveLength(1);
-      expect(sentEmails[0].options.to).toBe(email);
-      expect(sentEmails[0].options.subject).toBe('Verify Your Email Address');
+      expect(sentEmails[0]!.options.to).toBe(email);
+      expect(sentEmails[0]!.options.subject).toBe('Verify Your Email Address');
     });
 
     it('should send password reset email successfully', async () => {
@@ -36,8 +36,8 @@ describe('Email Service', () => {
 
       const sentEmails = mockService.getSentEmails();
       expect(sentEmails).toHaveLength(1);
-      expect(sentEmails[0].options.to).toBe(email);
-      expect(sentEmails[0].options.subject).toBe('Reset Your Password');
+      expect(sentEmails[0]!.options.to).toBe(email);
+      expect(sentEmails[0]!.options.subject).toBe('Reset Your Password');
     });
 
     it('should send custom email successfully', async () => {

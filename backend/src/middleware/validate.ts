@@ -128,7 +128,7 @@ export type CreatePaymentIntentInput = z.infer<typeof createPaymentIntentSchema>
 // ============================================================
 
 export const guestTypeSchema = z.enum(['ADULT', 'CHILD'], {
-    errorMap: () => ({ message: 'Guest type must be ADULT or CHILD' })
+    message: 'Guest type must be ADULT or CHILD'
 });
 
 export const guestInputSchema = z.object({
@@ -206,9 +206,9 @@ export type UpdateGuestsInput = z.infer<typeof updateGuestsSchema>;
  * Returns { code, field, message }[] format
  */
 function formatZodErrors(error: ZodError): ValidationErrorDetail[] {
-    return error.errors.map(e => ({
+    return error.issues.map((e) => ({
         code: e.code,
-        field: e.path.join('.'),
+        field: e.path.map(String).join('.'),
         message: e.message,
     }));
 }
@@ -272,7 +272,7 @@ export function validateQuery<T extends ZodSchema>(schema: T) {
                 return;
             }
 
-            req.query = result.data;
+            req.query = result.data as typeof req.query;
             next();
         } catch (error) {
             next(error);
