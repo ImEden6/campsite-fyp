@@ -16,10 +16,10 @@ import {
     GripVertical,
 } from 'lucide-react';
 import type { AnyModule } from '@/types';
-import { useEditorStore, useMapStore, selectModulesSorted } from '@/stores';
+import { useEditorStore, useMapStore } from '@/stores';
 import { ReorderCommand } from '@/commands';
-import { useCommandHistory } from '@/hooks';
 import { getModuleColor } from '@/utils/moduleFactory';
+import type { Command } from '@/commands';
 
 // ============================================================================
 // TYPES
@@ -27,13 +27,14 @@ import { getModuleColor } from '@/utils/moduleFactory';
 
 interface LayersPanelProps {
     onClose?: () => void;
+    executeCommand: (command: Command) => void;
 }
 
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
-export function LayersPanel({ onClose: _onClose }: LayersPanelProps) {
+export function LayersPanel({ onClose: _onClose, executeCommand }: LayersPanelProps) {
     const {
         selectedIds,
         setSelection,
@@ -44,8 +45,7 @@ export function LayersPanel({ onClose: _onClose }: LayersPanelProps) {
         isModuleLocked,
     } = useEditorStore();
 
-    const modules = useMapStore(selectModulesSorted);
-    const { executeCommand } = useCommandHistory();
+    const modules = useMapStore((state) => state.currentMap?.modules ?? []);
 
     // Sort modules by z-index (highest first for visual layering)
     const sortedModules = useMemo(() => {

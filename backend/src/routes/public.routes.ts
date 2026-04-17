@@ -4,7 +4,7 @@ import { getPrismaClient } from '@/database';
 const router = Router();
 
 const useMockData = (): boolean => {
-    return process.env.USE_MOCK_DATA === 'true' || process.env.NODE_ENV === 'development';
+    return process.env.USE_MOCK_DATA === 'true';
 };
 
 /**

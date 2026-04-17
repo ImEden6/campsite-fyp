@@ -4,7 +4,7 @@ import { Package, Tent, Waves, Flame, RefreshCw } from 'lucide-react';
 import { getEquipment } from '@/services/api/equipment';
 import { queryKeys } from '@/config/query-keys';
 import type { Equipment } from '@/types';
-import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 // Icon mapping for equipment categories
@@ -227,18 +227,18 @@ const EquipmentPage: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-secondary-400">Daily Rate:</span>
-                    <span className="font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{(item.dailyRate || 0).toFixed(2)}</span>
+                    <span className="font-medium text-gray-900 dark:text-primary-100">{formatCurrency(item.dailyRate || 0)}</span>
                   </div>
                   {item.weeklyRate && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-secondary-400">Weekly Rate:</span>
-                      <span className="font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{item.weeklyRate.toFixed(2)}</span>
+                      <span className="font-medium text-gray-900 dark:text-primary-100">{formatCurrency(item.weeklyRate || 0)}</span>
                     </div>
                   )}
                   {item.deposit && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-secondary-400">Deposit:</span>
-                      <span className="font-medium text-gray-900 dark:text-primary-100">{CURRENCY_SYMBOL}{item.deposit.toFixed(2)}</span>
+                      <span className="font-medium text-gray-900 dark:text-primary-100">{formatCurrency(item.deposit || 0)}</span>
                     </div>
                   )}
                 </div>

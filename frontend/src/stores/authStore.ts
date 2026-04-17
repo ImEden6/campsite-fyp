@@ -25,6 +25,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  hasHydrated: boolean;
 }
 
 interface AuthActions {
@@ -37,6 +38,7 @@ interface AuthActions {
   setError: (error: string) => void;
   clearError: () => void;
   initialize: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -99,6 +101,28 @@ const getErrorMessage = (error: unknown): string => {
 };
 
 const parseLoginResponse = (raw: RawLoginResponse): LoginResponse => {
+  // Handle { success: true, data: { user, accessToken, refreshToken, expiresIn } } format
+  if (isRecord(raw) && 'success' in raw && 'data' in raw) {
+    const data = (raw as { data?: unknown }).data;
+    if (isRecord(data)) {
+      // Check if data has user and tokens directly
+      if (isUserLike(data.user) && isAuthTokensLike(data)) {
+        return {
+          user: data.user,
+          tokens: {
+            accessToken: data.accessToken as string,
+            refreshToken: (data.refreshToken as string) || '',
+            expiresIn: (data.expiresIn as number) || 86400,
+          },
+        };
+      }
+      // Check if data has nested tokens object
+      if (isUserLike(data.user) && isRecord(data.tokens)) {
+        return { user: data.user, tokens: data.tokens as unknown as AuthTokens };
+      }
+    }
+  }
+
   if (isLoginResponse(raw)) return raw;
 
   if (isRecord(raw) && 'data' in raw) {
@@ -134,6 +158,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      hasHydrated: false,
 
       // Initialize auth state from storage
       initialize: () => {
@@ -333,6 +358,11 @@ export const useAuthStore = create<AuthStore>()(
       clearError: () => {
         set({ error: null });
       },
+
+      // Set hydration state
+      setHasHydrated: (state: boolean) => {
+        set({ hasHydrated: state });
+      },
     }),
     {
       name: 'auth-storage',
@@ -340,6 +370,9 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

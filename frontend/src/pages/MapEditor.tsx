@@ -91,6 +91,7 @@ const MapEditorRefactored: React.FC = () => {
         redo,
         canUndo,
         canRedo,
+        executeCommand,
 
         // State
         isDirty,
@@ -447,7 +448,7 @@ const MapEditorRefactored: React.FC = () => {
                     {/* Alignment Toolbar (appears when multi-select) */}
                     {selectedCount >= 2 && (
                         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
-                            <AlignmentToolbar executeCommand={() => { }} />
+                            <AlignmentToolbar executeCommand={executeCommand} />
                         </div>
                     )}
 
@@ -463,7 +464,7 @@ const MapEditorRefactored: React.FC = () => {
 
                 {/* Right-side panels */}
                 {showLayersPanel && (
-                    <LayersPanel onClose={() => setShowLayersPanel(false)} />
+                    <LayersPanel onClose={() => setShowLayersPanel(false)} executeCommand={executeCommand} />
                 )}
 
                 {/* Properties Panel */}
@@ -471,7 +472,7 @@ const MapEditorRefactored: React.FC = () => {
                     showPropertiesPanel ? (
                         <PropertiesPanel
                             onClose={() => setShowPropertiesPanel(false)}
-                            executeCommand={() => { }}
+                            executeCommand={executeCommand}
                         />
                     ) : (
                         <button

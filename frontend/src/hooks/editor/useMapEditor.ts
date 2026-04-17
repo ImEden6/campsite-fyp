@@ -30,6 +30,7 @@ import { useEditorShortcuts } from './useEditorShortcuts';
 import { useCommandFacade } from './useCommandFacade';
 import { useEditorLifecycle } from './useEditorLifecycle';
 import { useMapStore } from '@/stores/mapStore';
+import { createNewModule } from '@/utils/moduleFactory';
 import type { FabricCanvas } from '@/types/fabricTypes';
 import type { AnyModule } from '@/types';
 
@@ -99,6 +100,8 @@ export interface UseMapEditorReturn {
     canUndo: boolean;
     /** Whether redo is available */
     canRedo: boolean;
+    /** Execute an editor command */
+    executeCommand: (command: any) => void;
 
     // Module operations
     /** Delete selected modules */
@@ -221,11 +224,15 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
     // ========================================================================
     // 6. INPUT HANDLER
     // ========================================================================
-    // Note: onAddModule callback should be provided by MapEditor.tsx
-    // as it requires module creation logic not in mapStore
-
     useInputHandler(canvasRef.current, {
         getModule: (id) => useMapStore.getState().getModule(id),
+        onAddModule: (type, position) => {
+            const newModule = createNewModule(type, position);
+            if (newModule) {
+                addModule(newModule);
+                markDirty();
+            }
+        },
         onPanStart: startPan,
         onPanMove: updatePan,
         onPanEnd: endPan,
@@ -367,6 +374,7 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         redo,
         canUndo,
         canRedo,
+        executeCommand,
 
         // Module operations
         deleteSelected,

@@ -6,26 +6,30 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, CreditCard, MapPin, Plus, ArrowRight, Tent, RefreshCw, Sparkles } from 'lucide-react';
+import { Calendar, CreditCard, MapPin, Plus, ArrowRight, Tent, RefreshCw, Sparkles, Map } from 'lucide-react';
 import { getMyBookings, getUpcomingBookings } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { BookingStatus, PaymentStatus, type Booking } from '@/types';
+import { useAuthStore } from '@/stores/authStore';
 import Button from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { BookingCard } from '@/features/bookings/components/BookingCard';
 
 const CustomerDashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
-  // Fetch customer bookings
+  // Fetch customer bookings - only when auth has hydrated
   const { data: allBookings = [], isLoading: isLoadingBookings, error: bookingsError } = useQuery<Booking[]>({
     queryKey: queryKeys.bookings.myBookings(),
     queryFn: () => getMyBookings(),
+    enabled: hasHydrated,
   });
 
   const { data: upcomingBookings = [], error: upcomingError } = useQuery<Booking[]>({
     queryKey: queryKeys.bookings.upcoming(),
     queryFn: () => getUpcomingBookings(),
+    enabled: hasHydrated,
   });
 
   const upcoming = upcomingBookings.slice(0, 3);
@@ -44,6 +48,18 @@ const CustomerDashboardPage: React.FC = () => {
   const handleViewBooking = (booking: Booking) => {
     navigate(`/customer/bookings/${booking.id}`);
   };
+
+  // Wait for auth to hydrate before showing content
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-nature-bg dark:bg-night-bg flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-10 h-10 animate-spin text-primary-500 mx-auto mb-4" />
+          <p className="text-secondary-600 dark:text-secondary-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoadingBookings) {
     return (
@@ -79,11 +95,16 @@ const CustomerDashboardPage: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-heading text-3xl font-bold text-secondary-900 dark:text-primary-100">Dashboard</h1>
-            <p className="text-secondary-600 dark:text-secondary-400 mt-1">
-              Welcome back! Here's an overview of your bookings.
-            </p>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary-600 dark:bg-primary-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-600/30">
+              <Map className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-heading text-3xl font-bold text-secondary-900 dark:text-primary-100">Dashboard</h1>
+              <p className="text-secondary-600 dark:text-secondary-400 mt-1">
+                Welcome back! Here's an overview of your bookings.
+              </p>
+            </div>
           </div>
           <Button onClick={() => navigate('/customer/sites')} className="shadow-lg shadow-primary-600/20">
             <Plus className="w-4 h-4 mr-2" />

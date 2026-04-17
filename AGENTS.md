@@ -15,6 +15,16 @@ npm run dev                      # Start frontend dev server
 npm run lint                     # Lint all workspaces
 npm run type-check               # Type-check all workspaces
 npm run test                     # Run all tests
+
+### Docker (Production-Only)
+> [!IMPORTANT]
+> The `development` Docker target is deprecated. All local testing and deployment MUST use the `production` target to ensure environment consistency.
+
+```bash
+npm run docker:up                # Build and start production containers
+npm run docker:down              # Stop containers
+docker compose down -v           # Total cleanup (removes volumes)
+```
 ```
 
 ### Backend
@@ -56,6 +66,7 @@ npm run test:e2e:ui              # Playwright UI mode
 
 # Docker
 npm run preview:local           # Mock payments/auth for local preview
+# Docker commands should use the root 'npm run docker:up' instead of individual package dockerfiles.
 ```
 
 ### Running Single Tests

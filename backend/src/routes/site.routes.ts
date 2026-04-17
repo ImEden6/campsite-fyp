@@ -4,10 +4,48 @@ import siteService from '@/services/site.service';
 import cacheService, { CacheService } from '@/services/cache.service';
 import { authenticate, authorize } from '@/middleware/auth';
 import { ApiError } from '@/utils/errors';
-import { SiteType, SiteStatus } from '@prisma/client';
+import { SiteType, SiteStatus, Site as PrismaSite } from '@prisma/client';
 import logger from '@/utils/logger';
 
 const router = Router();
+
+/**
+ * Transform raw Prisma Site to frontend-compatible format
+ * Converts flat fields (sizeLength, latitude, etc.) to nested objects (size, location)
+ */
+const transformSite = (site: PrismaSite) => ({
+  id: site.id,
+  name: site.name,
+  type: site.type,
+  status: site.status,
+  capacity: site.capacity,
+  description: site.description,
+  amenities: site.amenities || [],
+  images: site.images || [],
+  basePrice: site.basePrice,
+  maxVehicles: site.maxVehicles,
+  maxTents: site.maxTents,
+  isPetFriendly: site.isPetFriendly,
+  hasElectricity: site.hasElectricity,
+  hasWater: site.hasWater,
+  hasSewer: site.hasSewer,
+  hasWifi: site.hasWifi,
+  size: {
+    length: site.sizeLength,
+    width: site.sizeWidth,
+    unit: site.sizeUnit as 'feet' | 'meters',
+  },
+  location: {
+    latitude: site.latitude,
+    longitude: site.longitude,
+    mapPosition: {
+      x: site.mapPositionX,
+      y: site.mapPositionY,
+    },
+  },
+  createdAt: site.createdAt,
+  updatedAt: site.updatedAt,
+});
 
 // Cache TTL constants (in seconds)
 const LIST_SOFT_TTL = 300;   // 5 min soft TTL
@@ -45,7 +83,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
         res.json({
             success: true,
-            data: sites,
+            data: sites.map(transformSite),
             count: sites.length,
         });
     } catch (error) {
@@ -78,7 +116,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 
         res.json({
             success: true,
-            data: site,
+            data: transformSite(site),
         });
     } catch (error) {
         next(error);
@@ -100,7 +138,7 @@ router.post('/', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Reques
 
         res.status(201).json({
             success: true,
-            data: site,
+            data: transformSite(site),
         });
     } catch (error) {
         next(error);
@@ -126,7 +164,7 @@ router.put('/:id', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Requ
 
         res.json({
             success: true,
-            data: site,
+            data: transformSite(site),
         });
     } catch (error) {
         next(error);

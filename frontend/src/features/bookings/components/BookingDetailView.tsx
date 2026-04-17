@@ -12,6 +12,8 @@ import {
   XCircle,
   Package,
   MessageSquare,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -20,7 +22,7 @@ import { Card } from '@/components/ui/Card';
 import { QRCodeDialog } from './QRCodeDialog';
 import { ReceiptDownloadDialog } from './ReceiptDownloadDialog';
 import type { Booking } from '@/types';
-import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 
 interface BookingDetailViewProps {
   booking: Booking;
@@ -44,6 +46,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
 }) => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showGuestDetails, setShowGuestDetails] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -224,22 +227,31 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                 <Users size={18} />
                 Guests
               </h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div 
+                className="grid grid-cols-3 gap-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-secondary-800 transition-colors p-2 rounded-lg -m-2"
+                onClick={() => setShowGuestDetails(!showGuestDetails)}
+                title="Click to view/hide guest details"
+              >
                 <div>
-                  <p className="text-sm text-gray-600">Adults</p>
-                  <p className="font-medium text-gray-900">{booking.guests.adults}</p>
+                  <p className="text-sm text-gray-600 dark:text-secondary-400">Adults</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">{booking.guests.adults}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Children</p>
-                  <p className="font-medium text-gray-900">{booking.guests.children}</p>
+                  <p className="text-sm text-gray-600 dark:text-secondary-400">Children</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">{booking.guests.children}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Pets</p>
-                  <p className="font-medium text-gray-900">{booking.guests.pets}</p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-secondary-400">Pets</p>
+                    <p className="font-medium text-gray-900 dark:text-primary-100">{booking.guests.pets}</p>
+                  </div>
+                  <div className="text-secondary-400">
+                    {showGuestDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
                 </div>
               </div>
 
-              {booking.guestDetails && booking.guestDetails.length > 0 && (
+              {showGuestDetails && booking.guestDetails && booking.guestDetails.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <h4 className="text-sm font-medium text-gray-900 mb-3">Guest List</h4>
                   <div className="space-y-3">
@@ -308,10 +320,10 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                       <div>
                         <p className="font-medium text-gray-900">{rental.equipment?.name}</p>
                         <p className="text-sm text-gray-600">
-                          Quantity: {rental.quantity} • {CURRENCY_SYMBOL}{rental.dailyRate}/day
+                          Quantity: {rental.quantity} • {formatCurrency(rental.dailyRate || 0)}/day
                         </p>
                       </div>
-                      <p className="font-semibold text-gray-900">{CURRENCY_SYMBOL}{rental.totalAmount.toFixed(2)}</p>
+                      <p className="font-semibold text-gray-900">{formatCurrency(rental.totalAmount || 0)}</p>
                     </div>
                   ))}
                 </div>
@@ -330,31 +342,31 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="text-gray-900">
-                    {CURRENCY_SYMBOL}{(booking.totalAmount - booking.taxAmount).toFixed(2)}
+                    {formatCurrency((booking.totalAmount || 0) - (booking.taxAmount || 0))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">{CURRENCY_SYMBOL}{booking.taxAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">{formatCurrency(booking.taxAmount || 0)}</span>
                 </div>
-                {booking.discountAmount > 0 && (
+                {(booking.discountAmount || 0) > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Discount</span>
-                    <span>-{CURRENCY_SYMBOL}{booking.discountAmount.toFixed(2)}</span>
+                    <span>-{formatCurrency(booking.discountAmount || 0)}</span>
                   </div>
                 )}
                 <div className="pt-2 border-t border-gray-200 flex justify-between">
                   <span className="font-semibold text-gray-900">Total Amount</span>
-                  <span className="font-bold text-gray-900">{CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}</span>
+                  <span className="font-bold text-gray-900">{formatCurrency(booking.totalAmount || 0)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Paid Amount</span>
-                  <span className="text-gray-900">{CURRENCY_SYMBOL}{booking.paidAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">{formatCurrency(booking.paidAmount || 0)}</span>
                 </div>
-                {booking.paidAmount < booking.totalAmount && (
+                {(booking.paidAmount || 0) < (booking.totalAmount || 0) && (
                   <div className="flex justify-between text-sm font-semibold text-orange-600">
                     <span>Balance Due</span>
-                    <span>{CURRENCY_SYMBOL}{(booking.totalAmount - booking.paidAmount).toFixed(2)}</span>
+                    <span>{formatCurrency((booking.totalAmount || 0) - (booking.paidAmount || 0))}</span>
                   </div>
                 )}
               </div>

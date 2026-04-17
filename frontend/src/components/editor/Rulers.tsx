@@ -283,6 +283,5 @@ export function Rulers({
     );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export { RULER_SIZE };
 export default Rulers;

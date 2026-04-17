@@ -1,19 +1,25 @@
 # Backend Production/Development Dockerfile
 
 # Development stage
-FROM node:22-alpine AS development
+FROM node:22-slim AS development
 WORKDIR /app
+
+# Install system dependencies for Prisma
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy all package files
 COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
-# Install all dependencies (including devDependencies)
-# Delete lock file to fetch Alpine-specific Prisma binaries
-RUN rm -f package-lock.json && npm install
+# Install all dependencies
+RUN npm install
 
-# Copy sources (for initial build if needed, though volumes will override)
+# Copy sources
 COPY shared/ ./shared/
 COPY backend/ ./backend/
 
@@ -26,7 +32,14 @@ EXPOSE 5000
 # Command to run in development
 CMD ["npm", "run", "dev", "-w", "@campsite-management/backend"]
 
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
+
+# Install system dependencies for Prisma
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -37,8 +50,7 @@ COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
 # Install all dependencies
-# Delete lock file to fetch Alpine-specific Prisma binaries
-RUN rm -f package-lock.json && npm install
+RUN npm install
 
 # Copy sources for built packages
 COPY shared/ ./shared/
@@ -50,19 +62,21 @@ RUN npm run db:generate -w @campsite-management/backend && \
   npm run build -w @campsite-management/backend
 
 # Production stage
-FROM node:22-alpine AS production
+FROM node:22-slim AS production
 
 # Create app directory
 WORKDIR /app
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
-# Install production dependencies and curl for healthcheck
-RUN apk add --no-cache curl && \
-  npm install --omit=dev --ignore-scripts
+# Install production dependencies
+RUN npm install --omit=dev --ignore-scripts
 
 # Copy built applications
 COPY --from=builder /app/shared/dist ./shared/dist
@@ -72,8 +86,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S backend -u 1001 -G nodejs
+RUN groupadd --gid 1001 nodejs && useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home backend
 
 # Change ownership of the app directory
 RUN chown -R backend:nodejs /app

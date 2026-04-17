@@ -88,6 +88,14 @@ const bookingListSelect = {
   adultGuests: true,
   childGuests: true,
   petGuests: true,
+  taxAmount: true,
+  paidAmount: true,
+  depositAmount: true,
+  discountAmount: true,
+  checkInTime: true,
+  checkOutTime: true,
+  specialRequests: true,
+  notes: true,
   createdAt: true,
   user: {
     select: {
@@ -104,13 +112,14 @@ const bookingListSelect = {
       name: true,
       type: true,
       basePrice: true,
+      amenities: true,
     },
   },
-  _count: {
-    select: {
-      guests: true,
-      vehicles: true,
-      equipmentReservations: true,
+  guests: true,
+  vehicles: true,
+  equipmentReservations: {
+    include: {
+      equipment: true,
     },
   },
 } as const;
@@ -134,6 +143,7 @@ function transformBookingForResponse<T extends BookingWithGuestCounts>(booking: 
       children: booking.childGuests,
       pets: booking.petGuests,
     },
+    guestDetails: (booking as any).guests || [],
     ...(
       _count && {
         guestCount: _count.guests,

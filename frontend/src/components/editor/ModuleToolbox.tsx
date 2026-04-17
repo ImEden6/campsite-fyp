@@ -16,7 +16,6 @@ import {
     Trash2,
     TreePine,
     Package,
-    Plus,
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react';
@@ -104,12 +103,6 @@ const MODULE_TEMPLATES: ModuleTemplate[] = [
         icon: Package,
         description: 'Storage unit',
     },
-    {
-        type: 'custom',
-        label: 'Custom',
-        icon: Plus,
-        description: 'Custom module',
-    },
 ];
 
 // ============================================================================
@@ -143,7 +136,7 @@ export function ModuleToolbox({ onAddModule }: ModuleToolboxProps) {
     const handleDragStart = useCallback(
         (e: React.DragEvent, type: ModuleType) => {
             setIsDragging(true);
-            e.dataTransfer.setData('application/x-module-type', type);
+            e.dataTransfer.setData('application/module-type', type);
             e.dataTransfer.effectAllowed = 'copy';
         },
         []
@@ -156,6 +149,13 @@ export function ModuleToolbox({ onAddModule }: ModuleToolboxProps) {
     const toggleCollapse = useCallback(() => {
         setIsCollapsed((prev) => !prev);
     }, []);
+
+    // Auto-collapse when tool switches back to select (e.g. after click-to-add placement)
+    React.useEffect(() => {
+        if (activeTool === 'select' && !isCollapsed) {
+            setIsCollapsed(true);
+        }
+    }, [activeTool, isCollapsed]);
 
     if (isCollapsed) {
         return (

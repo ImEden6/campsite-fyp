@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Filter, Grid, List, X, SlidersHorizontal, Zap, Droplet, Wifi, Heart } from 'lucide-react';
+import { Search, Filter, Grid, List, X, SlidersHorizontal, Zap, Droplets, Waves, Wifi, Heart } from 'lucide-react';
 import { getSites } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
 
@@ -296,8 +296,8 @@ const SiteBrowsePage: React.FC = () => {
                   <div className="space-y-2.5">
                     {[
                       { label: 'Electricity', state: hasElectricity, set: setHasElectricity, icon: Zap },
-                      { label: 'Water', state: hasWater, set: setHasWater, icon: Droplet },
-                      { label: 'Sewer', state: hasSewer, set: setHasSewer, icon: null },
+                      { label: 'Water', state: hasWater, set: setHasWater, icon: Droplets },
+                      { label: 'Sewer', state: hasSewer, set: setHasSewer, icon: Waves },
                       { label: 'WiFi', state: hasWifi, set: setHasWifi, icon: Wifi },
                       { label: 'Pet Friendly', state: isPetFriendly, set: setIsPetFriendly, icon: Heart },
                     ].map((amenity) => (

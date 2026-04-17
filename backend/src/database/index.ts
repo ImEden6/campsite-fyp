@@ -87,12 +87,13 @@ export const checkDatabaseHealth = async (): Promise<boolean> => {
 };
 
 // Database transaction helper
-export const transaction = async <T>(
-  callback: (prisma: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>) => Promise<T>
-): Promise<T> => {
+export async function transaction<T>(
+  callback: (prisma: PrismaClient) => Promise<T>
+): Promise<T> {
   const client = getPrismaClient();
-  return await client.$transaction(callback);
-};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (client as any).$transaction(callback);
+}
 
 // Database metrics
 export const getDatabaseMetrics = async () => {

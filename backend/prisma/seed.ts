@@ -1,15 +1,8 @@
 import { PrismaClient, EquipmentCategory, EquipmentItemStatus, EquipmentCondition, ReservationStatus, MaintenanceStatus, MaintenanceType, SiteType, SiteStatus } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 require('dotenv').config();
 
-const connectionString = process.env.DATABASE_URL;
-console.log('Database URL available:', !!connectionString);
-
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Starting detailed database seed...');
@@ -76,6 +69,65 @@ async function main() {
       isEmailVerified: true,
     },
   });
+
+  // Additional guest users for realistic booking data
+  const guestUsers = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: 'sarah.chen@email.com',
+        password: userPassword,
+        firstName: 'Sarah',
+        lastName: 'Chen',
+        role: 'CUSTOMER',
+        isActive: true,
+        isEmailVerified: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'mike.johnson@email.com',
+        password: userPassword,
+        firstName: 'Mike',
+        lastName: 'Johnson',
+        role: 'CUSTOMER',
+        isActive: true,
+        isEmailVerified: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'emma.wilson@email.com',
+        password: userPassword,
+        firstName: 'Emma',
+        lastName: 'Wilson',
+        role: 'CUSTOMER',
+        isActive: true,
+        isEmailVerified: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'david.brown@email.com',
+        password: userPassword,
+        firstName: 'David',
+        lastName: 'Brown',
+        role: 'CUSTOMER',
+        isActive: true,
+        isEmailVerified: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'lisa.martinez@email.com',
+        password: userPassword,
+        firstName: 'Lisa',
+        lastName: 'Martinez',
+        role: 'CUSTOMER',
+        isActive: true,
+        isEmailVerified: true,
+      },
+    }),
+  ]);
 
   // 3. SETTINGS
   console.log('Seeding Settings...');
@@ -505,36 +557,122 @@ async function main() {
     }
   }
 
-  // 6. FUTURE RESERVATIONS & RENTALS
+  // 6. CURRENT MONTH & FUTURE RESERVATIONS
   console.log('Seeding Reservations...');
-  const futureDate = new Date();
-  futureDate.setMonth(futureDate.getMonth() + 1);
-  const futureEnd = new Date(futureDate);
-  futureEnd.setDate(futureEnd.getDate() + 3);
 
-  const booking1 = await prisma.booking.create({
-    data: {
-      bookingNumber: 'BK-2026-FUTURE-01',
-      userId: user.id,
-      siteId: siteMap.get('Lakeside Cabin A')?.id || (await prisma.site.findFirst())?.id,
-      checkInDate: futureDate,
-      checkOutDate: futureEnd,
-      adultGuests: 2, childGuests: 0,
-      status: 'CONFIRMED',
-      paymentStatus: 'PAID',
-      totalAmount: 500.00,
+  const sites = [
+    siteMap.get('Lakeside Cabin A'),
+    siteMap.get('Mountain View Cabin'),
+    siteMap.get('Premium RV Spot 1'),
+    siteMap.get('Riverside RV Spot'),
+    siteMap.get('Hilltop RV Spot'),
+    siteMap.get('Forest Tent Site A'),
+    siteMap.get('Creek Side Tent'),
+    siteMap.get('Meadow View Tent Site'),
+  ];
+
+  const bookingsData = [
+    [0, 2026, 3, 10, 14, 'CHECKED_IN', 2],
+    [2, 2026, 3, 8, 12, 'CHECKED_IN', 3],
+    [1, 2026, 3, 2, 5, 'CHECKED_OUT', 4],
+    [3, 2026, 3, 5, 7, 'CHECKED_OUT', 2],
+    [0, 2026, 4, 2, 5, 'CONFIRMED', 2],
+    [5, 2026, 4, 3, 6, 'CONFIRMED', 3],
+    [4, 2026, 4, 4, 7, 'CONFIRMED', 2],
+    [6, 2026, 4, 5, 9, 'CONFIRMED', 2],
+    [7, 2026, 4, 6, 9, 'CONFIRMED', 4],
+    [3, 2026, 4, 8, 11, 'CONFIRMED', 3],
+    // June 2026 - Day 10: 4 bookings
+    [0, 2026, 5, 8, 12, 'CONFIRMED', 2],
+    [2, 2026, 5, 9, 13, 'CONFIRMED', 4],
+    [5, 2026, 5, 10, 12, 'PENDING', 3],
+    [4, 2026, 5, 10, 14, 'CONFIRMED', 2],
+    // June 2026 - Day 15: 5 bookings
+    [0, 2026, 5, 14, 17, 'CONFIRMED', 2],
+    [1, 2026, 5, 15, 18, 'PENDING', 6],
+    [3, 2026, 5, 15, 16, 'CONFIRMED', 3],
+    [6, 2026, 5, 13, 17, 'CONFIRMED', 2],
+    [7, 2026, 5, 15, 19, 'PENDING', 4],
+    // June 2026 - Day 22: 4 bookings
+    [2, 2026, 5, 20, 24, 'CONFIRMED', 3],
+    [5, 2026, 5, 21, 23, 'PENDING', 2],
+    [4, 2026, 5, 22, 25, 'CONFIRMED', 4],
+    [6, 2026, 5, 22, 26, 'CONFIRMED', 2],
+  ];
+
+  for (let i = 0; i < bookingsData.length; i++) {
+    const [siteIdx, year, month, checkInDay, checkOutDay, status, guests] = bookingsData[i] as [number, number, number, number, number, string, number];
+    const checkInDate = new Date(year, month, checkInDay);
+    const checkOutDate = new Date(year, month, checkOutDay);
+    const site = sites[siteIdx];
+
+    // Distribute bookings across different users for realism
+    // First 10 bookings use the original user, June bookings use guest users
+    const userIndex = i < 10 ? 0 : (i - 10) % guestUsers.length;
+    const bookingUser = i < 10 ? user : guestUsers[userIndex]!;
+
+    const totalAmount = 150.00 + Math.random() * 300;
+    const booking = await prisma.booking.create({
+      data: {
+        bookingNumber: `BK-2026-${String(i + 1).padStart(3, '0')}`,
+        userId: bookingUser.id,
+        siteId: site?.id,
+        checkInDate,
+        checkOutDate,
+        adultGuests: guests,
+        childGuests: 0,
+        status: status as any,
+        paymentStatus: 'PAID',
+        totalAmount,
+        paidAmount: totalAmount,
+        depositAmount: totalAmount * 0.2,
+        taxAmount: totalAmount * 0.1,
+        discountAmount: 0,
+      }
+    });
+
+    // Create real guest records for each booking
+    const additionalGuestNames = ['James', 'Mary', 'Robert', 'Patricia', 'John', 'Jennifer', 'Michael', 'Linda'];
+    
+    // 1. Add Primary Guest (the User)
+    await prisma.guest.create({
+      data: {
+        bookingId: booking.id,
+        firstName: bookingUser.firstName,
+        lastName: bookingUser.lastName,
+        email: bookingUser.email,
+        type: 'ADULT',
+        isPrimary: true,
+      }
+    });
+
+    // 2. Add Additional Guests
+    for (let g = 1; g < guests; g++) {
+      const gName = additionalGuestNames[(i + g) % additionalGuestNames.length];
+      await prisma.guest.create({
+        data: {
+          bookingId: booking.id,
+          firstName: gName!,
+          lastName: bookingUser.lastName,
+          type: 'ADULT',
+          isPrimary: false,
+        }
+      });
     }
-  });
+  }
+
+  console.log(`Created ${bookingsData.length} bookings`);
 
   const kayak = equipmentMap.get('Kayak (Single)');
-  if (kayak) {
+  const firstBooking = await prisma.booking.findFirst({ where: { bookingNumber: 'BK-2026-001' } });
+  if (kayak && firstBooking) {
     await prisma.equipmentReservation.create({
       data: {
-        bookingId: booking1.id,
+        bookingId: firstBooking.id,
         equipmentId: kayak.id,
         quantity: 2,
-        startDate: futureDate,
-        endDate: futureEnd,
+        startDate: firstBooking.checkInDate,
+        endDate: firstBooking.checkOutDate,
         status: ReservationStatus.CONFIRMED,
         dailyRate: kayak.dailyRate,
         totalAmount: kayak.dailyRate * 2 * 3,

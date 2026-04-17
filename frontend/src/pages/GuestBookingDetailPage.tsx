@@ -5,7 +5,7 @@ import { ArrowLeft, UserPlus, MapPin, Users } from 'lucide-react';
 import { verifyGuestBookingEmail, getGuestBooking } from '@/services/api/bookings';
 import Button from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 import { BookingDetailsCard, HelpSidebarCard } from '@/features/bookings/components';
 
 const GuestBookingDetailPage: React.FC = () => {
@@ -174,7 +174,7 @@ const GuestBookingDetailPage: React.FC = () => {
                   <div className="text-right">
                     <div className="text-sm font-semibold text-secondary-500">Total Amount</div>
                     <div className="text-2xl font-bold text-secondary-900 dark:text-primary-100">
-                      {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
+                      {formatCurrency(booking.totalAmount || 0)}
                     </div>
                   </div>
                 </div>

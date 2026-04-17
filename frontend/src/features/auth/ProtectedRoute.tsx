@@ -15,12 +15,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo,
 }) => {
   const location = useLocation();
-  const { isAuthenticated, user, initialize } = useAuthStore();
+  const { isAuthenticated, user, initialize, hasHydrated } = useAuthStore();
 
   // Initialize auth state on mount
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Don't render until auth state is hydrated from storage
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-nature-bg dark:bg-night-bg">
+        <div className="animate-pulse text-secondary-600 dark:text-secondary-400">Loading...</div>
+      </div>
+    );
+  }
 
   // Determine redirect destination based on user role or required role
   const getRedirectTo = () => {

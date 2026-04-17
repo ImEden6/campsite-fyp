@@ -181,11 +181,54 @@ export class BookingService {
     // 2. Normalize Guest Data
     let finalGuests: GuestInput[] = guests || [];
     let finalAdultCount = data.adultGuests;
+    let finalChildCount = data.childGuests || 0;
 
-    // Recalculate based on guests if provided
+    // If guests array provided, validate it matches the explicit counts
     if (guests && guests.length > 0) {
-      finalAdultCount = guests.filter(g => g.type === GuestType.ADULT).length;
-      // data.childGuests is overridden by array count
+      const arrayAdultCount = guests.filter(g => g.type === GuestType.ADULT).length;
+      const arrayChildCount = guests.filter(g => g.type === GuestType.CHILD).length;
+      
+      // Use explicit counts if provided, otherwise use array counts
+      finalAdultCount = data.adultGuests > 0 ? data.adultGuests : arrayAdultCount;
+      finalChildCount = (data.childGuests !== undefined && data.childGuests > 0) ? data.childGuests : arrayChildCount;
+      
+      // If mismatch, generate missing guests to match explicit counts
+      const totalGuests = finalAdultCount + finalChildCount;
+      if (guests.length !== totalGuests) {
+        logger.warn('Guest array count mismatch, generating additional guests', { 
+          explicitAdults: data.adultGuests, 
+          explicitChildren: data.childGuests,
+          arrayAdults: arrayAdultCount, 
+          arrayChildren: arrayChildCount,
+          arrayLength: guests.length 
+        });
+        
+        // Generate missing guests
+        const existingGuests = [...guests];
+        let counter = existingGuests.length + 1;
+        
+        // Add missing adults
+        while (existingGuests.filter(g => g.type === GuestType.ADULT).length < finalAdultCount) {
+          existingGuests.push({
+            firstName: `Guest ${counter++}`,
+            lastName: '(Adult)',
+            type: GuestType.ADULT,
+            isPrimary: false,
+          });
+        }
+        
+        // Add missing children
+        while (existingGuests.filter(g => g.type === GuestType.CHILD).length < finalChildCount) {
+          existingGuests.push({
+            firstName: `Guest ${counter++}`,
+            lastName: '(Child)',
+            type: GuestType.CHILD,
+            isPrimary: false,
+          });
+        }
+        
+        finalGuests = existingGuests;
+      }
     } else {
       // Legacy: Generate synthetic guests if not provided
       finalGuests = [];
@@ -199,7 +242,7 @@ export class BookingService {
           isPrimary: i === 0, // First adult is primary
         });
       }
-      for (let i = 0; i < data.childGuests; i++) {
+      for (let i = 0; i < (data.childGuests || 0); i++) {
         finalGuests.push({
           firstName: `Guest ${guestCounter++}`,
           lastName: '(Child)',
@@ -209,7 +252,8 @@ export class BookingService {
       }
     }
 
-    const finalChildCount = finalGuests.filter(g => g.type === GuestType.CHILD).length; // Ensure accurate count
+    const arrayChildCount = finalGuests.filter(g => g.type === GuestType.CHILD).length;
+    finalChildCount = finalChildCount || arrayChildCount;
 
     // 3. Strict Validation
     const totalGuests = finalAdultCount + finalChildCount;

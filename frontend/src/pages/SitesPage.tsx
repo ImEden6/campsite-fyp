@@ -18,6 +18,7 @@ import {
   Wifi,
   Zap,
   Droplets,
+  Waves,
   PawPrint,
   Users,
   DollarSign,
@@ -340,6 +341,11 @@ const SitesPage: React.FC = () => {
                 <Droplets className="w-3 h-3" /> Water
               </span>
             )}
+            {site.hasSewer && (
+              <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-secondary-400">
+                <Waves className="w-3 h-3" /> Sewer
+              </span>
+            )}
             {site.isPetFriendly && (
               <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-secondary-400">
                 <PawPrint className="w-3 h-3" /> Pets OK
@@ -399,6 +405,7 @@ const SitesPage: React.FC = () => {
               {site.hasWifi && <Wifi className="w-4 h-4" />}
               {site.hasElectricity && <Zap className="w-4 h-4" />}
               {site.hasWater && <Droplets className="w-4 h-4" />}
+              {site.hasSewer && <Waves className="w-4 h-4" />}
               {site.isPetFriendly && <PawPrint className="w-4 h-4" />}
             </div>
             <div className="flex items-center gap-1 text-gray-600 dark:text-secondary-400">

@@ -138,14 +138,14 @@ const MODULE_ICONS: Record<ModuleType, IconElement[]> = {
  * Get the color for a module type
  */
 export function getModuleColor(type: ModuleType): string {
-    return MODULE_COLORS[type] || MODULE_COLORS.custom;
+    return MODULE_COLORS[type] || 'gray';
 }
 
 /**
  * Get the icon elements for a module type
  */
 export function getModuleIconElements(type: ModuleType): IconElement[] {
-    return MODULE_ICONS[type] || MODULE_ICONS.custom;
+    return MODULE_ICONS[type] || [];
 }
 
 /**

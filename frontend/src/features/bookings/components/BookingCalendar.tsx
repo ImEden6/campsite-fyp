@@ -3,12 +3,15 @@
  * Displays bookings in calendar view with month/week/day views
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter } from 'lucide-react';
 import { Button, Badge, Card } from '@/components/ui';
 import type { BadgeProps } from '@/components/ui';
 import { Booking, BookingStatus, SiteType } from '@/types';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, addWeeks, isSameMonth, isToday } from 'date-fns';
+import { BookingCalendarItem } from './BookingCalendarItem';
+import { STATUS_COLORS } from '../constants/booking-colors';
+import { OverflowIndicator } from './OverflowIndicator';
 
 export type CalendarView = 'month' | 'week' | 'day';
 
@@ -21,15 +24,6 @@ export interface BookingCalendarProps {
   selectedDate?: Date;
   loading?: boolean;
 }
-
-const STATUS_COLORS: Record<BookingStatus, string> = {
-  [BookingStatus.PENDING]: 'bg-yellow-100 text-yellow-900 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-700',
-  [BookingStatus.CONFIRMED]: 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-700',
-  [BookingStatus.CHECKED_IN]: 'bg-green-100 text-green-900 border-green-300 dark:bg-green-900/30 dark:text-green-200 dark:border-green-700',
-  [BookingStatus.CHECKED_OUT]: 'bg-gray-100 text-gray-900 border-gray-300 dark:bg-night-surface-alt/50 dark:text-secondary-200 dark:border-secondary-600',
-  [BookingStatus.CANCELLED]: 'bg-red-100 text-red-900 border-red-300 dark:bg-red-900/30 dark:text-red-200 dark:border-red-700',
-  [BookingStatus.NO_SHOW]: 'bg-orange-100 text-orange-900 border-orange-300 dark:bg-orange-900/30 dark:text-orange-200 dark:border-orange-700',
-};
 
 const STATUS_BADGE_VARIANTS: Record<BookingStatus, BadgeProps['variant']> = {
   [BookingStatus.PENDING]: 'warning',
@@ -46,14 +40,34 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   onDateSelect,
   onBookingClick,
   onViewChange,
-  selectedDate = new Date(),
+  selectedDate,
   loading = false,
 }) => {
-  const [currentDate, setCurrentDate] = useState(selectedDate);
+  const [currentDate, setCurrentDate] = useState(() => selectedDate || new Date());
   const [currentView, setCurrentView] = useState<CalendarView>(view);
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<BookingStatus[]>([]);
   const [siteTypeFilter, setSiteTypeFilter] = useState<SiteType[]>([]);
+
+  const prevProps = useRef({ view, selectedDate });
+
+  // Sync internal state with props when they change from parent
+  useEffect(() => {
+    // Only sync if props have actually changed from their previous values
+    if (view && view !== prevProps.current.view && view !== currentView) {
+      console.log(`[BookingCalendar] Syncing view from prop: ${prevProps.current.view} -> ${view}`);
+      setCurrentView(view);
+    }
+    
+    const selectedDateChanged = selectedDate?.getTime() !== prevProps.current.selectedDate?.getTime();
+    if (selectedDate && selectedDateChanged && selectedDate.getTime() !== currentDate.getTime()) {
+      console.log(`[BookingCalendar] Syncing date from prop: ${prevProps.current.selectedDate?.toDateString()} -> ${selectedDate.toDateString()}`);
+      setCurrentDate(selectedDate);
+    }
+    
+    // Update ref for next render
+    prevProps.current = { view, selectedDate };
+  }, [view, selectedDate, currentView, currentDate]);
 
   // Filter bookings
   const filteredBookings = useMemo(() => {
@@ -135,6 +149,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   };
 
   const handleDateClick = (date: Date) => {
+    console.log('[BookingCalendar] handleDateClick:', date.toISOString());
     onDateSelect?.(date);
   };
 
@@ -159,40 +174,29 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         days.push(
           <div
             key={currentDay.toString()}
-            className={`min-h-[100px] border border-gray-200 dark:border-secondary-700 p-2 cursor-pointer transition-all duration-150 ${
+            className={`min-h-[100px] border border-gray-200 dark:border-secondary-700 p-2 transition-all duration-150 ${
               !isCurrentMonth 
-                ? 'bg-gray-50 dark:bg-night-bg text-secondary-400 dark:text-secondary-600 hover:bg-gray-100 dark:hover:bg-night-bg' 
-                : 'bg-white dark:bg-night-surface text-gray-900 dark:text-primary-100 hover:bg-blue-50 dark:hover:bg-night-surface-alt hover:border-blue-300 dark:hover:border-secondary-600'
+                ? 'bg-gray-50 dark:bg-night-bg text-secondary-400 dark:text-secondary-600' 
+                : 'bg-white dark:bg-night-surface text-gray-900 dark:text-primary-100'
             } ${isCurrentDay ? 'bg-blue-50 dark:bg-blue-950 border-blue-400 dark:border-blue-600 ring-1 ring-blue-400 dark:ring-blue-600' : ''}`}
-            onClick={() => handleDateClick(currentDay)}
           >
-            <div className={`font-semibold text-sm mb-1 transition-colors ${isCurrentDay ? 'text-blue-700 dark:text-blue-300' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
+            <div className={`font-semibold text-sm mb-1 transition-colors ${isCurrentDay ? 'text-blue-700 dark:text-blue-300' : ''}`}>
               {format(currentDay, 'd')}
             </div>
             <div className="space-y-1">
               {dayBookings.slice(0, 3).map((booking) => (
-                <div
+                <BookingCalendarItem
                   key={booking.id}
-                  className={`text-xs p-1 rounded border cursor-pointer hover:opacity-80 transition-opacity ${
-                    STATUS_COLORS[booking.status]
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onBookingClick?.(booking);
-                  }}
-                >
-                  <div className="truncate font-medium">
-                    {booking.site?.name || `Site ${booking.siteId}`}
-                  </div>
-                  <div className="truncate text-xs opacity-75">
-                    {booking.user?.firstName} {booking.user?.lastName}
-                  </div>
-                </div>
+                  booking={booking}
+                  variant="month"
+                  onSelect={onBookingClick}
+                />
               ))}
               {dayBookings.length > 3 && (
-                <div className="text-xs text-gray-600 dark:text-secondary-400 font-medium">
-                  +{dayBookings.length - 3} more
-                </div>
+                <OverflowIndicator
+                  count={dayBookings.length - 3}
+                  onClick={() => handleDateClick(currentDay)}
+                />
               )}
             </div>
           </div>
@@ -247,26 +251,20 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
             </div>
           </div>
           <div className="p-2 space-y-2 min-h-[400px] bg-white dark:bg-night-surface">
-            {dayBookings.map((booking) => (
-              <div
+            {dayBookings.slice(0, 3).map((booking) => (
+              <BookingCalendarItem
                 key={booking.id}
-                className={`p-2 rounded border cursor-pointer hover:opacity-80 transition-opacity ${
-                  STATUS_COLORS[booking.status]
-                }`}
-                onClick={() => onBookingClick?.(booking)}
-              >
-                <div className="font-medium text-sm">
-                  {booking.site?.name || `Site ${booking.siteId}`}
-                </div>
-                <div className="text-xs opacity-75">
-                  {booking.user?.firstName} {booking.user?.lastName}
-                </div>
-                <div className="text-xs mt-1">
-                  {format(booking.checkInDate instanceof Date ? booking.checkInDate : new Date(booking.checkInDate), 'h:mm a')} -{' '}
-                  {format(booking.checkOutDate instanceof Date ? booking.checkOutDate : new Date(booking.checkOutDate), 'h:mm a')}
-                </div>
-              </div>
+                booking={booking}
+                variant="week"
+                onSelect={onBookingClick}
+              />
             ))}
+            {dayBookings.length > 3 && (
+              <OverflowIndicator
+                count={dayBookings.length - 3}
+                onClick={() => handleDateClick(day)}
+              />
+            )}
           </div>
         </div>
       );

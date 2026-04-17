@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import type { Booking } from '@/types';
-import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 
 interface ReceiptDownloadDialogProps {
   booking: Booking;
@@ -287,19 +287,19 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
                 <div class="line-item">
                   <div class="line-item-description">
                     <div class="line-item-title">Site Rental - ${booking.site?.name || 'N/A'}</div>
-                    <div class="line-item-details">${calculateNights()} nights</div>
+                    ${calculateNights()} nights
                   </div>
                   <div class="line-item-amount">
-                    ${CURRENCY_SYMBOL}${(booking.totalAmount - booking.taxAmount - (booking.equipmentReservations?.reduce((sum, er) => sum + er.totalAmount, 0) || 0)).toFixed(2)}
+                    ${formatCurrency((booking.totalAmount || 0) - (booking.taxAmount || 0) - (booking.equipmentReservations?.reduce((sum, er) => sum + (er.totalAmount || 0), 0) || 0))}
                   </div>
                 </div>
                 ${booking.equipmentReservations && booking.equipmentReservations.length > 0 ? booking.equipmentReservations.map(rental => `
                   <div class="line-item">
                     <div class="line-item-description">
                       <div class="line-item-title">${rental.equipment?.name || 'Equipment'}</div>
-                      <div class="line-item-details">Quantity: ${rental.quantity} × ${CURRENCY_SYMBOL}${rental.dailyRate.toFixed(2)}/day</div>
+                      <div class="line-item-details">Quantity: ${rental.quantity} × ${formatCurrency(rental.dailyRate || 0)}/day</div>
                     </div>
-                    <div class="line-item-amount">${CURRENCY_SYMBOL}${rental.totalAmount.toFixed(2)}</div>
+                    <div class="line-item-amount">${formatCurrency(rental.totalAmount || 0)}</div>
                   </div>
                 `).join('') : ''}
               </div>
@@ -307,21 +307,21 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               <div class="totals">
                 <div class="total-row">
                   <span>Subtotal</span>
-                  <span>${CURRENCY_SYMBOL}${(booking.totalAmount - booking.taxAmount).toFixed(2)}</span>
+                  <span>${formatCurrency((booking.totalAmount || 0) - (booking.taxAmount || 0))}</span>
                 </div>
                 <div class="total-row">
                   <span>Tax</span>
-                  <span>${CURRENCY_SYMBOL}${booking.taxAmount.toFixed(2)}</span>
+                  <span>${formatCurrency(booking.taxAmount || 0)}</span>
                 </div>
                 ${booking.discountAmount > 0 ? `
                   <div class="total-row" style="color: oklch(0.596 0.127 163.2);">
                     <span>Discount</span>
-                    <span>-${CURRENCY_SYMBOL}${booking.discountAmount.toFixed(2)}</span>
+                    <span>-${formatCurrency(booking.discountAmount || 0)}</span>
                   </div>
                 ` : ''}
                 <div class="total-row grand-total">
                   <span>Total Amount</span>
-                  <span>${CURRENCY_SYMBOL}${booking.totalAmount.toFixed(2)}</span>
+                  <span>${formatCurrency(booking.totalAmount || 0)}</span>
                 </div>
               </div>
             </div>
@@ -330,12 +330,12 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               <h3>Payment Information</h3>
               <div class="payment-info">
                 <p><strong>Payment Status:</strong> <span class="status-badge status-${booking.paymentStatus.toLowerCase()}">${booking.paymentStatus}</span></p>
-                <p><strong>Amount Paid:</strong> ${CURRENCY_SYMBOL}${booking.paidAmount.toFixed(2)}</p>
+                <p><strong>Amount Paid:</strong> ${formatCurrency(booking.paidAmount || 0)}</p>
                 ${booking.paidAmount < booking.totalAmount ? `
-                  <p><strong>Balance Due:</strong> ${CURRENCY_SYMBOL}${(booking.totalAmount - booking.paidAmount).toFixed(2)}</p>
+                  <p><strong>Balance Due:</strong> ${formatCurrency((booking.totalAmount || 0) - (booking.paidAmount || 0))}</p>
                 ` : ''}
                 ${booking.depositAmount > 0 ? `
-                  <p><strong>Deposit:</strong> ${CURRENCY_SYMBOL}${booking.depositAmount.toFixed(2)}</p>
+                  <p><strong>Deposit:</strong> ${formatCurrency(booking.depositAmount || 0)}</p>
                 ` : ''}
               </div>
             </div>
@@ -433,7 +433,7 @@ export const ReceiptDownloadDialog: React.FC<ReceiptDownloadDialogProps> = ({
               <h4 className="font-semibold text-gray-900 mb-1">Receipt Details</h4>
               <div className="space-y-1 text-sm text-gray-600">
                 <p>Booking: #{booking.bookingNumber}</p>
-                <p>Total Amount: {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}</p>
+                <p>Total Amount: {formatCurrency(booking.totalAmount || 0)}</p>
                 <p>Payment Status: {booking.paymentStatus}</p>
                 <p>Date: {new Date().toLocaleDateString()}</p>
               </div>

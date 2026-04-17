@@ -15,7 +15,7 @@ import { checkSiteAvailability } from '@/services/api/sites';
 import { queryKeys } from '@/config/query-keys';
 import { useToast } from '@/hooks/useToast';
 import type { Booking } from '@/types';
-import { CURRENCY_SYMBOL } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 import { GuestDetailsInput, type GuestDetail } from './GuestDetailsInput';
 
 interface BookingModificationDialogProps {
@@ -182,7 +182,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
   };
 
   const priceDifference = newPricing
-    ? newPricing.totalAmount - booking.totalAmount
+    ? newPricing.totalAmount - (booking.totalAmount || 0)
     : 0;
 
   return (
@@ -210,7 +210,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
               {booking.guests.adults} adults, {booking.guests.children} children
             </div>
             <div>
-              <span className="font-medium">Total:</span> {CURRENCY_SYMBOL}{booking.totalAmount.toFixed(2)}
+              <span className="font-medium">Total:</span> {formatCurrency(booking.totalAmount || 0)}
             </div>
           </div>
         </div>
@@ -269,13 +269,13 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
                 <div className="space-y-2 text-sm text-green-800">
                   <div className="flex justify-between">
                     <span>New Total:</span>
-                    <span className="font-semibold">{CURRENCY_SYMBOL}{newPricing.totalAmount.toFixed(2)}</span>
+                    <span className="font-semibold">{formatCurrency(newPricing.totalAmount || 0)}</span>
                   </div>
                   {priceDifference !== 0 && (
                     <div className="flex justify-between">
                       <span>Price Difference:</span>
-                      <span className={`font - semibold ${priceDifference > 0 ? 'text-red-600' : 'text-green-600'} `}>
-                        {priceDifference > 0 ? '+' : ''}{CURRENCY_SYMBOL}{priceDifference.toFixed(2)}
+                      <span className={`font-semibold ${priceDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {priceDifference > 0 ? '+' : ''}{formatCurrency(priceDifference)}
                       </span>
                     </div>
                   )}
@@ -286,7 +286,7 @@ export const BookingModificationDialog: React.FC<BookingModificationDialogProps>
                   )}
                   {priceDifference < 0 && (
                     <p className="text-xs mt-2">
-                      A refund of {CURRENCY_SYMBOL}{Math.abs(priceDifference).toFixed(2)} will be processed.
+                      A refund of {formatCurrency(Math.abs(priceDifference))} will be processed.
                     </p>
                   )}
                 </div>

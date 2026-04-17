@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, LogIn } from 'lucide-react';
+import { Menu, X, LogIn, Map } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -22,6 +22,9 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary-600 dark:bg-primary-500 rounded-lg flex items-center justify-center">
+                <Map className="w-5 h-5 text-white" />
+              </div>
               <span className="font-heading text-2xl font-bold text-primary-600 dark:text-primary-400">
                 Campsite
               </span>

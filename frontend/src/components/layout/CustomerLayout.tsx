@@ -8,11 +8,13 @@ import {
   LogOut,
   Menu,
   X,
-  MapPin
+  MapPin,
+  Map
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { SkipNavigation } from '@/components/accessibility';
 import ToastContainer from './ToastContainer';
+import ThemeToggle from '@/components/ThemeToggle';
 
 
 const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -46,20 +48,26 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-night-surface border-b border-gray-200 dark:border-secondary-700">
         <div className="flex items-center justify-between px-4 h-16">
-          <Link to="/customer/dashboard" className="text-xl font-bold text-blue-600 dark:text-blue-400">
+          <Link to="/customer/dashboard" className="flex items-center gap-2 text-xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
+              <Map className="w-5 h-5 text-white" />
+            </div>
             Campsite
           </Link>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg hover:bg-secondary-100 dark:hover:bg-night-surface-alt dark:hover:bg-night-surface-alt"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-secondary-600 dark:text-secondary-300" />
-            ) : (
-              <Menu className="w-6 h-6 text-secondary-600 dark:text-secondary-300" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-lg hover:bg-secondary-100 dark:hover:bg-night-surface-alt"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6 text-secondary-600 dark:text-secondary-300" />
+              ) : (
+                <Menu className="w-6 h-6 text-secondary-600 dark:text-secondary-300" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -103,7 +111,10 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
         {/* Sidebar - Desktop */}
         <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white dark:lg:bg-night-surface lg:border-r lg:border-gray-200 dark:lg:border-secondary-700">
           <div className="flex items-center h-16 px-6 border-b border-gray-200 dark:border-secondary-700">
-            <Link to="/customer/dashboard" className="text-xl font-bold text-blue-600 dark:text-blue-400">
+            <Link to="/customer/dashboard" className="flex items-center gap-2 text-xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
+                <Map className="w-5 h-5 text-white" />
+              </div>
               Campsite
             </Link>
           </div>
@@ -131,6 +142,10 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
           {/* User section */}
           <div className="px-4 py-4 border-t border-gray-200 dark:border-secondary-700">
+            {/* Theme Toggle */}
+            <div className="mb-4">
+              <ThemeToggle />
+            </div>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-secondary-300 dark:bg-night-surface-alt dark:bg-night-surface-alt rounded-full flex items-center justify-center">
                 {user?.avatar ? (
