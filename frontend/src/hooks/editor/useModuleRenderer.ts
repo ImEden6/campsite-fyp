@@ -17,6 +17,8 @@ import { createModuleObject, updateModuleObject } from '@/utils/moduleFactory';
 import type { FabricCanvas, FabricObject, FabricGroup } from '@/types/fabricTypes';
 import { isGridObject, isBackgroundObject, OPACITY_LOCKED, OPACITY_HIDDEN, OPACITY_LOCK_ICON, getModuleId } from '@/types/fabricTypes';
 import type { AnyModule } from '@/types';
+ 
+ const EMPTY_MODULES: AnyModule[] = [];
 
 // ============================================================================
 // TYPES
@@ -27,6 +29,10 @@ export interface UseModuleRendererOptions {
     onModulesRendered?: (count: number) => void;
     /** Callback to restore selection after re-render */
     restoreSelection?: (ids: string[]) => void;
+    /** External ref to track interaction ID (to resolve circular dependencies) */
+    externalInteractingIdRef?: React.MutableRefObject<string | null>;
+    /** When true (e.g. hand/pan tool), modules do not receive pointer events or selection */
+    blockModuleInteraction?: boolean;
 }
 
 export interface UseModuleRendererReturn {
@@ -36,6 +42,8 @@ export interface UseModuleRendererReturn {
     getObjectForModule: (moduleId: string) => FabricObject | null;
     /** Get all module Fabric objects */
     getAllModuleObjects: () => FabricObject[];
+    /** Set the ID of the module currently being interacted with (skips sync) */
+    setInteractingId: (id: string | null) => void;
 }
 
 // ============================================================================
@@ -90,21 +98,18 @@ export function useModuleRenderer(
     canvas: FabricCanvas | null,
     options: UseModuleRendererOptions = {}
 ): UseModuleRendererReturn {
-    const { onModulesRendered, restoreSelection } = options;
+    const { onModulesRendered, restoreSelection, externalInteractingIdRef, blockModuleInteraction = false } = options;
 
     // Subscribe to map store
-    const modules = useMapStore((state) => state.currentMap?.modules ?? []);
-
-    // Subscribe to editor store for hidden/locked states
-    const hiddenModuleIds = useEditorStore((state) => state.hiddenModuleIds);
-    const lockedModuleIds = useEditorStore((state) => state.lockedModuleIds);
-    const isModuleHidden = useEditorStore((state) => state.isModuleHidden);
-    const isModuleLocked = useEditorStore((state) => state.isModuleLocked);
+    const modules = useMapStore((state) => state.currentMap?.modules ?? EMPTY_MODULES);
 
     // Track previous module hashes for change detection
     const prevHashesRef = useRef<Map<string, string>>(new Map());
     // Track Fabric objects by module ID
     const objectMapRef = useRef<Map<string, FabricGroup>>(new Map());
+    // Track ID of module currently being manipulated (to skip sync-back loops)
+    const internalInteractingIdRef = useRef<string | null>(null);
+    const interactingIdRef = externalInteractingIdRef || internalInteractingIdRef;
 
     // Create module ID to module lookup
     const moduleMap = useMemo(() => {
@@ -129,7 +134,7 @@ export function useModuleRenderer(
         const selectedIds = useEditorStore.getState().selectedIds;
 
         // Build set of current module IDs
-        const currentIds = new Set(modules.map((m) => m.id));
+        const currentIds = new Set(modules.map((m: AnyModule) => m.id));
         const newHashes = new Map<string, string>();
 
         // Track which modules were added/updated
@@ -146,7 +151,8 @@ export function useModuleRenderer(
 
             if (existingObj) {
                 // Object exists - check if needs update
-                if (prevHash !== hash) {
+                // SKIP update if this module is currently being interacted with (user is dragging it)
+                if (prevHash !== hash && interactingIdRef.current !== module.id) {
                     updateModuleObject(existingObj, module);
                     applyVisualState(existingObj, module);
                     updatedCount++;
@@ -212,8 +218,8 @@ export function useModuleRenderer(
      * Apply visual state (opacity, selectability) based on hidden/locked status
      */
     const applyVisualState = useCallback((obj: FabricGroup, module: AnyModule) => {
-        const isHidden = isModuleHidden(module.id);
-        const isLocked = isModuleLocked(module.id) || module.locked;
+        const isHidden = !module.visible;
+        const isLocked = module.locked;
 
         // Set opacity
         if (isHidden) {
@@ -224,9 +230,10 @@ export function useModuleRenderer(
             obj.opacity = 1;
         }
 
-        // Set selectability
-        obj.selectable = !isLocked;
-        obj.evented = !isHidden; // Hidden modules don't receive events
+        // Locked modules must stay selectable so users can click / right-click to unlock.
+        // Movement & scale are blocked via Fabric lock* flags on the group (see moduleFactory).
+        obj.selectable = !isHidden;
+        obj.evented = !isHidden;
 
         // Handle lock icon visibility in group
         const children = obj.getObjects?.() ?? [];
@@ -237,7 +244,7 @@ export function useModuleRenderer(
         }
 
         obj.setCoords?.();
-    }, [isModuleHidden, isModuleLocked]);
+    }, []);
 
     /**
      * Sort canvas objects by zIndex
@@ -297,7 +304,29 @@ export function useModuleRenderer(
         }
 
         canvas.requestRenderAll();
-    }, [canvas, hiddenModuleIds, lockedModuleIds, moduleMap, applyVisualState]);
+    }, [canvas, moduleMap, applyVisualState]);
+
+    /**
+     * Pan / hand tool: make module groups ignore pointer events so the map can be dragged
+     */
+    useEffect(() => {
+        if (!canvas) return;
+
+        for (const [id, obj] of objectMapRef.current) {
+            const module = moduleMap.get(id);
+            if (blockModuleInteraction) {
+                obj.selectable = false;
+                obj.evented = false;
+            } else if (module) {
+                applyVisualState(obj, module);
+            }
+        }
+
+        if (blockModuleInteraction) {
+            canvas.discardActiveObject?.();
+        }
+        canvas.requestRenderAll();
+    }, [canvas, blockModuleInteraction, moduleMap, applyVisualState]);
 
     // ========================================================================
     // API
@@ -326,11 +355,16 @@ export function useModuleRenderer(
         return Array.from(objectMapRef.current.values());
     }, []);
 
-    return {
+    const setInteractingId = useCallback((id: string | null) => {
+        interactingIdRef.current = id;
+    }, []);
+
+    return useMemo(() => ({
         forceRender,
         getObjectForModule,
         getAllModuleObjects,
-    };
+        setInteractingId,
+    }), [forceRender, getObjectForModule, getAllModuleObjects, setInteractingId]);
 }
 
 export default useModuleRenderer;

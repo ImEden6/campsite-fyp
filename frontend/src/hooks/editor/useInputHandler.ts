@@ -9,10 +9,10 @@
  * @see editorStore - Consumes activeTool, moduleToAdd
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
 import type { FabricCanvas, FabricEvent, Point, FabricObject } from '@/types/fabricTypes';
-import { getModuleId } from '@/types/fabricTypes';
+import { getModuleId, isBackgroundObject, isGridObject } from '@/types/fabricTypes';
 import type { ModuleType, AnyModule } from '@/types';
 
 // ============================================================================
@@ -20,6 +20,8 @@ import type { ModuleType, AnyModule } from '@/types';
 // ============================================================================
 
 export interface UseInputHandlerOptions {
+    /** Hand tool / canvas pan mode from usePanZoom (before activeTool syncs to 'pan') */
+    isPanMode?: boolean;
     /** Callback when a module should be added */
     onAddModule?: (type: ModuleType, position: Point) => void;
     /** Callback to get module data by ID (for cursor changes) */
@@ -30,6 +32,8 @@ export interface UseInputHandlerOptions {
     onPanMove?: (e: MouseEvent) => void;
     /** Pan end handler from usePanZoom */
     onPanEnd?: () => void;
+    /** Secondary click on a module (e.g. open properties); runs before pan/add handling */
+    onModuleContextMenu?: (moduleId: string, e: MouseEvent) => void;
 }
 
 export interface UseInputHandlerReturn {
@@ -75,7 +79,15 @@ export function useInputHandler(
     canvas: FabricCanvas | null,
     options: UseInputHandlerOptions = {}
 ): UseInputHandlerReturn {
-    const { onAddModule, getModule, onPanStart, onPanMove, onPanEnd } = options;
+    const {
+        isPanMode = false,
+        onAddModule,
+        getModule,
+        onPanStart,
+        onPanMove,
+        onPanEnd,
+        onModuleContextMenu,
+    } = options;
 
     // Get store state
     const activeTool = useEditorStore((state) => state.activeTool);
@@ -106,7 +118,7 @@ export function useInputHandler(
     const updateCursor = useCallback(() => {
         if (!canvas) return;
 
-        if (activeTool === 'pan') {
+        if (activeTool === 'pan' || isPanMode) {
             canvas.defaultCursor = isPanningRef.current ? CURSOR_GRABBING : CURSOR_GRAB;
             canvas.hoverCursor = isPanningRef.current ? CURSOR_GRABBING : CURSOR_GRAB;
         } else if (activeTool === 'add' && moduleToAdd) {
@@ -116,7 +128,7 @@ export function useInputHandler(
             canvas.defaultCursor = CURSOR_DEFAULT;
             canvas.hoverCursor = CURSOR_DEFAULT;
         }
-    }, [canvas, activeTool, moduleToAdd]);
+    }, [canvas, activeTool, moduleToAdd, isPanMode]);
 
     // ========================================================================
     // EVENT HANDLERS
@@ -127,8 +139,21 @@ export function useInputHandler(
 
         const e = opt.e as MouseEvent;
 
+        // Right-click: module context (properties, etc.) — never start pan / add
+        if (e.button === 2) {
+            const target = opt.target as FabricObject | undefined;
+            if (target && !isGridObject(target) && !isBackgroundObject(target)) {
+                const moduleId = getModuleId(target);
+                if (moduleId) {
+                    e.preventDefault();
+                    onModuleContextMenu?.(moduleId, e);
+                }
+            }
+            return;
+        }
+
         // Handle pan mode or Alt+drag
-        if (activeTool === 'pan' || e.altKey || e.button === 1) {
+        if (activeTool === 'pan' || isPanMode || e.altKey || e.button === 1) {
             isPanningRef.current = true;
             canvas.selection = false;
             updateCursor();
@@ -145,7 +170,17 @@ export function useInputHandler(
             setModuleToAdd(null);
             return;
         }
-    }, [canvas, activeTool, moduleToAdd, onAddModule, setModuleToAdd, onPanStart, updateCursor]);
+    }, [
+        canvas,
+        activeTool,
+        isPanMode,
+        moduleToAdd,
+        onAddModule,
+        setModuleToAdd,
+        onPanStart,
+        updateCursor,
+        onModuleContextMenu,
+    ]);
 
     const handleMouseMove = useCallback((opt: FabricEvent) => {
         if (!canvas) return;
@@ -164,14 +199,14 @@ export function useInputHandler(
             isPanningRef.current = false;
 
             // Re-enable selection if not in pan mode
-            if (canvas && activeTool !== 'pan') {
+            if (canvas && activeTool !== 'pan' && !isPanMode) {
                 canvas.selection = true;
             }
 
             updateCursor();
             onPanEnd?.();
         }
-    }, [canvas, activeTool, onPanEnd, updateCursor]);
+    }, [canvas, activeTool, isPanMode, onPanEnd, updateCursor]);
 
     const handleMouseOver = useCallback((opt: FabricEvent) => {
         if (!canvas) return;
@@ -257,10 +292,10 @@ export function useInputHandler(
         updateCursor();
     }, [updateCursor]);
 
-    return {
+    return useMemo(() => ({
         attach,
         detach,
-    };
+    }), [attach, detach]);
 }
 
 export default useInputHandler;

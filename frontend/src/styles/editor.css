@@ -133,16 +133,17 @@
    ====== */
 
 .properties-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
+    position: relative;
+    inset: auto;
     height: 100%;
-    width: 280px;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
     background: var(--bg-secondary, oklch(1 0 89.9));
-    border-left: 1px solid var(--border-color, oklch(0.928 0.006 264.5));
     display: flex;
     flex-direction: column;
-    z-index: 50;
+    z-index: 1;
+    overflow-x: hidden;
     overflow-y: auto;
     animation: slideInRight 0.2s ease;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -158,32 +159,33 @@
     }
 }
 
-/* Properties Panel Tab (collapsed state) */
+/* Properties Panel Tab (collapsed state) — sits in the right rail, not position:absolute on the whole workspace */
 .properties-panel-tab {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
+    position: relative;
     display: flex;
+    flex: 1;
+    min-height: 120px;
+    width: 100%;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     padding: 12px 8px;
     background: var(--accent-color, oklch(0.585 0.204 277.1));
     color: white;
     border: none;
-    border-radius: 8px 0 0 8px;
+    border-radius: 0;
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
-    z-index: 50;
-    box-shadow: -2px 0 8px oklch(0 0 0 / 0.15);
+    z-index: 1;
+    box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.06);
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, filter 0.2s ease;
 }
 
 .properties-panel-tab:hover {
-    padding-right: 12px;
+    filter: brightness(1.05);
     background: var(--accent-color-hover, oklch(0.511 0.23 277));
 }
 
@@ -425,6 +427,30 @@
 
 .properties-panel__field--checkbox input {
     width: auto;
+}
+
+.properties-panel__field--readonly {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.properties-panel__readonly-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary, oklch(0.551 0.023 264.4));
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.properties-panel__readonly-value {
+    font-size: 13px;
+    color: var(--text-primary, oklch(0.278 0.03 256.8));
+    text-transform: capitalize;
+}
+
+.dark .properties-panel__readonly-value {
+    color: var(--text-primary, oklch(0.93 0.01 264));
 }
 
 /* ======

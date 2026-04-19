@@ -97,6 +97,8 @@ export interface EditorActions {
     toggleModuleLock: (id: string, executeCommand?: ((command: Command) => void) | undefined) => void;
     isModuleHidden: (id: string) => boolean;
     isModuleLocked: (id: string) => boolean;
+    /** Rebuild lock/hidden id sets from map modules (fixes stale ids after load/save/merge). */
+    syncVisualIdSetsFromModules: (modules: AnyModule[]) => void;
     toggleTypeGroupExpanded: (type: ModuleType) => void;
 
     // === Panel Visibility ===
@@ -337,9 +339,26 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
     },
 
-    isModuleHidden: (id) => get().hiddenModuleIds.has(id),
+    /** Prefer map module `visible` (source of truth); fall back to Set during transient states */
+    isModuleHidden: (id) => {
+        const mod = useMapStore.getState().getModule(id);
+        if (mod) return !mod.visible;
+        return get().hiddenModuleIds.has(id);
+    },
 
-    isModuleLocked: (id) => get().lockedModuleIds.has(id),
+    /** Prefer map module `locked` (source of truth); fall back to Set during transient states */
+    isModuleLocked: (id) => {
+        const mod = useMapStore.getState().getModule(id);
+        if (mod) return !!mod.locked;
+        return get().lockedModuleIds.has(id);
+    },
+
+    syncVisualIdSetsFromModules: (modules) => {
+        set({
+            lockedModuleIds: new Set(modules.filter((m) => m.locked).map((m) => m.id)),
+            hiddenModuleIds: new Set(modules.filter((m) => !m.visible).map((m) => m.id)),
+        });
+    },
 
     toggleTypeGroupExpanded: (type) =>
         set((state) => {

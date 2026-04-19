@@ -110,12 +110,36 @@ model Site {
   longitude      Float
   mapPositionX   Float
   mapPositionY   Float
+  /// When false, the pad is hidden from the map editor / virtual map but remains bookable in the DB.
+  onMap          Boolean    @default(true)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   bookings       Booking[]
 
   @@index([type, status])
+  @@index([onMap])
   @@map("sites")
+}
+
+/// Non-bookable map editor shapes (toilets, parking, etc.). Bookable pads stay on `Site`.
+model MapFacility {
+  id           String   @id @default(cuid())
+  mapId        String   @default("main-map")
+  type         String
+  mapPositionX Float
+  mapPositionY Float
+  sizeLength   Float
+  sizeWidth    Float
+  rotation     Float    @default(0)
+  zIndex       Int      @default(0)
+  locked       Boolean  @default(false)
+  visible      Boolean  @default(true)
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([mapId])
+  @@map("map_facilities")
 }
 
 model Booking {

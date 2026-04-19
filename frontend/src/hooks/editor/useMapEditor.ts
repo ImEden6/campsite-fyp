@@ -18,7 +18,8 @@
  * ```
  */
 
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEditorStore } from '@/stores/editorStore';
 import { useFabricCanvas } from './useFabricCanvas';
 import { usePanZoom } from './usePanZoom';
 import { useSelectionManager } from './useSelectionManager';
@@ -31,8 +32,8 @@ import { useCommandFacade } from './useCommandFacade';
 import { useEditorLifecycle } from './useEditorLifecycle';
 import { useMapStore } from '@/stores/mapStore';
 import { createNewModule } from '@/utils/moduleFactory';
-import type { FabricCanvas } from '@/types/fabricTypes';
-import type { AnyModule } from '@/types';
+import type { FabricCanvas, Point } from '@/types/fabricTypes';
+import type { AnyModule, ModuleType } from '@/types';
 
 // ============================================================================
 // TYPES
@@ -47,6 +48,10 @@ export interface UseMapEditorOptions {
     backgroundColor?: string;
     /** Whether to show exit confirmation on unsaved changes */
     confirmOnExit?: boolean;
+    /** Callback when the save shortcut is triggered */
+    onSave?: () => void;
+    /** After a module is secondary-clicked: selection is restored first, then this runs */
+    onModuleContextMenu?: (moduleId: string) => void;
 }
 
 export interface UseMapEditorReturn {
@@ -70,6 +75,10 @@ export interface UseMapEditorReturn {
     fitToScreen: () => void;
     /** Toggle pan mode */
     togglePanMode: () => void;
+    /** Fabric viewport translation X (screen px); keeps rulers aligned while panning/zooming */
+    panX: number;
+    /** Fabric viewport translation Y (screen px) */
+    panY: number;
 
     // Grid
     /** Whether grid is visible */
@@ -144,14 +153,48 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         containerRef,
         backgroundColor = 'oklch(0.928 0.006 264.5)',
         confirmOnExit = true,
+        onSave,
+        onModuleContextMenu: onModuleContextMenuFromParent,
     } = options;
+
+    // ========================================================================
+    // 0. SHARED STATE (Interaction Guard)
+    // ========================================================================
+    const sharedInteractingIdRef = useRef<string | null>(null);
+    const setInteractingId = useCallback((id: string | null) => {
+        sharedInteractingIdRef.current = id;
+    }, []);
 
     // Get map info for sizing
     const currentMap = useMapStore((state) => state.currentMap);
-    const mapSize = useMemo(() => ({
-        width: currentMap?.gridBounds?.width ?? 1000,
-        height: currentMap?.gridBounds?.height ?? 800,
-    }), [currentMap?.gridBounds]);
+    const mapSize = useMemo(() => {
+        const gb = currentMap?.gridBounds;
+        const img = currentMap?.imageSize;
+        return {
+            width: gb?.width ?? img?.width ?? 1000,
+            height: gb?.height ?? img?.height ?? 800,
+        };
+    }, [
+        currentMap?.gridBounds?.width,
+        currentMap?.gridBounds?.height,
+        currentMap?.imageSize?.width,
+        currentMap?.imageSize?.height,
+    ]);
+
+    const useWorldCanvas =
+        mapSize.width > 0 && mapSize.height > 0;
+
+    // Stable options for hooks
+    const canvasOptions = useMemo(
+        () => ({
+            backgroundColor,
+            preserveObjectStacking: true,
+            ...(useWorldCanvas
+                ? { worldSize: { width: mapSize.width, height: mapSize.height } }
+                : {}),
+        }),
+        [backgroundColor, useWorldCanvas, mapSize.width, mapSize.height]
+    );
 
     // ========================================================================
     // 1. CORE CANVAS
@@ -162,10 +205,7 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         error,
         setDimensions,
         requestRenderAll,
-    } = useFabricCanvas(canvasId, containerRef, {
-        backgroundColor,
-        preserveObjectStacking: true,
-    });
+    } = useFabricCanvas(canvasId, containerRef, canvasOptions);
 
     // ========================================================================
     // 2. COMMAND FACADE (for undo/redo)
@@ -183,6 +223,11 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
     // ========================================================================
     // 3. PAN/ZOOM
     // ========================================================================
+    const panZoomOptions = useMemo(() => ({
+        containerRef,
+        mapSize,
+    }), [containerRef, mapSize]);
+
     const {
         zoom,
         isPanMode,
@@ -190,99 +235,145 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         zoomOut,
         fitToScreen,
         togglePanMode,
+        setPanMode,
         handleWheel,
+        endPan,
         startPan,
         updatePan,
-        endPan,
-    } = usePanZoom(canvasRef.current, {
-        containerRef,
-        mapSize,
-    });
+    } = usePanZoom(canvasRef.current, panZoomOptions);
 
-    // ========================================================================
-    // 4. SELECTION MANAGER
-    // ========================================================================
+    const activeTool = useEditorStore((state) => state.activeTool);
+
+    useEffect(() => {
+        if (isPanMode) {
+            const t = useEditorStore.getState().activeTool;
+            if (t !== 'pan' && t !== 'add') {
+                useEditorStore.getState().setActiveTool('pan');
+            }
+        } else {
+            const t = useEditorStore.getState().activeTool;
+            if (t === 'pan') {
+                useEditorStore.getState().setActiveTool('select');
+            }
+        }
+    }, [isPanMode]);
+
+    useEffect(() => {
+        if (activeTool === 'add' && isPanMode) {
+            setPanMode(false);
+        }
+    }, [activeTool, isPanMode, setPanMode]);
+
+    const selectionOptions = useMemo(() => ({
+        // Locked pads still need to be selectable so users can open properties / unlock (transforms stay Fabric-locked).
+        preventLockedSelection: false,
+        setInteractingId,
+    }), [setInteractingId]);
+
     const {
         getSelectedIds,
         clearSelection,
         restoreSelection,
-    } = useSelectionManager(canvasRef.current, {
-        preventLockedSelection: true,
-    });
+    } = useSelectionManager(canvasRef.current, selectionOptions);
 
-    // ========================================================================
-    // 5. GRID
-    // ========================================================================
+    const rendererOptions = useMemo(() => ({
+        restoreSelection,
+        externalInteractingIdRef: sharedInteractingIdRef,
+        blockModuleInteraction: isPanMode,
+    }), [restoreSelection, isPanMode]);
+
+    const {
+        forceRender: forceRenderModules,
+    } = useModuleRenderer(canvasRef.current, rendererOptions);
+
+    const gridOptions = useMemo(
+        () => ({ mapSize, editorReady: isInitialized }),
+        [mapSize, isInitialized]
+    );
+
     const {
         showGrid,
         snapToGrid,
         gridSize,
         toggleGrid,
         toggleSnapToGrid,
-    } = useGrid(canvasRef.current, { mapSize });
+    } = useGrid(canvasRef, gridOptions);
+
+    const handleModuleContextMenu = useCallback(
+        (moduleId: string, _e: MouseEvent) => {
+            restoreSelection([moduleId]);
+            onModuleContextMenuFromParent?.(moduleId);
+        },
+        [restoreSelection, onModuleContextMenuFromParent]
+    );
 
     // ========================================================================
     // 6. INPUT HANDLER
     // ========================================================================
-    useInputHandler(canvasRef.current, {
-        getModule: (id) => useMapStore.getState().getModule(id),
-        onAddModule: (type, position) => {
+    const inputHandlerOptions = useMemo(() => ({
+        isPanMode,
+        getModule: (id: string) => useMapStore.getState().getModule(id),
+        onAddModule: (type: ModuleType, position: Point) => {
             const newModule = createNewModule(type, position);
             if (newModule) {
                 addModule(newModule);
-                markDirty();
+                // Use store directly to avoid hoisting issues with markDirty from useEditorLifecycle
+                useMapStore.getState().markDirty();
             }
         },
         onPanStart: startPan,
         onPanMove: updatePan,
         onPanEnd: endPan,
-    });
+        onModuleContextMenu: handleModuleContextMenu,
+    }), [addModule, endPan, isPanMode, startPan, updatePan, handleModuleContextMenu]);
+
+    useInputHandler(canvasRef.current, inputHandlerOptions);
 
     // ========================================================================
     // 7. TRANSFORM HANDLER
     // ========================================================================
-    useTransformHandler(canvasRef.current, {
+    const transformOptions = useMemo(() => ({
         executeCommand,
-    });
+    }), [executeCommand]);
 
-    // ========================================================================
-    // 8. MODULE RENDERER
-    // ========================================================================
-    const {
-        forceRender: forceRenderModules,
-    } = useModuleRenderer(canvasRef.current, {
-        restoreSelection,
-    });
+    useTransformHandler(canvasRef.current, transformOptions);
+
+    // Renderer is now initialized earlier to provide setInteractingId to selection manager
 
     // ========================================================================
     // 9. LIFECYCLE
     // ========================================================================
+    const lifecycleOptions = useMemo(
+        () => ({
+            containerRef,
+            confirmOnExit,
+            ...(useWorldCanvas ? {} : { setCanvasDimensions: setDimensions }),
+        }),
+        [containerRef, setDimensions, confirmOnExit, useWorldCanvas]
+    );
+
     const {
         isDirty,
         markDirty,
         clearDirty,
-    } = useEditorLifecycle(canvasRef.current, {
-        containerRef,
-        setCanvasDimensions: setDimensions,
-        confirmOnExit,
-    });
+    } = useEditorLifecycle(canvasRef.current, lifecycleOptions);
 
     // ========================================================================
     // 10. MODULE OPERATIONS
     // ========================================================================
-    const deleteSelected = () => {
+    const deleteSelected = useCallback(() => {
         const ids = getSelectedIds();
         if (ids.length > 0) {
             deleteModules(ids);
             clearSelection();
             markDirty();
         }
-    };
+    }, [getSelectedIds, deleteModules, clearSelection, markDirty]);
 
     // Local clipboard for copy/paste
     const clipboardRef: { current: AnyModule[] } = { current: [] };
 
-    const copySelected = () => {
+    const copySelected = useCallback(() => {
         const ids = getSelectedIds();
         if (ids.length > 0) {
             const modulesToCopy = ids
@@ -290,9 +381,9 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
                 .filter((m): m is NonNullable<typeof m> => m !== undefined);
             clipboardRef.current = modulesToCopy;
         }
-    };
+    }, [getSelectedIds]);
 
-    const paste = () => {
+    const paste = useCallback(() => {
         const clipboard = clipboardRef.current;
         if (clipboard.length > 0) {
             for (const mod of clipboard) {
@@ -308,17 +399,18 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
             }
             markDirty();
         }
-    };
+    }, [addModule, markDirty]);
 
-    const duplicateSelected = () => {
+    const duplicateSelected = useCallback(() => {
         copySelected();
         paste();
-    };
+    }, [copySelected, paste]);
 
     // ========================================================================
     // 11. SHORTCUTS
     // ========================================================================
-    useEditorShortcuts({
+    const shortcutOptions = useMemo(() => ({
+        executeCommand,
         undo,
         redo,
         deleteSelected,
@@ -326,7 +418,8 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         paste,
         duplicateSelected,
         selectAll: () => {
-            const allIds = (currentMap?.modules ?? []).map((m) => m.id);
+            const currentModules = useMapStore.getState().getModules();
+            const allIds = currentModules.map((m) => m.id);
             restoreSelection(allIds);
         },
         clearSelection,
@@ -334,17 +427,61 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         zoomOut,
         fitToScreen,
         togglePanMode,
-    });
+        save: onSave,
+    }), [
+        executeCommand, undo, redo, deleteSelected, copySelected, paste,
+        duplicateSelected, restoreSelection, clearSelection,
+        zoomIn, zoomOut, fitToScreen, togglePanMode, onSave
+    ]);
 
-    // ========================================================================
-    // 12. WHEEL EVENT
-    // ========================================================================
+    useEditorShortcuts(shortcutOptions);
+
     // Attach wheel handler for zoom
-    if (canvasRef.current) {
-        canvasRef.current.on('mouse:wheel', handleWheel);
-    }
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
-    return {
+        canvas.on('mouse:wheel', handleWheel);
+        return () => {
+            canvas.off('mouse:wheel', handleWheel);
+        };
+    }, [canvasRef, handleWheel]);
+
+    const [viewportPan, setViewportPan] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        if (!isInitialized) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        let rafId = 0;
+        const syncFromCanvas = () => {
+            const vpt = canvas.viewportTransform;
+            if (!vpt) return;
+            const x = vpt[4] ?? 0;
+            const y = vpt[5] ?? 0;
+            setViewportPan((prev) => (prev.x === x && prev.y === y ? prev : { x, y }));
+        };
+
+        const scheduleSync = () => {
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = 0;
+                syncFromCanvas();
+            });
+        };
+
+        canvas.on('after:render', scheduleSync);
+        syncFromCanvas();
+
+        return () => {
+            canvas.off('after:render', scheduleSync);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+    }, [isInitialized]);
+
+    // Memoized return object to prevent downstream loop
+    return useMemo(() => ({
         isReady: isInitialized,
         error,
         canvasRef,
@@ -356,6 +493,8 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
         zoomOut,
         fitToScreen,
         togglePanMode,
+        panX: viewportPan.x,
+        panY: viewportPan.y,
 
         // Grid
         showGrid,
@@ -392,7 +531,18 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
 
         // Canvas operations
         requestRenderAll,
-    };
+    }), [
+        isInitialized, error, canvasRef,
+        zoom, isPanMode, zoomIn, zoomOut, fitToScreen, togglePanMode,
+        viewportPan.x, viewportPan.y,
+        showGrid, snapToGrid, gridSize, toggleGrid, toggleSnapToGrid,
+        getSelectedIds, clearSelection, restoreSelection,
+        undo, redo, canUndo, canRedo, executeCommand,
+        deleteSelected, copySelected, paste, duplicateSelected,
+        isDirty, markDirty, clearDirty,
+        forceRenderModules,
+        requestRenderAll,
+    ]);
 }
 
 export default useMapEditor;
