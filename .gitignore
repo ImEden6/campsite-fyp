@@ -95,3 +95,6 @@ stuff/*
 # Local scripts
 tss.sh
 tss.bat
+
+# Local scratch / experiments (never commit)
+scratch/
