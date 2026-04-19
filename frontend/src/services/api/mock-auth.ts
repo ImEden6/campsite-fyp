@@ -110,9 +110,10 @@ export const mockLogin = async (
   return {
     user: userRecord.user,
     tokens: {
-      accessToken: `mock-access-token-${Date.now()}`,
+      // Format: mock-access-token-{role}-{userId} for backend to parse
+      accessToken: `mock-access-token-${userRecord.user.role.toLowerCase()}-${userRecord.user.id}`,
       refreshToken: `mock-refresh-token-${Date.now()}`,
-      expiresIn: 86400, // 24 hours (remember this for when implementing a backend or it will fuck with your testing)
+      expiresIn: 86400,
     },
   };
 };

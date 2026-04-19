@@ -62,7 +62,7 @@ export async function renderBackgroundLayer(
     // Remove existing background first
     removeBackgroundLayer(canvas);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
         fabric.FabricImage.fromURL(layer.imageData)
             .then((img: FabricImage) => {
                 const imgWidth = img.width || 1;
@@ -99,7 +99,9 @@ export async function renderBackgroundLayer(
             })
             .catch((error: Error) => {
                 console.error('[backgroundLayer] Failed to load background image:', error);
-                reject(error);
+                // Resolve with null instead of rejecting to prevent breaking the initialization chain
+                // @ts-ignore - Allowing null resolve for fail-soft behavior
+                resolve(null);
             });
     });
 }

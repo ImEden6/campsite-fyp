@@ -124,7 +124,7 @@ export function useCommandHistory(
     const canUndo = useMemo(() => undoStack.length > 0, [undoStack.length]);
     const canRedo = useMemo(() => redoStack.length > 0, [redoStack.length]);
 
-    return {
+    return useMemo(() => ({
         executeCommand,
         undo,
         redo,
@@ -133,5 +133,5 @@ export function useCommandHistory(
         executeCommandRef,
         undoRef,
         redoRef,
-    };
+    }), [executeCommand, undo, redo, canUndo, canRedo]);
 }

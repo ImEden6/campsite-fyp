@@ -52,6 +52,13 @@ FROM deps AS builder
 
 WORKDIR /app
 
+# Baked into the client bundle at build time (runtime `environment:` in compose does not apply).
+# Defaults match docker/nginx: browser talks to same-origin `/api/v1` and `/socket.io`.
+ARG VITE_API_URL=/api/v1
+ARG VITE_WS_URL=
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_WS_URL=${VITE_WS_URL}
+
 # Copy source files for built packages
 COPY shared/ ./shared/
 COPY frontend/ ./frontend/

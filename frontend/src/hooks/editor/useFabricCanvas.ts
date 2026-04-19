@@ -8,7 +8,7 @@
  * see useMapEditor for proper hook composition order
  */
 
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import * as fabricImpl from 'fabric';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
@@ -26,6 +26,8 @@ import type {
 // ============================================================================
 
 export interface UseFabricCanvasOptions extends Partial<CanvasOptions> {
+    /** When set, canvas pixel size follows the map/world instead of the container */
+    worldSize?: { width: number; height: number };
     /** Callback when canvas is successfully initialized */
     onInit?: (canvas: FabricCanvas) => void;
     /** Callback when canvas is disposed */
@@ -117,9 +119,19 @@ export function useFabricCanvas(
         if (!container || canvasRef.current) return;
 
         try {
+            const ws = options.worldSize;
+            const useWorld =
+                !!ws && ws.width > 0 && ws.height > 0;
+            const initWidth = useWorld
+                ? ws!.width
+                : (options.width ?? container.offsetWidth);
+            const initHeight = useWorld
+                ? ws!.height
+                : (options.height ?? container.offsetHeight);
+
             const canvas = new fabric.Canvas(elementId, {
-                width: options.width ?? container.offsetWidth,
-                height: options.height ?? container.offsetHeight,
+                width: initWidth,
+                height: initHeight,
                 selection: options.selection ?? true,
                 preserveObjectStacking: options.preserveObjectStacking ?? true,
                 backgroundColor: options.backgroundColor ?? 'oklch(0.928 0.006 264.5)',
@@ -211,11 +223,25 @@ export function useFabricCanvas(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [elementId]); // Only re-run if elementId changes
 
-    // Handle container resize
+    // Keep canvas aligned with map/world dimensions when they change (same canvas element)
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const ws = options.worldSize;
+        if (!canvas || !ws || ws.width <= 0 || ws.height <= 0) return;
+        canvas.setDimensions({ width: ws.width, height: ws.height });
+        canvas.requestRenderAll?.();
+    }, [options.worldSize?.width, options.worldSize?.height]);
+
+    // Handle container resize (only when canvas is not fixed to world size)
     useEffect(() => {
         const container = containerRef.current;
         const canvas = canvasRef.current;
         if (!container || !canvas) return;
+
+        const ws = options.worldSize;
+        if (ws && ws.width > 0 && ws.height > 0) {
+            return;
+        }
 
         const handleResize = () => {
             if (canvasRef.current && containerRef.current) {
@@ -228,7 +254,7 @@ export function useFabricCanvas(
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [containerRef]);
+    }, [containerRef, options.worldSize?.width, options.worldSize?.height]);
 
     // ========================================================================
     // API METHODS
@@ -324,7 +350,7 @@ export function useFabricCanvas(
         return canvasRef.current?.getObjects() ?? [];
     }, []);
 
-    return {
+    return useMemo(() => ({
         canvasRef,
         isInitialized,
         error,
@@ -346,7 +372,28 @@ export function useFabricCanvas(
         setActiveObject,
         getActiveObjects,
         getObjects,
-    };
+    }), [
+        isInitialized,
+        error,
+        getCanvas,
+        getCanvasSafe,
+        addObject,
+        removeObject,
+        addListener,
+        removeListener,
+        setZoom,
+        zoomToPoint,
+        getZoom,
+        setDimensions,
+        getPointer,
+        getViewportPoint,
+        requestRenderAll,
+        clear,
+        discardActiveObject,
+        setActiveObject,
+        getActiveObjects,
+        getObjects,
+    ]);
 }
 
 export default useFabricCanvas;

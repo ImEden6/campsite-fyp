@@ -7,9 +7,25 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosR
 import { env } from '@/config/env';
 import { API_TIMEOUT } from '@/config/constants';
 import { transformAxiosError, ApiException, isAuthError } from './errors';
-import { getAuthToken, setAuthToken, clearAuthTokens } from './storage';
-import { RefreshTokenResponse } from './types';
+import { getAuthToken, setAuthToken, setRefreshToken, clearAuthTokens } from './storage';
 import { addBreadcrumb, captureException } from '@/config/sentry';
+
+/** Backend wraps many JSON bodies as `{ success, data: { accessToken, ... } }`. */
+export const readTokensFromAuthBody = (
+  body: unknown
+): { accessToken: string; refreshToken?: string; expiresIn?: number } | null => {
+  if (!body || typeof body !== 'object') return null;
+  const root = body as Record<string, unknown>;
+  const inner =
+    root.data && typeof root.data === 'object' ? (root.data as Record<string, unknown>) : root;
+  if (typeof inner.accessToken !== 'string') return null;
+  const out: { accessToken: string; refreshToken?: string; expiresIn?: number } = {
+    accessToken: inner.accessToken,
+  };
+  if (typeof inner.refreshToken === 'string') out.refreshToken = inner.refreshToken;
+  if (typeof inner.expiresIn === 'number') out.expiresIn = inner.expiresIn;
+  return out;
+};
 
 /**
  * Date fields that should be transformed from strings to Date objects
@@ -227,13 +243,21 @@ const refreshAuthToken = async (): Promise<string | null> => {
     });
 
     // Call refresh token endpoint
-    const response = await refreshClient.post<RefreshTokenResponse>('/auth/refresh', {
+    const response = await refreshClient.post('/auth/refresh', {
       refreshToken,
     });
 
-    const { accessToken } = response.data;
+    const parsed = readTokensFromAuthBody(response.data);
+    const accessToken = parsed?.accessToken;
 
-    // Save new access token
+    if (!accessToken) {
+      throw new Error('Refresh response missing accessToken');
+    }
+
+    if (parsed.refreshToken) {
+      setRefreshToken(parsed.refreshToken);
+    }
+
     setAuthToken(accessToken);
 
     return accessToken;

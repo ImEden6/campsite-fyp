@@ -165,7 +165,6 @@ export type ModuleType =
   | 'storage'
   | 'building'
   | 'parking'
-  | 'road'
   | 'water_source'
   | 'electricity'
   | 'waste_disposal'
@@ -249,18 +248,6 @@ export interface ParkingModule extends CampsiteModuleBase {
   };
 }
 
-export interface RoadModule extends CampsiteModuleBase {
-  type: 'road';
-  metadata: {
-    name: string;
-    roadType: 'main' | 'secondary' | 'path' | 'emergency';
-    surfaceType: 'paved' | 'gravel' | 'dirt' | 'boardwalk';
-    width: number;
-    speedLimit: number;
-    accessLevel: 'public' | 'staff' | 'emergency';
-  };
-}
-
 export interface WaterSourceModule extends CampsiteModuleBase {
   type: 'water_source';
   metadata: {
@@ -323,7 +310,6 @@ export type AnyModule =
   | StorageModule
   | BuildingModule
   | ParkingModule
-  | RoadModule
   | WaterSourceModule
   | ElectricityModule
   | WasteDisposalModule
@@ -510,9 +496,12 @@ export interface CreateModuleRequest {
 
 export interface UpdateModuleRequest {
   id: string;
+  /** Editor module kind; required for creating non-`Site` rows on save. */
+  type?: ModuleType | undefined;
   position?: Position | undefined;
   size?: Size | undefined;
   rotation?: number | undefined;
+  zIndex?: number | undefined;
   metadata?: Record<string, unknown> | undefined;
   locked?: boolean | undefined;
   visible?: boolean | undefined;

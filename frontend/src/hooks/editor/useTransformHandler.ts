@@ -12,7 +12,7 @@
  * @see useCommandFacade - For command execution
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import type { FabricCanvas, FabricEvent, FabricObject } from '@/types/fabricTypes';
 import { getModuleId } from '@/types/fabricTypes';
 import type { Command } from '@/commands/Command';
@@ -319,9 +319,9 @@ export function useTransformHandler(
         return stateRef.current === 'TRACKING';
     }, []);
 
-    return {
+    return useMemo(() => ({
         isTracking,
-    };
+    }), [isTracking]);
 }
 
 export default useTransformHandler;

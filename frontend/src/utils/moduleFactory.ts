@@ -38,7 +38,6 @@ const MODULE_COLORS: Record<ModuleType, string> = {
     storage: 'oklch(0.709 0.159 293.5)',       // purple
     building: 'oklch(0.705 0.187 47.6)',      // orange
     parking: 'oklch(0.551 0.023 264.4)',       // gray
-    road: 'oklch(0.553 0.012 58.1)',          // stone
     water_source: 'oklch(0.797 0.134 211.5)',  // cyan
     electricity: 'oklch(0.861 0.173 91.9)',   // yellow
     waste_disposal: 'oklch(0.637 0.208 25.3)', // red
@@ -99,12 +98,6 @@ const MODULE_ICONS: Record<ModuleType, IconElement[]> = {
         { type: 'circle', cx: 7, cy: 17, r: 2 },
         { type: 'path', d: 'M9 17h6' },
         { type: 'circle', cx: 17, cy: 17, r: 2 },
-    ],
-    // Route icon (Lucide Route) - road - 1 path + 2 circles
-    road: [
-        { type: 'circle', cx: 6, cy: 19, r: 3 },
-        { type: 'path', d: 'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15' },
-        { type: 'circle', cx: 18, cy: 5, r: 3 },
     ],
     // Droplet icon (Lucide Droplet) - water source - 1 path
     water_source: [
@@ -703,7 +696,6 @@ const DEFAULT_MODULE_SIZES: Record<ModuleType, Size> = {
     toilet: { width: 60, height: 60 },
     parking: { width: 160, height: 100 },
     building: { width: 100, height: 80 },
-    road: { width: 200, height: 40 },
     water_source: { width: 40, height: 40 },
     electricity: { width: 40, height: 40 },
     waste_disposal: { width: 60, height: 60 },
@@ -772,15 +764,6 @@ export function getDefaultMetadata(type: ModuleType): Record<string, unknown> {
                 capacity: 50,
                 operatingHours: { open: '08:00', close: '18:00' },
                 services: [],
-            };
-        case 'road':
-            return {
-                ...baseMetadata,
-                roadType: 'secondary',
-                surfaceType: 'gravel',
-                width: 4,
-                speedLimit: 15,
-                accessLevel: 'public',
             };
         case 'water_source':
             return {

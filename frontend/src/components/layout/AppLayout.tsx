@@ -11,14 +11,15 @@ import Header from './Header';
 import ToastContainer from './ToastContainer';
 
 const AppLayout: React.FC = () => {
-  const { initialize, user, tokens } = useAuthStore();
+  const { initialize, user, tokens, hasHydrated } = useAuthStore();
   const sidebarCollapsed = useUIStore((state) => state.sidebarCollapsed);
   const showToast = useUIStore((state) => state.showToast);
 
   useEffect(() => {
-    // Initialize auth state from storage on mount
-    initialize();
-  }, [initialize]);
+    if (hasHydrated) {
+      initialize();
+    }
+  }, [initialize, hasHydrated]);
 
   // Initialize WebSocket connection when user is authenticated
   useEffect(() => {

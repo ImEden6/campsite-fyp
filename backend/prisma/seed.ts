@@ -173,7 +173,7 @@ async function main() {
       hasSewer: true,
       hasWifi: true,
       sizeLength: 30, sizeWidth: 25, sizeUnit: 'feet',
-      latitude: 34.0522, longitude: -118.2437, mapPositionX: 150, mapPositionY: 200,
+      latitude: 34.0522, longitude: -118.2437, mapPositionX: 450, mapPositionY: 480,
     },
     {
       name: 'Mountain View Cabin',
@@ -192,7 +192,7 @@ async function main() {
       hasSewer: true,
       hasWifi: true,
       sizeLength: 40, sizeWidth: 30, sizeUnit: 'feet',
-      latitude: 34.0612, longitude: -118.2537, mapPositionX: 300, mapPositionY: 150,
+      latitude: 34.0612, longitude: -118.2537, mapPositionX: 200, mapPositionY: 200,
     },
     // RV Sites (3)
     {
@@ -212,7 +212,7 @@ async function main() {
       hasSewer: true,
       hasWifi: true,
       sizeLength: 60, sizeWidth: 30, sizeUnit: 'feet',
-      latitude: 34.0480, longitude: -118.2550, mapPositionX: 200, mapPositionY: 450,
+      latitude: 34.0480, longitude: -118.2550, mapPositionX: 800, mapPositionY: 300,
     },
     {
       name: 'Riverside RV Spot',
@@ -231,7 +231,7 @@ async function main() {
       hasSewer: false,
       hasWifi: true,
       sizeLength: 50, sizeWidth: 25, sizeUnit: 'feet',
-      latitude: 34.0510, longitude: -118.2480, mapPositionX: 350, mapPositionY: 500,
+      latitude: 34.0510, longitude: -118.2480, mapPositionX: 550, mapPositionY: 700,
     },
     {
       name: 'Hilltop RV Spot',
@@ -250,7 +250,7 @@ async function main() {
       hasSewer: true,
       hasWifi: true,
       sizeLength: 75, sizeWidth: 30, sizeUnit: 'feet',
-      latitude: 34.0580, longitude: -118.2620, mapPositionX: 480, mapPositionY: 250,
+      latitude: 34.0580, longitude: -118.2620, mapPositionX: 150, mapPositionY: 800,
     },
     // Tent Sites (3)
     {
@@ -270,7 +270,7 @@ async function main() {
       hasSewer: false,
       hasWifi: false,
       sizeLength: 30, sizeWidth: 20, sizeUnit: 'feet',
-      latitude: 34.0560, longitude: -118.2500, mapPositionX: 100, mapPositionY: 350,
+      latitude: 34.0560, longitude: -118.2500, mapPositionX: 300, mapPositionY: 500,
     },
     {
       name: 'Creek Side Tent',
@@ -289,7 +289,7 @@ async function main() {
       hasSewer: false,
       hasWifi: false,
       sizeLength: 20, sizeWidth: 15, sizeUnit: 'feet',
-      latitude: 34.0490, longitude: -118.2450, mapPositionX: 250, mapPositionY: 550,
+      latitude: 34.0490, longitude: -118.2450, mapPositionX: 600, mapPositionY: 200,
     },
     {
       name: 'Meadow View Tent Site',
@@ -308,7 +308,7 @@ async function main() {
       hasSewer: false,
       hasWifi: false,
       sizeLength: 40, sizeWidth: 30, sizeUnit: 'feet',
-      latitude: 34.0570, longitude: -118.2350, mapPositionX: 650, mapPositionY: 200,
+      latitude: 34.0570, longitude: -118.2350, mapPositionX: 850, mapPositionY: 750,
     },
   ];
 

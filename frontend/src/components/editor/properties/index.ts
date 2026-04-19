@@ -19,8 +19,5 @@ export type { CampsitePropertiesProps } from './CampsiteProperties';
 export { BuildingProperties } from './BuildingProperties';
 export type { BuildingPropertiesProps } from './BuildingProperties';
 
-export { RoadProperties } from './RoadProperties';
-export type { RoadPropertiesProps } from './RoadProperties';
-
 export { CustomProperties } from './CustomProperties';
 export type { CustomPropertiesProps } from './CustomProperties';

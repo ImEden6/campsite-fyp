@@ -17,10 +17,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
   const { isAuthenticated, user, initialize, hasHydrated } = useAuthStore();
 
-  // Initialize auth state on mount
+  // Run after persist rehydration so `initialize` can align token storage with zustand (avoids false "logged in" with no Bearer token).
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    if (hasHydrated) {
+      initialize();
+    }
+  }, [initialize, hasHydrated]);
 
   // Don't render until auth state is hydrated from storage
   if (!hasHydrated) {

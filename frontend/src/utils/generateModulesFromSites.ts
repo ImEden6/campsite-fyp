@@ -47,7 +47,11 @@ export function siteToModule(
         id: `site-${site.id}`,
         type: 'campsite',
         // Visual properties - use override if available, else defaults
-        position: override?.position ?? site.location.mapPosition,
+        // Fallback for flat mapPositionX/Y from backend Prisma model
+        position: override?.position ?? (site.location?.mapPosition || {
+            x: (site as any).mapPositionX ?? 0,
+            y: (site as any).mapPositionY ?? 0
+        }),
         size: override?.size ?? defaultSize,
         rotation: override?.rotation ?? 0,
         zIndex: override?.zIndex ?? 1,
@@ -126,13 +130,23 @@ export function generateMapFromSites(sites: Site[]): CampsiteMap {
         id: 'campsite-map',
         name: 'Campsite Map',
         description: 'Main campsite layout with all sites',
-        imageUrl: '',
-        imageSize: { width: maxX, height: maxY },
+        imageUrl: '/images/map.png',
+        imageSize: { width: 1024, height: 1024 },
         scale: mapSettings.scale,
-        bounds: { minX: 0, minY: 0, maxX, maxY },
+        bounds: { minX: 0, minY: 0, maxX: 1024, maxY: 1024 },
+        gridBounds: { width: 1024, height: 1024 },
         modules: allModules,
+        backgroundLayer: {
+            imageData: '/images/map.png',
+            position: { x: 0, y: 0 },
+            size: { width: 1024, height: 1024 },
+            opacity: 1,
+            originalSize: { width: 1024, height: 1024 },
+            originalFormat: 'PNG',
+            locked: true,
+        },
         metadata: {
-            address: 'Campsite Address',
+            address: 'Main Campsite Grounds',
             coordinates: { latitude: 34.0522, longitude: -118.2437 },
             timezone: 'America/Los_Angeles',
             capacity: sites.reduce((sum, s) => sum + s.capacity, 0),

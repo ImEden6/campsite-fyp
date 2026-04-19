@@ -40,16 +40,22 @@ const getBooleanEnvVar = (key: string, defaultValue = false): boolean => {
 };
 
 /**
- * Ensure URL uses HTTPS in production
- * Automatically converts http:// to https:// and ws:// to wss:// in production
+ * When the app is served over HTTPS, upgrade insecure absolute URLs.
+ * Skips relative URLs (e.g. `/api/v1`) and skips upgrades when the page is still HTTP
+ * (common for Docker + nginx on localhost).
  */
 const ensureSecureUrl = (url: string, isProduction: boolean): string => {
   if (!isProduction) {
-    // Allow HTTP/WS in development
     return url;
   }
 
-  // In production, enforce HTTPS/WSS
+  const pageIsHttps =
+    typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+  if (!pageIsHttps) {
+    return url;
+  }
+
   if (url.startsWith('http://')) {
     console.warn(`[Env] Converting HTTP to HTTPS for production: ${url}`);
     return url.replace('http://', 'https://');
@@ -63,6 +69,16 @@ const ensureSecureUrl = (url: string, isProduction: boolean): string => {
   return url;
 };
 
+/** WebSocket origin for same-host deployments (e.g. nginx proxies `/socket.io` to the API). */
+const sameOriginWsUrl = (): string => {
+  if (typeof window === 'undefined') {
+    return 'ws://localhost:5000';
+  }
+  return window.location.protocol === 'https:'
+    ? `wss://${window.location.host}`
+    : `ws://${window.location.host}`;
+};
+
 // Get raw environment values
 const isTest = import.meta.env.MODE === 'test';
 const isProduction = import.meta.env.PROD;
@@ -71,16 +87,20 @@ const isProduction = import.meta.env.PROD;
 const isLocalhost = typeof window !== 'undefined' && 
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-// Use relative URLs when:
-// - In test mode: use MSW mock URL
-// - On localhost: use proxy to avoid CORS (even for production builds)
-// - Otherwise: use full URL from environment variables
-const rawApiUrl = isTest 
-  ? 'http://localhost:5000/api/v1' 
-  : isLocalhost 
-    ? '/api/v1'  // Relative URL for Vite proxy (avoids CORS)
-    : getEnvVar('VITE_API_URL', 'http://localhost:5000/api/v1');
-const rawWsUrl = isTest ? 'ws://localhost:5000' : getEnvVar('VITE_WS_URL', 'ws://localhost:5000');
+// API base:
+// - Tests: fixed URL for MSW
+// - Browser on localhost: Vite dev proxy or nginx on :80 both expose `/api/v1` on the same host
+// - Otherwise: prefer `VITE_API_URL` at build time; default `/api/v1` for reverse-proxy prod (Docker + nginx)
+const rawApiUrl = isTest
+  ? 'http://localhost:5000/api/v1'
+  : isLocalhost
+    ? '/api/v1'
+    : getEnvVar('VITE_API_URL', '/api/v1');
+
+// WebSocket: default to same page host:port so nginx can proxy `/socket.io` (avoid hard-coding :5000).
+const rawWsUrl = isTest
+  ? 'ws://localhost:5000'
+  : getEnvVar('VITE_WS_URL') || sameOriginWsUrl();
 
 export const env: EnvConfig = {
   // API Configuration - enforce HTTPS in production
@@ -124,14 +144,9 @@ const validateEnv = () => {
     );
   }
 
-  // Warn if using HTTP in production (shouldn't happen with ensureSecureUrl, but just in case)
-  if (env.isProduction) {
-    if (env.apiUrl.startsWith('http://')) {
-      console.error('[Env] WARNING: API URL is using HTTP in production!', env.apiUrl);
-    }
-    if (env.wsUrl.startsWith('ws://')) {
-      console.error('[Env] WARNING: WebSocket URL is using WS in production!', env.wsUrl);
-    }
+  // Absolute HTTP API in a production build is usually misconfiguration (except local tooling).
+  if (env.isProduction && env.apiUrl.startsWith('http://')) {
+    console.error('[Env] WARNING: API URL is using HTTP in production!', env.apiUrl);
   }
 };
 

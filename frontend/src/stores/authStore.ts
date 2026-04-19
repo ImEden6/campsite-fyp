@@ -14,7 +14,7 @@ import {
   getAuthToken,
   getRefreshToken
 } from '@/services/api/storage';
-import { post } from '@/services/api/client';
+import { post, readTokensFromAuthBody } from '@/services/api/client';
 import { setUserContext, clearUserContext } from '@/config/sentry';
 import { mockLogin, shouldUseMockAuth } from '@/services/api/mock-auth';
 import { ApiException } from '@/services/api/errors';
@@ -100,6 +100,21 @@ const getErrorMessage = (error: unknown): string => {
   return 'Login failed. Please try again.';
 };
 
+/** Decode JWT payload (handles base64url and missing padding). */
+const decodeJwtPayload = (token: string): { exp?: number } | null => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const segment = parts[1];
+    if (!segment) return null;
+    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+    return JSON.parse(atob(padded)) as { exp?: number };
+  } catch {
+    return null;
+  }
+};
+
 const parseLoginResponse = (raw: RawLoginResponse): LoginResponse => {
   // Handle { success: true, data: { user, accessToken, refreshToken, expiresIn } } format
   if (isRecord(raw) && 'success' in raw && 'data' in raw) {
@@ -165,49 +180,81 @@ export const useAuthStore = create<AuthStore>()(
         const token = getAuthToken();
         const user = getUserData<User>();
 
-        if (token && user) {
-          try {
-            const parts = token.split('.');
-            if (parts.length !== 3) {
-              clearAuthTokens();
-              return;
-            }
-
-            const payloadPart = parts[1];
-            if (!payloadPart) {
-              clearAuthTokens();
-              return;
-            }
-            const payload = JSON.parse(atob(payloadPart));
-            const expiresAt = payload.exp * 1000;
-            const now = Date.now();
-
-            if (expiresAt < now) {
-              clearAuthTokens();
-              window.dispatchEvent(new CustomEvent('auth:session-expired'));
-              return;
-            }
-          } catch {
+        // Persist only stores user + isAuthenticated; tokens live in localStorage. Stale persist ⇒ UI "logged in" but no Bearer token (401 on /maps/...).
+        if (!token) {
+          const { isAuthenticated, user: stateUser } = get();
+          if (isAuthenticated || stateUser) {
             clearAuthTokens();
-            return;
+            clearUserContext();
+            set({
+              user: null,
+              tokens: null,
+              isAuthenticated: false,
+              error: null,
+            });
           }
+          return;
+        }
 
+        if (!user) {
+          clearAuthTokens();
+          clearUserContext();
+          set({ user: null, tokens: null, isAuthenticated: false, error: null });
+          return;
+        }
+
+        if (shouldUseMockAuth() && token.startsWith('mock-access-token-')) {
           set({
             user,
             tokens: {
               accessToken: token,
               refreshToken: getRefreshToken() || '',
-              expiresIn: 0,
+              expiresIn: 86400,
             },
             isAuthenticated: true,
           });
-
           setUserContext({
             id: user.id,
             email: user.email,
             role: user.role,
           });
+          return;
         }
+
+        const payload = decodeJwtPayload(token);
+        if (!payload) {
+          clearAuthTokens();
+          clearUserContext();
+          set({ user: null, tokens: null, isAuthenticated: false, error: null });
+          return;
+        }
+
+        if (typeof payload.exp === 'number') {
+          const expiresAt = payload.exp * 1000;
+          if (expiresAt < Date.now()) {
+            clearAuthTokens();
+            clearUserContext();
+            set({ user: null, tokens: null, isAuthenticated: false, error: null });
+            window.dispatchEvent(new CustomEvent('auth:session-expired'));
+            return;
+          }
+        }
+
+        set({
+          user,
+          tokens: {
+            accessToken: token,
+            refreshToken: getRefreshToken() || '',
+            expiresIn: 0,
+          },
+          isAuthenticated: true,
+        });
+
+        setUserContext({
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        });
       },
 
       // Login action
@@ -277,18 +324,21 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         try {
-          const response = await post<{ accessToken: string; expiresIn: number }>(
-            '/auth/refresh',
-            { refreshToken: tokens.refreshToken }
-          );
+          const response = await post<unknown>('/auth/refresh', {
+            refreshToken: tokens.refreshToken,
+          });
+
+          const parsed = readTokensFromAuthBody(response);
+          if (!parsed?.accessToken) {
+            throw new Error('Refresh response missing accessToken');
+          }
 
           const newTokens: AuthTokens = {
-            accessToken: response.accessToken,
-            refreshToken: tokens.refreshToken,
-            expiresIn: response.expiresIn,
+            accessToken: parsed.accessToken,
+            refreshToken: parsed.refreshToken ?? tokens.refreshToken,
+            expiresIn: parsed.expiresIn ?? tokens.expiresIn,
           };
 
-          // Save new access token
           saveAuthTokens(newTokens);
 
           set({ tokens: newTokens });

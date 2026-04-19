@@ -16,12 +16,21 @@ const PublicRoute: React.FC<PublicRouteProps> = ({
   redirectTo = '/dashboard',
 }) => {
   const location = useLocation();
-  const { isAuthenticated, initialize } = useAuthStore();
+  const { isAuthenticated, initialize, hasHydrated } = useAuthStore();
 
-  // Initialize auth state on mount
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    if (hasHydrated) {
+      initialize();
+    }
+  }, [initialize, hasHydrated]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-nature-bg dark:bg-night-bg">
+        <div className="animate-pulse text-secondary-600 dark:text-secondary-400">Loading...</div>
+      </div>
+    );
+  }
 
   // If user is already authenticated, redirect to dashboard or specified location
   if (isAuthenticated) {

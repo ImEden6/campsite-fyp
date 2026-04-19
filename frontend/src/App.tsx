@@ -84,7 +84,7 @@ const OfflineIndicator = lazy(() => import('@/components/OfflineIndicator').then
 const PerformanceDashboard = lazy(() => import('@/components/PerformanceDashboard').then(m => ({ default: m.PerformanceDashboard })));
 
 function App() {
-  const { initialize, isAuthenticated } = useAuthStore();
+  const { initialize, isAuthenticated, hasHydrated } = useAuthStore();
   const { toggleSidebar } = useUIStore();
   const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -95,10 +95,11 @@ function App() {
   // Track navigation for error monitoring
   useNavigationTracking();
 
-  // Initialize auth state on app mount
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    if (hasHydrated) {
+      initialize();
+    }
+  }, [initialize, hasHydrated]);
 
   // Listen for session expiration and redirect to login
   useEffect(() => {

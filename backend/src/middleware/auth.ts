@@ -67,6 +67,69 @@ export const authenticate = async (
       throw new ApiError(401, 'Authentication required');
     }
 
+    // Bypass JWT verification for mock tokens (development/demo mode)
+    // Token format: mock-access-token-{role}-{userId}
+    // Examples: mock-access-token-admin-1, mock-access-token-staff-3
+    if (token.startsWith('mock-access-token-')) {
+      const tokenParts = token.replace('mock-access-token-', '').split('-');
+      const role = tokenParts[0]?.toUpperCase();
+      const userId = tokenParts[1] || '1';
+      
+      let mockUser: Express.Request['user'];
+      
+      switch (role) {
+        case 'ADMIN':
+          mockUser = {
+            id: userId || '1',
+            email: 'admin@campsite.com',
+            role: 'ADMIN',
+            firstName: 'Admin',
+            lastName: 'User',
+            isActive: true,
+            isEmailVerified: true,
+          };
+          break;
+        case 'MANAGER':
+          mockUser = {
+            id: userId || '4',
+            email: 'manager@campsite.com',
+            role: 'MANAGER',
+            firstName: 'Mike',
+            lastName: 'Manager',
+            isActive: true,
+            isEmailVerified: true,
+          };
+          break;
+        case 'STAFF':
+          mockUser = {
+            id: userId || '3',
+            email: 'staff@campsite.com',
+            role: 'STAFF',
+            firstName: 'Sarah',
+            lastName: 'Staff',
+            isActive: true,
+            isEmailVerified: true,
+          };
+          break;
+        case 'CUSTOMER':
+        default:
+          mockUser = {
+            id: userId || '2',
+            email: 'user@campsite.com',
+            role: 'CUSTOMER',
+            firstName: 'Test',
+            lastName: 'User',
+            isActive: true,
+            isEmailVerified: true,
+          };
+          break;
+      }
+
+      req.user = mockUser;
+      logger.info('Mock token authenticated', { userId: mockUser.id, role: mockUser.role });
+      return next();
+    }
+
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
 

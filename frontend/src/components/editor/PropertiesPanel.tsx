@@ -19,7 +19,7 @@ import {
     Trash2,
     RotateCw,
 } from 'lucide-react';
-import type { AnyModule, CampsiteModule, BuildingModule, RoadModule, CustomModule } from '@/types';
+import type { AnyModule, CampsiteModule, BuildingModule, CustomModule } from '@/types';
 import { useEditorStore } from '@/stores';
 import { useMapStore } from '@/stores/mapStore';
 import { PropertyCommand, type PropertyChange } from '@/commands/PropertyCommand';
@@ -31,7 +31,6 @@ import {
     getModuleIcon,
     CampsiteProperties,
     BuildingProperties,
-    RoadProperties,
     CustomProperties,
 } from './properties';
 
@@ -508,13 +507,6 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                         onUpdate={handleMetadataUpdate}
                     />
                 );
-            case 'road':
-                return (
-                    <RoadProperties
-                        module={singleModule as RoadModule}
-                        onUpdate={handleMetadataUpdate}
-                    />
-                );
             case 'custom':
                 return (
                     <CustomProperties
@@ -537,6 +529,12 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                 {renderSectionHeader('Details', 'metadata')}
                 {expandedSections.has('metadata') && (
                     <div className="properties-panel__section">
+                        <div className="properties-panel__field properties-panel__field--readonly">
+                            <span className="properties-panel__readonly-label">Type</span>
+                            <span className="properties-panel__readonly-value">
+                                {singleModule.type.replace(/_/g, ' ')}
+                            </span>
+                        </div>
                         <PropertyInput
                             label="Name"
                             value={

@@ -9,7 +9,6 @@ import {
     Archive,
     Building,
     Car,
-    Route,
     Droplets,
     Zap,
     Trash2,
@@ -50,11 +49,6 @@ export const MODULE_ICONS: Record<ModuleType, ModuleIconConfig> = {
         icon: Car,
         color: 'oklch(0.585 0.204 277.1)', // indigo-500
         label: 'Parking',
-    },
-    road: {
-        icon: Route,
-        color: 'oklch(0.554 0.041 257.4)', // slate-500
-        label: 'Road',
     },
     water_source: {
         icon: Droplets,

@@ -31,7 +31,33 @@ export default defineConfig(({ mode }) => {
     };
   };
   // Load env file based on `mode` in the current working directory.
-  const env = loadEnv(mode, process.cwd(), '')
+  const fileEnv = loadEnv(mode, process.cwd(), '')
+
+  /**
+   * Where Vite's dev/preview server should proxy `/api` (Node, not the browser).
+   * - Host `npm run dev`: default http://localhost:5000
+   * - Docker Compose dev: set VITE_DEV_API_PROXY_TARGET=http://backend:5000 (see docker-compose.dev.yml)
+   * `loadEnv` only reads .env files; Docker-injected vars live on `process.env`.
+   */
+  const viteApiProxyTarget = (() => {
+    if (process.env.VITE_DEV_API_PROXY_TARGET) {
+      return process.env.VITE_DEV_API_PROXY_TARGET
+    }
+    const fromProcess = process.env.VITE_API_URL
+    const fromFile = fileEnv.VITE_API_URL
+    const candidate = fromProcess || fromFile
+    if (candidate) {
+      const origin = candidate.replace(/\/api\/v1\/?$/i, '').replace(/\/$/, '')
+      return origin || 'http://localhost:5000'
+    }
+    return 'http://localhost:5000'
+  })()
+
+  const viteWsProxyTarget =
+    process.env.VITE_DEV_WS_PROXY_TARGET ||
+    process.env.VITE_WS_URL ||
+    fileEnv.VITE_WS_URL ||
+    'ws://localhost:5000'
 
   // Plugin to optimize HTML: make CSS non-render-blocking and defer service worker
   const htmlOptimizePlugin = (): Plugin => {
@@ -156,13 +182,13 @@ export default defineConfig(({ mode }) => {
       open: false,
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'https://camprock.com',
+          target: viteApiProxyTarget,
           changeOrigin: true,
-          secure: true,
+          secure: false,
           // Don't rewrite path - keep /api in the URL since the backend expects /api/v1/...
         },
         '/socket.io': {
-          target: env.VITE_WS_URL || 'ws://localhost:5000',
+          target: viteWsProxyTarget,
           ws: true,
           changeOrigin: true,
         },
@@ -288,8 +314,8 @@ export default defineConfig(({ mode }) => {
 
     // Define global constants
     define: {
-      __APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION || '1.0.0'),
-      __APP_NAME__: JSON.stringify(env.VITE_APP_NAME || 'Campsite Management'),
+      __APP_VERSION__: JSON.stringify(fileEnv.VITE_APP_VERSION || '1.0.0'),
+      __APP_NAME__: JSON.stringify(fileEnv.VITE_APP_NAME || 'Campsite Management'),
       // Exclude dev code in production
       'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
       // Remove dev-only code
@@ -302,13 +328,13 @@ export default defineConfig(({ mode }) => {
       host: true,
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'https://camprock.com',
+          target: viteApiProxyTarget,
           changeOrigin: true,
-          secure: true,
+          secure: false,
           // Don't rewrite path - keep /api in the URL since the backend expects /api/v1/...
         },
         '/socket.io': {
-          target: env.VITE_WS_URL || 'ws://localhost:5000',
+          target: viteWsProxyTarget,
           ws: true,
           changeOrigin: true,
         },

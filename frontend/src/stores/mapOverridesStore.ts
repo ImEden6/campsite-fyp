@@ -30,7 +30,7 @@ export interface SiteModuleOverride {
 }
 
 /**
- * Custom module not linked to any site (e.g., toilets, parking, roads).
+ * Custom module not linked to any site (e.g., toilets, parking).
  * Module ID convention: `custom-${uuid}`
  */
 export interface CustomModuleData {
@@ -60,7 +60,7 @@ export interface MapSettings {
 interface MapOverridesState {
     /** Map of siteId -> visual override */
     siteOverrides: Record<string, SiteModuleOverride>;
-    /** Custom modules (toilets, parking, roads, etc.) */
+    /** Custom modules (toilets, parking, etc.) */
     customModules: CustomModuleData[];
     /** Map-level settings */
     mapSettings: MapSettings;

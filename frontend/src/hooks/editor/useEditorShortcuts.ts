@@ -7,7 +7,7 @@
  * @see editorStore - For toggling grid, snap, etc.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
 import type { Command } from '@/commands/Command';
 
@@ -17,33 +17,33 @@ import type { Command } from '@/commands/Command';
 
 export interface UseEditorShortcutsOptions {
     /** Execute a command */
-    executeCommand?: (command: Command) => void;
+    executeCommand?: ((command: Command) => void) | undefined;
     /** Undo action */
-    undo?: () => void;
+    undo?: (() => void) | undefined;
     /** Redo action */
-    redo?: () => void;
+    redo?: (() => void) | undefined;
     /** Delete selected modules */
-    deleteSelected?: () => void;
+    deleteSelected?: (() => void) | undefined;
     /** Copy selected modules */
-    copySelected?: () => void;
+    copySelected?: (() => void) | undefined;
     /** Paste clipboard */
-    paste?: () => void;
+    paste?: (() => void) | undefined;
     /** Duplicate selected modules */
-    duplicateSelected?: () => void;
+    duplicateSelected?: (() => void) | undefined;
     /** Select all modules */
-    selectAll?: () => void;
+    selectAll?: (() => void) | undefined;
     /** Clear selection */
-    clearSelection?: () => void;
+    clearSelection?: (() => void) | undefined;
     /** Zoom in */
-    zoomIn?: () => void;
+    zoomIn?: (() => void) | undefined;
     /** Zoom out */
-    zoomOut?: () => void;
+    zoomOut?: (() => void) | undefined;
     /** Fit to screen */
-    fitToScreen?: () => void;
+    fitToScreen?: (() => void) | undefined;
     /** Toggle pan mode */
-    togglePanMode?: () => void;
+    togglePanMode?: (() => void) | undefined;
     /** Save map */
-    save?: () => void;
+    save?: (() => void) | undefined;
 }
 
 export interface UseEditorShortcutsReturn {
@@ -240,12 +240,12 @@ export function useEditorShortcuts(
         shortcutsDialogVisibleRef.current = false;
     }, []);
 
-    return {
+    return useMemo(() => ({
         getPressedKeys,
         isKeyPressed,
         showShortcutsDialog,
         hideShortcutsDialog,
-    };
+    }), [getPressedKeys, isKeyPressed, showShortcutsDialog, hideShortcutsDialog]);
 }
 
 export default useEditorShortcuts;

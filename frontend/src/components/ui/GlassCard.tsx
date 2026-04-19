@@ -6,9 +6,8 @@
 import React from 'react';
 import { cn } from '@/utils/cn';
 
-export interface GlassCardProps {
+export interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode;
-    className?: string;
     intensity?: 'light' | 'medium' | 'strong';
 }
 
@@ -16,6 +15,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     children,
     className,
     intensity = 'medium',
+    ...props
 }) => {
     const intensityStyles = {
         light: 'bg-white/50 dark:bg-night-surface/40 backdrop-blur-sm',
@@ -30,6 +30,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
                 intensityStyles[intensity],
                 className
             )}
+            {...props}
         >
             {children}
         </div>

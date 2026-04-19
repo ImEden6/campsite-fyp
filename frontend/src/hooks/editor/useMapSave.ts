@@ -8,6 +8,8 @@ export interface UseMapSaveOptions {
     onSuccess?: (response: SaveMapResponse) => void;
     /** Callback on save error */
     onError?: (error: Error) => void;
+    /** Whether the map has unsaved edits (e.g. mapStore.isDirty); preferred over internal isDirty */
+    getIsDirty?: () => boolean;
     /** Get current map state */
     getCurrentMap: () => CampsiteMap | null;
     /** Callback to update local map state with server response */
@@ -39,6 +41,7 @@ function computeModulesDiff(
     // For FYP scope, this is simpler and more reliable than complex diff logic
     return currentModules.map(m => ({
         id: m.id,
+        type: m.type,
         position: m.position,
         size: m.size,
         rotation: m.rotation,
@@ -50,7 +53,7 @@ function computeModulesDiff(
 }
 
 export function useMapSave(options: UseMapSaveOptions): UseMapSaveReturn {
-    const { getCurrentMap, onSuccess, onError, onMapUpdated } = options;
+    const { getCurrentMap, getIsDirty, onSuccess, onError, onMapUpdated } = options;
     const queryClient = useQueryClient();
 
     // Use useState for isDirty to trigger re-renders
@@ -67,16 +70,16 @@ export function useMapSave(options: UseMapSaveOptions): UseMapSaveReturn {
             // Clear dirty state only after confirmed success
             setIsDirty(false);
 
-            // Update original map ref to new server state
-            originalMapRef.current = response.map;
-
             // Invalidate relevant queries
             queryClient.invalidateQueries({ queryKey: ['maps', response.map.id] });
 
-            // Notify parent component
+            // Let parent merge server modules with client-only modules (e.g. new UUIDs) before baseline
             if (onMapUpdated) {
                 onMapUpdated(response.map, response.modules);
             }
+
+            // Baseline for the next save must match what is actually in the store after onMapUpdated
+            originalMapRef.current = getCurrentMap() ?? response.map;
 
             if (onSuccess) {
                 onSuccess(response);
@@ -100,8 +103,10 @@ export function useMapSave(options: UseMapSaveOptions): UseMapSaveReturn {
             originalMapRef.current?.modules || []
         );
 
+        const storeDirty = getIsDirty?.() ?? false;
+
         // Skip if nothing to save
-        if (modulesDiff.length === 0 && !isDirty) {
+        if (modulesDiff.length === 0 && !isDirty && !storeDirty) {
             return;
         }
 
@@ -116,7 +121,7 @@ export function useMapSave(options: UseMapSaveOptions): UseMapSaveReturn {
         };
 
         mutation.mutate(request);
-    }, [getCurrentMap, mutation, isDirty]);
+    }, [getCurrentMap, getIsDirty, mutation, isDirty]);
 
     const markDirty = useCallback(() => {
         setIsDirty(true);

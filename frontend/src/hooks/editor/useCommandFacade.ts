@@ -9,7 +9,7 @@
  * @see commands - Command implementations
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useCommandHistory } from '@/hooks/useCommandHistory';
 import { AddCommand } from '@/commands/AddCommand';
 import { DeleteCommand } from '@/commands/DeleteCommand';
@@ -84,7 +84,11 @@ export interface UseCommandFacadeReturn {
  * ```
  */
 export function useCommandFacade(): UseCommandFacadeReturn {
-    const { executeCommand, undo, redo, canUndo, canRedo } = useCommandHistory();
+    const { executeCommand, undo, redo, canUndo, canRedo } = useCommandHistory({
+        onCommandExecuted: () => {
+            useMapStore.getState().markDirty();
+        },
+    });
 
     const addModule = useCallback((module: AnyModule) => {
         executeCommand(new AddCommand([module]));
@@ -146,7 +150,7 @@ export function useCommandFacade(): UseCommandFacadeReturn {
         executeCommand(new ReorderCommand(id, fromIndex, toIndex));
     }, [executeCommand]);
 
-    return {
+    return useMemo(() => ({
         addModule,
         deleteModules,
         moveModule,
@@ -159,7 +163,20 @@ export function useCommandFacade(): UseCommandFacadeReturn {
         canUndo,
         canRedo,
         executeCommand,
-    };
+    }), [
+        addModule,
+        deleteModules,
+        moveModule,
+        moveModules,
+        transformModule,
+        updateProperties,
+        reorderModule,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        executeCommand,
+    ]);
 }
 
 export default useCommandFacade;

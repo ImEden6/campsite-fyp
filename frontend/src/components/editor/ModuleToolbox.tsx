@@ -4,13 +4,12 @@
  * Supports click-to-add and drag-and-drop to canvas.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
     Tent,
     Bath,
     Car,
     Building2,
-    Route,
     Droplet,
     Zap,
     Trash2,
@@ -68,12 +67,6 @@ const MODULE_TEMPLATES: ModuleTemplate[] = [
         description: 'Building or structure',
     },
     {
-        type: 'road',
-        label: 'Road',
-        icon: Route,
-        description: 'Road or pathway',
-    },
-    {
         type: 'water_source',
         label: 'Water',
         icon: Droplet,
@@ -112,6 +105,7 @@ const MODULE_TEMPLATES: ModuleTemplate[] = [
 export function ModuleToolbox({ onAddModule }: ModuleToolboxProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const prevActiveToolRef = useRef<string | null>(null);
 
     const { moduleToAdd, setModuleToAdd, activeTool, setActiveTool } =
         useEditorStore();
@@ -150,9 +144,12 @@ export function ModuleToolbox({ onAddModule }: ModuleToolboxProps) {
         setIsCollapsed((prev) => !prev);
     }, []);
 
-    // Auto-collapse when tool switches back to select (e.g. after click-to-add placement)
-    React.useEffect(() => {
-        if (activeTool === 'select' && !isCollapsed) {
+    // Auto-collapse only when leaving add mode for select (e.g. after placement clears moduleToAdd).
+    // Do not collapse on initial select or when the user expands the panel while already in select.
+    useEffect(() => {
+        const prev = prevActiveToolRef.current;
+        prevActiveToolRef.current = activeTool;
+        if (prev === 'add' && activeTool === 'select' && !isCollapsed) {
             setIsCollapsed(true);
         }
     }, [activeTool, isCollapsed]);

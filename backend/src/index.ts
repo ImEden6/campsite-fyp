@@ -36,6 +36,8 @@ import publicRoutes from './routes/public.routes';
 // Initialize error tracking first
 const errorTracker = initializeErrorTracking();
 
+import mapRoutes from './routes/map.routes';
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -95,6 +97,7 @@ app.use('/api/v1', uploadRoutes);
 app.use('/api/v1/admin/api-keys', apiKeyRoutes);
 app.use('/api/v1/equipment', equipmentRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/maps', mapRoutes);
 app.use('/api/v1/public', publicRoutes);
 
 // Socket.io connection handling

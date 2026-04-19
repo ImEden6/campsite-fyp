@@ -30,6 +30,9 @@ services:
       target: development
     environment:
       - NODE_ENV=development
+      # Vite runs inside this container: localhost is NOT the API. Proxy /api to the backend service.
+      - VITE_DEV_API_PROXY_TARGET=http://backend:5000
+      - VITE_DEV_WS_PROXY_TARGET=ws://backend:5000
     volumes:
       - ./frontend:/app/frontend
       - ./shared:/app/shared

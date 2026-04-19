@@ -35,6 +35,17 @@ const TICK_SMALL = 10;
 const TICK_MEDIUM = 50;
 const TICK_LARGE = 100;
 
+/**
+ * Canvas2D does not resolve CSS var() strings — using them for fillStyle/strokeStyle
+ * yields invalid colors so ticks and labels never appear.
+ */
+const RULER_THEME = {
+    bg: '#1e293b',
+    text: '#e2e8f0',
+    tick: '#64748b',
+    guideStroke: '#38bdf8',
+} as const;
+
 // ======
 // SINGLE RULER COMPONENT
 // ======
@@ -60,6 +71,10 @@ function Ruler({
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        if (!Number.isFinite(length) || length <= 0) {
+            return;
+        }
+
         const dpr = window.devicePixelRatio || 1;
         const canvasLength = isHorizontal ? length : RULER_SIZE;
         const canvasWidth = isHorizontal ? RULER_SIZE : length;
@@ -70,12 +85,12 @@ function Ruler({
         ctx.scale(dpr, dpr);
 
         // Clear
-        ctx.fillStyle = 'var(--ruler-bg, oklch(0.243 0.03 283.9))';
+        ctx.fillStyle = RULER_THEME.bg;
         ctx.fillRect(0, 0, canvasLength, canvasWidth);
 
         // Draw ticks
-        ctx.fillStyle = 'var(--ruler-text, oklch(0.879 0.043 272.3))';
-        ctx.strokeStyle = 'var(--ruler-tick, oklch(0.55 0.034 277.1))';
+        ctx.fillStyle = RULER_THEME.text;
+        ctx.strokeStyle = RULER_THEME.tick;
         ctx.font = '10px system-ui';
         ctx.textAlign = 'center';
 
@@ -125,7 +140,7 @@ function Ruler({
 
         // Draw drag indicator
         if (isDragging && dragPosition !== null) {
-            ctx.strokeStyle = 'var(--guide-color, oklch(0.729 0.126 210.8))';
+            ctx.strokeStyle = RULER_THEME.guideStroke;
             ctx.lineWidth = 2;
             ctx.beginPath();
             if (isHorizontal) {
@@ -235,7 +250,7 @@ export function Rulers({
                     left: 0,
                     width: RULER_SIZE,
                     height: RULER_SIZE,
-                    backgroundColor: 'var(--ruler-bg, oklch(0.243 0.03 283.9))',
+                    backgroundColor: RULER_THEME.bg,
                     zIndex: 100,
                 }}
             />
@@ -247,6 +262,7 @@ export function Rulers({
                     position: 'absolute',
                     top: 0,
                     left: RULER_SIZE,
+                    width: canvasWidth,
                     height: RULER_SIZE,
                     zIndex: 99,
                 }}
@@ -268,6 +284,7 @@ export function Rulers({
                     top: RULER_SIZE,
                     left: 0,
                     width: RULER_SIZE,
+                    height: canvasHeight,
                     zIndex: 99,
                 }}
             >

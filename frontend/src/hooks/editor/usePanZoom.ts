@@ -8,7 +8,7 @@
  * @see useFabricCanvas - Required dependency for canvas operations
  */
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useRef, useMemo } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
 import type { FabricCanvas, FabricEvent, Point } from '@/types/fabricTypes';
 import {
@@ -97,16 +97,20 @@ export function usePanZoom(
 
     // Pan tracking
     const lastPosRef = useRef({ x: 0, y: 0 });
+    /** Last zoom from "fit to screen" — used as a floor so users cannot zoom out far past the fitted view */
+    const lastFitZoomRef = useRef<number | null>(null);
 
     // Sync with editorStore pan mode if needed
-    const editorStore = useEditorStore();
+    const activeTool = useEditorStore((state) => state.activeTool);
 
-    // Auto-disable pan mode when zoom goes below 1
-    useEffect(() => {
-        if (zoom < 1 && isPanMode) {
-            setIsPanModeState(false);
-        }
-    }, [zoom, isPanMode]);
+    const clampToZoomLimits = useCallback((z: number) => {
+        const fit = lastFitZoomRef.current;
+        const floor =
+            fit != null && fit > 0
+                ? Math.max(MIN_ZOOM, fit * 0.92)
+                : MIN_ZOOM;
+        return Math.max(floor, Math.min(MAX_ZOOM, z));
+    }, []);
 
     // ========================================================================
     // ZOOM METHODS
@@ -114,32 +118,41 @@ export function usePanZoom(
 
     const setZoom = useCallback((newZoom: number) => {
         if (!canvas) return;
-        const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+        const clampedZoom = clampToZoomLimits(newZoom);
         canvas.setZoom(clampedZoom);
         setZoomState(clampedZoom);
         onZoomChange?.(clampedZoom);
-    }, [canvas, onZoomChange]);
+    }, [canvas, onZoomChange, clampToZoomLimits]);
 
     const zoomToPoint = useCallback((point: Point, newZoom: number) => {
         if (!canvas) return;
-        const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+        const clampedZoom = clampToZoomLimits(newZoom);
         canvas.zoomToPoint(point, clampedZoom);
         setZoomState(clampedZoom);
         onZoomChange?.(clampedZoom);
-    }, [canvas, onZoomChange]);
+    }, [canvas, onZoomChange, clampToZoomLimits]);
 
     const zoomIn = useCallback(() => {
-        setZoom(zoom + ZOOM_STEP);
-    }, [zoom, setZoom]);
+        setZoomState(prev => {
+            const newZoom = clampToZoomLimits(prev + ZOOM_STEP);
+            if (canvas) {
+                canvas.setZoom(newZoom);
+                onZoomChange?.(newZoom);
+            }
+            return newZoom;
+        });
+    }, [canvas, onZoomChange, clampToZoomLimits]);
 
     const zoomOut = useCallback(() => {
-        const newZoom = zoom - ZOOM_STEP;
-        setZoom(newZoom);
-        // Auto-disable pan mode if zoom goes below 1
-        if (newZoom < 1) {
-            setIsPanModeState(false);
-        }
-    }, [zoom, setZoom]);
+        setZoomState(prev => {
+            const newZoom = clampToZoomLimits(prev - ZOOM_STEP);
+            if (canvas) {
+                canvas.setZoom(newZoom);
+                onZoomChange?.(newZoom);
+            }
+            return newZoom;
+        });
+    }, [canvas, onZoomChange, clampToZoomLimits]);
 
     const fitToScreen = useCallback(() => {
         if (!canvas || !containerRef?.current || !mapSize) return;
@@ -151,15 +164,11 @@ export function usePanZoom(
         const scaleY = containerHeight / mapSize.height;
         const newZoom = Math.min(scaleX, scaleY) * FIT_TO_SCREEN_PADDING;
 
+        lastFitZoomRef.current = newZoom;
         canvas.setZoom(newZoom);
         canvas.setViewportTransform([newZoom, 0, 0, newZoom, 0, 0]);
         setZoomState(newZoom);
         onZoomChange?.(newZoom);
-
-        // Auto-disable pan mode if zoom goes below 1
-        if (newZoom < 1) {
-            setIsPanModeState(false);
-        }
 
         canvas.requestRenderAll();
     }, [canvas, containerRef, mapSize, onZoomChange]);
@@ -173,34 +182,25 @@ export function usePanZoom(
         const delta = event.deltaY;
         const currentZoom = canvas.getZoom();
         let newZoom = currentZoom * (delta > 0 ? ZOOM_OUT_FACTOR : ZOOM_IN_FACTOR);
-        newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+        newZoom = clampToZoomLimits(newZoom);
 
         const pointer = canvas.getViewportPoint(event);
         canvas.zoomToPoint(pointer, newZoom);
         setZoomState(newZoom);
         onZoomChange?.(newZoom);
-
-        // Auto-disable pan mode if zoom goes below 1
-        if (newZoom < 1) {
-            setIsPanModeState(false);
-        }
-    }, [canvas, onZoomChange]);
+    }, [canvas, onZoomChange, clampToZoomLimits]);
 
     // ========================================================================
     // PAN METHODS
     // ========================================================================
 
     const togglePanMode = useCallback(() => {
-        // Only allow pan mode when zoomed in (>= 100%)
-        if (zoom < 1) return;
         setIsPanModeState(prev => !prev);
-    }, [zoom]);
+    }, []);
 
     const setPanMode = useCallback((enabled: boolean) => {
-        // Only allow pan mode when zoomed in (>= 100%)
-        if (enabled && zoom < 1) return;
         setIsPanModeState(enabled);
-    }, [zoom]);
+    }, []);
 
     const startPan = useCallback((e: MouseEvent) => {
         setIsPanning(true);
@@ -228,12 +228,12 @@ export function usePanZoom(
         setIsPanning(false);
 
         // Re-enable selection if not in pan mode
-        if (canvas && !isPanMode && editorStore.activeTool === 'select') {
+        if (canvas && !isPanMode && activeTool === 'select') {
             canvas.selection = true;
         }
-    }, [canvas, isPanMode, editorStore.activeTool]);
+    }, [canvas, isPanMode, activeTool]);
 
-    return {
+    return useMemo(() => ({
         zoom,
         isPanMode,
         isPanning,
@@ -248,7 +248,22 @@ export function usePanZoom(
         startPan,
         updatePan,
         endPan,
-    };
+    }), [
+        zoom,
+        isPanMode,
+        isPanning,
+        togglePanMode,
+        setPanMode,
+        zoomIn,
+        zoomOut,
+        setZoom,
+        zoomToPoint,
+        fitToScreen,
+        handleWheel,
+        startPan,
+        updatePan,
+        endPan,
+    ]);
 }
 
 export default usePanZoom;

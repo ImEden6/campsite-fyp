@@ -9,7 +9,7 @@
  * @see editorStore - Consumes/updates selectedIds, isModuleLocked
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
 import type { FabricCanvas, FabricObject, FabricEvent } from '@/types/fabricTypes';
 import { getModuleId } from '@/types/fabricTypes';
@@ -23,6 +23,8 @@ export interface UseSelectionManagerOptions {
     onSelectionChange?: (ids: string[]) => void;
     /** Whether to prevent selecting locked modules */
     preventLockedSelection?: boolean;
+    /** Callback to set the interacting module ID (to avoid sync loops) */
+    setInteractingId?: (id: string | null) => void;
 }
 
 export interface UseSelectionManagerReturn {
@@ -61,7 +63,7 @@ export function useSelectionManager(
     canvas: FabricCanvas | null,
     options: UseSelectionManagerOptions = {}
 ): UseSelectionManagerReturn {
-    const { onSelectionChange, preventLockedSelection = true } = options;
+    const { onSelectionChange, preventLockedSelection = true, setInteractingId } = options;
 
     // Get store actions
     const setStoreSelection = useEditorStore((state) => state.setSelection);
@@ -207,6 +209,25 @@ export function useSelectionManager(
         onSelectionChange?.([]);
     }, [clearStoreSelection, onSelectionChange]);
 
+    /**
+     * Handle object interaction start (to skip module sync)
+     */
+    const handleObjectMoving = useCallback((e: FabricEvent) => {
+        const id = getModuleId(e.target);
+        if (id && setInteractingId) {
+            setInteractingId(id);
+        }
+    }, [setInteractingId]);
+
+    /**
+     * Handle object interaction end (to resume module sync)
+     */
+    const handleObjectModified = useCallback(() => {
+        if (setInteractingId) {
+            setInteractingId(null);
+        }
+    }, [setInteractingId]);
+
     // ========================================================================
     // ATTACH/DETACH LISTENERS
     // ========================================================================
@@ -217,13 +238,21 @@ export function useSelectionManager(
         canvas.on('selection:created', handleSelectionCreated);
         canvas.on('selection:updated', handleSelectionUpdated);
         canvas.on('selection:cleared', handleSelectionCleared);
+        canvas.on('object:moving', handleObjectMoving);
+        canvas.on('object:scaling', handleObjectMoving);
+        canvas.on('object:rotating', handleObjectMoving);
+        canvas.on('object:modified', handleObjectModified);
 
         return () => {
             canvas.off('selection:created', handleSelectionCreated);
             canvas.off('selection:updated', handleSelectionUpdated);
             canvas.off('selection:cleared', handleSelectionCleared);
+            canvas.off('object:moving', handleObjectMoving);
+            canvas.off('object:scaling', handleObjectMoving);
+            canvas.off('object:rotating', handleObjectMoving);
+            canvas.off('object:modified', handleObjectModified);
         };
-    }, [canvas, handleSelectionCreated, handleSelectionUpdated, handleSelectionCleared]);
+    }, [canvas, handleSelectionCreated, handleSelectionUpdated, handleSelectionCleared, handleObjectMoving, handleObjectModified]);
 
     // ========================================================================
     // API METHODS
@@ -289,13 +318,13 @@ export function useSelectionManager(
         onSelectionChange?.(ids);
     }, [canvas, extractSelectedIds, setStoreSelection, onSelectionChange]);
 
-    return {
+    return useMemo(() => ({
         getSelectedIds,
         setSelection,
         clearSelection,
         restoreSelection,
         syncFromFabric,
-    };
+    }), [getSelectedIds, setSelection, clearSelection, restoreSelection, syncFromFabric]);
 }
 
 export default useSelectionManager;

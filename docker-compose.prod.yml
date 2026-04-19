@@ -11,6 +11,9 @@ services:
   frontend:
     build:
       target: production
+      args:
+        VITE_API_URL: /api/v1
+        VITE_WS_URL: ""
     ports:
       - "5137:5137" # Exposes internal port 5137 (nginx) to host 5137
 

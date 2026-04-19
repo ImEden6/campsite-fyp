@@ -7,6 +7,8 @@
 import { create } from 'zustand';
 import type { CampsiteMap, AnyModule } from '@/types';
 
+const EMPTY_ARRAY: AnyModule[] = [];
+
 interface MapState {
     // State
     currentMap: CampsiteMap | null;
@@ -139,7 +141,7 @@ export const useMapStore = create<MapStore>((set, get) => ({
 
     getModules: () => {
         const { currentMap } = get();
-        return currentMap?.modules ?? [];
+        return currentMap?.modules ?? EMPTY_ARRAY;
     },
 }));
 
@@ -149,4 +151,4 @@ export const selectModuleById = (id: string) => (state: MapStore) =>
 
 // Selector for modules sorted by zIndex
 export const selectModulesSorted = (state: MapStore) =>
-    [...(state.currentMap?.modules ?? [])].sort((a, b) => a.zIndex - b.zIndex);
+    [...(state.currentMap?.modules ?? EMPTY_ARRAY)].sort((a, b) => a.zIndex - b.zIndex);

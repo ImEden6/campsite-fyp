@@ -6,7 +6,7 @@
  * @see useMapStore - For dirty state tracking
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { useMapStore } from '@/stores/mapStore';
 import type { FabricCanvas } from '@/types/fabricTypes';
 
@@ -143,12 +143,12 @@ export function useEditorLifecycle(
         storeMarkClean();
     }, [storeMarkClean]);
 
-    return {
+    return useMemo(() => ({
         isDirty,
         markDirty,
         clearDirty,
         handleResize,
-    };
+    }), [isDirty, markDirty, clearDirty, handleResize]);
 }
 
 export default useEditorLifecycle;

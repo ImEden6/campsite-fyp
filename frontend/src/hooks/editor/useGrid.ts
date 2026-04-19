@@ -10,8 +10,13 @@
  * @see useFabricCanvas - Required dependency for canvas operations
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useRef, useMemo, useEffect } from 'react';
+import * as fabricImpl from 'fabric';
 import { useEditorStore } from '@/stores/editorStore';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fabric: any = fabricImpl;
 import type { FabricCanvas, FabricObject, Point } from '@/types/fabricTypes';
 import { isGridObject } from '@/types/fabricTypes';
 
@@ -26,6 +31,8 @@ export interface UseGridOptions {
     gridColor?: string;
     /** Grid line opacity */
     gridOpacity?: number;
+    /** When false, skip drawing (Fabric canvas not mounted yet) */
+    editorReady?: boolean;
 }
 
 export interface UseGridReturn {
@@ -64,26 +71,27 @@ const DEFAULT_GRID_OPACITY = 0.5;
  * Hook for grid rendering and snap-to-grid functionality.
  * Stateless - consumes grid settings from editorStore.
  * 
- * @param canvas - Fabric canvas instance (or null if not ready)
+ * @param canvasRef - Ref to the Fabric canvas (always read `.current` when drawing)
  * @param options - Grid options
  * @returns Grid API
  * 
  * @example
  * ```tsx
  * const { showGrid, toggleGrid, snapPointToGrid } = useGrid(
- *   canvasRef.current,
- *   { mapSize: { width: 800, height: 600 } }
+ *   canvasRef,
+ *   { mapSize: { width: 800, height: 600 }, editorReady: isInitialized }
  * );
  * ```
  */
 export function useGrid(
-    canvas: FabricCanvas | null,
+    canvasRef: React.RefObject<FabricCanvas | null>,
     options: UseGridOptions = {}
 ): UseGridReturn {
     const {
         mapSize = { width: 1000, height: 800 },
         gridColor = DEFAULT_GRID_COLOR,
         gridOpacity = DEFAULT_GRID_OPACITY,
+        editorReady = true,
     } = options;
 
     // Consume from editorStore (stateless pattern)
@@ -105,29 +113,25 @@ export function useGrid(
      * Clear existing grid lines from canvas
      */
     const clearGrid = useCallback(() => {
+        const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Remove tracked grid objects
-        for (const obj of gridObjectsRef.current) {
+        // Always scan the canvas — Fabric may drop refs after remove, so gridObjectsRef can be stale
+        const removable = canvas.getObjects().filter((o) => isGridObject(o));
+        for (const obj of removable) {
             canvas.remove(obj);
+            // Do not dispose() — disposing lines after remove can break subsequent adds on the same canvas
         }
         gridObjectsRef.current = [];
 
-        // Also remove any orphaned grid objects (safety)
-        const allObjects = canvas.getObjects();
-        for (const obj of allObjects) {
-            if (isGridObject(obj)) {
-                canvas.remove(obj);
-            }
-        }
-
         canvas.requestRenderAll();
-    }, [canvas]);
+    }, [canvasRef]);
 
     /**
      * Render grid lines on canvas
      */
     const renderGrid = useCallback(() => {
+        const canvas = canvasRef.current;
         if (!canvas) return;
 
         // Clear existing grid first
@@ -135,9 +139,6 @@ export function useGrid(
 
         if (!showGrid) return;
 
-        // Use dynamic import to avoid circular dependencies
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fabric = (window as any).fabric;
         if (!fabric?.Line) {
             console.warn('[useGrid] Fabric.Line not available');
             return;
@@ -154,7 +155,7 @@ export function useGrid(
                 evented: false,
                 opacity: gridOpacity,
                 data: { isGrid: true },
-            });
+            }) as FabricObject;
             newGridObjects.push(line);
         }
 
@@ -167,7 +168,7 @@ export function useGrid(
                 evented: false,
                 opacity: gridOpacity,
                 data: { isGrid: true },
-            });
+            }) as FabricObject;
             newGridObjects.push(line);
         }
 
@@ -179,7 +180,7 @@ export function useGrid(
 
         gridObjectsRef.current = newGridObjects;
         canvas.requestRenderAll();
-    }, [canvas, showGrid, gridSize, mapSize.width, mapSize.height, gridColor, gridOpacity, clearGrid]);
+    }, [canvasRef, showGrid, gridSize, mapSize.width, mapSize.height, gridColor, gridOpacity, clearGrid]);
 
     // ========================================================================
     // SNAP TO GRID
@@ -202,18 +203,14 @@ export function useGrid(
     // ========================================================================
 
     /**
-     * Re-render grid when settings change
+     * Re-render grid when settings change.
+     * Depends on `editorReady` so we run after Fabric mounts (ref.current is set without a ref identity change).
      */
     useEffect(() => {
-        if (!canvas) return;
-
+        if (!editorReady) return;
+        if (!canvasRef.current) return;
         renderGrid();
-
-        // Cleanup on unmount
-        return () => {
-            clearGrid();
-        };
-    }, [canvas, showGrid, gridSize, renderGrid, clearGrid]);
+    }, [editorReady, canvasRef, showGrid, gridSize, mapSize.width, mapSize.height, renderGrid]);
 
     // ========================================================================
     // API
@@ -231,7 +228,7 @@ export function useGrid(
         setGridSizeStore(size);
     }, [setGridSizeStore]);
 
-    return {
+    return useMemo(() => ({
         showGrid,
         snapToGrid,
         gridSize,
@@ -241,7 +238,17 @@ export function useGrid(
         snapPointToGrid,
         renderGrid,
         clearGrid,
-    };
+    }), [
+        showGrid,
+        snapToGrid,
+        gridSize,
+        toggleGrid,
+        toggleSnapToGrid,
+        setGridSize,
+        snapPointToGrid,
+        renderGrid,
+        clearGrid,
+    ]);
 }
 
 export default useGrid;
