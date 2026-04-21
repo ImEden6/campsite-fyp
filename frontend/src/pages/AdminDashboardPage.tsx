@@ -27,12 +27,13 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { getSites, deleteSite } from '@/services/api/sites';
+import { getBookings } from '@/services/api/bookings';
 import { getDashboardMetrics } from '@/services/api/analytics';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
 
-import { SiteType, SiteStatus, UserRole } from '@/types';
+import { BookingStatus, SiteType, SiteStatus, UserRole } from '@/types';
 import type { Site } from '@/types';
 import { formatCurrency, CURRENCY_SYMBOL } from '@/utils/currency';
 
@@ -40,6 +41,11 @@ interface MapBoxProps {
   type: SiteType;
   sites: Site[];
   isAdmin: boolean;
+  availability: {
+    available: number;
+    occupied: number;
+    maintenance: number;
+  };
   onAddSite: () => void;
   onEditSite: (site: Site) => void;
   onDeleteSite: (siteId: string) => void;
@@ -50,6 +56,7 @@ const MapBox: React.FC<MapBoxProps> = ({
   type,
   sites,
   isAdmin,
+  availability,
   onAddSite,
   onEditSite,
   onDeleteSite,
@@ -82,10 +89,6 @@ const MapBox: React.FC<MapBoxProps> = ({
   const config = typeConfig[type];
   const Icon = config.icon;
 
-  const availableSites = sites.filter(s => s.status === 'AVAILABLE').length;
-  const occupiedSites = sites.filter(s => s.status === 'OCCUPIED').length;
-  const maintenanceSites = sites.filter(s => s.status === 'MAINTENANCE').length;
-
   return (
     <MotionDiv
       {...(motion ? { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } } : {})}
@@ -116,15 +119,15 @@ const MapBox: React.FC<MapBoxProps> = ({
         {/* Stats */}
         <div className="p-4 grid grid-cols-3 gap-3 border-b border-secondary-200 dark:border-secondary-700 bg-white/30 dark:bg-night-surface/30">
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{availableSites}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{availability.available}</p>
             <p className="text-xs text-secondary-600 dark:text-secondary-400">Available</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{occupiedSites}</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{availability.occupied}</p>
             <p className="text-xs text-secondary-600 dark:text-secondary-400">Occupied</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{maintenanceSites}</p>
+            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{availability.maintenance}</p>
             <p className="text-xs text-secondary-600 dark:text-secondary-400">Maintenance</p>
           </div>
         </div>
@@ -216,11 +219,58 @@ export const AdminDashboardPage: React.FC = () => {
     queryKey: ['sites'],
     queryFn: () => getSites(),
   });
+  const { data: bookings = [] } = useQuery({
+    queryKey: ['bookings', 'availability-summary'],
+    queryFn: () => getBookings(),
+  });
 
   // Group sites by type
   const tentSites = sites.filter(s => s.type === SiteType.TENT);
   const rvSites = sites.filter(s => s.type === SiteType.RV);
   const cabinSites = sites.filter(s => s.type === SiteType.CABIN);
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+  const activeBookingSiteIds = new Set(
+    bookings
+      .filter((booking) => {
+        if (
+          booking.status !== BookingStatus.CONFIRMED &&
+          booking.status !== BookingStatus.CHECKED_IN
+        ) {
+          return false;
+        }
+        const checkIn = new Date(booking.checkInDate);
+        const checkOut = new Date(booking.checkOutDate);
+        return checkIn < startOfTomorrow && checkOut > startOfToday;
+      })
+      .map((booking) => booking.siteId)
+  );
+
+  const getAvailabilityCounts = (typeSites: Site[]) => {
+    let maintenance = 0;
+    let occupied = 0;
+    let available = 0;
+
+    for (const site of typeSites) {
+      if (site.status === SiteStatus.MAINTENANCE || site.status === SiteStatus.OUT_OF_SERVICE) {
+        maintenance += 1;
+        continue;
+      }
+
+      if (activeBookingSiteIds.has(site.id) || site.status === SiteStatus.OCCUPIED) {
+        occupied += 1;
+        continue;
+      }
+
+      available += 1;
+    }
+
+    return { available, occupied, maintenance };
+  };
 
   // Calculate metrics for site counts
   const totalSites = sites.length;
@@ -435,6 +485,7 @@ export const AdminDashboardPage: React.FC = () => {
                 type={SiteType.TENT}
                 sites={tentSites}
                 isAdmin={isAdmin}
+                availability={getAvailabilityCounts(tentSites)}
                 onAddSite={() => handleAddSite(SiteType.TENT)}
                 onEditSite={handleEditSite}
                 onDeleteSite={handleDeleteSite}
@@ -444,6 +495,7 @@ export const AdminDashboardPage: React.FC = () => {
                 type={SiteType.RV}
                 sites={rvSites}
                 isAdmin={isAdmin}
+                availability={getAvailabilityCounts(rvSites)}
                 onAddSite={() => handleAddSite(SiteType.RV)}
                 onEditSite={handleEditSite}
                 onDeleteSite={handleDeleteSite}
@@ -453,6 +505,7 @@ export const AdminDashboardPage: React.FC = () => {
                 type={SiteType.CABIN}
                 sites={cabinSites}
                 isAdmin={isAdmin}
+                availability={getAvailabilityCounts(cabinSites)}
                 onAddSite={() => handleAddSite(SiteType.CABIN)}
                 onEditSite={handleEditSite}
                 onDeleteSite={handleDeleteSite}
