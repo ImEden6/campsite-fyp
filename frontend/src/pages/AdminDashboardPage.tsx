@@ -208,6 +208,8 @@ export const AdminDashboardPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === UserRole.ADMIN;
   const isStaff = user?.role === UserRole.STAFF;
+  const isManager = user?.role === UserRole.MANAGER;
+  const dashboardTitle = isStaff ? 'Staff Dashboard' : isManager ? 'Manager Dashboard' : 'Admin Dashboard';
 
   // Fetch all sites (with mock data fallback)
   const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
@@ -341,7 +343,7 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">Admin Dashboard</h1>
+            <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-primary-100">{dashboardTitle}</h1>
             <p className="text-secondary-600 dark:text-secondary-400">Overview and site management</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -353,13 +355,15 @@ export const AdminDashboardPage: React.FC = () => {
               <RefreshCw className={`w-4 h-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/admin/analytics')}
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
-            </Button>
+            {!isStaff && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin/analytics')}
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </Button>
+            )}
             {isAdmin && (
               <Button
                 variant="outline"

@@ -173,7 +173,6 @@ export class MapService {
         prisma.site.findMany({
           where: {
             status: { not: 'OUT_OF_SERVICE' },
-            onMap: true,
           },
         }),
         prisma.mapFacility.findMany({

@@ -37,8 +37,12 @@ export class SiteService {
 
             const sites = await prisma.site.findMany({
                 where: {
+                    onMap: true,
+                    status: {
+                        not: SiteStatus.OUT_OF_SERVICE,
+                        ...(status ? { equals: status } : {}),
+                    },
                     ...(type && { type }),
-                    ...(status && { status }),
                     ...(minCapacity && { capacity: { gte: minCapacity } }),
                     ...(minPrice || maxPrice
                         ? {
