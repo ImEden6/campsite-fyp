@@ -547,6 +547,17 @@ router.post('/:id/cancel', authenticate, authorizeBookingOwnership, async (req: 
       refundPercentage: refund.refundPercentage,
     });
 
+    // Notify all connected clients so the booking calendar removes/updates the entry in real-time
+    socketService.emit('booking:cancelled', {
+      id: updatedBooking.id,
+      userId: updatedBooking.userId,
+      siteId: updatedBooking.siteId,
+      status: updatedBooking.status,
+      checkInDate: updatedBooking.checkInDate,
+      checkOutDate: updatedBooking.checkOutDate,
+      bookingNumber: updatedBooking.bookingNumber,
+    });
+
     res.json({
       success: true,
       data: {
