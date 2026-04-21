@@ -207,6 +207,7 @@ export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === UserRole.ADMIN;
+  const isStaff = user?.role === UserRole.STAFF;
 
   // Fetch all sites (with mock data fallback)
   const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
@@ -247,7 +248,7 @@ export const AdminDashboardPage: React.FC = () => {
   const metrics = analyticsMetrics ?? defaultMetrics;
 
   // Stats for the cards - now using analytics data from API
-  const stats = [
+  const allStats = [
     {
       name: 'Total Revenue',
       value: formatCurrency(metrics.totalRevenue, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
@@ -256,6 +257,7 @@ export const AdminDashboardPage: React.FC = () => {
       iconColor: 'text-blue-600 dark:text-blue-400',
       subtext: `${metrics.revenueChange >= 0 ? '+' : ''}${metrics.revenueChange.toFixed(1)}% from last period`,
       change: metrics.revenueChange,
+      staffVisible: false,
     },
     {
       name: 'Occupancy Rate',
@@ -265,6 +267,7 @@ export const AdminDashboardPage: React.FC = () => {
       iconColor: 'text-green-600 dark:text-green-400',
       subtext: `${occupiedSites} of ${totalSites} sites`,
       change: metrics.occupancyChange,
+      staffVisible: true,
     },
     {
       name: 'Active Bookings',
@@ -274,6 +277,7 @@ export const AdminDashboardPage: React.FC = () => {
       iconColor: 'text-purple-600 dark:text-purple-400',
       subtext: `${metrics.bookingsChange >= 0 ? '+' : ''}${metrics.bookingsChange.toFixed(1)}% from last period`,
       change: metrics.bookingsChange,
+      staffVisible: true,
     },
     {
       name: 'Total Customers',
@@ -283,8 +287,11 @@ export const AdminDashboardPage: React.FC = () => {
       iconColor: 'text-orange-600 dark:text-orange-400',
       subtext: `${metrics.customersChange >= 0 ? '+' : ''}${metrics.customersChange.toFixed(1)}% growth`,
       change: metrics.customersChange,
+      staffVisible: true,
     }
   ];
+
+  const stats = isStaff ? allStats.filter(s => s.staffVisible) : allStats;
 
   // Modal state
   const [siteModalOpen, setSiteModalOpen] = useState(false);
@@ -383,7 +390,7 @@ export const AdminDashboardPage: React.FC = () => {
         {!isLoading && (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${stats.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-6`}>
               {stats.map((stat, index) => (
                 <MotionDiv
                   key={stat.name}
