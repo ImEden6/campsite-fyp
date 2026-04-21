@@ -13,6 +13,7 @@ import {
   updateBookingSchema,
   updateGuestsSchema
 } from '@/middleware/validate';
+import socketService from '@/services/socket.service';
 
 const router = Router();
 const prisma = getPrismaClient();
@@ -546,6 +547,17 @@ router.post('/:id/cancel', authenticate, authorizeBookingOwnership, async (req: 
       refundPercentage: refund.refundPercentage,
     });
 
+    // Notify all connected clients so the booking calendar removes/updates the entry in real-time
+    socketService.emit('booking:cancelled', {
+      id: updatedBooking.id,
+      userId: updatedBooking.userId,
+      siteId: updatedBooking.siteId,
+      status: updatedBooking.status,
+      checkInDate: updatedBooking.checkInDate,
+      checkOutDate: updatedBooking.checkOutDate,
+      bookingNumber: updatedBooking.bookingNumber,
+    });
+
     res.json({
       success: true,
       data: {
@@ -799,6 +811,17 @@ router.post('/', authenticate, validateBody(createBookingSchema), async (req: Re
     const booking = await bookingService.createBooking({
       ...req.body,
       userId: req.user!.id
+    });
+
+    // Notify all connected staff/admin/manager clients so the booking calendar updates in real-time
+    socketService.emit('booking:created', {
+      id: booking.id,
+      userId: booking.userId,
+      siteId: booking.siteId,
+      status: booking.status,
+      checkInDate: booking.checkInDate,
+      checkOutDate: booking.checkOutDate,
+      bookingNumber: booking.bookingNumber,
     });
 
     res.status(201).json({

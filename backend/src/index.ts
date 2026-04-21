@@ -20,6 +20,7 @@ import { errorHandler } from './utils/errors';
 import { authMiddleware } from './middleware/auth';
 import { initializeErrorTracking, getErrorTracker } from './services/error-tracking';
 import { startCleanupJobs, stopCleanupJobs } from './jobs/cleanup';
+import socketService from './services/socket.service';
 
 // Import routes (these will be created later)
 import authRoutes from './routes/auth.routes';
@@ -102,6 +103,8 @@ app.use('/api/v1/maps', mapRoutes);
 app.use('/api/v1/public', publicRoutes);
 
 // Socket.io connection handling
+socketService.initialize(io);
+
 io.on('connection', (socket) => {
   logger.info(`Client connected: ${socket.id}`);
 

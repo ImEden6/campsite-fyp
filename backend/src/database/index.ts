@@ -91,7 +91,7 @@ export async function transaction<T>(
   callback: (prisma: PrismaClient) => Promise<T>
 ): Promise<T> {
   const client = getPrismaClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (client as any).$transaction(callback);
 }
 

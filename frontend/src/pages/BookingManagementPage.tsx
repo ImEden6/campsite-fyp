@@ -8,6 +8,7 @@ import ManualBookingForm from '@/features/bookings/components/ManualBookingForm'
 import { getBookings } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { useBookingStore } from '@/stores/bookingStore';
+import { useBookingEvents } from '@/hooks/useBookingEvents';
 import { Booking } from '@/types';
 import type { CalendarView } from '@/features/bookings/components/BookingCalendar';
 
@@ -19,6 +20,9 @@ const BookingManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { selectedBooking, setSelectedBooking, filters, setSearchTerm: setStoreSearchTerm } = useBookingStore();
+
+  // Listen for real-time booking events via WebSocket and auto-refresh the calendar
+  useBookingEvents();
 
   // Fetch all bookings for calendar view
   const { data: allBookings = [], isLoading, refetch } = useQuery({
