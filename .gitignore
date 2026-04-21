@@ -89,9 +89,6 @@ WARP.md
 DEPENDENCY_CLEANUP.md
 ps.txt
 
-# Stuff
-stuff/*
-
 # Local scripts
 tss.sh
 tss.bat

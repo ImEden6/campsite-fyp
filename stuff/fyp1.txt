@@ -1,0 +1,334 @@
+﻿CAMP SITES MANAGEMENT SYSTEMS
+By
+Mervyn Hew Jun Jie
+A PROPOSAL
+SUBMITTED TO
+Universiti
+ 
+Tunku
+ Abdul Rahman
+in partial 
+fulfillment
+ of the requirements 
+for the degree of
+BACHELOR OF COMPUTER SCIENCE (HONOURS) 
+Faculty of Information and Communication Technology 
+(Kampar Campus)
+DEC
+ 2
+025
+CHAPTER 1
+ 
+Introduction
+The service industry has seen more applications of technological solutions to ensure efficiency and customer satisfaction. However, campsite management involves unique challenges, such as the allocation of particular campsites and the monitoring of equipment stock levels.
+ 
+Many campsites still rely on manual processes, which often lead to errors and inefficiencies.
+This project proposes a comprehensive Campsite Management System (CMS), built as a web application using React 18 and TypeScript, to streamline operations for administrators, staff, and guests. This chapter outlines the motivation behind the project, its objectives, contributions, and the structure of the proposal.
+1.1 
+Problem Statement and M
+otivation
+Many campsites still depend on manual or fragmented tools that lack realâ€‘time coordination between staff and customers. This leads to:
+Operational inefficiency: Manual booking and inventory tracking are prone to mistakes.
+Poor visualization: Staff and customers often cannot view or select specific campsite locations visually.
+Limited user experience: Customers need a seamless way to view, manage, and pay for bookings.
+This project aims to unify these processes into a single platform that integrates booking workflows, visual site management, and user administration
+1.2 
+Research Objectives
+The project aims to design and develop a fullâ€‘stack Campsite Management System with the following objectives:
+Implement a 
+role based
+ access control system for Administrators, Managers, Staff, and Customers.
+Build an interactive map editor using Fabric.js for campsite layout design and site browsing.
+Develop a booking workflow that supports both staff managed and 
+customer initiated
+ reservations.
+Create an equipment rental system that integrates with site bookings.
+1.3 
+Project Scope and 
+Limitations
+ 
+Scope:
+The system is built as a Single Page Application (SPA) using React 18, Vite, and TypeScript.
+Modules include Authentication, Booking Management, Interactive Maps, Equipment Rentals, and Analytics
+Limitations:
+Payment processing currently uses a mock mode, with Stripe integration planned for the next phase.
+Authentication uses mock credentials during development due to the absence of a live backend.
+1.4
+Contributions
+This project contributes to campsite management and web application development by:
+Unifying operations such as booking, site allocation, and equipment rentals into one platform.
+Introducing visual management through an interactive map editor built with Fabric.js.
+Enhancing customer autonomy via a dedicated portal for managing bookings and payments.
+Modernizing workflows by replacing manual processes with a responsive web application.
+Providing a scalable architecture using shared TypeScript libraries and Zod schemas for consistency.
+1.5 
+Report Organization
+The details of this project are structured into the following chapters. Chapter 2 
+r
+eviews existing campsite management systems and identifies gaps
+. Chapter 3 outlines the methodology, including the
+ 
+architecture, and the development timeline. 
+The initial prototype and the feasibility study are explained in Chapter 4, while Chapter 5 gives the conclusion of the project and the prospects for further improvements.
+CHAPTER 
+2
+ 
+Literature Reviews
+This chapter examines existing campsite management systems to understand what the current market offers and where those solutions fall short. 
+Analysis of three popular systemsâ€”
+ResNexus
+, RMS Cloud, and WebRezProâ€”shows points of similarity, weaknesses, and areas for improvement to make informed decisions and shape the proposed Campsite Management System.
+2.1 
+ResNexus
+ResNexus
+ provides several features, which include online booking and marketing integration. It also comes with an inbuilt Guest Portal that allows visitors to check in and review their reservations without any need for an application. This enhances convenience. The higher plans come with an inbuilt Point of Sale (POS) that provides services for selling on-site merchandise
+ 
+[1].
+2.1.1 Strengths
+ 
+ResNexus
+ stands out for its wide range of features, including online booking tools, calendar management, and marketing integrations. Its builtâ€‘in Guest Portal allows visitors to check in and view reservations without needing a separate app, which improves convenience. Higherâ€‘tier plans also include a Pointâ€‘ofâ€‘Sale (POS) system, making it easier for businesses to manage onâ€‘site retail operations
+ [1]
+.
+2.1.2 Weaknesses
+ 
+ResNexus
+, though versatile, is not specifically designed with campgrounds in mind. The basic functions of a campground, like managing fire rings, tent sites, and large group events, do not feature prominently. Additionally, the fact that it is Online Travel Agency (OTA) based might not favor smaller campgrounds, which require more direct connection with customers.
+2.2 RMS Cloud
+RMS Cloud is an all-inclusive cloud-based management system developed specifically with larger outdoors-based hospitality businesses in mind, such as RV parks or national parks.
+2.2.1 Strengths
+ 
+From the perspective of RMS Cloud 
+include
+ its ability to centralize operations, making it possible for the user to administer reservations, accounts, and communication from the same interface. Again, it is strong at handling reservations for groups. The system provides functionalities for blocking reservations and issuing invoices 
+[2]
+.
+2.2.2 Weaknesses
+The systemâ€™s biggest drawback is its complexity. RMS Cloud has a steep learning curve and a pricing model that varies based on property size, often including additional fees for setup and training. This makes it less accessible for smaller campsites with limited budgets or technical expertise
+.
+2.3 WebRezPro
+WebRezPro is a flexible cloudâ€‘based system used by a wide range of accommodation providers, including hostels and campgrounds
+ [3]
+.
+2.3.1 Strengths
+ 
+One of WebRezProâ€™s standout features is its support for packaged bookings, allowing operators to bundle reservations with tours or activities. It also handles group bookings well, offering tools for block reservations and specialized invoicing
+ [3].
+2.3.2 Weaknesses
+ 
+However, the disadvantages found applicable for similar systems are lack of available APIs, language limitations preventing multilingual usability, and non-transparent pricing structures making it difficult for prospective users to assess it.
+2.4 Critical Analysis of Existing Solutions
+In all three systems, some common problems recur:
+Complexity vs. usability: Too often, highly complex systems confuse smaller users who seek simplicity and usability.
+Generic designs: Most of the platforms developed are for hotels and vacation rentals, unlike campsites, leaving out functionalities such as graphical site selection.
+Limited integration: Applications based on closed APIs or traditional OTAs do not offer flexibility and customization.
+These shortcomings pose the need for a contemporary system with campsite mobility, integrating usability with functional depth.
+2.5 Summary and Proposed Improvements
+The Campsite Management System to be developed seeks to fill these gaps by:
+Concentrating on the logistical aspects of campsites, including their real-time availability.
+Offering a streamlined, role-based dashboard developed using React 18.
+Enables the use of an interactive map editor for choosing sites.
+Making use of a modular design to accommodate prospective integrations, such as payment gateways and external platforms.
+CHAPTER 3
+PROPOSED METHOD/APPROACH
+This chapter describes the methodology, architecture, and plan of development for the Campsite Management System. It explains the reasoning behind the choice of technology and the project plan to foster constant progression.
+3.1 Methodological Approach
+The project is utilizing the Agile model for development. This allows for continuous improvement. The project is divided into shorter sprints 
+in order to
+ accommodate new learnings or emerging demands. This is the design phase for the architectural framework and the development of the working prototype within the first project phase
+3.2 System Requirements and Tools
+It is built with state-of-the-art tools that focus on performance, scalability, and type safety. 
+3.2.1 Hardware Requirements
+ 
+Development and testing were carried out on 
+gaming laptop
+ with the following specifications:
+Processor:
+ 11th Gen IntelÂ® Coreâ„¢ i5-11400H @ 2.70GHz
+Memory (RAM):
+ 16.0 GB
+Graphics:
+ NVIDIA GeForce RTX 3050 Laptop GPU
+3.2.2 Software Tools
+Language: TypeScript for strong type safety
+Frontend: React 18 with Vite for fast development
+State Management: 
+Zustand
+ and React Query
+Visualization: Fabric.js for the interactive map editor
+Version Control: Git and GitHub
+Testing: 
+Vitest
+ (unit tests) and Playwright (end
+â€‘
+to
+â€‘
+end tests)
+3.3 System Design / Overview
+The system follows a modular web architecture divided into four layers.
+Figure 3.1 System Architecture Diagram
+3.3.1 UI Layer (Frontend)
+ 
+The UI is implemented using React 18. The design is done using Tailwind CSS. Framer Motion handles animated transitions. One important aspect of this layer is the map editor implemented by using Fabric.js, which allows administrators to graphically create layouts for campsites.
+3.3.2 Business Logic Layer
+ 
+This is responsible for managing core business functionalities like booking validation, rental computation, and role-based access controls. 
+Zustand
+ and React Query are used to enforce isolation between UI state and server state
+.
+3.3.3 Integration Layer
+ 
+This level manages external services, allowing test flows of user actions without any dependency on a back-end server
+.
+3.3.4 Data Layer
+ 
+For
+ 
+d
+uring Project I, the system uses structured JSON files as a mock data store. This allows rapid prototyping without a backend. In Project II, the system will migrate to a PostgreSQL database with Zod schemas for strict validation.
+3.4 Implementation Issues and Challenges
+Building an interactive web application introduces several challenges:
+State synchronization: Keeping 
+Fabric.jsâ€™s
+ visual state aligned with 
+Reactâ€™s
+ logical state requires careful handling to avoid inconsistencies.
+Concurrency control: Preventing double bookings when multiple users act simultaneously will require database
+â€‘
+level locking, which will be implemented in the backend phase.
+3.5 Timeline
+The initial development phase spans six weeks (3 November â€“ 12 December). The focus is on core authentication, site management, and booking logic. 
+The
+ Gantt chart (Figure 3.2) 
+below show
+s the full schedule.
+Figure 3.2 Gantt Chart of Development Timeline
+CHAPTER 4
+PRELIMINARY WORK
+This chapter presents the work completed during Project I, including the development environment setup, data schema design, and backend planning. These components form the foundation for the full system to be built in Project II.
+4.1 Development Environment & Current Architecture
+The current prototype is a highâ€‘performance frontend application built with React 18, Vite, and TypeScript
+.
+4.1.1 State Management
+ 
+Zustand
+ and React Query manage application state, ensuring smooth synchronization between UI components and mock data.
+4.1.2 Visualization Tools
+ 
+Fa
+bric.js powers the interactive map editor, enabling administrators to design campsite layouts visually instead of relying on static tables.
+4.1.3 Mock Infrastructure
+ 
+To accelerate development, the system uses a mock authentication and payment setup. This allows testing of user flows without needing a backend server.
+4.2 Data Persistence & Schema Design
+Design Though the prototype works on mock data, the database structure for the future backend system design has been created.
+4.2.1 Entity Relationships
+ 
+The schema centres around the User entity, which connects to bookings, notifications, 
+The table includes User, which is associated with the ability to book, notify, and role, and facilitates the role-based access control method role-based access control method 
+via the role column (ADMIN, MANAGER, STAFF, CUSTOMER), which is shown in the ER diagram below (Figure 4.1 below).
+Figure 4.1: 
+Entity-Relationship Diagram (ERD)
+4.3 Backend Architecture Planning
+The backend will be built with 
+Backend migration planning is underway. Express.js and TypeScript would be used to develop the backend in synchronization with the frontend
+4.3.1 Containerization
+ 
+The 
+backend, database, and cache layers will be containerized using Docker, which will create similar environments during the development, staging, and production phases, as shown below in Figure 4.2.
+Figure 4.2 
+Containerization / Deployment Diagram
+4.3.2 Security Strategy
+The mock authentication system will be replaced with a secure setup using Passport.js, 
+bcrypt
+ hashing, Google OAuth, and JWTâ€‘based sessions stored in HTTPâ€‘only cookies.
+4.4 Preliminary Work Results and Feasibility Analysis
+The preliminary work
+ has
+ successfully 
+confirmed
+ the core business logic of the Campsite Management System.
+4.4.1 Results
+ 
+The mock architecture successfully validated key workflows such as authentication, payments, and mapâ€‘based site management. Fabric.js proved effective for visualizing campsite layouts
+.
+4.4.2 Feasibility of Proposed Method
+ 
+The modular architecture has shown strong potential. TypeScript and shared libraries ensure consistency across the system. However, the lack of persistent storage and concurrency control confirms the need for the planned backend migration.
+CHAPTER 5
+ 
+CONCLUSION
+This chapter summarizes the progress made in Project I and outlines the next steps needed to transform the prototype into a productionâ€‘ready system.
+5.1 Project Summary
+The goal of this project was to develop a modern Campsite Management System that simplifies the complexities of campsite operations. Using React 18, TypeScript, and Vite, the project successfully delivered a highâ€‘fidelity prototype that supports administrators, staff, and customers
+.
+The key achievements include:
+An intuitive, visual map editor powered by Fabric.js
+A robust state management setup using 
+Zustand
+ and React Query
+A mock architecture that enabled rapid testing of core workflows
+5.2 Challenges and Limitations
+The current prototype is limited by its clientâ€‘side nature:
+No persistent storage: Data resets on refresh.
+Limited security: Mock authentication is not suitable for production.
+No concurrency control: The system cannot yet prevent simultaneous double bookings.
+5.3 Recommendations for Future Development
+The next major step is implementing the Node.js/Express backend with PostgreSQL. This will introduce persistent storage, secure authentication, and proper concurrency handling.
+5.3.1 Backend Migration
+ 
+The next major step is implementing the Node.js/Express backend with PostgreSQL. This 
+h
+will
+ introduce persistent storage, secure authentication, and proper concurrency handling.
+5.3.2 Mobile Application Development
+ 
+Once the backend is in place, a mobile app built with React Native is recommended. This would support features like onâ€‘site checkâ€‘ins, QRâ€‘based entry, and offline map access.
+ 
+REFERENCES
+[1] 
+GetApp
+. "
+ResNexus
+ reviews and pricing." 
+GetApp
+. https://www.getapp.com/hospitality-travel-software/a/reservation-nexus/ (accessed Sep. 6, 2025).
+[2] 
+GetApp
+. "RMS Cloud reviews and pricing." 
+GetApp
+. https://www.getapp.com/hospitality-travel-software/a/rms-hotel/ (accessed Sep. 7, 2025).
+[3] 
+GetApp
+. "WebRezPro reviews and pricing." 
+GetApp
+. https://www.getapp.com/hospitality-travel-software/a/webrezpro/ (accessed Sep. 7, 2025).
+[4] Microsoft. "TypeScript: JavaScript with syntax for types." TypeScript. https://www.typescriptlang.org/ (accessed Dec. 12, 2025).
+[5] Meta Platforms. "React: The library for web and native user interfaces." 
+React.dev
+. https://react.dev/ (accessed Dec. 12, 2025).
+[6] E. You. "Vite: Next generation frontend tooling." 
+Vitejs.dev
+. https://vitejs.dev/ (accessed Dec. 12, 2025).
+[7] 
+Poimandres
+. "
+Zustand
+: A small, fast and scalable 
+bearbones
+ state-management solution." GitHub. https://github.com/pmndrs/zustand (accessed Dec. 12, 2025).
+[8] T. Linsley. "
+TanStack
+ Query: Powerful asynchronous state management." 
+TanStack
+. https://tanstack.com/query/latest (accessed Dec. 12, 2025).
+[9] Fabric.js. "Fabric.js 
+Javascript
+ canvas library." Fabricjs.com. http://fabricjs.com/ (accessed Dec. 12, 2025).
+[10] 
+OpenJS
+ Foundation. "Node.js: JavaScript runtime built on Chrome's V8 JavaScript engine." Node.js. https://nodejs.org/en (accessed Dec. 12, 2025).
+[11] PostgreSQL Global Development Group. "PostgreSQL: The world's most advanced 
+open source
+ relational database." PostgreSQL.org. https://www.postgresql.org/ (accessed Dec. 12, 2025)
+.
