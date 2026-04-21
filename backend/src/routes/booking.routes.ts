@@ -13,6 +13,7 @@ import {
   updateBookingSchema,
   updateGuestsSchema
 } from '@/middleware/validate';
+import socketService from '@/services/socket.service';
 
 const router = Router();
 const prisma = getPrismaClient();
@@ -799,6 +800,17 @@ router.post('/', authenticate, validateBody(createBookingSchema), async (req: Re
     const booking = await bookingService.createBooking({
       ...req.body,
       userId: req.user!.id
+    });
+
+    // Notify all connected staff/admin/manager clients so the booking calendar updates in real-time
+    socketService.emit('booking:created', {
+      id: booking.id,
+      userId: booking.userId,
+      siteId: booking.siteId,
+      status: booking.status,
+      checkInDate: booking.checkInDate,
+      checkOutDate: booking.checkOutDate,
+      bookingNumber: (booking as any).bookingNumber,
     });
 
     res.status(201).json({
