@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CreditCard, Ban, FileText, MapPin } from 'lucide-react';
 import { getBookingById, cancelBooking, calculateCancellationRefund, type CancellationRefund } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
-import { BookingStatus, PaymentStatus } from '@/types';
+import { BookingStatus, PaymentStatus as BookingPaymentStatus } from '@/types';
 import Button from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
@@ -12,6 +12,8 @@ import { PaymentModal } from '@/features/payments/components/PaymentModal';
 import { useUIStore } from '@/stores/uiStore';
 import { CURRENCY_SYMBOL } from '@/utils/currency';
 import { BookingDetailsCard, HelpSidebarCard } from '@/features/bookings/components';
+import { getMockBookingPayments } from '@/features/payments/services/mockCurrentPayments';
+import { PaymentStatus as TransactionPaymentStatus } from '@/features/payments/types/payment.types';
 
 const CustomerBookingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,17 +26,63 @@ const CustomerBookingDetailPage: React.FC = () => {
 
   const { data: booking, isLoading, error: bookingError } = useQuery({
     queryKey: queryKeys.bookings.detail(id!),
-    queryFn: () => getBookingById(id!),
+    queryFn: async () => {
+      const fetchedBooking = await getBookingById(id!);
+      const mockPayments = getMockBookingPayments(id!);
+      const successfulMockPayments = mockPayments.filter(payment => payment.status === TransactionPaymentStatus.SUCCEEDED);
+
+      if (successfulMockPayments.length === 0) {
+        return fetchedBooking;
+      }
+
+      const mockPaidAmountMajor = successfulMockPayments.reduce((sum, payment) => sum + (payment.amount / 100), 0);
+      const mergedPaidAmount = Math.min(
+        Math.max(fetchedBooking.paidAmount, mockPaidAmountMajor),
+        fetchedBooking.totalAmount
+      );
+      const isFullyPaid = mergedPaidAmount >= fetchedBooking.totalAmount;
+      const preserveTerminalStatus =
+        fetchedBooking.status === BookingStatus.CANCELLED ||
+        fetchedBooking.status === BookingStatus.CHECKED_IN ||
+        fetchedBooking.status === BookingStatus.CHECKED_OUT ||
+        fetchedBooking.status === BookingStatus.NO_SHOW;
+      const preserveTerminalPaymentStatus =
+        fetchedBooking.paymentStatus === BookingPaymentStatus.REFUNDED ||
+        fetchedBooking.paymentStatus === BookingPaymentStatus.FAILED;
+
+      return {
+        ...fetchedBooking,
+        paidAmount: mergedPaidAmount,
+        paymentStatus: preserveTerminalPaymentStatus
+          ? fetchedBooking.paymentStatus
+          : isFullyPaid
+            ? BookingPaymentStatus.PAID
+            : BookingPaymentStatus.PARTIAL,
+        status: preserveTerminalStatus
+          ? fetchedBooking.status
+          : isFullyPaid
+            ? BookingStatus.CONFIRMED
+            : fetchedBooking.status,
+      };
+    },
     enabled: !!id,
   });
 
   const cancelMutation = useMutation({
     mutationFn: (reason?: string) => cancelBooking(id!, reason),
     onSuccess: () => {
+      queryClient.setQueryData(queryKeys.bookings.detail(id!), (previous: unknown) => {
+        if (!previous || typeof previous !== 'object') return previous;
+        return {
+          ...(previous as Record<string, unknown>),
+          status: BookingStatus.CANCELLED,
+        };
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(id!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.myBookings() });
       setShowCancelDialog(false);
       showToast('Booking cancelled successfully', 'success');
+      navigate('/customer/bookings');
     },
     onError: (error) => {
       showToast(
@@ -48,7 +96,28 @@ const CustomerBookingDetailPage: React.FC = () => {
     if (!booking) return;
     try {
       const refund = await calculateCancellationRefund(booking.id);
-      setRefundInfo(refund);
+      const shouldUseDisplayedPaidAmount =
+        refund.refundAmount <= 0 &&
+        booking.paidAmount > 0 &&
+        refund.refundPercentage > 0;
+      const normalizedRefund = shouldUseDisplayedPaidAmount
+        ? {
+            ...refund,
+            refundAmount: Number(
+              ((booking.paidAmount * refund.refundPercentage) / 100).toFixed(2)
+            ),
+            cancellationFee: Number(
+              (
+                booking.paidAmount -
+                (booking.paidAmount * refund.refundPercentage) / 100
+              ).toFixed(2)
+            ),
+            reason:
+              refund.reason ||
+              `Cancellation policy applies ${refund.refundPercentage}% refund based on check-in date proximity.`,
+          }
+        : refund;
+      setRefundInfo(normalizedRefund);
       setShowCancelDialog(true);
     } catch (error) {
       console.error('Error calculating refund:', error);
@@ -90,7 +159,7 @@ const CustomerBookingDetailPage: React.FC = () => {
   }
 
   const canCancel = booking.status === BookingStatus.PENDING || booking.status === BookingStatus.CONFIRMED;
-  const needsPayment = booking.paymentStatus === PaymentStatus.PENDING || booking.paymentStatus === PaymentStatus.PARTIAL;
+  const needsPayment = booking.paymentStatus === BookingPaymentStatus.PENDING || booking.paymentStatus === BookingPaymentStatus.PARTIAL;
   const nights = Math.ceil(
     (new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime()) /
     (1000 * 60 * 60 * 24)

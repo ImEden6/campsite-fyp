@@ -167,18 +167,39 @@ export function useMapEditor(options: UseMapEditorOptions): UseMapEditorReturn {
 
     // Get map info for sizing
     const currentMap = useMapStore((state) => state.currentMap);
+    /** World size matches the background image footprint, not a larger gridBounds (avoids empty canvas margins). */
     const mapSize = useMemo(() => {
-        const gb = currentMap?.gridBounds;
-        const img = currentMap?.imageSize;
+        const m = currentMap;
+        if (!m) {
+            return { width: 1000, height: 800 };
+        }
+        const bg = m.backgroundLayer;
+        if (bg?.size?.width && bg?.size?.height) {
+            const px = bg.position?.x ?? 0;
+            const py = bg.position?.y ?? 0;
+            return {
+                width: Math.max(1, Math.ceil(px + bg.size.width)),
+                height: Math.max(1, Math.ceil(py + bg.size.height)),
+            };
+        }
+        const img = m.imageSize;
+        if (img?.width && img?.height) {
+            return { width: img.width, height: img.height };
+        }
+        const gb = m.gridBounds;
         return {
-            width: gb?.width ?? img?.width ?? 1000,
-            height: gb?.height ?? img?.height ?? 800,
+            width: gb?.width ?? 1000,
+            height: gb?.height ?? 800,
         };
     }, [
-        currentMap?.gridBounds?.width,
-        currentMap?.gridBounds?.height,
+        currentMap?.backgroundLayer?.size?.width,
+        currentMap?.backgroundLayer?.size?.height,
+        currentMap?.backgroundLayer?.position?.x,
+        currentMap?.backgroundLayer?.position?.y,
         currentMap?.imageSize?.width,
         currentMap?.imageSize?.height,
+        currentMap?.gridBounds?.width,
+        currentMap?.gridBounds?.height,
     ]);
 
     const useWorldCanvas =

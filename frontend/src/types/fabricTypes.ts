@@ -187,6 +187,8 @@ export interface ModuleData {
     moduleType?: string;
     isGrid?: boolean;
     isLockIcon?: boolean;
+    /** Lucide type icon group inside a module Fabric group */
+    isModuleTypeIcon?: boolean;
     isBackground?: boolean;
     isGuide?: boolean;
     guideId?: string;
@@ -373,8 +375,8 @@ export const ZOOM_OUT_FACTOR = 0.9;
 /** Default grid size in pixels */
 export const DEFAULT_GRID_SIZE = 20;
 
-/** Fit-to-screen padding factor */
-export const FIT_TO_SCREEN_PADDING = 0.9;
+/** Fit-to-screen padding factor (1 = flush; smaller values leave canvas background visible as a border) */
+export const FIT_TO_SCREEN_PADDING = 1;
 
 /** Opacity for locked modules */
 export const OPACITY_LOCKED = 0.85;

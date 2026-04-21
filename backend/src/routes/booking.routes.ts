@@ -154,6 +154,50 @@ function transformBookingForResponse<T extends BookingWithGuestCounts>(booking: 
   };
 }
 
+interface CancellationRefundResponse {
+  refundAmount: number;
+  refundPercentage: number;
+  cancellationFee: number;
+  reason: string;
+}
+
+function computeCancellationRefund(booking: { checkInDate: Date; paidAmount: number; totalAmount: number; paymentStatus?: string }): CancellationRefundResponse {
+  const now = Date.now();
+  const checkInAt = booking.checkInDate.getTime();
+  const msUntilCheckIn = Math.max(checkInAt - now, 0);
+  const daysUntilCheckIn = msUntilCheckIn / (1000 * 60 * 60 * 24);
+
+  // Simple, deterministic policy for customer-facing pre-check:
+  // - >= 7 days: full refund
+  // - >= 2 days: 90% refund
+  // - < 2 days: 75% refund
+  const refundPercentage =
+    daysUntilCheckIn >= 7 ? 100 : daysUntilCheckIn >= 2 ? 90 : 75;
+
+  // Some legacy rows can have paymentStatus=PAID while paidAmount stayed at 0.
+  // In that case, use totalAmount as the refundable base to avoid showing RM 0.
+  const normalizedPaidAmount =
+    booking.paidAmount > 0
+      ? booking.paidAmount
+      : booking.paymentStatus === 'PAID'
+        ? booking.totalAmount
+        : 0;
+
+  const paidAmount = Math.max(normalizedPaidAmount, 0);
+  const refundAmount = Number(((paidAmount * refundPercentage) / 100).toFixed(2));
+  const cancellationFee = Number((paidAmount - refundAmount).toFixed(2));
+
+  return {
+    refundAmount,
+    refundPercentage,
+    cancellationFee,
+    reason:
+      paidAmount <= 0
+        ? 'No payment recorded yet. Cancelling now will not incur a refund or fee.'
+        : `Cancellation policy applies ${refundPercentage}% refund based on check-in date proximity.`,
+  };
+}
+
 // ============================================================================
 // ROUTES
 // ============================================================================
@@ -293,14 +337,23 @@ router.get('/my-bookings', authenticate, async (req: Request, res: Response, nex
       },
     });
 
-    const transformedBookings = bookings.map(booking => ({
-      ...booking,
-      guests: {
-        adults: booking.adultGuests,
-        children: booking.childGuests,
-        pets: booking.petGuests,
-      },
-    }));
+    const now = Date.now();
+    const transformedBookings = bookings.map(booking => {
+      const derivedStatus =
+        booking.status === 'CHECKED_IN' && new Date(booking.checkOutDate).getTime() < now
+          ? 'CHECKED_OUT'
+          : booking.status;
+
+      return {
+        ...booking,
+        status: derivedStatus,
+        guests: {
+          adults: booking.adultGuests,
+          children: booking.childGuests,
+          pets: booking.petGuests,
+        },
+      };
+    });
 
     res.json({
       success: true,
@@ -308,6 +361,207 @@ router.get('/my-bookings', authenticate, async (req: Request, res: Response, nex
     });
   } catch (error) {
     logger.error('Failed to retrieve user bookings', error);
+    next(error);
+  }
+});
+
+/**
+ * GET /bookings/:id/refund-calculation
+ * Calculate potential refund prior to cancellation
+ */
+router.get('/:id/refund-calculation', authenticate, authorizeBookingOwnership, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const booking = await prisma.booking.findUnique({
+      where: { id: id as string },
+      select: {
+        id: true,
+        checkInDate: true,
+        paidAmount: true,
+        totalAmount: true,
+        paymentStatus: true,
+        status: true,
+      },
+    });
+
+    if (!booking) {
+      throw new ApiError(404, 'Booking not found');
+    }
+
+    if (booking.status === 'CANCELLED') {
+      return res.json({
+        success: true,
+        data: {
+          refundAmount: 0,
+          refundPercentage: 0,
+          cancellationFee: 0,
+          reason: 'Booking is already cancelled.',
+        },
+      });
+    }
+
+    const refund = computeCancellationRefund(booking);
+
+    res.json({
+      success: true,
+      data: refund,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /bookings/:id/cancel
+ * Cancel booking and return refund details
+ */
+router.post('/:id/cancel', authenticate, authorizeBookingOwnership, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: id as string },
+      select: {
+        id: true,
+        status: true,
+        checkInDate: true,
+        paidAmount: true,
+        totalAmount: true,
+        paymentStatus: true,
+        notes: true,
+      },
+    });
+
+    if (!booking) {
+      throw new ApiError(404, 'Booking not found');
+    }
+
+    if (booking.status === 'CANCELLED') {
+      // Treat repeated cancel requests as idempotent success for safer UX.
+      const alreadyCancelled = await prisma.booking.findUniqueOrThrow({
+        where: { id: id as string },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              phone: true,
+            },
+          },
+          site: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              basePrice: true,
+              description: true,
+              amenities: true,
+            },
+          },
+          vehicles: true,
+          guests: true,
+          equipmentReservations: {
+            include: {
+              equipment: true,
+            },
+          },
+          payments: true,
+        },
+      });
+
+      return res.json({
+        success: true,
+        data: {
+          ...alreadyCancelled,
+          guests: {
+            adults: alreadyCancelled.adultGuests,
+            children: alreadyCancelled.childGuests,
+            pets: alreadyCancelled.petGuests,
+          },
+          guestDetails: alreadyCancelled.guests,
+        },
+        meta: {
+          refund: {
+            refundAmount: 0,
+            refundPercentage: 0,
+            cancellationFee: 0,
+            reason: 'Booking is already cancelled.',
+          },
+        },
+      });
+    }
+
+    if (!['PENDING', 'CONFIRMED'].includes(booking.status)) {
+      throw new ApiError(400, 'Only pending or confirmed bookings can be cancelled');
+    }
+
+    const refund = computeCancellationRefund(booking);
+    const updatedBooking = await prisma.booking.update({
+      where: { id: id as string },
+      data: {
+        status: 'CANCELLED',
+        paymentStatus: booking.paidAmount > 0 ? 'REFUNDED' : 'PENDING',
+        notes: reason
+          ? [booking.notes, `Cancellation reason: ${reason}`].filter(Boolean).join('\n')
+          : booking.notes,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
+        },
+        site: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            basePrice: true,
+            description: true,
+            amenities: true,
+          },
+        },
+        vehicles: true,
+        guests: true,
+        equipmentReservations: {
+          include: {
+            equipment: true,
+          },
+        },
+        payments: true,
+      },
+    });
+
+    logger.info('Booking cancelled', {
+      bookingId: updatedBooking.id,
+      userId: req.user?.id,
+      refundAmount: refund.refundAmount,
+      refundPercentage: refund.refundPercentage,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        ...updatedBooking,
+        guests: {
+          adults: updatedBooking.adultGuests,
+          children: updatedBooking.childGuests,
+          pets: updatedBooking.petGuests,
+        },
+        guestDetails: updatedBooking.guests,
+      },
+      meta: {
+        refund,
+      },
+    });
+  } catch (error) {
     next(error);
   }
 });

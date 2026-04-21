@@ -110,6 +110,9 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
   const canCancel = booking.status === 'CONFIRMED' || booking.status === 'PENDING';
   const canViewQRCode = booking.status === 'CONFIRMED' || booking.status === 'CHECKED_IN';
 
+  const sectionCardClass =
+    'border-white/25 dark:border-white/12 bg-white/85 dark:bg-night-surface/70 backdrop-blur-sm';
+
   return (
     <>
       <Modal
@@ -120,7 +123,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
       >
         <div className="space-y-6">
           {/* Status Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-white/12">
             <div className="flex items-center gap-3">
               <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
               <Badge className={getPaymentStatusColor(booking.paymentStatus)}>
@@ -136,6 +139,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                     setShowQRCode(true);
                     onViewQRCode?.(booking);
                   }}
+                  className="dark:bg-night-surface-alt/50 dark:border-white/12 dark:text-secondary-100 dark:hover:bg-night-surface-alt/75"
                 >
                   <QrCode size={16} />
                   QR Code
@@ -148,6 +152,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                   setShowReceipt(true);
                   onDownloadReceipt?.(booking);
                 }}
+                className="dark:bg-night-surface-alt/50 dark:border-white/12 dark:text-secondary-100 dark:hover:bg-night-surface-alt/75"
               >
                 <Download size={16} />
                 Receipt
@@ -157,27 +162,27 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
           </div>
 
           {/* Site Information */}
-          <Card>
+          <Card glass className={sectionCardClass}>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                 <MapPin size={18} />
                 Site Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Site Name</p>
-                  <p className="font-medium text-gray-900">{booking.site?.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-secondary-300">Site Name</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">{booking.site?.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Site Type</p>
-                  <p className="font-medium text-gray-900">{booking.site?.type}</p>
+                  <p className="text-sm text-gray-600 dark:text-secondary-300">Site Type</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">{booking.site?.type}</p>
                 </div>
                 {booking.site?.amenities && booking.site.amenities.length > 0 && (
                   <div className="md:col-span-2">
-                    <p className="text-sm text-gray-600 mb-2">Amenities</p>
+                    <p className="text-sm text-gray-600 dark:text-secondary-300 mb-2">Amenities</p>
                     <div className="flex flex-wrap gap-2">
                       {booking.site.amenities.map((amenity, index) => (
-                        <Badge key={index} className="bg-gray-100 text-gray-700">
+                        <Badge key={index} className="bg-gray-100 text-gray-700 dark:bg-night-surface-alt/65 dark:text-secondary-100 dark:border dark:border-white/10">
                           {amenity}
                         </Badge>
                       ))}
@@ -189,30 +194,30 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
           </Card>
 
           {/* Dates and Duration */}
-          <Card>
+          <Card glass className={sectionCardClass}>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                 <Calendar size={18} />
                 Dates
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Check-in</p>
-                  <p className="font-medium text-gray-900">{formatDate(booking.checkInDate)}</p>
+                  <p className="text-sm text-gray-600 dark:text-secondary-300">Check-in</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">{formatDate(booking.checkInDate)}</p>
                   {booking.checkInTime && (
-                    <p className="text-sm text-gray-600">{formatTime(booking.checkInTime)}</p>
+                    <p className="text-sm text-gray-600 dark:text-secondary-300">{formatTime(booking.checkInTime)}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Check-out</p>
-                  <p className="font-medium text-gray-900">{formatDate(booking.checkOutDate)}</p>
+                  <p className="text-sm text-gray-600 dark:text-secondary-300">Check-out</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">{formatDate(booking.checkOutDate)}</p>
                   {booking.checkOutTime && (
-                    <p className="text-sm text-gray-600">{formatTime(booking.checkOutTime)}</p>
+                    <p className="text-sm text-gray-600 dark:text-secondary-300">{formatTime(booking.checkOutTime)}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Duration</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-gray-600 dark:text-secondary-300">Duration</p>
+                  <p className="font-medium text-gray-900 dark:text-primary-100">
                     {calculateNights()} {calculateNights() === 1 ? 'night' : 'nights'}
                   </p>
                 </div>
@@ -221,9 +226,9 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
           </Card>
 
           {/* Guest Information */}
-          <Card>
+          <Card glass className={sectionCardClass}>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                 <Users size={18} />
                 Guests
               </h3>
@@ -252,20 +257,20 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
               </div>
 
               {showGuestDetails && booking.guestDetails && booking.guestDetails.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Guest List</h4>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-white/12">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-primary-100 mb-3">Guest List</h4>
                   <div className="space-y-3">
                     {booking.guestDetails.map((guest, index) => (
-                      <div key={guest.id || index} className="flex justify-between items-start bg-gray-50 p-3 rounded-lg">
+                      <div key={guest.id || index} className="flex justify-between items-start bg-gray-50 dark:bg-night-surface-alt/55 p-3 rounded-lg">
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-primary-100">
                             {guest.firstName} {guest.lastName}
                           </p>
-                          <div className="text-sm text-gray-500 space-y-0.5">
+                          <div className="text-sm text-gray-500 dark:text-secondary-300 space-y-0.5">
                             <p>
                               {guest.type}
                               {guest.isPrimary && (
-                                <Badge className="ml-2 bg-blue-100 text-blue-800 text-xs">Primary</Badge>
+                                <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-secondary-500/25 dark:text-secondary-100 dark:border dark:border-secondary-400/40 text-xs">Primary</Badge>
                               )}
                             </p>
                             {guest.email && <p>{guest.email}</p>}
@@ -282,20 +287,20 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
 
           {/* Vehicles */}
           {booking.vehicles && booking.vehicles.length > 0 && (
-            <Card>
+            <Card glass className={sectionCardClass}>
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                   <Car size={18} />
                   Vehicles
                 </h3>
                 <div className="space-y-3">
                   {booking.vehicles.map((vehicle) => (
-                    <div key={vehicle.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={vehicle.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-night-surface-alt/55 rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-900 dark:text-primary-100">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-secondary-300">
                           {vehicle.color} {vehicle.type.toUpperCase()} • {vehicle.licensePlate} ({vehicle.state})
                         </p>
                       </div>
@@ -308,22 +313,22 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
 
           {/* Equipment Rentals */}
           {booking.equipmentReservations && booking.equipmentReservations.length > 0 && (
-            <Card>
+            <Card glass className={sectionCardClass}>
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                   <Package size={18} />
                   Equipment Rentals
                 </h3>
                 <div className="space-y-3">
                   {booking.equipmentReservations.map((rental) => (
-                    <div key={rental.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={rental.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-night-surface-alt/55 rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-900">{rental.equipment?.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-gray-900 dark:text-primary-100">{rental.equipment?.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-secondary-300">
                           Quantity: {rental.quantity} • {formatCurrency(rental.dailyRate || 0)}/day
                         </p>
                       </div>
-                      <p className="font-semibold text-gray-900">{formatCurrency(rental.totalAmount || 0)}</p>
+                      <p className="font-semibold text-gray-900 dark:text-primary-100">{formatCurrency(rental.totalAmount || 0)}</p>
                     </div>
                   ))}
                 </div>
@@ -332,22 +337,22 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
           )}
 
           {/* Payment Summary */}
-          <Card>
+          <Card glass className={sectionCardClass}>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                 <DollarSign size={18} />
                 Payment Summary
               </h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">
+                  <span className="text-gray-600 dark:text-secondary-300">Subtotal</span>
+                  <span className="text-gray-900 dark:text-primary-100">
                     {formatCurrency((booking.totalAmount || 0) - (booking.taxAmount || 0))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">{formatCurrency(booking.taxAmount || 0)}</span>
+                  <span className="text-gray-600 dark:text-secondary-300">Tax</span>
+                  <span className="text-gray-900 dark:text-primary-100">{formatCurrency(booking.taxAmount || 0)}</span>
                 </div>
                 {(booking.discountAmount || 0) > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
@@ -355,13 +360,13 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                     <span>-{formatCurrency(booking.discountAmount || 0)}</span>
                   </div>
                 )}
-                <div className="pt-2 border-t border-gray-200 flex justify-between">
-                  <span className="font-semibold text-gray-900">Total Amount</span>
-                  <span className="font-bold text-gray-900">{formatCurrency(booking.totalAmount || 0)}</span>
+                <div className="pt-2 border-t border-gray-200 dark:border-white/12 flex justify-between">
+                  <span className="font-semibold text-gray-900 dark:text-primary-100">Total Amount</span>
+                  <span className="font-bold text-gray-900 dark:text-primary-100">{formatCurrency(booking.totalAmount || 0)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Paid Amount</span>
-                  <span className="text-gray-900">{formatCurrency(booking.paidAmount || 0)}</span>
+                  <span className="text-gray-600 dark:text-secondary-300">Paid Amount</span>
+                  <span className="text-gray-900 dark:text-primary-100">{formatCurrency(booking.paidAmount || 0)}</span>
                 </div>
                 {(booking.paidAmount || 0) < (booking.totalAmount || 0) && (
                   <div className="flex justify-between text-sm font-semibold text-orange-600">
@@ -375,37 +380,37 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
 
           {/* Special Requests */}
           {booking.specialRequests && (
-            <Card>
+            <Card glass className={sectionCardClass}>
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                   <MessageSquare size={18} />
                   Special Requests
                 </h3>
-                <p className="text-gray-700">{booking.specialRequests}</p>
+                <p className="text-gray-700 dark:text-secondary-200">{booking.specialRequests}</p>
               </div>
             </Card>
           )}
 
           {/* Notes */}
           {booking.notes && (
-            <Card>
+            <Card glass className={sectionCardClass}>
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-primary-100 mb-3 flex items-center gap-2">
                   <FileText size={18} />
                   Notes
                 </h3>
-                <p className="text-gray-700">{booking.notes}</p>
+                <p className="text-gray-700 dark:text-secondary-200">{booking.notes}</p>
               </div>
             </Card>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-white/12">
+            <Button variant="outline" onClick={onClose} className="dark:bg-night-surface-alt/50 dark:border-white/12 dark:text-secondary-100 dark:hover:bg-night-surface-alt/75">
               Close
             </Button>
             {canModify && onModify && (
-              <Button variant="outline" onClick={() => onModify(booking)}>
+              <Button variant="outline" onClick={() => onModify(booking)} className="dark:bg-night-surface-alt/50 dark:border-white/12 dark:text-secondary-100 dark:hover:bg-night-surface-alt/75">
                 <Edit size={16} />
                 Modify Booking
               </Button>
@@ -414,7 +419,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
               <Button
                 variant="outline"
                 onClick={() => onCancel(booking)}
-                className="text-red-600 hover:bg-red-50"
+                className="text-red-600 hover:bg-red-50 dark:text-red-300 dark:border-red-400/30 dark:bg-red-500/10 dark:hover:bg-red-500/20"
               >
                 <XCircle size={16} />
                 Cancel Booking

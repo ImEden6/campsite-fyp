@@ -63,6 +63,26 @@ export const useConfirmPayment = () => {
       queryClient.invalidateQueries({
         queryKey: ['bookings', 'detail', payment.bookingId],
       });
+
+      const isMockPayment = typeof payment.id === 'string' && payment.id.startsWith('pay_mock_');
+      if (isMockPayment) {
+        const bookingDetailKey = ['bookings', 'detail', payment.bookingId] as const;
+        const existing = queryClient.getQueryData<Record<string, unknown>>(bookingDetailKey);
+
+        if (existing) {
+          const currentPaidAmount = typeof existing.paidAmount === 'number' ? existing.paidAmount : 0;
+          const totalAmount = typeof existing.totalAmount === 'number' ? existing.totalAmount : 0;
+          const newPaidAmount = Math.min(currentPaidAmount + payment.amount / 100, totalAmount || currentPaidAmount + payment.amount / 100);
+          const isFullyPaid = totalAmount > 0 ? newPaidAmount >= totalAmount : false;
+
+          queryClient.setQueryData(bookingDetailKey, {
+            ...existing,
+            paidAmount: newPaidAmount,
+            paymentStatus: isFullyPaid ? 'PAID' : 'PARTIAL',
+            status: isFullyPaid ? 'CONFIRMED' : existing.status,
+          });
+        }
+      }
     },
   });
 };

@@ -18,6 +18,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [renderPosition, setRenderPosition] = useState({ x: 0, y: 0 });
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -85,11 +86,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
       // Adjust for viewport boundaries
       if (placement === 'top' || placement === 'bottom') {
-        adjustedX -= tooltipRect.width / 2;
-        if (adjustedX < 8) adjustedX = 8;
-        if (adjustedX + tooltipRect.width > window.innerWidth - 8) {
-          adjustedX = window.innerWidth - tooltipRect.width - 8;
-        }
+        const halfW = tooltipRect.width / 2;
+        const minAnchorX = 8 + halfW;
+        const maxAnchorX = window.innerWidth - 8 - halfW;
+        if (adjustedX < minAnchorX) adjustedX = minAnchorX;
+        if (adjustedX > maxAnchorX) adjustedX = maxAnchorX;
 
         if (placement === 'top') {
           adjustedY -= tooltipRect.height + 8;
@@ -97,11 +98,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
           adjustedY += 8;
         }
       } else {
-        adjustedY -= tooltipRect.height / 2;
-        if (adjustedY < 8) adjustedY = 8;
-        if (adjustedY + tooltipRect.height > window.innerHeight - 8) {
-          adjustedY = window.innerHeight - tooltipRect.height - 8;
-        }
+        const halfH = tooltipRect.height / 2;
+        const minAnchorY = 8 + halfH;
+        const maxAnchorY = window.innerHeight - 8 - halfH;
+        if (adjustedY < minAnchorY) adjustedY = minAnchorY;
+        if (adjustedY > maxAnchorY) adjustedY = maxAnchorY;
 
         if (placement === 'left') {
           adjustedX -= tooltipRect.width + 8;
@@ -110,7 +111,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         }
       }
 
-      setPosition({ x: adjustedX, y: adjustedY });
+      setRenderPosition({ x: adjustedX, y: adjustedY });
     }
   }, [isVisible, placement, position]);
 
@@ -127,8 +128,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
       ref={tooltipRef}
       className="fixed z-[110] px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-night-surface rounded-md shadow-lg pointer-events-none whitespace-nowrap"
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: `${renderPosition.x}px`,
+        top: `${renderPosition.y}px`,
         transform: placement === 'top' || placement === 'bottom'
           ? 'translateX(-50%)'
           : 'translateY(-50%)',

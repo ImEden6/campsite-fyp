@@ -40,10 +40,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(value || new Date());
   const containerRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedInput = containerRef.current?.contains(target);
+      const clickedCalendar = calendarRef.current?.contains(target);
+
+      if (!clickedInput && !clickedCalendar) {
         setIsOpen(false);
       }
     };
@@ -126,6 +131,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <div className="fixed inset-0 z-[100] pointer-events-none">
           <div className="absolute left-0 top-0 w-full h-full" onClick={() => setIsOpen(false)} />
           <div 
+            ref={calendarRef}
             className="absolute mt-1 w-72 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-night-surface p-4 shadow-xl pointer-events-auto"
             style={{ 
               left: containerRef.current ? containerRef.current.getBoundingClientRect().left : 'auto',

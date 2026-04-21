@@ -29,6 +29,10 @@ export const dateSchema = z.string().datetime({ message: 'Invalid date format. U
 export const cuidSchema = z.string().cuid({ message: 'Invalid ID format' });
 export const emailSchema = z.string().email({ message: 'Invalid email format' });
 export const phoneSchema = z.string().min(10, 'Phone must be at least 10 characters');
+const isoDateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'Invalid date format. Use YYYY-MM-DD or ISO 8601 format.',
+});
+const bookingDateSchema = z.union([dateSchema, isoDateOnlySchema]);
 
 // ============================================================
 // Auth Schemas
@@ -118,6 +122,9 @@ export const createPaymentIntentSchema = z.object({
             .min(0.50, 'Amount must be at least $0.50')
             .max(999999.99, 'Amount cannot exceed $999,999.99')
     ),
+    currency: z.string().optional(),
+    description: z.string().optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
     idempotencyKey: z.string().uuid({ message: 'Invalid idempotency key format' }).optional(),
 }).strict();
 
@@ -147,13 +154,16 @@ export type GuestInputValidated = z.infer<typeof guestInputSchema>;
 // ============================================================
 
 export const createBookingSchema = z.object({
-    siteId: cuidSchema,
-    checkInDate: dateSchema,
-    checkOutDate: dateSchema,
+    siteId: z.string().min(1, 'Site ID is required'),
+    checkInDate: bookingDateSchema,
+    checkOutDate: bookingDateSchema,
     adultGuests: z.number().int().min(1, 'At least 1 adult guest is required'),
     childGuests: z.number().int().min(0, 'Child guests cannot be negative'),
     petGuests: z.number().int().min(0).optional().default(0),
     guests: z.array(guestInputSchema).optional(),
+    specialRequests: z.string().optional(),
+    vehicles: z.array(z.unknown()).optional(),
+    equipmentReservations: z.array(z.unknown()).optional(),
 }).strict().refine(
     (data) => new Date(data.checkInDate) < new Date(data.checkOutDate),
     { message: 'Check-in date must be before check-out date', path: ['checkInDate'] }
@@ -162,8 +172,8 @@ export const createBookingSchema = z.object({
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
 export const updateBookingSchema = z.object({
-    checkInDate: dateSchema.optional(),
-    checkOutDate: dateSchema.optional(),
+    checkInDate: bookingDateSchema.optional(),
+    checkOutDate: bookingDateSchema.optional(),
     adultGuests: z.number().int().min(1).optional(),
     childGuests: z.number().int().min(0).optional(),
     petGuests: z.number().int().min(0).optional(),

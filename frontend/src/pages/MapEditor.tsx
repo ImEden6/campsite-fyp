@@ -151,7 +151,7 @@ const MapEditorWorkspace: React.FC = () => {
             (bg?.imageData && String(bg.imageData).trim()) || currentMap.imageUrl || '';
         if (!imageSource) return;
 
-        const size = bg?.size ?? currentMap.gridBounds ?? currentMap.imageSize;
+        const size = bg?.size ?? currentMap.imageSize ?? currentMap.gridBounds;
         const layerForRender: BackgroundLayer = {
             imageData: imageSource,
             position: bg?.position ?? { x: 0, y: 0 },
@@ -444,13 +444,16 @@ const MapEditorWorkspace: React.FC = () => {
                     <Tooltip content="Toggle Properties (or right-click a module)" placement="bottom">
                         <button
                             type="button"
-                            disabled={selectedCount === 0}
+                            aria-disabled={selectedCount === 0}
+                            aria-label="Toggle Properties Panel"
                             onClick={() => {
                                 if (selectedCount === 0) return;
                                 setShowPropertiesPanel((v) => !v);
                             }}
                             className={
-                                selectedCount > 0 && showPropertiesPanel ? toolBtnActive : toolBtnBase
+                                selectedCount > 0 && showPropertiesPanel
+                                    ? toolBtnActive
+                                    : `${toolBtnBase} ${selectedCount === 0 ? 'opacity-40 cursor-not-allowed' : ''}`
                             }
                         >
                             <Settings className="w-4 h-4" />

@@ -15,7 +15,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { createModuleObject, updateModuleObject } from '@/utils/moduleFactory';
 import type { FabricCanvas, FabricObject, FabricGroup } from '@/types/fabricTypes';
-import { isGridObject, isBackgroundObject, OPACITY_LOCKED, OPACITY_HIDDEN, OPACITY_LOCK_ICON, getModuleId } from '@/types/fabricTypes';
+import { isGridObject, isBackgroundObject, OPACITY_HIDDEN, getModuleId } from '@/types/fabricTypes';
 import type { AnyModule } from '@/types';
  
  const EMPTY_MODULES: AnyModule[] = [];
@@ -219,29 +219,16 @@ export function useModuleRenderer(
      */
     const applyVisualState = useCallback((obj: FabricGroup, module: AnyModule) => {
         const isHidden = !module.visible;
-        const isLocked = module.locked;
 
-        // Set opacity
-        if (isHidden) {
-            obj.opacity = OPACITY_HIDDEN;
-        } else if (isLocked) {
-            obj.opacity = OPACITY_LOCKED;
-        } else {
-            obj.opacity = 1;
-        }
-
-        // Locked modules must stay selectable so users can click / right-click to unlock.
-        // Movement & scale are blocked via Fabric lock* flags on the group (see moduleFactory).
+        obj.opacity = isHidden ? OPACITY_HIDDEN : 1;
         obj.selectable = !isHidden;
         obj.evented = !isHidden;
 
-        // Handle lock icon visibility in group
-        const children = obj.getObjects?.() ?? [];
-        for (const child of children) {
-            if (child.data?.isLockIcon) {
-                child.opacity = isLocked ? OPACITY_LOCK_ICON : 0;
-            }
-        }
+        obj.set?.({
+            hasControls: !isHidden,
+            hasBorders: true,
+            borderScaleFactor: 1,
+        });
 
         obj.setCoords?.();
     }, []);

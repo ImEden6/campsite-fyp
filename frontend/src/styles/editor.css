@@ -889,12 +889,73 @@
 .dark .module-toolbox,
 .dark .properties-panel,
 .dark .layers-panel {
-    --bg-secondary: oklch(0.278 0.03 256.8);
-    --bg-tertiary: oklch(0.373 0.031 259.7);
-    --bg-hover: oklch(0.446 0.026 256.8);
-    --border-color: oklch(0.373 0.031 259.7);
+    --bg-secondary: oklch(0.22 0.02 45 / 0.84);
+    --bg-tertiary: oklch(0.26 0.02 45 / 0.82);
+    --bg-hover: oklch(0.31 0.03 40 / 0.86);
+    --border-color: oklch(0.93 0.01 45 / 0.12);
     --text-primary: oklch(0.985 0.002 247.8);
-    --text-secondary: oklch(0.714 0.019 261.3);
+    --text-secondary: oklch(0.84 0.02 70);
+}
+
+.dark .module-toolbox,
+.dark .properties-panel {
+    backdrop-filter: blur(14px);
+    background: linear-gradient(165deg, oklch(0.24 0.02 43 / 0.92), oklch(0.19 0.02 38 / 0.9));
+    box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.06), 0 12px 28px oklch(0.03 0.01 40 / 0.35);
+}
+
+.dark .module-toolbox__item {
+    background: oklch(0.26 0.02 43 / 0.86);
+    border-color: oklch(1 0 0 / 0.08);
+}
+
+.dark .module-toolbox__item:hover {
+    background: oklch(0.32 0.04 48 / 0.85);
+}
+
+.dark .module-toolbox__item--selected {
+    border-color: color-mix(in srgb, var(--module-color, oklch(0.585 0.204 277.1)) 65%, white);
+    background: color-mix(in oklab, var(--module-color, oklch(0.585 0.204 277.1)) 18%, oklch(0.24 0.02 43 / 0.95));
+}
+
+.dark .module-toolbox__status {
+    background: color-mix(in oklab, oklch(0.62 0.16 46) 16%, oklch(0.22 0.02 40 / 0.9));
+    color: oklch(0.92 0.02 80);
+    border: 1px solid oklch(0.8 0.07 52 / 0.26);
+}
+
+.dark .properties-panel__section-header {
+    color: oklch(0.86 0.02 70);
+}
+
+.dark .properties-panel__section-header:hover {
+    color: oklch(0.96 0.01 90);
+}
+
+.dark .properties-panel__actions button,
+.dark .properties-panel__action--secondary {
+    background: oklch(0.27 0.02 42 / 0.9);
+    border-color: oklch(1 0 0 / 0.12);
+    color: oklch(0.9 0.02 78);
+}
+
+.dark .properties-panel__actions button:hover,
+.dark .properties-panel__action--secondary:hover {
+    background: oklch(0.33 0.04 48 / 0.9);
+    color: oklch(0.98 0.01 92);
+}
+
+.dark .properties-panel__field input,
+.dark .properties-panel__textarea {
+    background: oklch(0.23 0.02 40 / 0.9);
+    border-color: oklch(1 0 0 / 0.14);
+    color: oklch(0.98 0.01 92);
+}
+
+.dark .properties-panel__field input:focus,
+.dark .properties-panel__textarea:focus {
+    border-color: oklch(0.72 0.15 52);
+    box-shadow: 0 0 0 2px oklch(0.72 0.15 52 / 0.24);
 }
 
 .dark .alignment-toolbar,
@@ -1036,13 +1097,14 @@
 
 /* Dark mode for properties panel input fields */
 .dark .properties-panel__field input {
-    background: oklch(0.278 0.03 256.8);
-    border-color: oklch(0.373 0.031 259.7);
-    color: oklch(0.985 0.002 247.8);
+    background: oklch(0.23 0.02 40 / 0.9);
+    border-color: oklch(1 0 0 / 0.14);
+    color: oklch(0.98 0.01 92);
 }
 
 .dark .properties-panel__field input:focus {
-    border-color: var(--accent-color, oklch(0.585 0.204 277.1));
+    border-color: oklch(0.72 0.15 52);
+    box-shadow: 0 0 0 2px oklch(0.72 0.15 52 / 0.24);
 }
 
 .dark .properties-panel__field input::placeholder {
@@ -1050,19 +1112,20 @@
 }
 
 .dark .properties-panel__textarea {
-    background: oklch(0.278 0.03 256.8);
-    border-color: oklch(0.373 0.031 259.7);
-    color: oklch(0.985 0.002 247.8);
+    background: oklch(0.23 0.02 40 / 0.9);
+    border-color: oklch(1 0 0 / 0.14);
+    color: oklch(0.98 0.01 92);
 }
 
 .dark .properties-panel__actions button {
-    background: oklch(0.373 0.031 259.7);
-    color: oklch(0.714 0.019 261.3);
+    background: oklch(0.27 0.02 42 / 0.9);
+    border-color: oklch(1 0 0 / 0.12);
+    color: oklch(0.9 0.02 78);
 }
 
 .dark .properties-panel__actions button:hover {
-    background: oklch(0.446 0.026 256.8);
-    color: oklch(0.985 0.002 247.8);
+    background: oklch(0.33 0.04 48 / 0.9);
+    color: oklch(0.98 0.01 92);
 }
 
 /* Dark mode for additional properties panel elements */
@@ -1084,11 +1147,11 @@
 }
 
 .dark .properties-panel__section-header {
-    color: oklch(0.714 0.019 261.3);
+    color: oklch(0.86 0.02 70);
 }
 
 .dark .properties-panel__section-header:hover {
-    color: oklch(0.985 0.002 247.8);
+    color: oklch(0.96 0.01 90);
 }
 
 .dark .properties-panel__section {
@@ -1100,14 +1163,14 @@
 }
 
 .dark .properties-panel__action--secondary {
-    background: oklch(0.373 0.031 259.7);
-    border-color: oklch(0.446 0.026 256.8);
-    color: oklch(0.714 0.019 261.3);
+    background: oklch(0.27 0.02 42 / 0.9);
+    border-color: oklch(1 0 0 / 0.12);
+    color: oklch(0.9 0.02 78);
 }
 
 .dark .properties-panel__action--secondary:hover {
-    background: oklch(0.446 0.026 256.8);
-    color: oklch(0.985 0.002 247.8);
+    background: oklch(0.33 0.04 48 / 0.9);
+    color: oklch(0.98 0.01 92);
 }
 
 .dark .properties-panel__delete-confirm {
@@ -1115,14 +1178,14 @@
 }
 
 .dark .properties-panel__delete-confirm-no {
-    background: oklch(0.373 0.031 259.7);
-    border-color: oklch(0.446 0.026 256.8);
-    color: oklch(0.714 0.019 261.3);
+    background: oklch(0.27 0.02 42 / 0.9);
+    border-color: oklch(1 0 0 / 0.12);
+    color: oklch(0.9 0.02 78);
 }
 
 .dark .properties-panel__delete-confirm-no:hover {
-    background: oklch(0.446 0.026 256.8);
-    color: oklch(0.985 0.002 247.8);
+    background: oklch(0.33 0.04 48 / 0.9);
+    color: oklch(0.98 0.01 92);
 }
 
 .dark .properties-panel__field label {

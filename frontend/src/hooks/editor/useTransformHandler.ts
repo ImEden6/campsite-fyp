@@ -17,6 +17,7 @@ import type { FabricCanvas, FabricEvent, FabricObject } from '@/types/fabricType
 import { getModuleId } from '@/types/fabricTypes';
 import type { Command } from '@/commands/Command';
 import { MoveCommand, TransformCommand } from '@/commands';
+import { extractModuleChanges } from '@/utils/moduleFactory';
 
 // ============================================================================
 // TYPES
@@ -61,6 +62,27 @@ export interface UseTransformHandlerReturn {
 function captureObjectState(obj: FabricObject): ObjectStartState | null {
     const moduleId = getModuleId(obj);
     if (!moduleId) return null;
+
+    // Module groups: Fabric group width/height include the type icon bbox — do not use for center↔top-left math.
+    if (obj.type === 'group') {
+        try {
+            const { size } = extractModuleChanges(obj);
+            const sx = obj.scaleX ?? 1;
+            const sy = obj.scaleY ?? 1;
+            return {
+                moduleId,
+                left: obj.left ?? 0,
+                top: obj.top ?? 0,
+                scaleX: sx,
+                scaleY: sy,
+                angle: obj.angle ?? 0,
+                width: Math.max(1, size.width / sx),
+                height: Math.max(1, size.height / sy),
+            };
+        } catch {
+            /* fall through */
+        }
+    }
 
     return {
         moduleId,

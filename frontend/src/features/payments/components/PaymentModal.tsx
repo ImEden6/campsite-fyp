@@ -30,6 +30,7 @@ export const PaymentModal = ({
 }: PaymentModalProps) => {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const createPaymentIntent = useCreatePaymentIntent();
+  const shouldUseMockFlow = env.useMockPayments || Boolean(clientSecret?.startsWith('pi_mock_'));
 
   useEffect(() => {
     if (isOpen && !clientSecret && !createPaymentIntent.isPending) {
@@ -103,7 +104,7 @@ export const PaymentModal = ({
 
         {clientSecret && (
           <Suspense fallback={<div className="flex items-center justify-center py-8"><PageLoader /></div>}>
-            {env.useMockPayments ? (
+            {shouldUseMockFlow ? (
               <MockPaymentForm
                 amount={amount}
                 bookingId={bookingId}

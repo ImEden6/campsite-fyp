@@ -51,7 +51,6 @@ const CURSOR_DEFAULT = 'default';
 const CURSOR_CROSSHAIR = 'crosshair';
 const CURSOR_GRAB = 'grab';
 const CURSOR_GRABBING = 'grabbing';
-const CURSOR_NOT_ALLOWED = 'not-allowed';
 
 // ============================================================================
 // HOOK
@@ -82,7 +81,6 @@ export function useInputHandler(
     const {
         isPanMode = false,
         onAddModule,
-        getModule,
         onPanStart,
         onPanMove,
         onPanEnd,
@@ -93,7 +91,6 @@ export function useInputHandler(
     const activeTool = useEditorStore((state) => state.activeTool);
     const moduleToAdd = useEditorStore((state) => state.moduleToAdd);
     const setModuleToAdd = useEditorStore((state) => state.setModuleToAdd);
-    const isModuleLocked = useEditorStore((state) => state.isModuleLocked);
 
     // Refs for tracking state
     const isPanningRef = useRef(false);
@@ -208,24 +205,10 @@ export function useInputHandler(
         }
     }, [canvas, activeTool, isPanMode, onPanEnd, updateCursor]);
 
-    const handleMouseOver = useCallback((opt: FabricEvent) => {
+    const handleMouseOver = useCallback(() => {
         if (!canvas) return;
-
-        const target = opt.target as FabricObject;
-        if (!target) return;
-
-        // Show not-allowed cursor for locked modules
-        const moduleId = getModuleId(target);
-        if (moduleId && isModuleLocked(moduleId)) {
-            canvas.hoverCursor = CURSOR_NOT_ALLOWED;
-        }
-
-        // Show locked cursor if module data indicates locked
-        const module = moduleId ? getModule?.(moduleId) : null;
-        if (module?.locked) {
-            canvas.hoverCursor = CURSOR_NOT_ALLOWED;
-        }
-    }, [canvas, isModuleLocked, getModule]);
+        updateCursor();
+    }, [canvas, updateCursor]);
 
     const handleMouseOut = useCallback(() => {
         // Reset cursor based on current tool

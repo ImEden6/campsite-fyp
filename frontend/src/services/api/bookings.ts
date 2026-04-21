@@ -12,6 +12,7 @@ import type {
   ApiResponse,
   BookingFilters,
 } from '@/types';
+import { ApiException } from './errors';
 
 
 export interface CreateBookingData {
@@ -176,7 +177,13 @@ export const createBooking = async (bookingData: CreateBookingData): Promise<Boo
       throw new Error('Failed to create booking');
     }
     return response.data;
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiException) {
+      throw new Error(error.message || 'Failed to create booking');
+    }
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
     throw new Error('Failed to create booking');
   }
 };

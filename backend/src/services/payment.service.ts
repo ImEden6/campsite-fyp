@@ -8,8 +8,10 @@ import prisma from '@/database';
 
 class PaymentService {
     private stripe: Stripe;
+    private stripeConfigured: boolean;
 
     constructor() {
+        this.stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
             apiVersion: '2023-10-16', // Use a fixed API version
         });
@@ -28,6 +30,10 @@ class PaymentService {
         try {
             if (!amount || amount <= 0) {
                 throw new ApiError(400, 'Invalid payment amount');
+            }
+
+            if (!this.stripeConfigured) {
+                throw new ApiError(503, 'Stripe not configured');
             }
 
             const paymentIntent = await this.stripe.paymentIntents.create({
@@ -72,6 +78,9 @@ class PaymentService {
             };
         } catch (error) {
             logger.error('Failed to create payment intent', error);
+            if (error instanceof ApiError) {
+                throw error;
+            }
             throw new ApiError(500, 'Failed to initiate payment');
         }
     }

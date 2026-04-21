@@ -4,15 +4,21 @@
  */
 
 import * as fabricImpl from 'fabric';
+import { Point } from 'fabric';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fabric: any = fabricImpl;
+
+type FabricUtil = {
+    makeBoundingBoxFromPoints: (
+        points: Array<{ x: number; y: number }>
+    ) => { left: number; top: number; width: number; height: number };
+};
+const fabricUtil = fabricImpl.util as FabricUtil;
 import type { AnyModule, ModuleType, Position, Size } from '@/types';
 import type { FabricObject, FabricGroup } from '@/types/fabricTypes';
 import {
     hasDataProperty,
-    OPACITY_LOCKED,
     OPACITY_HIDDEN,
-    OPACITY_LOCK_ICON,
 } from '@/types/fabricTypes';
 
 // ============================================================================
@@ -193,34 +199,169 @@ function createIconObjects(elements: IconElement[], strokeColor: string): Fabric
     return iconObjects;
 }
 
-/**
- * Create a lock icon group for locked modules
- * The scale should be applied by the caller based on module dimensions
- * @returns A Fabric Group containing the lock icon, or null if creation fails
- */
-function createLockIcon(): FabricGroup | null {
-    const lockIconElements: IconElement[] = [
-        { type: 'path', d: 'M6 10V8a6 6 0 0 1 12 0v2' },
-        { type: 'path', d: 'M8 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z' },
-    ];
-    const lockIconParts = createIconObjects(lockIconElements, 'oklch(0.551 0.023 264.4)');
+/** Max icon pixel size so Lucide strokes stay inside the module rect (avoids wide Fabric bbox). */
+function moduleTypeIconSize(module: AnyModule): number {
+    const minDimension = Math.min(module.size.width, module.size.height);
+    return Math.min(minDimension * 0.55, module.size.width * 0.42, module.size.height * 0.42, 48);
+}
 
-    if (lockIconParts.length === 0) return null;
+/** Remove legacy map lock overlay children (map editor no longer uses module lock UI). */
+function stripLegacyMapLockOverlays(obj: FabricGroup): void {
+    const snap = [...(obj.getObjects?.() ?? [])];
+    for (const child of snap) {
+        if (hasDataProperty(child) && (child as FabricObjectWithData).data?.isLockIcon) {
+            obj.remove(child);
+        }
+    }
+}
 
-    const lockIconGroup = new fabric.Group(lockIconParts, {
-        originX: 'center',
-        originY: 'center',
-        selectable: false,
-        evented: false,
-        opacity: OPACITY_LOCK_ICON,
-    });
+type FabricObjectWithCenter = FabricObject & {
+    getRelativeCenterPoint?: () => { x: number; y: number };
+};
 
-    if (hasDataProperty(lockIconGroup)) {
-        (lockIconGroup as FabricObject).data = { isLockIcon: true };
+/** True geometric center of the module rect in the parent group's local plane (Fabric handles origin, stroke, angle). */
+function getRectCenterInParent(rect: FabricObject): { x: number; y: number } | null {
+    const g = rect as FabricObjectWithCenter;
+    if (typeof g.getRelativeCenterPoint !== 'function') return null;
+    const p = g.getRelativeCenterPoint();
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return null;
+    return { x: p.x, y: p.y };
+}
+
+/** Center the type icon on the rect — use actual rect position after LayoutManager (not assumed 0,0). */
+function positionModuleTypeIcon(obj: FabricGroup, module: AnyModule): void {
+    const children = obj.getObjects?.() ?? [];
+    const rectObj = children.find((o: FabricObject) => o.type === 'rect') as FabricObject | undefined;
+    let typeIcon = children.find(
+        (o) => hasDataProperty(o) && (o as FabricObjectWithData).data?.isModuleTypeIcon === true
+    ) as FabricGroup | undefined;
+    if (!typeIcon) {
+        typeIcon = children.filter((o) => o.type === 'group')[0] as FabricGroup | undefined;
+    }
+    if (!typeIcon?.set || !rectObj) return;
+
+    const iconSize = moduleTypeIconSize(module);
+    if (iconSize < 16) {
+        typeIcon.set({ visible: false, opacity: 0 });
+        typeIcon.setCoords?.();
+        return;
     }
 
-    lockIconGroup.setCoords();
-    return lockIconGroup as FabricGroup;
+    const fromFabric = getRectCenterInParent(rectObj);
+    const sw = Math.max(0, (rectObj.width ?? 0) * (rectObj.scaleX ?? 1));
+    const sh = Math.max(0, (rectObj.height ?? 0) * (rectObj.scaleY ?? 1));
+    const naiveCx = (rectObj.left ?? 0) + sw / 2;
+    const naiveCy = (rectObj.top ?? 0) + sh / 2;
+    const cx = fromFabric?.x ?? naiveCx;
+    const cy = fromFabric?.y ?? naiveCy;
+    const scaleFactor = iconSize / 24;
+
+    typeIcon.set({
+        visible: true,
+        opacity: 1,
+        left: cx,
+        top: cy,
+        scaleX: scaleFactor,
+        scaleY: scaleFactor,
+    });
+    typeIcon.setCoords?.();
+}
+
+/**
+ * Fabric v6 does not always re-run fit-content layout on child `set`, so the group's
+ * `width`/`height` (used for selection controls) can stay stale. Recompute from all
+ * children in group space (rect + type icon), then clamp to a floor from `module.size`
+ * + stroke padding so the box never shrinks below the module footprint. Parent
+ * `objectCaching: false` avoids cache-layer clipping when this box is tight.
+ */
+function syncModuleGroupBoxFromChildren(obj: FabricGroup, module: AnyModule): void {
+    try {
+    const children = obj.getObjects?.() ?? [];
+    const rectChild = children.find((o: FabricObject) => o.type === 'rect') as FabricObject | undefined;
+    const strokeW = typeof rectChild?.strokeWidth === 'number' ? rectChild.strokeWidth : 1;
+    // Keep floor aligned with painted stroke bounds; previous +3 floor inflated selection box.
+    const pad = Math.max(1, Math.ceil(strokeW));
+    const floorW = Math.max(1, module.size.width + pad);
+    const floorH = Math.max(1, module.size.height + pad);
+
+    const points: Array<{ x: number; y: number }> = [];
+    for (const c of children) {
+        const co = c as FabricObject & {
+            getRelativeCenterPoint?: () => { x: number; y: number };
+            getScaledWidth?: () => number;
+            getScaledHeight?: () => number;
+            angle?: number;
+        };
+        const cp = co.getRelativeCenterPoint?.();
+        if (!cp) continue;
+        const sw =
+            typeof co.getScaledWidth === 'function'
+                ? co.getScaledWidth()
+                : Math.max(0, (co.width ?? 0) * (co.scaleX ?? 1));
+        const sh =
+            typeof co.getScaledHeight === 'function'
+                ? co.getScaledHeight()
+                : Math.max(0, (co.height ?? 0) * (co.scaleY ?? 1));
+        const rad = ((co.angle ?? 0) * Math.PI) / 180;
+        const hw = sw / 2;
+        const hh = sh / 2;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        for (const p of [
+            { x: -hw, y: -hh },
+            { x: hw, y: -hh },
+            { x: hw, y: hh },
+            { x: -hw, y: hh },
+        ]) {
+            points.push({
+                x: cp.x + p.x * cos - p.y * sin,
+                y: cp.y + p.x * sin + p.y * cos,
+            });
+        }
+    }
+    const canvasCxEarly = obj.left ?? 0;
+    const canvasCyEarly = obj.top ?? 0;
+    if (points.length === 0 || typeof fabricUtil?.makeBoundingBoxFromPoints !== 'function') {
+        obj.set({ width: floorW, height: floorH, dirty: true });
+        const oEarly = obj as FabricObject & {
+            setPositionByOrigin?: (pos: InstanceType<typeof Point>, ox: string, oy: string) => void;
+        };
+        oEarly.setPositionByOrigin?.(new Point(canvasCxEarly, canvasCyEarly), 'center', 'center');
+        return;
+    }
+
+    const box = fabricUtil.makeBoundingBoxFromPoints(points);
+    const canvasCx = obj.left ?? 0;
+    const canvasCy = obj.top ?? 0;
+    const w = Math.max(1, box.width, floorW);
+    const h = Math.max(1, box.height, floorH);
+
+    obj.set({
+        width: w,
+        height: h,
+        dirty: true,
+    });
+
+    const o = obj as FabricObject & {
+        setPositionByOrigin?: (pos: InstanceType<typeof Point>, ox: string, oy: string) => void;
+    };
+    o.setPositionByOrigin?.(new Point(canvasCx, canvasCy), 'center', 'center');
+    } catch (err) {
+        console.warn('[syncModuleGroupBoxFromChildren] failed:', err);
+    }
+}
+
+/** When the active object is an ActiveSelection that contains this module, refresh its oCoords after the child group resizes. */
+function refreshCanvasSelectionIfNeeded(obj: FabricGroup): void {
+    const canvas = (
+        obj as FabricObject & { canvas?: { getActiveObject?: () => FabricObject | undefined } }
+    ).canvas;
+    const ao = canvas?.getActiveObject?.();
+    if (!ao || ao === obj) return;
+    const asGroup = ao as FabricGroup;
+    const list = asGroup.getObjects?.() ?? [];
+    if (!list.some((o) => o === obj)) return;
+    (ao as FabricObject).setCoords?.();
 }
 
 /**
@@ -240,12 +381,13 @@ export function createModuleObject(module: AnyModule): FabricGroup {
         ry: 4,
         originX: 'left',
         originY: 'top',
+        left: -module.size.width / 2,
+        top: -module.size.height / 2,
     });
 
-    // Calculate icon size based on module size (icon should fit nicely)
-    const minDimension = Math.min(module.size.width, module.size.height);
-    const iconSize = Math.min(minDimension * 0.6, 48); // Max 48px, 60% of smallest dimension
-    const showIcon = iconSize >= 16; // Only show icon if it's at least 16px
+    // Icon must stay inside the rect footprint so Fabric group bbox matches the module (selection box).
+    const iconSize = moduleTypeIconSize(module);
+    const showIcon = iconSize >= 16;
 
     const objects: FabricObject[] = [rect];
 
@@ -265,6 +407,7 @@ export function createModuleObject(module: AnyModule): FabricGroup {
                 originY: 'center',
                 selectable: false,
                 evented: false,
+                objectCaching: false,
             });
 
             // Calculate the icon group's bounding box to center it properly
@@ -280,6 +423,11 @@ export function createModuleObject(module: AnyModule): FabricGroup {
 
             // Recalculate coordinates after all changes
             iconGroup.setCoords();
+            const iconTagged = iconGroup as FabricObjectWithData;
+            iconTagged.data = {
+                ...(typeof iconTagged.data === 'object' && iconTagged.data ? iconTagged.data : {}),
+                isModuleTypeIcon: true,
+            };
             objects.push(iconGroup);
         }
     }
@@ -296,6 +444,7 @@ export function createModuleObject(module: AnyModule): FabricGroup {
         originX: 'center',
         originY: 'center',
         lockScalingFlip: true,
+        objectCaching: false,
     });
 
     // Store module ID for reference (set after creation for Fabric v6)
@@ -317,7 +466,8 @@ export function createModuleObject(module: AnyModule): FabricGroup {
             x: defaultMtr.x,
             y: defaultMtr.y,
             offsetX: defaultMtr.offsetX,
-            offsetY: defaultMtr.offsetY ?? -40,
+            // Large negative offset inflates the selection outline above the module
+            offsetY: defaultMtr.offsetY ?? -26,
             actionHandler: defaultMtr.actionHandler,
             cursorStyleHandler: () => rotateCursor,
             actionName: 'rotate',
@@ -379,55 +529,28 @@ export function createModuleObject(module: AnyModule): FabricGroup {
         }
     }
 
-    // Apply locked state - prevent transformation but allow selection
-    if (module.locked) {
-        // Add dashed border for locked modules
-        rect.set({
-            strokeDashArray: [5, 5],
-            strokeWidth: 2,
-        });
-
-        // Add semi-transparent lock icon overlay in center
-        const lockIconGroup = createLockIcon();
-
-        if (lockIconGroup) {
-            const lockIconSize = Math.min(minDimension * 0.4, 32); // Smaller than module icon
-            const lockScaleFactor = lockIconSize / 24;
-
-            lockIconGroup.set({
-                left: module.size.width / 2,
-                top: module.size.height / 2,
-                scaleX: lockScaleFactor,
-                scaleY: lockScaleFactor,
-            });
-            lockIconGroup.setCoords();
-            objects.push(lockIconGroup);
-        }
-
-        group.set({
-            selectable: true, // Keep selectable for properties panel
-            evented: true,
-            // Prevent all transformations
-            lockMovementX: true,
-            lockMovementY: true,
-            lockRotation: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            // Visual indicator - 80-90% opacity
-            opacity: OPACITY_LOCKED,
-        });
-    }
-
-    // Apply visibility - semi-transparent ghost mode
+    // Hidden modules: ghost opacity (map editor no longer applies lock visuals on canvas)
     if (!module.visible) {
         group.set({
-            // Use semi-transparent ghost mode instead of fully hidden
             opacity: OPACITY_HIDDEN,
-            // Keep it selectable and visible for interaction
             selectable: true,
             evented: true,
         });
     }
+
+    group.set({
+        hasControls: true,
+        hasBorders: true,
+        borderScaleFactor: 1,
+    });
+
+    // Re-center type icon and refresh group width/height for correct first-paint selection bounds.
+    positionModuleTypeIcon(group, module);
+    syncModuleGroupBoxFromChildren(group, module);
+    group.getObjects?.().forEach((ch: FabricObject) => {
+        ch.setCoords?.();
+    });
+    group.setCoords();
 
     return group;
 }
@@ -470,6 +593,8 @@ export function updateModuleObject(obj: FabricGroup, module: AnyModule): void {
         );
     }
 
+    stripLegacyMapLockOverlays(obj);
+
     // Convert top-left position to center position (since origin is center)
     const centerX = module.position.x + module.size.width / 2;
     const centerY = module.position.y + module.size.height / 2;
@@ -480,145 +605,53 @@ export function updateModuleObject(obj: FabricGroup, module: AnyModule): void {
         angle: module.rotation ?? 0,
     });
 
-    // Update size by scaling the group
-    const currentWidth = obj.width || 1;
-    const currentHeight = obj.height || 1;
-
-    // Validate current dimensions
-    if (currentWidth <= 0 || currentHeight <= 0 ||
-        !Number.isFinite(currentWidth) || !Number.isFinite(currentHeight)) {
-        console.warn('[updateModuleObject] Invalid current object dimensions:', {
-            width: currentWidth,
-            height: currentHeight,
-            moduleId: module.id
-        });
-        // Use module size directly as fallback
-        obj.set({
+    // Rect is the module footprint; scale the group from rect size (not obj.width — includes icon bbox).
+    const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
+    if (rectObj?.set) {
+        rectObj.set({
+            width: module.size.width,
+            height: module.size.height,
+            left: -module.size.width / 2,
+            top: -module.size.height / 2,
             scaleX: 1,
             scaleY: 1,
+            strokeDashArray: undefined,
+            strokeWidth: 1,
         });
-    } else {
-        obj.set({
-            scaleX: module.size.width / currentWidth,
-            scaleY: module.size.height / currentHeight,
-        });
+        rectObj.setCoords?.();
     }
 
-    // Apply locked state - prevent transformation but allow selection
-    if (module.locked) {
-        // Update border to dashed for locked modules
-        const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
-        if (rectObj && rectObj.set) {
-            rectObj.set({
-                strokeDashArray: [5, 5],
-                strokeWidth: 2,
-            });
-        }
+    // Module footprint lives on the inner rect; group scale must stay 1 or selection/icon math drifts.
+    obj.set({ scaleX: 1, scaleY: 1 });
 
-        // Add or update lock icon overlay if not already present
-        const existingLockIcon = obj.getObjects().find((o: FabricObject) => {
-            if (hasDataProperty(o)) {
-                return o.data?.isLockIcon === true;
-            }
-            // Fallback: check if it's a group at center position with lock-like structure
-            if (o.type === 'group' && o.left === 0 && o.top === 0) {
-                const group = o as FabricGroup;
-                const paths = group.getObjects().filter((obj: FabricObject) => obj.type === 'path');
-                if (paths.length === 2) {
-                    // Likely a lock icon - mark it
-                    if (hasDataProperty(group)) {
-                        if (!group.data) group.data = {};
-                        group.data.isLockIcon = true;
-                    }
-                    return true;
-                }
-            }
-            return false;
-        });
+    // Clamp group box to module footprint first (avoids clip while icon coords may still be stale), then re-center icon, then sync again for tight controls.
+    syncModuleGroupBoxFromChildren(obj, module);
+    positionModuleTypeIcon(obj, module);
+    syncModuleGroupBoxFromChildren(obj, module);
 
-        if (!existingLockIcon) {
-            const moduleWidth = obj.width || module.size.width;
-            const moduleHeight = obj.height || module.size.height;
-            const minDimension = Math.min(moduleWidth, moduleHeight);
-            const lockIconGroup = createLockIcon();
+    obj.set({
+        selectable: true,
+        evented: true,
+        lockMovementX: false,
+        lockMovementY: false,
+        lockRotation: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        opacity: module.visible ? 1 : OPACITY_HIDDEN,
+        hasControls: true,
+        hasBorders: true,
+        borderScaleFactor: 1,
+        objectCaching: false,
+    });
 
-            if (lockIconGroup) {
-                const lockIconSize = Math.min(minDimension * 0.4, 32);
-                const lockScaleFactor = lockIconSize / 24;
-
-                lockIconGroup.set({
-                    left: 0, // Center of group (which is at center origin)
-                    top: 0,
-                    scaleX: lockScaleFactor,
-                    scaleY: lockScaleFactor,
-                });
-                lockIconGroup.setCoords();
-                obj.add(lockIconGroup);
-                obj.setCoords();
-            }
-        }
-
-        obj.set({
-            selectable: true, // Keep selectable for properties panel
-            evented: true,
-            // Prevent all transformations
-            lockMovementX: true,
-            lockMovementY: true,
-            lockRotation: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            // Visual indicator - 80-90% opacity
-            opacity: module.visible ? OPACITY_LOCKED : OPACITY_HIDDEN, // Combine with visibility
-        });
-    } else {
-        // Unlock if not locked
-        const rectObj = obj.getObjects().find((o: FabricObject) => o.type === 'rect');
-        if (rectObj && rectObj.set) {
-            rectObj.set({
-                strokeDashArray: undefined, // Remove dashed border
-                strokeWidth: 1,
-            });
-        }
-
-        // Remove lock icon overlay
-        const lockIconObj = obj.getObjects().find((o: FabricObject) => {
-            if (hasDataProperty(o)) {
-                return o.data?.isLockIcon === true;
-            }
-            return false;
-        });
-        if (lockIconObj) {
-            obj.remove(lockIconObj);
-            obj.setCoords();
-        }
-
-        obj.set({
-            selectable: true,
-            evented: true,
-            lockMovementX: false,
-            lockMovementY: false,
-            lockRotation: false,
-            lockScalingX: false,
-            lockScalingY: false,
-            // Reset opacity if not locked (unless hidden)
-            opacity: module.visible ? 1 : OPACITY_HIDDEN,
-        });
-    }
-
-    // Update visibility (semi-transparent ghost mode)
-    // Only apply if not already handled by locked state
-    if (!module.visible && !module.locked) {
-        obj.set({
-            opacity: OPACITY_HIDDEN, // Ghost mode
-        });
-    } else if (!module.visible && module.locked) {
-        // Locked modules already have opacity set, but hidden locked should be more transparent
-        obj.set({
-            opacity: Math.min(obj.opacity || 1, OPACITY_HIDDEN), // Ensure hidden locked is very transparent
-        });
-    }
-
+    obj.getObjects?.().forEach((ch: FabricObject) => {
+        ch.setCoords?.();
+    });
     obj.setCoords();
+    refreshCanvasSelectionIfNeeded(obj);
+
+    const canvas = (obj as FabricObject & { canvas?: { requestRenderAll?: () => void } }).canvas;
+    canvas?.requestRenderAll?.();
 }
 
 /**
@@ -644,14 +677,26 @@ export function extractModuleChanges(obj: FabricObject): {
         throw new Error(`[extractModuleChanges] Invalid scale values: scaleX=${scaleX}, scaleY=${scaleY}`);
     }
 
-    const baseWidth = obj.width || 100;
-    const baseHeight = obj.height || 100;
-    const width = Math.max(1, baseWidth * scaleX);
-    const height = Math.max(1, baseHeight * scaleY);
+    const children = (obj as FabricGroup).getObjects?.() ?? [];
+    const rectObj = children.find((o: FabricObject) => o.type === 'rect');
+
+    let width: number;
+    let height: number;
+    if (rectObj && typeof rectObj.width === 'number' && typeof rectObj.height === 'number') {
+        const rw = (rectObj.width || 1) * (rectObj.scaleX || 1);
+        const rh = (rectObj.height || 1) * (rectObj.scaleY || 1);
+        width = Math.max(1, rw * scaleX);
+        height = Math.max(1, rh * scaleY);
+    } else {
+        const baseWidth = obj.width || 100;
+        const baseHeight = obj.height || 100;
+        width = Math.max(1, baseWidth * scaleX);
+        height = Math.max(1, baseHeight * scaleY);
+    }
 
     // Validate dimensions
     if (!Number.isFinite(width) || !Number.isFinite(height)) {
-        const errorDetails = { width, height, baseWidth, baseHeight, scaleX, scaleY };
+        const errorDetails = { width, height, scaleX, scaleY };
         console.warn('[extractModuleChanges] Invalid dimensions:', errorDetails);
         throw new Error(`[extractModuleChanges] Invalid dimensions: width=${width}, height=${height}`);
     }

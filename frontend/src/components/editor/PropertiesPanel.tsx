@@ -8,8 +8,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     X,
-    Lock,
-    Unlock,
     Eye,
     EyeOff,
     RotateCcw,
@@ -455,14 +453,6 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
         }
     }, [selectedModules, currentMap, executeCommand]);
 
-    // Handle toggle lock
-    const handleToggleLock = useCallback(() => {
-        if (selectedModules.length === 0) return;
-        // If any is unlocked, lock all. Otherwise (all locked), unlock all.
-        const anyUnlocked = selectedModules.some((m) => !m.locked);
-        handleMultiChange('locked', anyUnlocked, true);
-    }, [selectedModules, handleMultiChange]);
-
     // Handle toggle visibility
     const handleToggleVisibility = useCallback(() => {
         if (selectedModules.length === 0) return;
@@ -622,16 +612,6 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleToggleLock();
-                                }}
-                                title={selectedModules.some(m => !m.locked) ? "Lock" : "Unlock"}
-                                aria-label={selectedModules.some(m => !m.locked) ? "Lock module" : "Unlock module"}
-                            >
-                                {selectedModules.some(m => !m.locked) ? <Unlock size={16} /> : <Lock size={16} />}
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
                                     handleToggleVisibility();
                                 }}
                                 title={selectedModules.some(m => m.visible) ? "Hide" : "Show"}
@@ -749,15 +729,6 @@ export function PropertiesPanel({ onClose, executeCommand }: PropertiesPanelProp
                                     mixed={isMixed('zIndex')}
                                     onChange={(v) =>
                                         handleMultiChange('zIndex', Number(v))
-                                    }
-                                />
-                                <PropertyInput
-                                    label="Locked"
-                                    type="checkbox"
-                                    value={singleModule?.locked}
-                                    mixed={isMixed('locked')}
-                                    onChange={(v) =>
-                                        handleMultiChange('locked', Boolean(v), true)
                                     }
                                 />
                                 <PropertyInput

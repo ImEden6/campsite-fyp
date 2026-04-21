@@ -20,13 +20,22 @@ const CustomerDashboardPage: React.FC = () => {
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
   // Fetch customer bookings - only when auth has hydrated
-  const { data: allBookings = [], isLoading: isLoadingBookings, error: bookingsError } = useQuery<Booking[]>({
+  const {
+    data: allBookings = [],
+    isLoading: isLoadingBookings,
+    error: bookingsError,
+    refetch: refetchBookings,
+  } = useQuery<Booking[]>({
     queryKey: queryKeys.bookings.myBookings(),
     queryFn: () => getMyBookings(),
     enabled: hasHydrated,
   });
 
-  const { data: upcomingBookings = [], error: upcomingError } = useQuery<Booking[]>({
+  const {
+    data: upcomingBookings = [],
+    error: upcomingError,
+    refetch: refetchUpcomingBookings,
+  } = useQuery<Booking[]>({
     queryKey: queryKeys.bookings.upcoming(),
     queryFn: () => getUpcomingBookings(),
     enabled: hasHydrated,
@@ -72,7 +81,7 @@ const CustomerDashboardPage: React.FC = () => {
     );
   }
 
-  if (bookingsError || upcomingError) {
+  if ((bookingsError || upcomingError) && allBookings.length === 0 && upcomingBookings.length === 0) {
     return (
       <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
         <div className="max-w-7xl mx-auto">
@@ -83,7 +92,14 @@ const CustomerDashboardPage: React.FC = () => {
             <p className="text-secondary-600 dark:text-secondary-400 mb-4">
               {bookingsError instanceof Error ? bookingsError.message : 'An unexpected error occurred'}
             </p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
+            <Button
+              onClick={() => {
+                void refetchBookings();
+                void refetchUpcomingBookings();
+              }}
+            >
+              Retry
+            </Button>
           </GlassCard>
         </div>
       </div>

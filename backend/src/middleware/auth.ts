@@ -125,8 +125,45 @@ export const authenticate = async (
           break;
       }
 
-      req.user = mockUser;
-      logger.info('Mock token authenticated', { userId: mockUser.id, role: mockUser.role });
+      // Prefer a real database user when using mock tokens so downstream
+      // FK-constrained writes (e.g. bookings.userId) succeed.
+      const dbUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: mockUser.email },
+            { role: mockUser.role as any },
+          ],
+        },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          isActive: true,
+          isEmailVerified: true,
+        },
+      });
+
+      if (dbUser) {
+        req.user = {
+          id: dbUser.id,
+          email: dbUser.email,
+          role: dbUser.role as UserRole,
+          firstName: dbUser.firstName,
+          lastName: dbUser.lastName,
+          isActive: dbUser.isActive,
+          isEmailVerified: dbUser.isEmailVerified,
+        };
+      } else {
+        req.user = mockUser;
+      }
+
+      logger.info('Mock token authenticated', {
+        userId: req.user.id,
+        role: req.user.role,
+        resolvedFromDb: Boolean(dbUser),
+      });
       return next();
     }
 

@@ -79,7 +79,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const canCancel = booking.status === 'CONFIRMED' || booking.status === 'PENDING';
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card
+      glass
+      hover
+      className="border-white/30 dark:border-white/12 bg-white/85 dark:bg-night-surface/72 shadow-organic dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,0.55)]"
+    >
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
@@ -87,7 +91,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
             <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100">
               Booking #{booking.bookingNumber}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-secondary-400 mt-1">
+            <p className="text-sm text-gray-600 dark:text-secondary-300 mt-1">
               {booking.site?.name || 'Site information unavailable'}
             </p>
           </div>
@@ -101,35 +105,35 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center gap-2 text-gray-700 dark:text-secondary-300">
-            <Calendar size={18} className="text-secondary-400" />
+          <div className="flex items-center gap-2 text-gray-700 dark:text-secondary-200">
+            <Calendar size={18} className="text-secondary-500 dark:text-secondary-300" />
             <div>
-              <div className="text-sm font-medium">Check-in</div>
-              <div className="text-sm">{formatDate(booking.checkInDate)}</div>
+              <div className="text-sm font-medium dark:text-primary-100">Check-in</div>
+              <div className="text-sm dark:text-secondary-200">{formatDate(booking.checkInDate)}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-gray-700 dark:text-secondary-300">
-            <Calendar size={18} className="text-secondary-400" />
+          <div className="flex items-center gap-2 text-gray-700 dark:text-secondary-200">
+            <Calendar size={18} className="text-secondary-500 dark:text-secondary-300" />
             <div>
-              <div className="text-sm font-medium">Check-out</div>
-              <div className="text-sm">{formatDate(booking.checkOutDate)}</div>
+              <div className="text-sm font-medium dark:text-primary-100">Check-out</div>
+              <div className="text-sm dark:text-secondary-200">{formatDate(booking.checkOutDate)}</div>
             </div>
           </div>
         </div>
 
         {/* Details */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-300">
             <Clock size={16} />
             <span>{calculateNights()} nights</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-300">
             <Users size={16} />
             <span>
               {booking.guests.adults + booking.guests.children} guests
             </span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-400">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-secondary-300">
             <DollarSign size={16} />
             <span>{CURRENCY_SYMBOL}{(booking.totalAmount ?? 0).toFixed(2)}</span>
           </div>
@@ -137,8 +141,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Payment Info */}
         {booking.paymentStatus === 'PARTIAL' && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
-            <p className="text-sm text-yellow-800 dark:text-yellow-300">
+          <div className="bg-yellow-50 dark:bg-yellow-600/15 border border-yellow-200 dark:border-yellow-500/35 rounded-lg p-3 mb-4">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
               <strong>Balance Due:</strong> {CURRENCY_SYMBOL}
               {((booking.totalAmount ?? 0) - (booking.paidAmount ?? 0)).toFixed(2)}
             </p>
@@ -147,12 +151,12 @@ export const BookingCard: React.FC<BookingCardProps> = ({
 
         {/* Actions */}
         {showActions && (
-          <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-secondary-700">
+          <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-white/12">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onViewDetails?.(booking)}
-              className="flex-1"
+              className="flex-1 dark:bg-night-surface-alt/50 dark:border-white/12 dark:text-secondary-100 dark:hover:bg-night-surface-alt/75"
             >
               View Details
             </Button>
@@ -161,7 +165,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onModify(booking)}
-                className="flex-1"
+                className="flex-1 dark:bg-night-surface-alt/50 dark:border-white/12 dark:text-secondary-100 dark:hover:bg-night-surface-alt/75"
               >
                 Modify
               </Button>
@@ -171,7 +175,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onCancel(booking)}
-                className="flex-1 text-red-600 hover:bg-red-50"
+                className="flex-1 text-red-600 hover:bg-red-50 dark:text-red-300 dark:border-red-400/30 dark:bg-red-500/10 dark:hover:bg-red-500/20"
               >
                 Cancel
               </Button>

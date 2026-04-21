@@ -3,7 +3,7 @@
  * List of all customer bookings with search and filters
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, RefreshCw, Calendar, Filter } from 'lucide-react';
@@ -21,13 +21,23 @@ const CustomerBookingsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | 'all'>('all');
 
-  const { data: bookings = [], isLoading, error: bookingsError } = useQuery<Booking[]>({
+  const {
+    data: bookings = [],
+    isLoading,
+    error: bookingsError,
+    refetch: refetchBookings,
+  } = useQuery<Booking[]>({
     queryKey: queryKeys.bookings.myBookings(),
     queryFn: () => getMyBookings(),
   });
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {
+      // Hide cancelled bookings from customer booking list.
+      if (booking.status === BookingStatus.CANCELLED) {
+        return false;
+      }
+
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         const matchesNumber = booking.bookingNumber.toLowerCase().includes(term);
@@ -62,7 +72,7 @@ const CustomerBookingsPage: React.FC = () => {
     );
   }
 
-  if (bookingsError) {
+  if (bookingsError && bookings.length === 0) {
     return (
       <div className="min-h-screen bg-nature-bg dark:bg-night-bg py-8 px-4">
         <div className="max-w-7xl mx-auto">
@@ -73,7 +83,7 @@ const CustomerBookingsPage: React.FC = () => {
             <p className="text-secondary-600 dark:text-secondary-400 mb-4">
               {bookingsError instanceof Error ? bookingsError.message : 'An unexpected error occurred'}
             </p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
+            <Button onClick={() => void refetchBookings()}>Retry</Button>
           </GlassCard>
         </div>
       </div>
@@ -117,7 +127,9 @@ const CustomerBookingsPage: React.FC = () => {
                 className="w-full px-4 py-2.5 border border-secondary-300 dark:border-secondary-600 rounded-lg bg-white/70 dark:bg-night-surface/70 backdrop-blur-sm text-secondary-900 dark:text-primary-100 focus:ring-2 focus:ring-primary-500/50 focus:outline-none"
               >
                 <option value="all">All Statuses</option>
-                {Object.values(BookingStatus).map((status) => (
+                {Object.values(BookingStatus)
+                  .filter((status) => status !== BookingStatus.CANCELLED)
+                  .map((status) => (
                   <option key={status} value={status}>
                     {status}
                   </option>

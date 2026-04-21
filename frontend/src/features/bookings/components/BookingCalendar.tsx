@@ -5,13 +5,14 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter } from 'lucide-react';
-import { Button, Badge, Card } from '@/components/ui';
+import { Button, Badge } from '@/components/ui';
 import type { BadgeProps } from '@/components/ui';
 import { Booking, BookingStatus, SiteType } from '@/types';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, addWeeks, isSameMonth, isToday } from 'date-fns';
 import { BookingCalendarItem } from './BookingCalendarItem';
 import { STATUS_COLORS } from '../constants/booking-colors';
 import { OverflowIndicator } from './OverflowIndicator';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 export type CalendarView = 'month' | 'week' | 'day';
 
@@ -174,13 +175,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         days.push(
           <div
             key={currentDay.toString()}
-            className={`min-h-[100px] border border-gray-200 dark:border-secondary-700 p-2 transition-all duration-150 ${
+            className={`min-h-[100px] border border-gray-200 dark:border-white/10 p-2 transition-all duration-200 ${
               !isCurrentMonth 
-                ? 'bg-gray-50 dark:bg-night-bg text-secondary-400 dark:text-secondary-600' 
-                : 'bg-white dark:bg-night-surface text-gray-900 dark:text-primary-100'
-            } ${isCurrentDay ? 'bg-blue-50 dark:bg-blue-950 border-blue-400 dark:border-blue-600 ring-1 ring-blue-400 dark:ring-blue-600' : ''}`}
+                ? 'bg-gray-50 dark:bg-night-bg/70 text-secondary-400 dark:text-secondary-500' 
+                : 'bg-white dark:bg-night-surface/80 text-gray-900 dark:text-primary-100'
+            } ${isCurrentDay ? 'bg-blue-50 dark:bg-secondary-500/15 border-blue-400 dark:border-secondary-500 ring-1 ring-blue-400 dark:ring-secondary-500/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : ''}`}
           >
-            <div className={`font-semibold text-sm mb-1 transition-colors ${isCurrentDay ? 'text-blue-700 dark:text-blue-300' : ''}`}>
+            <div className={`font-semibold text-sm mb-1 transition-colors ${isCurrentDay ? 'text-blue-700 dark:text-secondary-300' : ''}`}>
               {format(currentDay, 'd')}
             </div>
             <div className="space-y-1">
@@ -213,7 +214,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
     return (
       <div>
-        <div className="grid grid-cols-7 bg-gray-100 dark:bg-night-surface border border-gray-200 dark:border-secondary-700">
+        <div className="grid grid-cols-7 bg-gray-100 dark:bg-night-surface/75 border border-gray-200 dark:border-white/10 rounded-t-lg overflow-hidden">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
             <div key={day} className="p-2 text-center font-semibold text-sm text-gray-900 dark:text-primary-100">
               {day}
@@ -236,21 +237,21 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       const isCurrentDay = isToday(day);
 
       days.push(
-        <div key={day.toString()} className="flex-1 border-r border-gray-200 dark:border-secondary-700 last:border-r-0">
+        <div key={day.toString()} className="flex-1 border-r border-gray-200 dark:border-white/10 last:border-r-0">
           <div
-            className={`p-3 border-b border-gray-200 dark:border-secondary-700 text-center cursor-pointer transition-all duration-150 ${
+            className={`p-3 border-b border-gray-200 dark:border-white/10 text-center cursor-pointer transition-all duration-200 ${
               isCurrentDay 
-                ? 'bg-blue-50 dark:bg-blue-950 border-blue-400 dark:border-blue-600' 
-                : 'hover:bg-blue-50 dark:hover:bg-night-surface-alt hover:border-blue-300 dark:hover:border-secondary-600'
+                ? 'bg-blue-50 dark:bg-secondary-500/15 border-blue-400 dark:border-secondary-500' 
+                : 'hover:bg-blue-50 dark:hover:bg-night-surface-alt/80 hover:border-blue-300 dark:hover:border-secondary-400/60'
             }`}
             onClick={() => handleDateClick(day)}
           >
             <div className="text-xs text-gray-500 dark:text-secondary-400">{format(day, 'EEE')}</div>
-            <div className={`text-lg font-semibold transition-colors ${isCurrentDay ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-primary-100 hover:text-blue-600 dark:hover:text-blue-400'}`}>
+            <div className={`text-lg font-semibold transition-colors ${isCurrentDay ? 'text-blue-700 dark:text-secondary-300' : 'text-gray-900 dark:text-primary-100 hover:text-blue-600 dark:hover:text-secondary-300'}`}>
               {format(day, 'd')}
             </div>
           </div>
-          <div className="p-2 space-y-2 min-h-[400px] bg-white dark:bg-night-surface">
+          <div className="p-2 space-y-2 min-h-[400px] bg-white dark:bg-night-surface/80">
             {dayBookings.slice(0, 3).map((booking) => (
               <BookingCalendarItem
                 key={booking.id}
@@ -270,7 +271,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       );
     }
 
-    return <div className="flex border border-gray-200 dark:border-secondary-700 rounded-lg overflow-hidden">{days}</div>;
+    return <div className="flex border border-gray-200 dark:border-white/10 rounded-lg overflow-hidden bg-white/70 dark:bg-night-surface/65 backdrop-blur-sm">{days}</div>;
   };
 
   // Render day view
@@ -278,12 +279,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
     const dayBookings = getBookingsForDate(currentDate);
 
     return (
-      <div className="border border-gray-200 dark:border-secondary-700 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200 dark:border-secondary-700 bg-gray-50 dark:bg-night-surface">
+      <div className="border border-gray-200 dark:border-white/10 rounded-lg overflow-hidden bg-white/70 dark:bg-night-surface/65 backdrop-blur-sm">
+        <div className="p-4 border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-night-surface/80">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-primary-100">{format(currentDate, 'EEEE, MMMM d, yyyy')}</h3>
           <p className="text-sm text-gray-600 dark:text-secondary-400">{dayBookings.length} bookings</p>
         </div>
-        <div className="p-4 space-y-3 bg-white dark:bg-night-bg">
+        <div className="p-4 space-y-3 bg-white dark:bg-night-bg/65">
           {dayBookings.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-secondary-400">
               <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -291,9 +292,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
             </div>
           ) : (
             dayBookings.map((booking) => (
-              <Card key={booking.id} className="dark:bg-night-surface dark:border-secondary-700">
+              <GlassCard key={booking.id} intensity="medium" className="border-white/25 dark:border-white/10">
                 <div 
-                  className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-night-surface transition-colors"
+                  className="p-4 cursor-pointer hover:bg-gray-50/80 dark:hover:bg-night-surface-alt/65 transition-colors rounded-2xl"
                   onClick={() => onBookingClick?.(booking)}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -322,7 +323,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
                     </div>
                   </div>
                 </div>
-              </Card>
+              </GlassCard>
             ))
           )}
         </div>
@@ -360,12 +361,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
             <Filter className="w-4 h-4 mr-1" />
             Filters
           </Button>
-          <div className="flex border border-gray-300 dark:border-secondary-600 rounded-md overflow-hidden">
+          <div className="flex border border-gray-300 dark:border-white/15 rounded-md overflow-hidden">
             <button
               className={`px-3 py-1 text-sm transition-colors ${
                 currentView === 'month' 
-                  ? 'bg-blue-500 dark:bg-blue-600 text-white' 
-                  : 'bg-white dark:bg-night-surface text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt'
+                  ? 'bg-blue-500 dark:bg-secondary-500 text-white' 
+                  : 'bg-white dark:bg-night-surface/80 text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt/75'
               }`}
               onClick={() => handleViewChange('month')}
             >
@@ -374,8 +375,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
             <button
               className={`px-3 py-1 text-sm border-l border-gray-300 dark:border-secondary-600 transition-colors ${
                 currentView === 'week' 
-                  ? 'bg-blue-500 dark:bg-blue-600 text-white' 
-                  : 'bg-white dark:bg-night-surface text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt'
+                  ? 'bg-blue-500 dark:bg-secondary-500 text-white' 
+                  : 'bg-white dark:bg-night-surface/80 text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt/75'
               }`}
               onClick={() => handleViewChange('week')}
             >
@@ -384,8 +385,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
             <button
               className={`px-3 py-1 text-sm border-l border-gray-300 dark:border-secondary-600 transition-colors ${
                 currentView === 'day' 
-                  ? 'bg-blue-500 dark:bg-blue-600 text-white' 
-                  : 'bg-white dark:bg-night-surface text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt'
+                  ? 'bg-blue-500 dark:bg-secondary-500 text-white' 
+                  : 'bg-white dark:bg-night-surface/80 text-gray-700 dark:text-secondary-300 hover:bg-gray-50 dark:hover:bg-night-surface-alt/75'
               }`}
               onClick={() => handleViewChange('day')}
             >
@@ -397,13 +398,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
       {/* Filters */}
       {showFilters && (
-        <Card className="p-4 dark:bg-night-surface dark:border-secondary-700">
+        <GlassCard className="p-4 border-white/25 dark:border-white/10" intensity="medium">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-primary-100">Status</label>
               <div className="space-y-2">
                 {Object.values(BookingStatus).map((status) => (
-                  <label key={status} className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-night-surface p-1 rounded transition-colors">
+                  <label key={status} className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-night-surface-alt/65 p-1 rounded transition-colors">
                     <input
                       type="checkbox"
                       checked={statusFilter.includes(status)}
@@ -414,7 +415,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
                           setStatusFilter(statusFilter.filter((s) => s !== status));
                         }
                       }}
-                      className="mr-2 w-4 h-4 rounded border-gray-300 dark:border-secondary-600 text-blue-600 focus:ring-blue-500 dark:bg-night-surface-alt dark:focus:ring-blue-600"
+                      className="mr-2 w-4 h-4 rounded border-gray-300 dark:border-white/20 text-blue-600 focus:ring-blue-500 dark:bg-night-surface-alt dark:focus:ring-secondary-500"
                     />
                     <span className="text-sm text-gray-900 dark:text-primary-100">{status}</span>
                   </label>
@@ -425,7 +426,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
               <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-primary-100">Site Type</label>
               <div className="space-y-2">
                 {Object.values(SiteType).map((type) => (
-                  <label key={type} className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-night-surface p-1 rounded transition-colors">
+                  <label key={type} className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-night-surface-alt/65 p-1 rounded transition-colors">
                     <input
                       type="checkbox"
                       checked={siteTypeFilter.includes(type)}
@@ -436,7 +437,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
                           setSiteTypeFilter(siteTypeFilter.filter((t) => t !== type));
                         }
                       }}
-                      className="mr-2 w-4 h-4 rounded border-gray-300 dark:border-secondary-600 text-blue-600 focus:ring-blue-500 dark:bg-night-surface-alt dark:focus:ring-blue-600"
+                      className="mr-2 w-4 h-4 rounded border-gray-300 dark:border-white/20 text-blue-600 focus:ring-blue-500 dark:bg-night-surface-alt dark:focus:ring-secondary-500"
                     />
                     <span className="text-sm text-gray-900 dark:text-primary-100">{type}</span>
                   </label>
@@ -456,7 +457,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
               Clear Filters
             </Button>
           </div>
-        </Card>
+        </GlassCard>
       )}
 
       {/* Calendar View */}
@@ -473,7 +474,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       )}
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 text-sm bg-gray-50 dark:bg-night-surface p-3 rounded-lg border border-gray-200 dark:border-secondary-700">
+      <div className="flex flex-wrap gap-3 text-sm bg-gray-50 dark:bg-night-surface/70 p-3 rounded-lg border border-gray-200 dark:border-white/10 backdrop-blur-sm">
         <div className="font-medium text-gray-900 dark:text-primary-100">Status Legend:</div>
         {Object.entries(STATUS_COLORS).map(([status, color]) => (
           <div key={status} className="flex items-center gap-1">

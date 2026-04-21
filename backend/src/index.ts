@@ -75,6 +75,7 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+app.use(config.upload.staticPath, express.static(config.upload.path));
 
 // Rate limiting is now applied at route level:
 // - authRateLimit on /auth/login and /auth/register

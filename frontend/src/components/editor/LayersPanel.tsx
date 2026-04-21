@@ -1,15 +1,13 @@
 /**
  * Layers Panel
  * Displays modules sorted by z-index for layer management.
- * Supports visibility toggle, lock toggle, and reordering.
+ * Supports visibility toggle and reordering.
  */
 
 import { useCallback, useMemo } from 'react';
 import {
     Eye,
     EyeOff,
-    Lock,
-    Unlock,
     ChevronUp,
     ChevronDown,
     Layers,
@@ -40,9 +38,7 @@ export function LayersPanel({ onClose: _onClose, executeCommand }: LayersPanelPr
         setSelection,
         toggleSelection,
         toggleModuleVisibility,
-        toggleModuleLock,
         isModuleHidden,
-        isModuleLocked,
     } = useEditorStore();
 
     const modules = useMapStore((state) => state.currentMap?.modules ?? []);
@@ -120,13 +116,12 @@ export function LayersPanel({ onClose: _onClose, executeCommand }: LayersPanelPr
                         {sortedModules.map((module, idx) => {
                             const isSelected = selectedIds.includes(module.id);
                             const isHidden = isModuleHidden(module.id);
-                            const isLocked = isModuleLocked(module.id);
                             const color = getModuleColor(module.type);
 
                             return (
                                 <li
                                     key={module.id}
-                                    className={`layers-panel__item ${isSelected ? 'layers-panel__item--selected' : ''} ${isHidden ? 'layers-panel__item--hidden' : ''} ${isLocked ? 'layers-panel__item--locked' : ''}`}
+                                    className={`layers-panel__item ${isSelected ? 'layers-panel__item--selected' : ''} ${isHidden ? 'layers-panel__item--hidden' : ''}`}
                                     onClick={(e) => handleSelect(module.id, e)}
                                 >
                                     <div className="layers-panel__item-drag">
@@ -138,10 +133,7 @@ export function LayersPanel({ onClose: _onClose, executeCommand }: LayersPanelPr
                                         style={{ backgroundColor: color }}
                                     />
 
-                                    <span className={`layers-panel__item-name ${isLocked ? 'layers-panel__item-name--locked' : ''}`}>
-                                        {isLocked && (
-                                            <Lock size={12} className="layers-panel__item-lock-icon" />
-                                        )}
+                                    <span className="layers-panel__item-name">
                                         {getModuleName(module)}
                                     </span>
 
@@ -193,28 +185,6 @@ export function LayersPanel({ onClose: _onClose, executeCommand }: LayersPanelPr
                                                 <EyeOff size={14} />
                                             ) : (
                                                 <Eye size={14} />
-                                            )}
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleModuleLock(module.id, executeCommand);
-                                            }}
-                                            title={
-                                                isLocked
-                                                    ? 'Unlock layer'
-                                                    : 'Lock layer'
-                                            }
-                                            aria-label={
-                                                isLocked
-                                                    ? 'Unlock layer'
-                                                    : 'Lock layer'
-                                            }
-                                        >
-                                            {isLocked ? (
-                                                <Lock size={14} />
-                                            ) : (
-                                                <Unlock size={14} />
                                             )}
                                         </button>
                                     </div>

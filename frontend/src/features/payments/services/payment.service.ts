@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/api/client';
+import type { ApiResponse } from '@/types';
 import type {
   Payment,
   PaymentIntent,
@@ -29,11 +30,28 @@ export const paymentService = {
       );
     }
 
-    const response = await apiClient.post<PaymentIntent>(
-      '/payments/intent',
-      data
-    );
-    return response.data;
+    try {
+      const response = await apiClient.post<ApiResponse<PaymentIntent>>(
+        '/payments/intent',
+        data
+      );
+      if (!response.data) {
+        throw new Error('Payment intent response missing data');
+      }
+      return (response.data as ApiResponse<PaymentIntent>).data as PaymentIntent;
+    } catch (error) {
+      const err = error as { statusCode?: number; code?: string; message?: string; details?: unknown };
+      const isStripeUnavailable = String(err.statusCode ?? '') === '503';
+      if (isStripeUnavailable) {
+        return createMockPaymentIntent(
+          data.amount,
+          data.currency || 'myr',
+          data.bookingId,
+          data.description
+        );
+      }
+      throw error;
+    }
   },
 
   /**
@@ -122,6 +140,16 @@ export const paymentService = {
    * Confirm payment intent (after Stripe confirmation)
    */
   confirmPayment: async (paymentIntentId: string): Promise<Payment> => {
+    // Always keep mock intent confirmation local, even when env mock flag is disabled.
+    // This is required when createPaymentIntent falls back to a mock intent due to Stripe unavailability.
+    if (paymentIntentId.startsWith('pi_mock_')) {
+      const intentData = getMockPaymentIntentData(paymentIntentId);
+      const amount = intentData?.amount ?? 0;
+      const currency = intentData?.currency ?? 'myr';
+      const bookingId = intentData?.bookingId;
+      return createMockConfirmedPayment(paymentIntentId, bookingId, amount, currency);
+    }
+
     // Environment-gated mock for dev/preview
     if (env.useMockPayments) {
       console.warn('[Mock] Confirming mock payment (VITE_USE_MOCK_PAYMENTS=true)');

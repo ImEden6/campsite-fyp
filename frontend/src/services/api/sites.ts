@@ -144,7 +144,7 @@ const MOCK_SITES: Site[] = [
     capacity: 4,
     description: 'Rustic cabin with modern amenities in the heart of the forest',
     amenities: ['beds', 'heating', 'kitchenette', 'porch', 'fire pit'],
-    images: ['https://images.unsplash.com/photo-1476397463845-4c29e1a3087e'],
+    images: ['/images/sites/cabin-lakeside-1.jpg'],
     basePrice: 125,
     maxVehicles: 2,
     maxTents: 0,
@@ -174,7 +174,7 @@ const MOCK_SITES: Site[] = [
     capacity: 8,
     description: 'Large cabin with panoramic mountain views and full kitchen',
     amenities: ['beds', 'heating', 'full kitchen', 'deck', 'hot tub'],
-    images: ['https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8'],
+    images: ['/images/sites/cabin-mountain-1.jpg'],
     basePrice: 195,
     maxVehicles: 3,
     maxTents: 0,
@@ -216,13 +216,16 @@ const filterMockSites = (sites: Site[], filters?: SiteFilters): Site[] => {
  * Get all sites with optional filters
  */
 export const getSites = async (filters?: SiteFilters | undefined): Promise<Site[]> => {
-  if (shouldUseMockAuth()) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return filterMockSites(MOCK_SITES, filters);
+  try {
+    const response = await get<ApiResponse<Site[]>>('/campsites', { params: filters });
+    return response.data || [];
+  } catch {
+    if (shouldUseMockAuth()) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return filterMockSites(MOCK_SITES, filters);
+    }
+    throw new Error('Failed to load sites');
   }
-
-  const response = await get<ApiResponse<Site[]>>('/campsites', { params: filters });
-  return response.data || [];
 };
 
 /**
@@ -233,46 +236,52 @@ export const getSitesPaginated = async (
   limit: number = 10,
   filters?: SiteFilters | undefined
 ): Promise<PaginatedResponse<Site>> => {
-  if (shouldUseMockAuth()) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const filtered = filterMockSites(MOCK_SITES, filters);
-    const start = (page - 1) * limit;
-    const items = filtered.slice(start, start + limit);
-    return {
-      items,
-      total: filtered.length,
-      page,
-      limit,
-      totalPages: Math.ceil(filtered.length / limit),
-      hasNext: start + limit < filtered.length,
-      hasPrevious: page > 1,
-    };
+  try {
+    const response = await get<PaginatedResponse<Site>>('/campsites/paginated', {
+      params: { page, limit, ...filters },
+    });
+    return response;
+  } catch {
+    if (shouldUseMockAuth()) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const filtered = filterMockSites(MOCK_SITES, filters);
+      const start = (page - 1) * limit;
+      const items = filtered.slice(start, start + limit);
+      return {
+        items,
+        total: filtered.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filtered.length / limit),
+        hasNext: start + limit < filtered.length,
+        hasPrevious: page > 1,
+      };
+    }
+    throw new Error('Failed to load sites');
   }
-
-  const response = await get<PaginatedResponse<Site>>('/campsites/paginated', {
-    params: { page, limit, ...filters },
-  });
-  return response;
 };
 
 /**
  * Get site by ID
  */
 export const getSiteById = async (id: string): Promise<Site> => {
-  if (shouldUseMockAuth()) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const site = MOCK_SITES.find(s => s.id === id);
-    if (!site) {
+  try {
+    const response = await get<ApiResponse<Site>>(`/campsites/${id}`);
+    if (!response.data) {
       throw new Error(`Site not found: ${id}`);
     }
-    return site;
-  }
-
-  const response = await get<ApiResponse<Site>>(`/campsites/${id}`);
-  if (!response.data) {
+    return response.data;
+  } catch {
+    if (shouldUseMockAuth()) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const site = MOCK_SITES.find(s => s.id === id);
+      if (!site) {
+        throw new Error(`Site not found: ${id}`);
+      }
+      return site;
+    }
     throw new Error(`Site not found: ${id}`);
   }
-  return response.data;
 };
 
 /**
