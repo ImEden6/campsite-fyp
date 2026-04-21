@@ -810,7 +810,7 @@ router.post('/', authenticate, validateBody(createBookingSchema), async (req: Re
       status: booking.status,
       checkInDate: booking.checkInDate,
       checkOutDate: booking.checkOutDate,
-      bookingNumber: (booking as any).bookingNumber,
+      bookingNumber: booking.bookingNumber,
     });
 
     res.status(201).json({
