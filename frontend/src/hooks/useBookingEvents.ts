@@ -58,7 +58,7 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
 
       if (invalidateQueries) {
         queryClient.setQueryData(queryKeys.bookings.detail(booking.id), booking);
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.lists() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
       }
 
@@ -74,7 +74,7 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
 
       if (invalidateQueries) {
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(booking.id) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.lists() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
       }
 
@@ -90,7 +90,8 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
 
       if (invalidateQueries) {
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(booking.id) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.lists() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.analytics.dashboard() });
       }
 
@@ -106,7 +107,8 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
 
       if (invalidateQueries) {
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(booking.id) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.lists() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.analytics.dashboard() });
       }
 

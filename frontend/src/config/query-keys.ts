@@ -66,6 +66,8 @@ interface NotificationFilters {
  */
 export const bookingKeys = {
   all: ['bookings'] as const,
+  /** Dashboard / summary fetches that must refetch on any booking socket event */
+  availabilitySummary: () => [...bookingKeys.all, 'availability-summary'] as const,
   lists: () => [...bookingKeys.all, 'list'] as const,
   list: (filters?: BookingFilters) => [...bookingKeys.lists(), filters] as const,
   details: () => [...bookingKeys.all, 'detail'] as const,

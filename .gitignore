@@ -95,3 +95,5 @@ tss.bat
 
 # Local scratch / experiments (never commit)
 scratch/
+# Entire tree (stuff/* only matched one level)
+stuff/

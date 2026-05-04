@@ -4,7 +4,9 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { webSocketService } from '@/services/websocket';
 import { useNotificationEvents } from '@/hooks/useNotificationEvents';
+import { useBookingEvents } from '@/hooks/useBookingEvents';
 import { useStorageQuota } from '@/hooks/useStorageQuota';
+import { UserRole } from '@/types';
 import { SkipNavigation } from '@/components/accessibility';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -14,6 +16,13 @@ const AppLayout: React.FC = () => {
   const { initialize, user, tokens, hasHydrated } = useAuthStore();
   const sidebarCollapsed = useUIStore((state) => state.sidebarCollapsed);
   const showToast = useUIStore((state) => state.showToast);
+
+  const isStaffDashboardUser =
+    user?.role === UserRole.STAFF ||
+    user?.role === UserRole.MANAGER ||
+    user?.role === UserRole.ADMIN;
+
+  useBookingEvents({ enabled: Boolean(user && tokens?.accessToken && isStaffDashboardUser) });
 
   useEffect(() => {
     if (hasHydrated) {

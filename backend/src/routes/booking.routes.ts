@@ -80,6 +80,7 @@ function buildBookingWhereClause(
  */
 const bookingListSelect = {
   id: true,
+  siteId: true,
   bookingNumber: true,
   checkInDate: true,
   checkOutDate: true,

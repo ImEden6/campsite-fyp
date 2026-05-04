@@ -25,10 +25,12 @@ import {
   RefreshCw,
   Users,
   BarChart3,
+  AlertTriangle,
 } from 'lucide-react';
 import { getSites, deleteSite } from '@/services/api/sites';
 import { getBookings } from '@/services/api/bookings';
 import { getDashboardMetrics } from '@/services/api/analytics';
+import { queryKeys } from '@/config/query-keys';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
@@ -36,6 +38,15 @@ import { useAuthStore } from '@/stores/authStore';
 import { BookingStatus, SiteType, SiteStatus, UserRole } from '@/types';
 import type { Site } from '@/types';
 import { formatCurrency, CURRENCY_SYMBOL } from '@/utils/currency';
+
+/** List payloads may omit top-level siteId when only `site` is selected; prefer FK then nested id. */
+function resolveBookingSiteId(booking: {
+  siteId?: string | null;
+  site?: { id?: string } | null;
+}): string | undefined {
+  const id = booking.siteId ?? booking.site?.id;
+  return typeof id === 'string' && id.length > 0 ? id : undefined;
+}
 
 interface MapBoxProps {
   type: SiteType;
@@ -214,15 +225,38 @@ export const AdminDashboardPage: React.FC = () => {
   const isManager = user?.role === UserRole.MANAGER;
   const dashboardTitle = isStaff ? 'Staff Dashboard' : isManager ? 'Manager Dashboard' : 'Admin Dashboard';
 
-  // Fetch all sites (with mock data fallback)
-  const { data: sites = [], isLoading, refetch, isRefetching } = useQuery({
+  // Live dashboard data: short-lived cache so restarts / brief 502s do not stick for 5 minutes
+  const sitesQuery = useQuery({
     queryKey: ['sites'],
     queryFn: () => getSites(),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
   });
-  const { data: bookings = [] } = useQuery({
-    queryKey: ['bookings', 'availability-summary'],
+  const bookingsQuery = useQuery({
+    queryKey: queryKeys.bookings.availabilitySummary(),
     queryFn: () => getBookings(),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
   });
+  const analyticsQuery = useQuery({
+    queryKey: ['analytics', 'dashboard'],
+    queryFn: () => getDashboardMetrics(),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+  });
+
+  const sites = sitesQuery.data ?? [];
+  const bookings = bookingsQuery.data ?? [];
+  const isLoading = sitesQuery.isPending || bookingsQuery.isPending;
+  const isRefetching =
+    sitesQuery.isFetching || bookingsQuery.isFetching || analyticsQuery.isFetching;
+
+  const showCachedDataWarning =
+    (sitesQuery.isError && sitesQuery.data !== undefined) ||
+    (bookingsQuery.isError && bookingsQuery.data !== undefined);
 
   // Group sites by type
   const tentSites = sites.filter(s => s.type === SiteType.TENT);
@@ -247,7 +281,8 @@ export const AdminDashboardPage: React.FC = () => {
         const checkOut = new Date(booking.checkOutDate);
         return checkIn < startOfTomorrow && checkOut > startOfToday;
       })
-      .map((booking) => booking.siteId)
+      .map(resolveBookingSiteId)
+      .filter((id): id is string => id !== undefined)
   );
 
   const getAvailabilityCounts = (typeSites: Site[]) => {
@@ -261,7 +296,9 @@ export const AdminDashboardPage: React.FC = () => {
         continue;
       }
 
-      if (activeBookingSiteIds.has(site.id) || site.status === SiteStatus.OCCUPIED) {
+      // Booking calendar is source of truth for "occupied today"; Site.status OCCUPIED
+      // can lag (seed/checkout) and was inflating counts vs Manage Bookings.
+      if (activeBookingSiteIds.has(site.id)) {
         occupied += 1;
         continue;
       }
@@ -274,14 +311,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   // Calculate metrics for site counts
   const totalSites = sites.length;
-  const occupiedSites = sites.filter(s => s.status === SiteStatus.OCCUPIED).length;
-
-  // Fetch dashboard analytics metrics from API
-  const { data: analyticsMetrics } = useQuery({
-    queryKey: ['analytics', 'dashboard'],
-    queryFn: () => getDashboardMetrics(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const occupiedSites = activeBookingSiteIds.size;
 
   // Default metrics if API hasn't loaded yet
   const defaultMetrics = {
@@ -297,7 +327,7 @@ export const AdminDashboardPage: React.FC = () => {
     averageStayDuration: 0,
   };
 
-  const metrics = analyticsMetrics ?? defaultMetrics;
+  const metrics = analyticsQuery.data ?? defaultMetrics;
 
   // Stats for the cards - now using analytics data from API
   const allStats = [
@@ -384,7 +414,7 @@ export const AdminDashboardPage: React.FC = () => {
   };
 
   const handleRefresh = async () => {
-    await refetch();
+    await Promise.all([sitesQuery.refetch(), bookingsQuery.refetch(), analyticsQuery.refetch()]);
   };
 
   return (
@@ -432,6 +462,19 @@ export const AdminDashboardPage: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {showCachedDataWarning && (
+          <div
+            className="flex gap-3 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-950 dark:text-amber-100"
+            role="status"
+          >
+            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+            <p>
+              A refresh failed while the server was unavailable. You may be seeing cached numbers from
+              before the outage. Use Refresh or reload the page once services are healthy.
+            </p>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (

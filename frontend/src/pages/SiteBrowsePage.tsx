@@ -63,14 +63,16 @@ const SiteBrowsePage: React.FC = () => {
       result = result.filter((site) => site.type === typeFilter);
     }
 
-    // Status filter (only show available sites to public)
+    // Status filter
     if (statusFilter !== 'all') {
       result = result.filter((site) => site.status === statusFilter);
-    } else {
-      // By default, only show available sites to public users
-      if (!isAuthenticated || user?.role !== 'ADMIN') {
-        result = result.filter((site) => site.status === SiteStatus.AVAILABLE);
-      }
+    } else if (user?.role !== 'ADMIN') {
+      // Customers (and other non-admins): show bookable + visibly occupied pads so counts match the API inventory.
+      // Maintenance / out of service stay hidden unless a specific status filter is chosen.
+      result = result.filter(
+        (site) =>
+          site.status === SiteStatus.AVAILABLE || site.status === SiteStatus.OCCUPIED
+      );
     }
 
     // Price filters
@@ -395,6 +397,7 @@ const SiteBrowsePage: React.FC = () => {
                   <SiteCard
                     key={site.id}
                     site={site}
+                    isAvailable={site.status === SiteStatus.AVAILABLE}
                     onViewDetails={handleSiteClick}
                     onSelect={handleBookNow}
                   />
@@ -441,11 +444,17 @@ const SiteBrowsePage: React.FC = () => {
                         }}>
                           Details
                         </Button>
-                        <Button size="sm" onClick={(e) => {
-                          e.stopPropagation();
-                          handleBookNow(site);
-                        }}>
-                          Book Now
+                        <Button
+                          size="sm"
+                          disabled={site.status !== SiteStatus.AVAILABLE}
+                          variant={site.status === SiteStatus.AVAILABLE ? 'primary' : 'secondary'}
+                          className={site.status !== SiteStatus.AVAILABLE ? 'opacity-60 cursor-not-allowed' : ''}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (site.status === SiteStatus.AVAILABLE) handleBookNow(site);
+                          }}
+                        >
+                          {site.status === SiteStatus.AVAILABLE ? 'Book Now' : 'Unavailable'}
                         </Button>
                       </div>
                     </div>

@@ -4,6 +4,7 @@
  */
 
 import { get, post, put, del } from './client';
+import { ApiException } from './errors';
 import { shouldUseMockAuth } from './mock-auth';
 import type {
   Site,
@@ -198,6 +199,25 @@ const MOCK_SITES: Site[] = [
   },
 ];
 
+/**
+ * Use mock site data only when the API is unreachable (no HTTP response).
+ * Do not mask 401/403/5xx with hardcoded MOCK_SITES — that desyncs the dashboard from real bookings.
+ */
+const isUnreachableNetworkError = (error: unknown): boolean => {
+  if (error instanceof ApiException && error.statusCode === 0) return true;
+  if (error instanceof Error) {
+    const m = error.message;
+    return (
+      m === 'Network Error' ||
+      m.includes('ECONNREFUSED') ||
+      m.includes('Failed to fetch') ||
+      m.includes('Load failed') ||
+      m.includes('NetworkError')
+    );
+  }
+  return false;
+};
+
 const filterMockSites = (sites: Site[], filters?: SiteFilters): Site[] => {
   if (!filters) return sites;
 
@@ -219,12 +239,12 @@ export const getSites = async (filters?: SiteFilters | undefined): Promise<Site[
   try {
     const response = await get<ApiResponse<Site[]>>('/campsites', { params: filters });
     return response.data || [];
-  } catch {
-    if (shouldUseMockAuth()) {
+  } catch (error) {
+    if (shouldUseMockAuth() && isUnreachableNetworkError(error)) {
       await new Promise(resolve => setTimeout(resolve, 300));
       return filterMockSites(MOCK_SITES, filters);
     }
-    throw new Error('Failed to load sites');
+    throw error instanceof Error ? error : new Error('Failed to load sites');
   }
 };
 
@@ -241,8 +261,8 @@ export const getSitesPaginated = async (
       params: { page, limit, ...filters },
     });
     return response;
-  } catch {
-    if (shouldUseMockAuth()) {
+  } catch (error) {
+    if (shouldUseMockAuth() && isUnreachableNetworkError(error)) {
       await new Promise(resolve => setTimeout(resolve, 300));
       const filtered = filterMockSites(MOCK_SITES, filters);
       const start = (page - 1) * limit;
@@ -257,7 +277,7 @@ export const getSitesPaginated = async (
         hasPrevious: page > 1,
       };
     }
-    throw new Error('Failed to load sites');
+    throw error instanceof Error ? error : new Error('Failed to load sites');
   }
 };
 
@@ -271,8 +291,8 @@ export const getSiteById = async (id: string): Promise<Site> => {
       throw new Error(`Site not found: ${id}`);
     }
     return response.data;
-  } catch {
-    if (shouldUseMockAuth()) {
+  } catch (error) {
+    if (shouldUseMockAuth() && isUnreachableNetworkError(error)) {
       await new Promise(resolve => setTimeout(resolve, 200));
       const site = MOCK_SITES.find(s => s.id === id);
       if (!site) {
@@ -280,7 +300,7 @@ export const getSiteById = async (id: string): Promise<Site> => {
       }
       return site;
     }
-    throw new Error(`Site not found: ${id}`);
+    throw error instanceof Error ? error : new Error(`Site not found: ${id}`);
   }
 };
 

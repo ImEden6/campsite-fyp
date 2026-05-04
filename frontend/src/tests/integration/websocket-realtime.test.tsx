@@ -1,13 +1,15 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { waitFor } from '../utils/test-utils';
-import { renderHook, act } from '@testing-library/react';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, act, render } from '@testing-library/react';
+import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useWebSocketEvent } from '@/hooks/useWebSocketEvent';
 import { useBookingEvents } from '@/hooks/useBookingEvents';
 import { mockBooking } from '../utils/mock-data';
 import { createMockWebSocketServer, MockWebSocketServer } from '../utils/websocket-test-utils';
 import { createTestQueryClient } from '../utils/test-query-client';
+import { queryKeys } from '@/config/query-keys';
 
 // Mock Socket.io client
 const mockSocket = {
@@ -147,6 +149,44 @@ describe('WebSocket Real-time Updates', () => {
 
     await waitFor(() => {
       expect(onBookingUpdated).toHaveBeenCalledWith(updatedBooking);
+    });
+  });
+
+  it('refetches dashboard availability-summary bookings when booking:updated fires', async () => {
+    const queryFn = vi.fn().mockResolvedValue([]);
+
+    const TestHost = () => {
+      useQuery({
+        queryKey: queryKeys.bookings.availabilitySummary(),
+        queryFn,
+      });
+      useBookingEvents();
+      return null;
+    };
+
+    const queryClient = createTestQueryClient();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TestHost />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(queryFn).toHaveBeenCalledTimes(1);
+    });
+
+    const bookingUpdatedHandler = mockSocket.on.mock.calls.find(
+      (call) => call[0] === 'booking:updated'
+    )?.[1];
+    expect(bookingUpdatedHandler).toBeDefined();
+
+    act(() => {
+      bookingUpdatedHandler!({ ...mockBooking, status: 'CONFIRMED' as const });
+    });
+
+    await waitFor(() => {
+      expect(queryFn).toHaveBeenCalledTimes(2);
     });
   });
 
