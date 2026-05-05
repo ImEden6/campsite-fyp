@@ -11,6 +11,7 @@ import type {
   UpdateMapRequest,
   CreateModuleRequest,
   UpdateModuleRequest,
+  MapSaveModulePayload,
   BulkUpdateModulesRequest,
   ApiResponse
 } from '@/types';
@@ -125,7 +126,7 @@ export const duplicateModule = async (mapId: string, moduleId: string): Promise<
 
 export interface SaveMapRequest {
   mapId: string;
-  modules: UpdateModuleRequest[];
+  modules: MapSaveModulePayload[];
   metadata?: {
     name?: string;
     description?: string;

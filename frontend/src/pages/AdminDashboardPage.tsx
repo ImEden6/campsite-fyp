@@ -42,7 +42,7 @@ import { formatCurrency, CURRENCY_SYMBOL } from '@/utils/currency';
 /** List payloads may omit top-level siteId when only `site` is selected; prefer FK then nested id. */
 function resolveBookingSiteId(booking: {
   siteId?: string | null;
-  site?: { id?: string } | null;
+  site?: { id?: string } | null | undefined;
 }): string | undefined {
   const id = booking.siteId ?? booking.site?.id;
   return typeof id === 'string' && id.length > 0 ? id : undefined;

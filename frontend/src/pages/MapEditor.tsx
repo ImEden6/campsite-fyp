@@ -28,6 +28,7 @@ import {
 
 // Utils
 import { createNewModule } from '@/utils/moduleFactory';
+import { AddCommand } from '@/commands/AddCommand';
 import { renderBackgroundLayer, removeBackgroundLayer, updateBackgroundLocked } from '@/utils/backgroundLayer';
 import { getMapById } from '@/services/api/maps';
 import { ApiException } from '@/services/api/errors';
@@ -224,11 +225,11 @@ const MapEditorWorkspace: React.FC = () => {
 
             const newModule = createNewModule(moduleType, { x: canvasX, y: canvasY });
             if (newModule) {
-                useMapStore.getState()._addModule(newModule);
+                executeCommand(new AddCommand([newModule]));
                 markDirty();
             }
         },
-        [canvasRef, currentMap, markDirty]
+        [canvasRef, currentMap, executeCommand, markDirty]
     );
 
     const saveOptions = useMemo(

@@ -8,6 +8,16 @@ const prisma = getPrismaClient();
 
 const CAMPSITE_MODULE_TYPE = 'campsite';
 
+/** Prisma `Int` / Postgres INT4 — client must not send larger zIndex (e.g. timestamp-based). */
+const MAX_Z_INDEX_INT4 = 2147483647;
+
+function clampZIndex(z: unknown): number {
+  const n = typeof z === 'number' ? z : Number(z);
+  if (!Number.isFinite(n)) return 0;
+  const i = Math.floor(n);
+  return Math.min(Math.max(0, i), MAX_Z_INDEX_INT4);
+}
+
 /** Canvas box for map editor (px). Seed `sizeLength`/`sizeWidth` are lot dimensions in feet — do not use those as Fabric pixels. */
 const EDITOR_SITE_VISUAL_SIZE: Record<SiteType, { width: number; height: number }> = {
   [SiteType.CABIN]: { width: 80, height: 60 },
@@ -233,6 +243,17 @@ export class MapService {
       const mapKey = id || 'main-map';
       const modules = mapData.modules ?? [];
 
+      for (const mod of modules) {
+        const t = mod.type;
+        if (t === undefined || t === null || (typeof t === 'string' && t.trim() === '')) {
+          throw new ApiError(
+            400,
+            `Each map module must include a non-empty type (e.g. campsite, recreation) so the server can persist to Site vs MapFacility. Module id: ${mod.id}`,
+            'MAP_MODULE_TYPE_REQUIRED'
+          );
+        }
+      }
+
       const touchedSiteIds = new Set<string>();
       const incomingFacilityIds = new Set(
         modules.filter((m) => m.type && m.type !== CAMPSITE_MODULE_TYPE).map((m) => m.id)
@@ -335,7 +356,7 @@ export class MapService {
                 sizeLength: w,
                 sizeWidth: h,
                 rotation: mod.rotation ?? 0,
-                zIndex: mod.zIndex ?? 0,
+                zIndex: clampZIndex(mod.zIndex),
                 locked: mod.locked ?? false,
                 visible: mod.visible ?? true,
                 metadata: jsonMeta,
@@ -352,7 +373,7 @@ export class MapService {
                 sizeLength: w,
                 sizeWidth: h,
                 rotation: mod.rotation ?? 0,
-                zIndex: mod.zIndex ?? 0,
+                zIndex: clampZIndex(mod.zIndex),
                 locked: mod.locked ?? false,
                 visible: mod.visible ?? true,
                 metadata: jsonMeta,
@@ -402,6 +423,9 @@ export class MapService {
         serverVersion: map.updatedAt,
       };
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       logger.error('Error saving map', { id, error });
       throw new ApiError(500, 'Failed to save map data');
     }

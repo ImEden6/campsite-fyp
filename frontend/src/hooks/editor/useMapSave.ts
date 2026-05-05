@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { saveMap, type SaveMapRequest, type SaveMapResponse } from '@/services/api/maps';
-import type { CampsiteMap, AnyModule, UpdateModuleRequest } from '@/types';
+import type { CampsiteMap, AnyModule, MapSaveModulePayload } from '@/types';
 
 export interface UseMapSaveOptions {
     /** Callback on save success */
@@ -36,20 +36,23 @@ export interface UseMapSaveReturn {
 function computeModulesDiff(
     currentModules: AnyModule[],
     _originalModules: AnyModule[]
-): UpdateModuleRequest[] {
+): MapSaveModulePayload[] {
     // Send all modules - backend handles idempotent updates
     // For FYP scope, this is simpler and more reliable than complex diff logic
-    return currentModules.map(m => ({
-        id: m.id,
-        type: m.type,
-        position: m.position,
-        size: m.size,
-        rotation: m.rotation,
-        zIndex: m.zIndex,
-        metadata: m.metadata,
-        locked: m.locked,
-        visible: m.visible,
-    }));
+    return currentModules.map((m) => {
+        const type = m.type;
+        return {
+            id: m.id,
+            type: type ?? 'custom',
+            position: m.position,
+            size: m.size,
+            rotation: m.rotation,
+            zIndex: m.zIndex,
+            metadata: m.metadata,
+            locked: m.locked,
+            visible: m.visible,
+        };
+    });
 }
 
 export function useMapSave(options: UseMapSaveOptions): UseMapSaveReturn {

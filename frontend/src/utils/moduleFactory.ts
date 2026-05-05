@@ -15,6 +15,7 @@ type FabricUtil = {
 };
 const fabricUtil = fabricImpl.util as FabricUtil;
 import type { AnyModule, ModuleType, Position, Size } from '@/types';
+import { useMapStore } from '@/stores/mapStore';
 import type { FabricObject, FabricGroup } from '@/types/fabricTypes';
 import {
     hasDataProperty,
@@ -749,17 +750,29 @@ const DEFAULT_MODULE_SIZES: Record<ModuleType, Size> = {
     custom: { width: 80, height: 80 },
 };
 
+/** PostgreSQL INT / Prisma Int max for zIndex on MapFacility */
+const MAX_Z_INDEX = 2_147_483_647;
+
 /**
- * Generate a unique z-index value
- * Uses timestamp with random component to ensure uniqueness across instances
- * This avoids global state issues in SSR or multiple instances
+ * Next stacking order above current modules. Must fit INT4 — do not use timestamps×1000.
  */
 function getUniqueZIndex(): number {
-    const now = Date.now();
-    // Use timestamp with random component for guaranteed uniqueness
-    // Random component (0-999) handles rapid creation within same millisecond
-    const randomComponent = Math.floor(Math.random() * 1000);
-    return now * 1000 + randomComponent;
+    try {
+        const modules = useMapStore.getState().getModules();
+        let maxZ = 0;
+        for (const m of modules) {
+            const raw = m.zIndex;
+            const z =
+                typeof raw === 'number' && Number.isFinite(raw)
+                    ? Math.min(Math.max(0, Math.floor(raw)), MAX_Z_INDEX)
+                    : 0;
+            if (z > maxZ) maxZ = z;
+        }
+        const next = maxZ + 1;
+        return next > MAX_Z_INDEX ? 1 : next;
+    } catch {
+        return 1;
+    }
 }
 
 /**

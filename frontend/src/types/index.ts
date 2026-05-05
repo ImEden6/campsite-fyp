@@ -494,6 +494,22 @@ export interface CreateModuleRequest {
   metadata: Record<string, unknown>;
 }
 
+/**
+ * Module snapshot for POST `/maps/:id/save`.
+ * `type` is required so the backend routes to `Site` vs `MapFacility` (e.g. recreation, toilet).
+ */
+export interface MapSaveModulePayload {
+  id: string;
+  type: ModuleType;
+  position: Position;
+  size: Size;
+  rotation?: number | undefined;
+  zIndex?: number | undefined;
+  metadata?: Record<string, unknown> | undefined;
+  locked?: boolean | undefined;
+  visible?: boolean | undefined;
+}
+
 export interface UpdateModuleRequest {
   id: string;
   /** Editor module kind; required for creating non-`Site` rows on save. */

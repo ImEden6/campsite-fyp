@@ -3,7 +3,7 @@
  * List of all customer bookings with search and filters
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, RefreshCw, Calendar, Filter } from 'lucide-react';

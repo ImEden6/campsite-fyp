@@ -293,7 +293,7 @@ export function useTransformHandler(
 
             const cx = snappedTL.x + ew / 2;
             const cy = snappedTL.y + eh / 2;
-            obj.set({ left: cx, top: cy });
+            obj.set?.({ left: cx, top: cy });
             obj.setCoords?.();
         };
 
