@@ -19,6 +19,7 @@ import { useEditorStore } from '@/stores/editorStore';
 const fabric: any = fabricImpl;
 import type { FabricCanvas, FabricObject, Point } from '@/types/fabricTypes';
 import { isGridObject } from '@/types/fabricTypes';
+import { snapWorldPointToGrid } from '@/utils/gridSnap';
 
 // ============================================================================
 // TYPES
@@ -189,14 +190,10 @@ export function useGrid(
     /**
      * Snap a point to the nearest grid intersection
      */
-    const snapPointToGrid = useCallback((point: Point): Point => {
-        if (!snapToGrid) return point;
-
-        return {
-            x: Math.round(point.x / gridSize) * gridSize,
-            y: Math.round(point.y / gridSize) * gridSize,
-        };
-    }, [snapToGrid, gridSize]);
+    const snapPointToGrid = useCallback(
+        (point: Point): Point => snapWorldPointToGrid(point, gridSize, snapToGrid),
+        [snapToGrid, gridSize]
+    );
 
     // ========================================================================
     // EFFECTS

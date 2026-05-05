@@ -14,10 +14,12 @@
 
 import { useCallback, useEffect, useRef, useMemo } from 'react';
 import type { FabricCanvas, FabricEvent, FabricObject } from '@/types/fabricTypes';
-import { getModuleId } from '@/types/fabricTypes';
+import { getModuleId, isGridObject } from '@/types/fabricTypes';
 import type { Command } from '@/commands/Command';
 import { MoveCommand, TransformCommand } from '@/commands';
 import { extractModuleChanges } from '@/utils/moduleFactory';
+import { snapWorldPointToGrid } from '@/utils/gridSnap';
+import { useEditorStore } from '@/stores/editorStore';
 
 // ============================================================================
 // TYPES
@@ -267,6 +269,60 @@ export function useTransformHandler(
     // FABRIC EVENT HANDLERS
     // ========================================================================
 
+    /**
+     * While snap is on, snap module top-left to grid each move tick (Fabric center origin → TL → snap → center).
+     */
+    const snapWhileMoving = useCallback((e: FabricEvent) => {
+        const target = e.target;
+        if (!target || isGridObject(target)) return;
+
+        const { snapToGrid: snapOn, gridSize } = useEditorStore.getState();
+        if (!snapOn || gridSize <= 0) return;
+
+        const applyToModule = (obj: FabricObject) => {
+            if (!getModuleId(obj)) return;
+
+            const endState = captureObjectState(obj);
+            if (!endState) return;
+
+            const ew = endState.width * endState.scaleX;
+            const eh = endState.height * endState.scaleY;
+            const tl = centerToTopLeft(endState.left, endState.top, ew, eh);
+            const snappedTL = snapWorldPointToGrid({ x: tl.x, y: tl.y }, gridSize, true);
+            if (tl.x === snappedTL.x && tl.y === snappedTL.y) return;
+
+            const cx = snappedTL.x + ew / 2;
+            const cy = snappedTL.y + eh / 2;
+            obj.set({ left: cx, top: cy });
+            obj.setCoords?.();
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const t = target as any;
+        if (t.type === 'activeSelection') {
+            const objs: FabricObject[] = t.getObjects?.() ?? [];
+            if (objs.length === 0) return;
+            if (objs.length === 1) {
+                applyToModule(objs[0]!);
+                return;
+            }
+            const bbox =
+                typeof t.getBoundingRect === 'function' ? t.getBoundingRect(true) : null;
+            if (!bbox) return;
+            const tl = { x: bbox.left, y: bbox.top };
+            const snappedTL = snapWorldPointToGrid(tl, gridSize, true);
+            const dx = snappedTL.x - tl.x;
+            const dy = snappedTL.y - tl.y;
+            if (dx === 0 && dy === 0) return;
+            t.set({ left: (t.left ?? 0) + dx, top: (t.top ?? 0) + dy });
+            t.setCoords?.();
+
+            return;
+        }
+
+        applyToModule(target as FabricObject);
+    }, []);
+
     const handleObjectMoving = useCallback((e: FabricEvent) => {
         if (stateRef.current === 'IDLE') {
             const target = e.target;
@@ -321,17 +377,19 @@ export function useTransformHandler(
         if (!canvas) return;
 
         canvas.on('object:moving', handleObjectMoving);
+        canvas.on('object:moving', snapWhileMoving);
         canvas.on('object:scaling', handleObjectScaling);
         canvas.on('object:rotating', handleObjectRotating);
         canvas.on('object:modified', handleObjectModified);
 
         return () => {
             canvas.off('object:moving', handleObjectMoving);
+            canvas.off('object:moving', snapWhileMoving);
             canvas.off('object:scaling', handleObjectScaling);
             canvas.off('object:rotating', handleObjectRotating);
             canvas.off('object:modified', handleObjectModified);
         };
-    }, [canvas, handleObjectMoving, handleObjectScaling, handleObjectRotating, handleObjectModified]);
+    }, [canvas, handleObjectMoving, snapWhileMoving, handleObjectScaling, handleObjectRotating, handleObjectModified]);
 
     // ========================================================================
     // API
