@@ -356,11 +356,7 @@ export const uploadSiteImages = async (siteId: string, files: File[]): Promise<s
     formData.append('images', file);
   });
 
-  const response = await post<ApiResponse<string[]>>(`/campsites/${siteId}/images`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await post<ApiResponse<string[]>>(`/campsites/${siteId}/images`, formData);
   return response.data || [];
 };
 

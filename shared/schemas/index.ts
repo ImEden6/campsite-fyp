@@ -116,13 +116,19 @@ export const siteSizeSchema = z.object({
   unit: z.enum(['feet', 'meters']),
 });
 
+/** Public URLs or same-origin paths (e.g. /uploads/...) returned by the site image upload API */
+export const siteImageRefSchema = z.union([
+  z.string().url(),
+  z.string().regex(/^\/.+/),
+]);
+
 export const createSiteSchema = z.object({
   name: z.string().min(1).max(VALIDATION_RULES.SITE.NAME_MAX_LENGTH),
   type: siteTypeSchema,
   capacity: z.number().min(1).max(VALIDATION_RULES.SITE.MAX_CAPACITY),
   description: z.string().max(VALIDATION_RULES.SITE.DESCRIPTION_MAX_LENGTH).optional(),
   amenities: z.array(z.string()).default([]),
-  images: z.array(z.string().url()).default([]),
+  images: z.array(siteImageRefSchema).default([]),
   basePrice: priceSchema,
   maxVehicles: z.number().min(0).max(VALIDATION_RULES.SITE.MAX_VEHICLES),
   maxTents: z.number().min(0).max(VALIDATION_RULES.SITE.MAX_TENTS),

@@ -38,12 +38,12 @@ export class LocalUploadService implements IUploadService {
   }
 
   // Validate file
-  private validateFile(file: Express.Multer.File): void {
+  private validateFile(file: Express.Multer.File, fieldLabel: string): void {
     // Check file size (5MB limit for avatars)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       throw new ValidationError([{
-        field: 'avatar',
+        field: fieldLabel,
         message: 'File size exceeds 5MB limit',
         code: 'FILE_TOO_LARGE',
       }]);
@@ -53,7 +53,7 @@ export class LocalUploadService implements IUploadService {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.mimetype)) {
       throw new ValidationError([{
-        field: 'avatar',
+        field: fieldLabel,
         message: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed',
         code: 'INVALID_FILE_TYPE',
       }]);
@@ -77,7 +77,7 @@ export class LocalUploadService implements IUploadService {
 
     if (!isValid) {
       throw new ValidationError([{
-        field: 'avatar',
+        field: 'image',
         message: 'File content does not match file type',
         code: 'INVALID_FILE_CONTENT',
       }]);
@@ -107,18 +107,25 @@ export class LocalUploadService implements IUploadService {
     } catch (error) {
       logger.error('Image processing failed', error);
       throw new ValidationError([{
-        field: 'avatar',
+        field: 'image',
         message: 'Failed to process image',
         code: 'IMAGE_PROCESSING_FAILED',
       }]);
     }
   }
 
+  private generateSiteFilename(siteId: string): string {
+    const timestamp = Date.now();
+    const random = crypto.randomBytes(8).toString('hex');
+    const safeId = siteId.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
+    return `site_${safeId}_${timestamp}_${random}.webp`;
+  }
+
   // Upload avatar
   async uploadAvatar(file: Express.Multer.File, userId: string): Promise<UploadResult> {
     try {
       // Validate file
-      this.validateFile(file);
+      this.validateFile(file, 'avatar');
 
       // Process image
       const processedBuffer = await this.processImage(file.buffer);
@@ -147,6 +154,36 @@ export class LocalUploadService implements IUploadService {
       };
     } catch (error) {
       logger.error('Avatar upload failed', { userId, error });
+      throw error;
+    }
+  }
+
+  async uploadSiteImage(file: Express.Multer.File, siteId: string): Promise<UploadResult> {
+    try {
+      this.validateFile(file, 'images');
+
+      const processedBuffer = await sharp(file.buffer)
+        .resize(1920, 1440, {
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .toFormat('webp', { quality: 88 })
+        .toBuffer();
+
+      const filename = this.generateSiteFilename(siteId);
+      const filePath = path.join(this.uploadDir, filename);
+      await fs.writeFile(filePath, processedBuffer);
+
+      const url = `${this.staticPath}/${filename}`;
+      logger.info('Site image uploaded', { siteId, filename, size: processedBuffer.length });
+      return {
+        url,
+        key: filename,
+        size: processedBuffer.length,
+        mimeType: 'image/webp',
+      };
+    } catch (error) {
+      logger.error('Site image upload failed', { siteId, error });
       throw error;
     }
   }

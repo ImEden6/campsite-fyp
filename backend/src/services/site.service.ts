@@ -1,5 +1,5 @@
 
-import { Site, SiteStatus, SiteType } from '@prisma/client';
+import { Site, SiteStatus, SiteType, Prisma } from '@prisma/client';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 import { getPrismaClient } from '@/database';
@@ -81,7 +81,7 @@ export class SiteService {
         }, SITE_CACHE_TTL);
     }
 
-    async createSite(data: Omit<Site, 'id' | 'createdAt' | 'updatedAt'>): Promise<Site> {
+    async createSite(data: Prisma.SiteUncheckedCreateInput): Promise<Site> {
         try {
             const site = await prisma.site.create({
                 data,
@@ -100,7 +100,7 @@ export class SiteService {
         }
     }
 
-    async updateSite(id: string, data: Partial<Site>): Promise<Site> {
+    async updateSite(id: string, data: Prisma.SiteUpdateInput): Promise<Site> {
         try {
             const site = await prisma.site.update({
                 where: { id },

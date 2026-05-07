@@ -2,6 +2,8 @@
 
 export interface IUploadService {
   uploadAvatar(file: Express.Multer.File, userId: string): Promise<UploadResult>;
+  /** Campsite listing photo (larger max dimension than avatar). */
+  uploadSiteImage(file: Express.Multer.File, siteId: string): Promise<UploadResult>;
   deleteAvatar(key: string): Promise<void>;
   getFileUrl(key: string): string;
 }

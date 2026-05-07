@@ -3,10 +3,11 @@
  * Map management dashboard for administrators
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import SiteFormModal from '@/components/admin/SiteFormModal';
+import AddSiteWizard from '@/components/admin/AddSiteWizard';
 import { useLazyFramerMotion } from '@/hooks/useLazyFramerMotion';
 import {
   MapPin,
@@ -34,6 +35,7 @@ import { queryKeys } from '@/config/query-keys';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
 
 import { BookingStatus, SiteType, SiteStatus, UserRole } from '@/types';
 import type { Site } from '@/types';
@@ -219,6 +221,8 @@ export const AdminDashboardPage: React.FC = () => {
   const MotionDiv = motion?.div || 'div';
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showToast = useUIStore((s) => s.showToast);
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === UserRole.ADMIN;
   const isStaff = user?.role === UserRole.STAFF;
@@ -375,15 +379,46 @@ export const AdminDashboardPage: React.FC = () => {
 
   const stats = isStaff ? allStats.filter(s => s.staffVisible) : allStats;
 
-  // Modal state
+  // Modal state — SiteFormModal is edit-only; AddSiteWizard handles new sites
   const [siteModalOpen, setSiteModalOpen] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [defaultSiteType, setDefaultSiteType] = useState<SiteType>(SiteType.TENT);
+  const [addWizardOpen, setAddWizardOpen] = useState(false);
+  const [wizardCompleteSiteId, setWizardCompleteSiteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const complete = searchParams.get('completeSite');
+    const pick = searchParams.get('pickNewSites');
+    if (!complete && !pick) return;
+
+    const next = new URLSearchParams(searchParams);
+    if (complete) {
+      next.delete('completeSite');
+      setSearchParams(next, { replace: true });
+      setWizardCompleteSiteId(complete);
+      setAddWizardOpen(true);
+      return;
+    }
+    if (pick) {
+      next.delete('pickNewSites');
+      setSearchParams(next, { replace: true });
+      const ids = pick.split(',').map((id) => id.trim()).filter(Boolean);
+      if (ids.length === 1) {
+        setWizardCompleteSiteId(ids[0]!);
+        setAddWizardOpen(true);
+      } else if (ids.length > 1) {
+        showToast(
+          `${ids.length} new campsite pads were saved. Open Sites to add photos for each, or pick one from the map.`,
+          'success'
+        );
+      }
+    }
+  }, [searchParams, setSearchParams, showToast]);
 
   const handleAddSite = (type: SiteType) => {
-    setEditingSite(null);
     setDefaultSiteType(type);
-    setSiteModalOpen(true);
+    setWizardCompleteSiteId(null);
+    setAddWizardOpen(true);
   };
 
   const handleEditSite = (site: Site) => {
@@ -394,6 +429,11 @@ export const AdminDashboardPage: React.FC = () => {
   const handleModalClose = () => {
     setSiteModalOpen(false);
     setEditingSite(null);
+  };
+
+  const handleWizardClose = () => {
+    setAddWizardOpen(false);
+    setWizardCompleteSiteId(null);
   };
 
   const handleDeleteSite = async (siteId: string) => {
@@ -559,9 +599,16 @@ export const AdminDashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* Site Form Modal */}
+      <AddSiteWizard
+        isOpen={addWizardOpen}
+        onClose={handleWizardClose}
+        defaultSiteType={defaultSiteType}
+        completeSiteId={wizardCompleteSiteId}
+      />
+
+      {/* Site Form Modal (edit existing only) */}
       <SiteFormModal
-        isOpen={siteModalOpen}
+        isOpen={siteModalOpen && editingSite !== null}
         onClose={handleModalClose}
         editingSite={editingSite}
         defaultType={defaultSiteType}

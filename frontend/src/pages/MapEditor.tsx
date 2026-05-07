@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useLayoutEffect, useCallback, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     ArrowLeft, Save, Undo2, Redo2, ZoomIn, ZoomOut, Maximize2,
     Grid3X3, Magnet, Hand, Layers, Settings, Download, Ruler,
@@ -31,6 +32,7 @@ import { createNewModule } from '@/utils/moduleFactory';
 import { AddCommand } from '@/commands/AddCommand';
 import { renderBackgroundLayer, removeBackgroundLayer, updateBackgroundLocked } from '@/utils/backgroundLayer';
 import { getMapById } from '@/services/api/maps';
+import type { SaveMapResponse } from '@/services/api/maps';
 import { ApiException } from '@/services/api/errors';
 
 // Types
@@ -64,8 +66,13 @@ const toolDivider = 'w-px h-6 bg-secondary-300/80 dark:bg-secondary-700/70 mx-0.
  * Canvas + Fabric mount only after map data exists so the container ref is in the DOM
  * when useFabricCanvas runs (avoids zero-size / never-initialized canvas).
  */
+const WIZ_MAP_FIRST_KEY = 'addSiteWizard_mapFirst';
+const WIZ_PREV_CAMPSITES_KEY = 'addSiteWizard_prevCampsiteIds';
+
 const MapEditorWorkspace: React.FC = () => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const [searchParams] = useSearchParams();
     const [hasFitted, setHasFitted] = useState(false);
 
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -117,6 +124,7 @@ const MapEditorWorkspace: React.FC = () => {
         zoomOut,
         fitToScreen,
         togglePanMode,
+        restoreSelection,
         showGrid,
         snapToGrid,
         gridSize,
@@ -132,6 +140,23 @@ const MapEditorWorkspace: React.FC = () => {
     } = useMapEditor(editorOptions);
 
     const selectedCount = selectedIds.length;
+
+    const focusSiteId = searchParams.get('siteId');
+    const focusAppliedRef = useRef(false);
+
+    useEffect(() => {
+        focusAppliedRef.current = false;
+    }, [focusSiteId, currentMap?.id]);
+
+    useEffect(() => {
+        if (!isReady || !focusSiteId || !currentMap?.modules?.length) return;
+        if (focusAppliedRef.current) return;
+        const exists = currentMap.modules.some((m) => m.id === focusSiteId);
+        if (!exists) return;
+        focusAppliedRef.current = true;
+        restoreSelection([focusSiteId]);
+        setShowPropertiesPanel(true);
+    }, [isReady, focusSiteId, currentMap, restoreSelection]);
 
     useLayoutEffect(() => {
         const el = containerRef.current;
@@ -236,11 +261,39 @@ const MapEditorWorkspace: React.FC = () => {
         () => ({
             getCurrentMap: () => useMapStore.getState().currentMap,
             getIsDirty: () => useMapStore.getState().isDirty,
-            onSuccess: () => {
+            onSuccess: (response: SaveMapResponse) => {
                 clearDirty();
+                void queryClient.invalidateQueries({ queryKey: ['sites'] });
                 import('@/stores/uiStore').then(({ useUIStore }) => {
                     useUIStore.getState().showToast('Map saved successfully', 'success');
                 });
+
+                if (sessionStorage.getItem(WIZ_MAP_FIRST_KEY) === '1') {
+                    sessionStorage.removeItem(WIZ_MAP_FIRST_KEY);
+                    let prev = new Set<string>();
+                    try {
+                        prev = new Set(
+                            JSON.parse(sessionStorage.getItem(WIZ_PREV_CAMPSITES_KEY) || '[]') as string[]
+                        );
+                    } catch {
+                        prev = new Set();
+                    }
+                    sessionStorage.removeItem(WIZ_PREV_CAMPSITES_KEY);
+
+                    const campsiteIds = response.modules
+                        .filter((m) => m.type === 'campsite')
+                        .map((m) => m.id);
+                    const newIds = campsiteIds.filter((id) => !prev.has(id));
+                    const returnTo = searchParams.get('returnTo') || '/admin';
+
+                    if (newIds.length === 1) {
+                        navigate(`${returnTo}?completeSite=${encodeURIComponent(newIds[0]!)}`);
+                        return;
+                    }
+                    if (newIds.length > 1) {
+                        navigate(`${returnTo}?pickNewSites=${encodeURIComponent(newIds.join(','))}`);
+                    }
+                }
             },
             onError: (err: Error) => {
                 import('@/stores/uiStore').then(({ useUIStore }) => {
@@ -256,7 +309,7 @@ const MapEditorWorkspace: React.FC = () => {
                 useEditorStore.getState().syncVisualIdSetsFromModules(merged);
             },
         }),
-        [clearDirty]
+        [clearDirty, navigate, queryClient, searchParams]
     );
 
     const { save: handleSave, isSaving, setOriginalMap } = useMapSave(saveOptions);

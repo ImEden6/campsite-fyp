@@ -1,13 +1,47 @@
 
 import { Router, Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 import siteService from '@/services/site.service';
 import cacheService, { CacheService } from '@/services/cache.service';
 import { authenticate, authorize } from '@/middleware/auth';
-import { ApiError } from '@/utils/errors';
+import { ApiError, ValidationError } from '@/utils/errors';
 import { SiteType, SiteStatus, Site as PrismaSite } from '@prisma/client';
 import logger from '@/utils/logger';
+import { uploadService } from '@/services/upload';
+import { config } from '@/config';
+import { normalizeSiteCreateBody, normalizeSiteUpdateBody } from '@/utils/sitePayload';
 
 const router = Router();
+
+const siteImagesUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new ValidationError([
+          {
+            field: 'images',
+            message: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed',
+            code: 'INVALID_FILE_TYPE',
+          },
+        ])
+      );
+    }
+  },
+});
+
+function uploadKeyFromPublicUrl(imageUrl: string): string | null {
+  const prefix = `${config.upload.staticPath.replace(/\/$/, '')}/`;
+  const trimmed = imageUrl.trim();
+  if (!trimmed.startsWith(prefix)) return null;
+  const key = trimmed.slice(prefix.length);
+  if (!key || key.includes('..') || key.includes('/') || key.includes('\\')) return null;
+  return key;
+}
 
 /**
  * Transform raw Prisma Site to frontend-compatible format
@@ -130,7 +164,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.post('/', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const site = await siteService.createSite(req.body);
+        const prismaData = normalizeSiteCreateBody(req.body as Record<string, unknown>);
+        const site = await siteService.createSite(prismaData);
 
         // Invalidate list cache
         await cacheService.safeFlushPattern('sites:list:*');
@@ -153,7 +188,8 @@ router.post('/', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Reques
 router.put('/:id', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-        const site = await siteService.updateSite(id as string, req.body);
+        const prismaData = normalizeSiteUpdateBody(req.body as Record<string, unknown>);
+        const site = await siteService.updateSite(id as string, prismaData);
 
         // Invalidate list and detail cache
         await Promise.all([
@@ -161,6 +197,101 @@ router.put('/:id', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Requ
             cacheService.safeDelete(`sites:detail:${id}`),
         ]);
         logger.info('Site cache invalidated after update', { siteId: id });
+
+        res.json({
+            success: true,
+            data: transformSite(site),
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * POST /campsites/:id/images
+ * Append listing photos (multipart field "images")
+ */
+router.post(
+    '/:id/images',
+    authenticate,
+    authorize('ADMIN', 'MANAGER'),
+    siteImagesUpload.array('images', 12),
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            const files = req.files as Express.Multer.File[] | undefined;
+            if (!files?.length) {
+                throw new ApiError(400, 'No image files uploaded');
+            }
+
+            const existing = await siteService.getSiteById(id as string);
+            if (!existing) {
+                throw new ApiError(404, 'Campsite not found');
+            }
+
+            const newUrls: string[] = [];
+            for (const file of files) {
+                const result = await uploadService.uploadSiteImage(file, id as string);
+                newUrls.push(result.url);
+            }
+
+            const merged = [...(existing.images || []), ...newUrls];
+            const site = await siteService.updateSite(id as string, { images: merged });
+
+            await Promise.all([
+                cacheService.safeFlushPattern('sites:list:*'),
+                cacheService.safeDelete(`sites:detail:${id}`),
+            ]);
+
+            res.status(201).json({
+                success: true,
+                data: newUrls,
+                site: transformSite(site),
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * DELETE /campsites/:id/images
+ * Body: { imageUrl: string } — must match a stored URL for this site
+ */
+router.delete('/:id/images', authenticate, authorize('ADMIN', 'MANAGER'), async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const imageUrl = typeof req.body?.imageUrl === 'string' ? req.body.imageUrl.trim() : '';
+        if (!imageUrl) {
+            throw new ApiError(400, 'imageUrl is required');
+        }
+
+        const existing = await siteService.getSiteById(id as string);
+        if (!existing) {
+            throw new ApiError(404, 'Campsite not found');
+        }
+
+        const current = existing.images || [];
+        if (!current.includes(imageUrl)) {
+            throw new ApiError(400, 'Image is not attached to this site');
+        }
+
+        const key = uploadKeyFromPublicUrl(imageUrl);
+        if (key?.startsWith('site_')) {
+            try {
+                await uploadService.deleteAvatar(key);
+            } catch (e) {
+                logger.warn('Site image file delete failed', { id, key, e });
+            }
+        }
+
+        const nextImages = current.filter((u) => u !== imageUrl);
+        const site = await siteService.updateSite(id as string, { images: nextImages });
+
+        await Promise.all([
+            cacheService.safeFlushPattern('sites:list:*'),
+            cacheService.safeDelete(`sites:detail:${id}`),
+        ]);
 
         res.json({
             success: true,
