@@ -7,32 +7,34 @@ A full-stack campsite management platform for booking, site management, equipmen
 ### Option 1: Docker (Recommended)
 
 ```bash
-# Build the images first
-docker-compose build
+# Start all services (handles build & run via Nginx proxy on port 80)
+npm run docker:up
 
-# Start all services
-docker-compose up -d
+# OR start in background using docker compose directly
+docker compose up -d
 
 # Initialize database (Required for first run)
-docker-compose exec backend npm run db:setup
+docker compose exec backend npm run db:setup
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+npm run docker:down
+# OR
+docker compose down
 ```
 
 ### Option 2: Local Development
 
 ```bash
-# Install all dependencies
-npm run install:all
+# Install dependencies (automatically handles all monorepo workspaces)
+npm install
 
 # Start development servers
-npm run dev           # Frontend only
-npm run dev:backend   # Backend only
-npm run dev:all       # Both (if configured)
+npm run dev             # Start frontend dev server
+# In another terminal:
+cd backend && npm run dev  # Start backend dev server
 ```
 
 ###  Quick Reference: Access & Commands
@@ -41,31 +43,40 @@ npm run dev:all       # Both (if configured)
 Run local development with hot-reloading:
 ```bash
 # Docker (Recommended)
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 # OR Local NPM
-npm run dev:all
+npm install
+npm run dev                # Starts frontend (Vite)
+# (In backend directory)
+npm run dev                # Starts backend (Nodemon)
 ```
 
-| Service | Access URL | Port |
-| :--- | :--- | :--- |
-| **Frontend** | [http://localhost:5173](http://localhost:5173) | `5173` |
-| **Backend API** | [http://localhost:5000](http://localhost:5000) | `5000` |
-| **Prisma Studio** | [http://localhost:5555](http://localhost:5555) | `5555` |
+| Service | Access URL | Port | Description |
+| :--- | :--- | :--- | :--- |
+| **App (via Proxy)** | [http://localhost](http://localhost) | `80` | Production-like unified entry (recommended) |
+| **Frontend (Direct)** | [http://localhost:5173](http://localhost:5173) | `5173` | React/Vite development server |
+| **Backend API** | [http://localhost:5000](http://localhost:5000) | `5000` | Express API directly |
+| **Prisma Studio** | [http://localhost:5555](http://localhost:5555) | `5555` | Database browser GUI |
 
 <br />
 
 **Production Environment**
 Run the optimized production build:
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+# Using root npm script
+npm run docker:up
+
+# OR using docker compose directly
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 ```
 
-| Service | Access URL | Port |
-| :--- | :--- | :--- |
-| **Frontend** | [http://localhost:5137](http://localhost:5137) | `5137` |
-| **Backend API** | [http://localhost:5000](http://localhost:5000) | `5000` |
-| **Prisma Studio** | [http://localhost:5555](http://localhost:5555) | `5555` |
+| Service | Access URL | Port | Description |
+| :--- | :--- | :--- | :--- |
+| **App (via Proxy)** | [http://localhost](http://localhost) | `80` | Production same-origin access URL |
+| **Frontend (Direct)** | [http://localhost:5137](http://localhost:5137) | `5137` | Frontend production container |
+| **Backend API** | [http://localhost:5000](http://localhost:5000) | `5000` | Express API directly |
+| **Prisma Studio** | [http://localhost:5555](http://localhost:5555) | `5555` | Database browser GUI |
 
 ---
 
@@ -185,7 +196,7 @@ npx prisma studio           # Open database GUI
 npx prisma generate         # Regenerate client
 ```
 
-> **Note:** Prisma Studio is accessible in the Production build (docker-compose.prod.yml) on port 5555 for **demonstration and evaluation purposes only**. In a true production environment, this service would be removed and database access restricted.
+> **Note:** Prisma Studio is accessible in the Production build stack (`docker compose` with `docker-compose.prod.yml`) on port 5555 for **demonstration and evaluation purposes only**. In a true production environment, this service would be removed and database access restricted.
 
 ---
 
