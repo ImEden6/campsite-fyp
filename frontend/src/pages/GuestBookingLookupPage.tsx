@@ -71,7 +71,7 @@ const GuestBookingLookupPage: React.FC = () => {
                   required
                   value={bookingNumber}
                   onChange={(e) => setBookingNumber(e.target.value.toUpperCase())}
-                  placeholder="e.g. BK-001"
+                  placeholder="e.g. BK-7K2M9XQ4"
                   className="pl-11 py-2.5 bg-white/50 dark:bg-night-surface/50 backdrop-blur-sm border-secondary-300 dark:border-secondary-600 focus:ring-2 focus:ring-primary-500/50"
                 />
               </div>

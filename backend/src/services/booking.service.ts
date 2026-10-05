@@ -6,6 +6,7 @@ import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
 import { config } from '@/config';
+import { generateBookingNumber, isBookingNumberCollision } from '@/utils/bookingNumber';
 import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
 import { publishPaymentEvent, PAYMENT_EVENTS } from '@/socket/payment-events';
 
@@ -25,6 +26,26 @@ const SITE_HOLDING_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'CHECKED
 const PAYMENT_IN_FLIGHT_MINUTES = 60;
 
 const SITE_UNAVAILABLE_MESSAGE = 'Site is not available for these dates';
+
+const BOOKING_NUMBER_ATTEMPTS = 5;
+
+/**
+ * Run a booking insert, retrying with a fresh number if (very rarely) the random one is taken.
+ * The whole transaction is retried because a failed insert aborts it.
+ */
+async function withBookingNumberRetry<T>(insert: () => Promise<T>): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await insert();
+    } catch (error) {
+      if (!isBookingNumberCollision(error)) throw error;
+      if (attempt >= BOOKING_NUMBER_ATTEMPTS) {
+        logger.error('Could not find a free booking number', { attempts: attempt });
+        throw new ApiError(500, 'Could not allocate a booking number, please try again');
+      }
+    }
+  }
+}
 
 /**
  * True when Postgres rejected a write because of the `bookings_no_overlap` exclusion constraint,
@@ -300,7 +321,7 @@ export class BookingService {
     // 4. Transaction: Verify Site & Create
     // The overlap check below gives a clean error in the common case; the database constraint
     // catches the race where two requests pass it at once.
-    const booking = await prisma.$transaction(async (tx) => {
+    const booking = await withBookingNumberRetry(() => prisma.$transaction(async (tx) => {
       // Check Site
       const site = await tx.site.findUnique({ where: { id: siteId } });
       if (!site) throw new ApiError(404, 'Site not found');
@@ -326,7 +347,7 @@ export class BookingService {
       const totalAmount = site.basePrice * days; // + equipment logic?
 
       // Create Booking
-      const bookingNumber = `BK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const bookingNumber = generateBookingNumber();
 
       return await tx.booking.create({
         data: {
@@ -353,7 +374,7 @@ export class BookingService {
         },
         include: { guests: true }
       });
-    }).catch((error: unknown) => {
+    })).catch((error: unknown) => {
       if (isOverlapViolation(error)) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
       throw error;
     });
