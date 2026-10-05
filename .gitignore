@@ -97,3 +97,11 @@ tss.bat
 scratch/
 # Entire tree (stuff/* only matched one level)
 stuff/
+# Generated test / debug output (never commit)
+frontend/*-fail.json
+frontend/*-debug.html
+frontend/debug.html
+frontend/test-results.json
+frontend/test_result.json
+frontend/vitest-report.json
+*.tsbuildinfo
