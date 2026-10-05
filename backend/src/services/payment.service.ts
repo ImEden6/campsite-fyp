@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
-import { PaymentStatus, PaymentMethod } from '@prisma/client';
+import { PaymentStatus, PaymentMethod, BookingStatus } from '@prisma/client';
 
 import prisma from '@/database';
 
@@ -134,6 +134,8 @@ class PaymentService {
                 });
 
                 if (claimed.count === 1) {
+                    // The increment locks the booking row until this transaction commits, so the
+                    // status read back here cannot change underneath the follow-up update.
                     const booking = await tx.booking.update({
                         where: { id: payment.bookingId },
                         data: { paidAmount: { increment: payment.amount } },
@@ -142,7 +144,14 @@ class PaymentService {
                     const fullyPaid = toCents(booking.paidAmount) >= toCents(booking.totalAmount);
                     await tx.booking.update({
                         where: { id: payment.bookingId },
-                        data: { paymentStatus: fullyPaid ? PaymentStatus.PAID : PaymentStatus.PARTIAL },
+                        data: {
+                            paymentStatus: fullyPaid ? PaymentStatus.PAID : PaymentStatus.PARTIAL,
+                            // Paying in full confirms a pending booking. Anything else (e.g. already
+                            // cancelled while the payment was in flight) keeps its status.
+                            ...(fullyPaid && booking.status === BookingStatus.PENDING
+                                ? { status: BookingStatus.CONFIRMED }
+                                : {}),
+                        },
                     });
                 }
 

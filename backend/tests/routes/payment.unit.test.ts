@@ -175,7 +175,7 @@ describe('POST /payments/confirm/:id', () => {
     prismaMock.payment.findFirst.mockResolvedValue(payment);
     prismaMock.payment.findUniqueOrThrow.mockResolvedValue({ ...payment, status: 'PAID' });
     prismaMock.payment.updateMany.mockResolvedValue({ count: 1 });
-    prismaMock.booking.update.mockResolvedValue({ totalAmount: 200, paidAmount: 200 });
+    prismaMock.booking.update.mockResolvedValue({ status: 'PENDING', totalAmount: 200, paidAmount: 200 });
     stripeMock.paymentIntents.retrieve.mockResolvedValue({ id: 'pi_1', status: 'succeeded', amount_received: 15000 });
   });
 
@@ -186,7 +186,7 @@ describe('POST /payments/confirm/:id', () => {
     expect(stripeMock.paymentIntents.retrieve).not.toHaveBeenCalled();
   });
 
-  it('confirms for the payer and credits the booking once', async () => {
+  it('confirms for the payer, credits the booking once and confirms the booking when fully paid', async () => {
     const res = await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
 
     expect(res.status).toBe(200);
@@ -196,12 +196,12 @@ describe('POST /payments/confirm/:id', () => {
     });
     expect(prismaMock.booking.update).toHaveBeenNthCalledWith(2, {
       where: { id: BOOKING_ID },
-      data: { paymentStatus: 'PAID' },
+      data: { paymentStatus: 'PAID', status: 'CONFIRMED' },
     });
   });
 
-  it('marks the booking PARTIAL while a balance remains', async () => {
-    prismaMock.booking.update.mockResolvedValueOnce({ totalAmount: 200, paidAmount: 150 });
+  it('marks the booking PARTIAL and leaves it PENDING while a balance remains', async () => {
+    prismaMock.booking.update.mockResolvedValueOnce({ status: 'PENDING', totalAmount: 200, paidAmount: 150 });
     await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
 
     expect(prismaMock.booking.update).toHaveBeenNthCalledWith(2, {
@@ -209,6 +209,19 @@ describe('POST /payments/confirm/:id', () => {
       data: { paymentStatus: 'PARTIAL' },
     });
   });
+
+  it.each(['CONFIRMED', 'CHECKED_IN', 'CANCELLED'])(
+    'does not change the status of a %s booking when it becomes fully paid',
+    async (status) => {
+      prismaMock.booking.update.mockResolvedValueOnce({ status, totalAmount: 200, paidAmount: 200 });
+      await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
+
+      expect(prismaMock.booking.update).toHaveBeenNthCalledWith(2, {
+        where: { id: BOOKING_ID },
+        data: { paymentStatus: 'PAID' },
+      });
+    }
+  );
 
   it('does not double-count when the payment was already confirmed', async () => {
     prismaMock.payment.updateMany.mockResolvedValue({ count: 0 }); // someone else claimed it first
