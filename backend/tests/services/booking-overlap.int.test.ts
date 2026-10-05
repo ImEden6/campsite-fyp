@@ -135,7 +135,7 @@ describe('Booking overlap protection', () => {
 
     expect(won).toHaveLength(1);
     expect(lost).toHaveLength(7);
-    expect(lost.every((r) => statusOf(r.reason) === 409)).toBe(true); // clean conflict, never a 500
+    expect(lost.map((r) => [statusOf(r.reason), (r.reason as Error).message.slice(0, 200)]).filter(([s]) => s !== 409)).toEqual([]); // clean conflict, never a 500
     expect(await prisma.booking.count({ where: { siteId } })).toBe(1);
   });
 

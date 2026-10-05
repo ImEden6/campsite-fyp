@@ -1,10 +1,11 @@
 // Booking Service
 
-import { PrismaClient, Equipment, GuestType, Prisma, Booking, BookingStatus } from '@prisma/client';
+import { PrismaClient, Equipment, GuestType, Prisma, Booking, BookingStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
+import { config } from '@/config';
 
 const prisma = getPrismaClient();
 
@@ -350,6 +351,115 @@ export class BookingService {
     await this.invalidateBookingCaches();
 
     return booking;
+  }
+
+  /**
+   * Staff confirmation of a PENDING booking (e.g. paid at the desk, or approved to pay later).
+   *
+   * With a paymentMethod, the outstanding balance is recorded as paid in full by that method.
+   * Without one, the booking is confirmed and the balance stays due.
+   */
+  async confirmBooking(
+    id: string,
+    options: { paymentMethod?: PaymentMethod; confirmedBy: string }
+  ): Promise<Booking> {
+    const { paymentMethod, confirmedBy } = options;
+
+    return await prisma.$transaction(async (tx) => {
+      // Claim the PENDING -> CONFIRMED transition so concurrent confirms/expiry can't both win
+      const claimed = await tx.booking.updateMany({
+        where: { id, status: 'PENDING' },
+        data: { status: 'CONFIRMED' },
+      });
+
+      if (claimed.count === 0) {
+        const existing = await tx.booking.findUnique({ where: { id }, select: { status: true } });
+        if (!existing) throw new ApiError(404, 'Booking not found');
+        throw new ApiError(409, `Only pending bookings can be confirmed (this one is ${existing.status})`);
+      }
+
+      const booking = await tx.booking.findUniqueOrThrow({ where: { id } });
+      const outstanding = Math.round((booking.totalAmount - booking.paidAmount) * 100) / 100;
+
+      if (paymentMethod && outstanding > 0) {
+        await tx.payment.create({
+          data: {
+            bookingId: id,
+            userId: booking.userId,
+            amount: outstanding,
+            method: paymentMethod,
+            status: PaymentStatus.PAID,
+            processedAt: new Date(),
+            description: `Recorded by staff (${confirmedBy})`,
+          },
+        });
+        await tx.booking.update({
+          where: { id },
+          data: { paidAmount: { increment: outstanding }, paymentStatus: PaymentStatus.PAID },
+        });
+      }
+
+      logger.info('Booking confirmed by staff', {
+        bookingId: id,
+        confirmedBy,
+        paymentRecorded: Boolean(paymentMethod && outstanding > 0),
+      });
+
+      return tx.booking.findUniqueOrThrow({
+        where: { id },
+        include: {
+          user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true } },
+          site: true,
+        },
+      });
+    });
+  }
+
+  /**
+   * Cancel unpaid PENDING bookings that have held their site longer than the hold window.
+   *
+   * A booking is left alone if any money is involved: a payment taken, or a payment started
+   * within the hold window (the customer may be paying right now).
+   * Returns the bookings that were cancelled so callers can notify clients.
+   */
+  async expireUnpaidBookings(): Promise<Booking[]> {
+    const cutoff = new Date(Date.now() - config.business.pendingBookingHoldMinutes * 60_000);
+
+    const where: Prisma.BookingWhereInput = {
+      status: 'PENDING',
+      createdAt: { lt: cutoff },
+      paidAmount: 0,
+      payments: {
+        none: {
+          OR: [
+            { status: { in: [PaymentStatus.PAID, PaymentStatus.PARTIAL] } },
+            { status: PaymentStatus.PENDING, createdAt: { gte: cutoff } },
+          ],
+        },
+      },
+    };
+
+    const candidates = await prisma.booking.findMany({ where, select: { id: true } });
+    if (candidates.length === 0) return [];
+    const ids = candidates.map((b) => b.id);
+
+    // Re-apply the conditions in the write itself so a payment landing in between wins
+    await prisma.booking.updateMany({
+      where: { ...where, id: { in: ids } },
+      data: { status: 'CANCELLED' },
+    });
+
+    const cancelled = await prisma.booking.findMany({ where: { id: { in: ids }, status: 'CANCELLED' } });
+
+    if (cancelled.length > 0) {
+      logger.info('Expired unpaid pending bookings', {
+        count: cancelled.length,
+        holdMinutes: config.business.pendingBookingHoldMinutes,
+      });
+      await this.invalidateBookingCaches();
+    }
+
+    return cancelled;
   }
 
   /**

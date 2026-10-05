@@ -222,6 +222,8 @@ export const config = {
     defaultDepositPercentage: parseFloat(process.env.DEFAULT_DEPOSIT_PERCENTAGE || '25.0'),
     defaultTaxRate: parseFloat(process.env.DEFAULT_TAX_RATE || '0.08'),
     cancellationCutoffHours: parseInt(process.env.CANCELLATION_CUTOFF_HOURS || '24', 10),
+    // How long an unpaid PENDING booking holds its site before it is cancelled automatically
+    pendingBookingHoldMinutes: parseInt(process.env.BOOKING_HOLD_MINUTES || '30', 10),
   },
 
   // Notification settings

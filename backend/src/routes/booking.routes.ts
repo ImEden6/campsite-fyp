@@ -11,7 +11,9 @@ import {
   validateBody,
   createBookingSchema,
   updateBookingSchema,
-  updateGuestsSchema
+  updateGuestsSchema,
+  confirmBookingSchema,
+  ConfirmBookingInput
 } from '@/middleware/validate';
 import socketService from '@/services/socket.service';
 
@@ -637,6 +639,37 @@ router.get('/:id', authenticate, authorizeBookingOwnership, async (req: Request,
     res.json({
       success: true,
       data: transformedBooking,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /bookings/:id/confirm
+ * Confirm a pending booking (Staff/Manager/Admin only).
+ * Body: { paymentMethod? } - when given, the outstanding balance is recorded as paid by that method.
+ */
+router.post('/:id/confirm', authenticate, authorize('STAFF', 'MANAGER', 'ADMIN'), validateBody(confirmBookingSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { paymentMethod } = req.body as ConfirmBookingInput;
+
+    const booking = await bookingService.confirmBooking(req.params.id as string, {
+      ...(paymentMethod && { paymentMethod }),
+      confirmedBy: req.user!.id,
+    });
+
+    // Same response shape as check-in, which the staff screens already consume
+    res.json({
+      success: true,
+      data: {
+        ...booking,
+        guests: {
+          adults: booking.adultGuests,
+          children: booking.childGuests,
+          pets: booking.petGuests,
+        },
+      },
     });
   } catch (error) {
     next(error);

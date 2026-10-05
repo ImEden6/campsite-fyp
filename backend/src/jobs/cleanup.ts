@@ -6,6 +6,8 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { getPrismaClient } from '@/database';
 import logger from '@/utils/logger';
+import bookingService from '@/services/booking.service';
+import socketService from '@/services/socket.service';
 
 // Store active cron jobs for graceful shutdown
 const activeTasks: ScheduledTask[] = [];
@@ -40,10 +42,53 @@ function scheduleSessionCleanup(): void {
 }
 
 /**
+ * Cancel unpaid PENDING bookings once their hold window has passed.
+ * Runs every minute so a hold lasts at most the configured window plus a minute.
+ */
+export async function expireUnpaidBookingsNow(): Promise<number> {
+    const cancelled = await bookingService.expireUnpaidBookings();
+
+    // Same event the cancel route emits, so open booking calendars drop the entry
+    for (const booking of cancelled) {
+        socketService.emit('booking:cancelled', {
+            id: booking.id,
+            userId: booking.userId,
+            siteId: booking.siteId,
+            status: booking.status,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            bookingNumber: booking.bookingNumber,
+        });
+    }
+
+    return cancelled.length;
+}
+
+function scheduleBookingExpiry(): void {
+    let running = false; // don't stack runs if one is slow
+
+    const task = cron.schedule('* * * * *', async () => {
+        if (running) return;
+        running = true;
+        try {
+            await expireUnpaidBookingsNow();
+        } catch (error) {
+            logger.error('Booking expiry failed', { error });
+        } finally {
+            running = false;
+        }
+    });
+
+    activeTasks.push(task);
+    logger.info('Booking expiry job scheduled (every minute)');
+}
+
+/**
  * Start all cleanup jobs
  */
 export function startCleanupJobs(): void {
     scheduleSessionCleanup();
+    scheduleBookingExpiry();
     logger.info('All cleanup jobs started');
 }
 

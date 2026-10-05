@@ -133,6 +133,17 @@ export const createPaymentIntentSchema = z.object({
 export type CreatePaymentIntentInput = z.infer<typeof createPaymentIntentSchema>;
 
 // ============================================================
+// Booking confirmation (staff)
+// ============================================================
+
+// Omit paymentMethod to confirm without taking payment (balance due later, e.g. on arrival).
+export const confirmBookingSchema = z.object({
+    paymentMethod: z.enum(['CASH', 'CHECK', 'BANK_TRANSFER', 'DEBIT_CARD', 'CREDIT_CARD']).optional(),
+}).strict();
+
+export type ConfirmBookingInput = z.infer<typeof confirmBookingSchema>;
+
+// ============================================================
 // Guest Schemas
 // ============================================================
 
