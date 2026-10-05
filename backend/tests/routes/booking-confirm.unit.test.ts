@@ -6,7 +6,7 @@ import express from 'express';
 
 const { bookingServiceMock, socketMock, prismaMock } = vi.hoisted(() => ({
   prismaMock: { booking: { findUnique: vi.fn(), update: vi.fn() } },
-  bookingServiceMock: { confirmBooking: vi.fn(), expireUnpaidBookings: vi.fn() },
+  bookingServiceMock: { confirmBooking: vi.fn(), expireUnpaidBookings: vi.fn(), checkIn: vi.fn(), checkOut: vi.fn() },
   socketMock: { emitToRooms: vi.fn() },
 }));
 
@@ -104,51 +104,43 @@ describe('expiry job', () => {
   });
 });
 
-describe('check-in and check-out events', () => {
-  const stay = (status: string) => ({
-    id: 'b-5', userId: 'u-5', siteId: 's-5', status, bookingNumber: 'BK-5', adultGuests: 1, childGuests: 0, petGuests: 0,
-    checkInDate: new Date('2034-01-01'), checkOutDate: new Date('2034-01-03'),
-  });
-  const ROOMS = ['staff', 'user:u-5'];
+describe('POST /bookings/:id/check-in and /check-out', () => {
+  const stay = (status: string) => ({ id: 'b-5', status, adultGuests: 2, childGuests: 1, petGuests: 0 });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    prismaMock.booking.update.mockImplementation(async ({ data }: { data: { status: string } }) => stay(data.status));
+    bookingServiceMock.checkIn.mockResolvedValue(stay('CHECKED_IN'));
+    bookingServiceMock.checkOut.mockResolvedValue(stay('CHECKED_OUT'));
   });
 
-  it('announces a check-in to staff and the owner', async () => {
-    prismaMock.booking.findUnique.mockResolvedValue(stay('CONFIRMED'));
-    const res = await request(app).post('/bookings/b-5/check-in').set(as('STAFF')).send();
+  it.each(['STAFF', 'MANAGER', 'ADMIN'])('lets %s check a guest in, answering with guest counts', async (role) => {
+    const res = await request(app).post('/bookings/b-5/check-in').set(as(role)).send();
 
     expect(res.status).toBe(200);
-    expect(socketMock.emitToRooms).toHaveBeenCalledTimes(1);
-    expect(socketMock.emitToRooms).toHaveBeenCalledWith(ROOMS, 'booking:checked_in', expect.objectContaining({ id: 'b-5', status: 'CHECKED_IN' }));
+    expect(res.body.data).toMatchObject({ id: 'b-5', status: 'CHECKED_IN', guests: { adults: 2, children: 1, pets: 0 } });
+    expect(bookingServiceMock.checkIn).toHaveBeenCalledWith('b-5', 'u-1');
   });
 
-  it('announces a check-out to staff and the owner', async () => {
-    prismaMock.booking.findUnique.mockResolvedValue(stay('CHECKED_IN'));
+  it('lets staff check a guest out', async () => {
     const res = await request(app).post('/bookings/b-5/check-out').set(as('STAFF')).send();
 
     expect(res.status).toBe(200);
-    expect(socketMock.emitToRooms).toHaveBeenCalledWith(ROOMS, 'booking:checked_out', expect.objectContaining({ id: 'b-5', status: 'CHECKED_OUT' }));
+    expect(bookingServiceMock.checkOut).toHaveBeenCalledWith('b-5', 'u-1');
   });
 
-  it.each([
-    ['check-in', 'PENDING'],
-    ['check-in', 'CANCELLED'],
-    ['check-out', 'CONFIRMED'],
-  ])('announces nothing when %s is rejected for a %s booking', async (action, status) => {
-    prismaMock.booking.findUnique.mockResolvedValue(stay(status));
-    const res = await request(app).post(`/bookings/b-5/${action}`).set(as('STAFF')).send();
-
-    expect(res.status).toBe(400);
-    expect(socketMock.emitToRooms).not.toHaveBeenCalled();
-  });
-
-  it('announces nothing when a customer tries to check in', async () => {
-    const res = await request(app).post('/bookings/b-5/check-in').set(as('CUSTOMER')).send();
+  it.each(['check-in', 'check-out'])('does not let a customer %s', async (action) => {
+    const res = await request(app).post(`/bookings/b-5/${action}`).set(as('CUSTOMER')).send();
 
     expect(res.status).toBe(403);
-    expect(socketMock.emitToRooms).not.toHaveBeenCalled();
+    expect(bookingServiceMock.checkIn).not.toHaveBeenCalled();
+    expect(bookingServiceMock.checkOut).not.toHaveBeenCalled();
+  });
+
+  it('passes the service\'s refusal and missing-booking answers through', async () => {
+    bookingServiceMock.checkIn.mockRejectedValue(new ApiError(400, 'Only confirmed bookings can be checked in'));
+    bookingServiceMock.checkOut.mockRejectedValue(new ApiError(404, 'Booking not found'));
+
+    expect((await request(app).post('/bookings/b-5/check-in').set(as('STAFF')).send()).status).toBe(400);
+    expect((await request(app).post('/bookings/b-5/check-out').set(as('STAFF')).send()).status).toBe(404);
   });
 });

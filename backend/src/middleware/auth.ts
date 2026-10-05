@@ -359,7 +359,8 @@ export const authorizeCustom = (
 
 // Middleware to check if user owns a booking
 export const authorizeBookingOwnership = authorizeCustom(async (user, req) => {
-  if (user.role === 'ADMIN' || user.role === 'MANAGER') {
+  // Staff run the front desk, so they can open and act on any booking, like managers and admins
+  if (user.role === 'ADMIN' || user.role === 'MANAGER' || user.role === 'STAFF') {
     return true;
   }
 

@@ -7,8 +7,10 @@ import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
 import { config } from '@/config';
 import { generateBookingNumber, isBookingNumberCollision } from '@/utils/bookingNumber';
-import pricingService, { computeQuote } from '@/services/pricing.service';
-import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
+import pricingService from '@/services/pricing.service';
+import bookingQueryService, { BOOKING_USER_SELECT } from '@/services/booking-query.service';
+import { computeCancellationRefund, ALREADY_CANCELLED_REFUND, type CancellationRefund } from '@/services/booking-policy';
+import { publishBookingEvent, BOOKING_EVENTS, type BookingEventName } from '@/socket/booking-events';
 import { publishPaymentEvent, PAYMENT_EVENTS } from '@/socket/payment-events';
 
 const prisma = getPrismaClient();
@@ -25,6 +27,8 @@ const SITE_HOLDING_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'CHECKED
  * not expired underneath them. Deliberately much shorter than the booking hold itself.
  */
 const PAYMENT_IN_FLIGHT_MINUTES = 60;
+
+const CANCELLABLE_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED'];
 
 const SITE_UNAVAILABLE_MESSAGE = 'Site is not available for these dates';
 
@@ -570,6 +574,123 @@ export class BookingService {
     }
 
     return cancelled;
+  }
+
+  /**
+   * Cancel a booking (customer or staff).
+   *
+   * The PENDING/CONFIRMED -> CANCELLED move is claimed atomically, so two simultaneous cancels
+   * cannot both go through (and announce it twice). Cancelling again is a harmless no-op.
+   * Equipment held by the booking is released, and cached availability is cleared.
+   *
+   * NOTE: this records what is owed back (`refund`) but does not send money anywhere; a staff
+   * member issues the actual refund from the payments screen.
+   */
+  async cancelBooking(id: string, options: { reason?: string; cancelledBy: string }) {
+    const reason = options.reason?.trim() ?? '';
+
+    const existing = await prisma.booking.findUnique({
+      where: { id },
+      select: { status: true, checkInDate: true, paidAmount: true, totalAmount: true, paymentStatus: true, notes: true },
+    });
+    if (!existing) throw new ApiError(404, 'Booking not found');
+
+    if (existing.status === 'CANCELLED') {
+      return { booking: await bookingQueryService.getDetail(id), refund: ALREADY_CANCELLED_REFUND, alreadyCancelled: true };
+    }
+    if (!CANCELLABLE_STATUSES.includes(existing.status)) {
+      throw new ApiError(400, 'Only pending or confirmed bookings can be cancelled');
+    }
+
+    const refund: CancellationRefund = computeCancellationRefund(existing);
+
+    const [claimed] = await prisma.$transaction([
+      prisma.booking.updateMany({
+        where: { id, status: { in: CANCELLABLE_STATUSES } },
+        data: {
+          status: 'CANCELLED',
+          paymentStatus: existing.paidAmount > 0 ? 'REFUNDED' : 'PENDING',
+          notes: reason ? [existing.notes, `Cancellation reason: ${reason}`].filter(Boolean).join('\n') : existing.notes,
+        },
+      }),
+      // Give the equipment back so someone else can book it
+      prisma.equipmentReservation.updateMany({
+        where: { bookingId: id, status: 'CONFIRMED', booking: { status: 'CANCELLED' } },
+        data: { status: 'CANCELLED' },
+      }),
+    ]);
+
+    // Someone else changed the booking between our read and our write
+    if (claimed.count === 0) {
+      const now = await prisma.booking.findUnique({ where: { id }, select: { status: true } });
+      if (now?.status === 'CANCELLED') {
+        return { booking: await bookingQueryService.getDetail(id), refund: ALREADY_CANCELLED_REFUND, alreadyCancelled: true };
+      }
+      throw new ApiError(400, 'Only pending or confirmed bookings can be cancelled');
+    }
+
+    const booking = await bookingQueryService.getDetail(id);
+
+    await this.invalidateBookingCaches();
+    publishBookingEvent(BOOKING_EVENTS.cancelled, booking);
+    logger.info('Booking cancelled', {
+      bookingId: id,
+      cancelledBy: options.cancelledBy,
+      refundAmount: refund.refundAmount,
+      refundPercentage: refund.refundPercentage,
+    });
+
+    return { booking, refund, alreadyCancelled: false };
+  }
+
+  /** Check a guest in. Only a CONFIRMED booking can be; doing it twice is refused, not repeated. */
+  async checkIn(id: string, checkedInBy: string) {
+    return this.moveStay(id, {
+      from: 'CONFIRMED',
+      to: 'CHECKED_IN',
+      timeField: 'checkInTime',
+      refusal: 'Only confirmed bookings can be checked in',
+      event: BOOKING_EVENTS.checkedIn,
+      actor: checkedInBy,
+    });
+  }
+
+  /** Check a guest out. Only a CHECKED_IN booking can be. */
+  async checkOut(id: string, checkedOutBy: string) {
+    return this.moveStay(id, {
+      from: 'CHECKED_IN',
+      to: 'CHECKED_OUT',
+      timeField: 'checkOutTime',
+      refusal: 'Only checked-in bookings can be checked out',
+      event: BOOKING_EVENTS.checkedOut,
+      actor: checkedOutBy,
+    });
+  }
+
+  private async moveStay(
+    id: string,
+    step: { from: BookingStatus; to: BookingStatus; timeField: 'checkInTime' | 'checkOutTime'; refusal: string; event: BookingEventName; actor: string }
+  ) {
+    // Claim the move in the write itself, so a double click can't do it twice
+    const claimed = await prisma.booking.updateMany({
+      where: { id, status: step.from },
+      data: { status: step.to, [step.timeField]: new Date() },
+    });
+
+    if (claimed.count === 0) {
+      const exists = await prisma.booking.findUnique({ where: { id }, select: { id: true } });
+      throw exists ? new ApiError(400, step.refusal) : new ApiError(404, 'Booking not found');
+    }
+
+    const booking = await prisma.booking.findUniqueOrThrow({
+      where: { id },
+      include: { user: { select: BOOKING_USER_SELECT }, site: true },
+    });
+
+    publishBookingEvent(step.event, booking);
+    logger.info(`Booking moved to ${step.to}`, { bookingId: id, bookingNumber: booking.bookingNumber, by: step.actor });
+
+    return booking;
   }
 
   /**
