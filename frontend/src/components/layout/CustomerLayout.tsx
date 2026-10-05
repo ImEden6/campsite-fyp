@@ -12,6 +12,8 @@ import {
   Map
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
+import { useRealtime } from '@/hooks/useRealtime';
 import { SkipNavigation } from '@/components/accessibility';
 import ToastContainer from './ToastContainer';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -22,6 +24,17 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const showToast = useUIStore((state) => state.showToast);
+
+  // Live updates for this customer's own bookings and payments (the server only sends their own)
+  useRealtime({
+    onBookingConfirmed: (booking) => {
+      const number = typeof booking.bookingNumber === 'string' ? ` ${booking.bookingNumber}` : '';
+      showToast(`Your booking${number} is confirmed`, 'success');
+    },
+    onPaymentFailed: () => showToast('Your payment did not go through. Please try again.', 'error'),
+    onPaymentRefunded: () => showToast('A refund has been issued for your payment', 'info'),
+  });
 
   const navigationItems = [
     { path: '/customer/dashboard', label: 'Dashboard', icon: Home },

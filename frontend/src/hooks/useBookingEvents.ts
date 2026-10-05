@@ -12,6 +12,7 @@ import { queryKeys } from '@/config/query-keys';
 interface UseBookingEventsOptions {
   onBookingCreated?: (booking: BookingEventPayload) => void;
   onBookingUpdated?: (booking: BookingEventPayload) => void;
+  onBookingConfirmed?: (booking: BookingEventPayload) => void;
   onBookingCancelled?: (booking: BookingEventPayload) => void;
   onBookingCheckedIn?: (booking: BookingEventPayload) => void;
   onBookingCheckedOut?: (booking: BookingEventPayload) => void;
@@ -27,6 +28,7 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
   const {
     onBookingCreated,
     onBookingUpdated,
+    onBookingConfirmed,
     onBookingCancelled,
     onBookingCheckedIn,
     onBookingCheckedOut,
@@ -51,13 +53,14 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
     [queryClient, invalidateQueries, onBookingCreated]
   );
 
-  // Booking updated
+  // Booking updated. The event only carries a few fields (id, status, dates), so it must never
+  // replace the cached booking: refetch instead.
   const handleBookingUpdated = useCallback(
     (booking: BookingEventPayload) => {
       console.log('[BookingEvents] Booking updated:', booking.id);
 
       if (invalidateQueries) {
-        queryClient.setQueryData(queryKeys.bookings.detail(booking.id), booking);
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(booking.id) });
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
       }
@@ -65,6 +68,22 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
       onBookingUpdated?.(booking);
     },
     [queryClient, invalidateQueries, onBookingUpdated]
+  );
+
+  // Booking confirmed (staff confirmed it, or it was paid in full)
+  const handleBookingConfirmed = useCallback(
+    (booking: BookingEventPayload) => {
+      console.log('[BookingEvents] Booking confirmed:', booking.id);
+
+      if (invalidateQueries) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(booking.id) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sites.all });
+      }
+
+      onBookingConfirmed?.(booking);
+    },
+    [queryClient, invalidateQueries, onBookingConfirmed]
   );
 
   // Booking cancelled
@@ -118,10 +137,11 @@ export const useBookingEvents = (options: UseBookingEventsOptions = {}) => {
   );
 
   // Subscribe to events
-  const deps = [queryClient, invalidateQueries, onBookingCreated, onBookingUpdated, onBookingCancelled, onBookingCheckedIn, onBookingCheckedOut];
+  const deps = [queryClient, invalidateQueries, onBookingCreated, onBookingUpdated, onBookingConfirmed, onBookingCancelled, onBookingCheckedIn, onBookingCheckedOut];
 
   useWebSocketEvent(SOCKET_EVENTS.BOOKING_CREATED, handleBookingCreated, { deps, enabled });
   useWebSocketEvent(SOCKET_EVENTS.BOOKING_UPDATED, handleBookingUpdated, { deps, enabled });
+  useWebSocketEvent(SOCKET_EVENTS.BOOKING_CONFIRMED, handleBookingConfirmed, { deps, enabled });
   useWebSocketEvent(SOCKET_EVENTS.BOOKING_CANCELLED, handleBookingCancelled, { deps, enabled });
   useWebSocketEvent(SOCKET_EVENTS.BOOKING_CHECKED_IN, handleBookingCheckedIn, { deps, enabled });
   useWebSocketEvent(SOCKET_EVENTS.BOOKING_CHECKED_OUT, handleBookingCheckedOut, { deps, enabled });

@@ -2,47 +2,27 @@ import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
-import { webSocketService } from '@/services/websocket';
 import { useNotificationEvents } from '@/hooks/useNotificationEvents';
-import { useBookingEvents } from '@/hooks/useBookingEvents';
+import { useRealtime } from '@/hooks/useRealtime';
 import { useStorageQuota } from '@/hooks/useStorageQuota';
-import { UserRole } from '@/types';
 import { SkipNavigation } from '@/components/accessibility';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import ToastContainer from './ToastContainer';
 
 const AppLayout: React.FC = () => {
-  const { initialize, user, tokens, hasHydrated } = useAuthStore();
+  const { initialize, hasHydrated } = useAuthStore();
   const sidebarCollapsed = useUIStore((state) => state.sidebarCollapsed);
   const showToast = useUIStore((state) => state.showToast);
 
-  const isStaffDashboardUser =
-    user?.role === UserRole.STAFF ||
-    user?.role === UserRole.MANAGER ||
-    user?.role === UserRole.ADMIN;
-
-  useBookingEvents({ enabled: Boolean(user && tokens?.accessToken && isStaffDashboardUser) });
+  // Live booking and payment updates for the signed-in user
+  useRealtime();
 
   useEffect(() => {
     if (hasHydrated) {
       initialize();
     }
   }, [initialize, hasHydrated]);
-
-  // Initialize WebSocket connection when user is authenticated
-  useEffect(() => {
-    if (user && tokens?.accessToken) {
-      console.log('[AppLayout] Initializing WebSocket connection');
-      webSocketService.connect(tokens.accessToken);
-
-      return () => {
-        console.log('[AppLayout] Disconnecting WebSocket');
-        webSocketService.disconnect();
-      };
-    }
-    return undefined;
-  }, [user, tokens?.accessToken]);
 
   // Setup notification event handlers
   useNotificationEvents({

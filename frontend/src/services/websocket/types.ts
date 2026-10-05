@@ -24,6 +24,7 @@ export const SOCKET_EVENTS = {
   // Booking events
   BOOKING_CREATED: 'booking:created',
   BOOKING_UPDATED: 'booking:updated',
+  BOOKING_CONFIRMED: 'booking:confirmed',
   BOOKING_CANCELLED: 'booking:cancelled',
   BOOKING_CHECKED_IN: 'booking:checked_in',
   BOOKING_CHECKED_OUT: 'booking:checked_out',
@@ -77,7 +78,8 @@ export interface PaymentEventPayload {
   bookingId: string;
   amount: number;
   status: string;
-  method: string;
+  userId?: string;
+  method?: string;
   [key: string]: unknown;
 }
 

@@ -33,7 +33,8 @@ import { webSocketService } from './WebSocketService';
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 const authOption = () => {
-  const options = ioMock.mock.calls.at(-1)?.[1] as { auth: (cb: (data: { token: string }) => void) => void };
+  const calls = ioMock.mock.calls as unknown[][];
+  const options = calls[calls.length - 1]?.[1] as { auth: (cb: (data: { token: string }) => void) => void };
   let sent: { token: string } | undefined;
   options.auth((data) => {
     sent = data;

@@ -153,19 +153,6 @@ export const ROUTES = {
   NOT_FOUND: '/404',
 } as const;
 
-// Socket Events
-export const SOCKET_EVENTS = {
-  CONNECT: 'connect',
-  DISCONNECT: 'disconnect',
-  ERROR: 'error',
-  BOOKING_CREATED: 'booking:created',
-  BOOKING_UPDATED: 'booking:updated',
-  BOOKING_CANCELLED: 'booking:cancelled',
-  PAYMENT_PROCESSED: 'payment:processed',
-  SITE_STATUS_CHANGED: 'site:status_changed',
-  NOTIFICATION: 'notification',
-} as const;
-
 // Error Messages
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Network error. Please check your connection.',
