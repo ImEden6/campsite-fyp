@@ -1,7 +1,7 @@
-// Equipment Routes Integration Tests
+// Equipment Routes Integration Tests (real Postgres)
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import { PrismaClient, EquipmentCategory, EquipmentStatus, BookingStatus } from '@prisma/client';
+import { EquipmentCategory, BookingStatus } from '@prisma/client';
 import request from 'supertest';
 import express from 'express';
 import equipmentRoutes from '@/routes/equipment.routes';
@@ -20,13 +20,49 @@ describe('Equipment Routes - Availability Endpoint', () => {
   let testUserIds: string[] = [];
   let testSiteIds: string[] = [];
 
+  const range = { startDate: '2024-06-01', endDate: '2024-06-07' };
+
+  /** A confirmed booking for the test site that reserves `quantity` units of one equipment item. */
+  const reserve = async (equipmentId: string, quantity: number, dates = { from: '2024-06-03', to: '2024-06-05' }) => {
+    const booking = await prisma.booking.create({
+      data: {
+        bookingNumber: `BK-EQ-${Date.now()}-${Math.random()}`,
+        userId: testUserIds[0]!,
+        siteId: testSiteIds[0]!,
+        checkInDate: new Date(dates.from),
+        checkOutDate: new Date(dates.to),
+        adultGuests: 2,
+        childGuests: 0,
+        petGuests: 0,
+        status: BookingStatus.CONFIRMED,
+        paymentStatus: 'PENDING',
+        totalAmount: 100,
+      },
+    });
+    testBookingIds.push(booking.id);
+
+    await prisma.equipmentReservation.create({
+      data: {
+        bookingId: booking.id,
+        equipmentId,
+        quantity,
+        startDate: new Date(dates.from),
+        endDate: new Date(dates.to),
+        status: 'CONFIRMED',
+        dailyRate: 15,
+        totalAmount: 15 * quantity,
+      },
+    });
+    return booking;
+  };
+
+  const find = (body: { data: Array<{ id: string }> }, id: string) => body.data.find((e) => e.id === id) as any;
+
   beforeAll(async () => {
-    // Ensure database connection
     await prisma.$connect();
   });
 
   beforeEach(async () => {
-    // Create test user
     const testUser = await prisma.user.create({
       data: {
         email: `test-${Date.now()}-${Math.random()}@example.com`,
@@ -38,7 +74,6 @@ describe('Equipment Routes - Availability Endpoint', () => {
     });
     testUserIds.push(testUser.id);
 
-    // Create test site
     const testSite = await prisma.site.create({
       data: {
         name: `Test Site ${Date.now()}-${Math.random()}`,
@@ -52,75 +87,46 @@ describe('Equipment Routes - Availability Endpoint', () => {
         sizeWidth: 15,
         sizeUnit: 'feet',
         latitude: 40.7128,
-        longitude: -74.0060,
+        longitude: -74.006,
         mapPositionX: 100,
         mapPositionY: 100,
       },
     });
     testSiteIds.push(testSite.id);
 
-    // Create test equipment
-    const equipment1 = await prisma.equipment.create({
+    const tent = await prisma.equipment.create({
       data: {
         name: 'Test Tent',
         description: 'A test camping tent',
         category: EquipmentCategory.CAMPING_GEAR,
-        status: EquipmentStatus.AVAILABLE,
         quantity: 5,
-        availableQuantity: 5,
         dailyRate: 15,
         weeklyRate: 90,
         monthlyRate: 300,
         deposit: 50,
       },
     });
-    testEquipmentIds.push(equipment1.id);
-
-    const equipment2 = await prisma.equipment.create({
+    const kayak = await prisma.equipment.create({
       data: {
         name: 'Test Kayak',
         description: 'A test kayak',
         category: EquipmentCategory.RECREATIONAL,
-        status: EquipmentStatus.AVAILABLE,
         quantity: 3,
-        availableQuantity: 3,
         dailyRate: 25,
         weeklyRate: 150,
         monthlyRate: 500,
         deposit: 100,
       },
     });
-    testEquipmentIds.push(equipment2.id);
+    testEquipmentIds.push(tent.id, kayak.id);
   });
 
   afterEach(async () => {
-    // Clean up in reverse order of dependencies
-    if (testBookingIds.length > 0) {
-      await prisma.equipmentRental.deleteMany({
-        where: { bookingId: { in: testBookingIds } },
-      });
-      await prisma.booking.deleteMany({
-        where: { id: { in: testBookingIds } },
-      });
-    }
-
-    if (testEquipmentIds.length > 0) {
-      await prisma.equipment.deleteMany({
-        where: { id: { in: testEquipmentIds } },
-      });
-    }
-
-    if (testSiteIds.length > 0) {
-      await prisma.site.deleteMany({
-        where: { id: { in: testSiteIds } },
-      });
-    }
-
-    if (testUserIds.length > 0) {
-      await prisma.user.deleteMany({
-        where: { id: { in: testUserIds } },
-      });
-    }
+    await prisma.equipmentReservation.deleteMany({ where: { bookingId: { in: testBookingIds } } });
+    await prisma.booking.deleteMany({ where: { id: { in: testBookingIds } } });
+    await prisma.equipment.deleteMany({ where: { id: { in: testEquipmentIds } } });
+    await prisma.site.deleteMany({ where: { id: { in: testSiteIds } } });
+    await prisma.user.deleteMany({ where: { id: { in: testUserIds } } });
 
     testEquipmentIds = [];
     testBookingIds = [];
@@ -129,188 +135,109 @@ describe('Equipment Routes - Availability Endpoint', () => {
   });
 
   describe('GET /equipment/available', () => {
-    it('should return available equipment for valid date range', async () => {
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-          endDate: '2024-06-07',
-        });
+    it('returns the equipment for a valid date range', async () => {
+      const response = await request(app).get('/equipment/available').query(range);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeDefined();
       expect(Array.isArray(response.body.data)).toBe(true);
       expect(response.body.count).toBeGreaterThanOrEqual(2);
+      expect(testEquipmentIds.every((id) => find(response.body, id))).toBe(true);
     });
 
-    it('should return 400 when startDate is missing', async () => {
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          endDate: '2024-06-07',
-        });
+    it.each([
+      ['startDate is missing', { endDate: '2024-06-07' }],
+      ['endDate is missing', { startDate: '2024-06-01' }],
+      ['a date is not a date', { startDate: 'invalid-date', endDate: '2024-06-07' }],
+      ['startDate is after endDate', { startDate: '2024-06-07', endDate: '2024-06-01' }],
+      ['startDate equals endDate', { startDate: '2024-06-07', endDate: '2024-06-07' }],
+    ])('returns 400 when %s', async (_label, query) => {
+      const response = await request(app).get('/equipment/available').query(query);
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
       expect(response.body.error).toBeDefined();
     });
 
-    it('should return 400 when endDate is missing', async () => {
+    it('filters by equipment type', async () => {
       const response = await request(app)
         .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
-      expect(response.body.error).toBeDefined();
-    });
-
-    it('should return 400 for invalid date format', async () => {
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: 'invalid-date',
-          endDate: '2024-06-07',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
-      expect(response.body.error).toBeDefined();
-    });
-
-    it('should return 400 when startDate is after endDate', async () => {
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-07',
-          endDate: '2024-06-01',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
-      expect(response.body.error).toBeDefined();
-    });
-
-    it('should filter by equipment type', async () => {
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-          endDate: '2024-06-07',
-          equipmentType: EquipmentCategory.CAMPING_GEAR,
-        });
+        .query({ ...range, equipmentType: EquipmentCategory.CAMPING_GEAR });
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-
-      const testEquipment = response.body.data.filter((e: any) =>
-        testEquipmentIds.includes(e.id)
-      );
-
-      expect(testEquipment.length).toBe(1);
-      expect(testEquipment[0].category).toBe(EquipmentCategory.CAMPING_GEAR);
+      const ours = response.body.data.filter((e: { id: string }) => testEquipmentIds.includes(e.id));
+      expect(ours).toHaveLength(1);
+      expect(ours[0].category).toBe(EquipmentCategory.CAMPING_GEAR);
     });
 
-    it('should show reduced availability for conflicting bookings', async () => {
-      // Create a booking with equipment rental
-      const booking = await prisma.booking.create({
-        data: {
-          bookingNumber: `BK${Date.now()}`,
-          userId: testUserIds[0],
-          siteId: testSiteIds[0],
-          checkInDate: new Date('2024-06-03'),
-          checkOutDate: new Date('2024-06-05'),
-          adultGuests: 2,
-          childGuests: 0,
-          petGuests: 0,
-          status: BookingStatus.CONFIRMED,
-          paymentStatus: 'PENDING',
-          totalAmount: 100,
-          paidAmount: 0,
-          depositAmount: 25,
-          taxAmount: 8,
-          discountAmount: 0,
-        },
-      });
-      testBookingIds.push(booking.id);
+    it('reports reduced availability while some units are reserved', async () => {
+      await reserve(testEquipmentIds[0]!, 3);
 
-      // Create equipment rental
-      await prisma.equipmentRental.create({
-        data: {
-          bookingId: booking.id,
-          equipmentId: testEquipmentIds[0],
-          quantity: 3,
-          dailyRate: 15,
-          totalAmount: 90,
-          depositAmount: 50,
-          startDate: new Date('2024-06-03'),
-          endDate: new Date('2024-06-05'),
-        },
-      });
+      const response = await request(app).get('/equipment/available').query(range);
 
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-          endDate: '2024-06-07',
-        });
-
-      expect(response.status).toBe(200);
-
-      const conflictedEquipment = response.body.data.find(
-        (e: any) => e.id === testEquipmentIds[0]
-      );
-
-      expect(conflictedEquipment).toBeDefined();
-      expect(conflictedEquipment.availableQuantity).toBe(2); // 5 - 3 = 2
-      expect(conflictedEquipment.available).toBe(true);
+      const tent = find(response.body, testEquipmentIds[0]!);
+      expect(tent.availableQuantity).toBe(2); // 5 - 3
+      expect(tent.available).toBe(true);
+      expect(tent.conflictingBookings).toHaveLength(1);
     });
 
-    it('should indicate caching in response', async () => {
-      // First request - not cached
-      const response1 = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-          endDate: '2024-06-07',
-        });
+    it('reports equipment as unavailable once every unit is reserved', async () => {
+      await reserve(testEquipmentIds[0]!, 5);
 
-      expect(response1.status).toBe(200);
-      expect(response1.body.cached).toBeDefined();
+      const response = await request(app).get('/equipment/available').query(range);
 
-      // Second request - should be cached (if Redis is available)
-      const response2 = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-          endDate: '2024-06-07',
-        });
-
-      expect(response2.status).toBe(200);
-      expect(response2.body.cached).toBeDefined();
+      const tent = find(response.body, testEquipmentIds[0]!);
+      expect(tent.availableQuantity).toBe(0);
+      expect(tent.available).toBe(false);
     });
 
-    it('should handle equipment with no conflicts correctly', async () => {
-      const response = await request(app)
-        .get('/equipment/available')
-        .query({
-          startDate: '2024-06-01',
-          endDate: '2024-06-07',
-        });
+    it('adds up reservations from different bookings', async () => {
+      await reserve(testEquipmentIds[0]!, 2, { from: '2024-06-02', to: '2024-06-04' });
+      await reserve(testEquipmentIds[0]!, 2, { from: '2024-06-04', to: '2024-06-06' }); // back to back: same site, no overlap
 
-      expect(response.status).toBe(200);
+      const response = await request(app).get('/equipment/available').query(range);
 
-      const kayak = response.body.data.find(
-        (e: any) => e.id === testEquipmentIds[1]
-      );
+      expect(find(response.body, testEquipmentIds[0]!).availableQuantity).toBe(1);
+    });
 
-      expect(kayak).toBeDefined();
+    it('ignores reservations outside the requested dates', async () => {
+      await reserve(testEquipmentIds[0]!, 4, { from: '2024-07-10', to: '2024-07-12' });
+
+      const response = await request(app).get('/equipment/available').query(range);
+
+      const tent = find(response.body, testEquipmentIds[0]!);
+      expect(tent.availableQuantity).toBe(5);
+      expect(tent.conflictingBookings).toBeUndefined();
+    });
+
+    it('ignores cancelled reservations', async () => {
+      const booking = await reserve(testEquipmentIds[0]!, 4);
+      await prisma.equipmentReservation.updateMany({ where: { bookingId: booking.id }, data: { status: 'CANCELLED' } });
+
+      const response = await request(app).get('/equipment/available').query(range);
+
+      expect(find(response.body, testEquipmentIds[0]!).availableQuantity).toBe(5);
+    });
+
+    it('leaves untouched equipment fully available', async () => {
+      await reserve(testEquipmentIds[0]!, 3); // only the tent is reserved
+
+      const response = await request(app).get('/equipment/available').query(range);
+
+      const kayak = find(response.body, testEquipmentIds[1]!);
       expect(kayak.availableQuantity).toBe(3);
       expect(kayak.available).toBe(true);
       expect(kayak.conflictingBookings).toBeUndefined();
+    });
+
+    it('says whether the answer came from the cache', async () => {
+      const first = await request(app).get('/equipment/available').query(range);
+      const second = await request(app).get('/equipment/available').query(range);
+
+      expect(first.status).toBe(200);
+      expect(first.body.cached).toBeDefined();
+      expect(second.status).toBe(200);
+      expect(second.body.cached).toBeDefined();
     });
   });
 });

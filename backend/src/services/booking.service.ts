@@ -44,6 +44,8 @@ export interface EquipmentAvailabilityQuery {
 
 export interface EquipmentAvailability extends Equipment {
   available: boolean;
+  /** Units free for the requested dates (total quantity minus confirmed reservations) */
+  availableQuantity: number;
   conflictingBookings?: Array<{
     bookingId: string;
     startDate: Date;
@@ -171,6 +173,7 @@ export class BookingService {
           return {
             ...equipmentData,
             available: availableQuantity > 0,
+            availableQuantity: Math.max(availableQuantity, 0),
             conflictingBookings: conflictingBookings.length > 0 ? conflictingBookings : undefined,
           };
         });

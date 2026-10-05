@@ -67,6 +67,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@tests': path.resolve(__dirname, './tests'),
+      // Use the shared package's source so tests don't need it built first
+      '@campsite-management/shared': path.resolve(__dirname, '../shared/index.ts'),
     },
   },
 });
