@@ -100,9 +100,22 @@ const logger = winston.createLogger({
   exitOnError: false,
 });
 
+// Anything can be thrown, so read the fields we log defensively instead of trusting the type
+interface ErrorFields {
+  message?: unknown;
+  stack?: unknown;
+  name?: unknown;
+  code?: unknown;
+  status?: unknown;
+  response?: { data?: unknown };
+}
+
+const asErrorFields = (error: unknown): ErrorFields =>
+  typeof error === 'object' && error !== null ? (error as ErrorFields) : { message: String(error) };
+
 // Logger methods with additional functionality
 export const loggerMethods = {
-  error: (message: string, error?: any, metadata?: any) => {
+  error: (message: string, error?: unknown, metadata?: unknown) => {
     if (error instanceof Error) {
       logger.error(message, {
         error: {
@@ -133,24 +146,24 @@ export const loggerMethods = {
     }
   },
 
-  warn: (message: string, metadata?: any) => {
+  warn: (message: string, metadata?: unknown) => {
     logger.warn(message, { metadata });
   },
 
-  info: (message: string, metadata?: any) => {
+  info: (message: string, metadata?: unknown) => {
     logger.info(message, { metadata });
   },
 
-  http: (message: string, metadata?: any) => {
+  http: (message: string, metadata?: unknown) => {
     logger.http(message, { metadata });
   },
 
-  debug: (message: string, metadata?: any) => {
+  debug: (message: string, metadata?: unknown) => {
     logger.debug(message, { metadata });
   },
 
   // Database operations
-  dbQuery: (query: string, params?: any, duration?: number) => {
+  dbQuery: (query: string, params?: unknown, duration?: number) => {
     logger.debug('Database Query', {
       query,
       params,
@@ -158,13 +171,13 @@ export const loggerMethods = {
     });
   },
 
-  dbError: (message: string, error: any, query?: string) => {
+  dbError: (message: string, error: unknown, query?: string) => {
     logger.error('Database Error', {
       message,
       error: {
-        message: error.message,
-        stack: error.stack,
-        code: error.code,
+        message: asErrorFields(error).message,
+        stack: asErrorFields(error).stack,
+        code: asErrorFields(error).code,
       },
       query,
     });
@@ -198,15 +211,15 @@ export const loggerMethods = {
     });
   },
 
-  apiError: (method: string, url: string, error: any, userId?: string) => {
+  apiError: (method: string, url: string, error: unknown, userId?: string) => {
     logger.error('API Error', {
       method,
       url,
       userId,
       error: {
-        message: error.message,
-        stack: error.stack,
-        status: error.status,
+        message: asErrorFields(error).message,
+        stack: asErrorFields(error).stack,
+        status: asErrorFields(error).status,
       },
     });
   },
@@ -237,19 +250,19 @@ export const loggerMethods = {
     });
   },
 
-  paymentFailed: (bookingId: string, amount: number, error: any) => {
+  paymentFailed: (bookingId: string, amount: number, error: unknown) => {
     logger.error('Payment Failed', {
       bookingId,
       amount,
       error: {
-        message: error.message,
-        code: error.code,
+        message: asErrorFields(error).message,
+        code: asErrorFields(error).code,
       },
     });
   },
 
   // Security operations
-  securityAlert: (type: string, details: any, userId?: string, ip?: string) => {
+  securityAlert: (type: string, details: Record<string, unknown>, userId?: string, ip?: string) => {
     logger.warn('Security Alert', {
       type,
       details,
@@ -291,13 +304,13 @@ export const loggerMethods = {
     });
   },
 
-  emailFailed: (to: string, subject: string, error: any) => {
+  emailFailed: (to: string, subject: string, error: unknown) => {
     logger.error('Email Failed', {
       to,
       subject,
       error: {
-        message: error.message,
-        code: error.code,
+        message: asErrorFields(error).message,
+        code: asErrorFields(error).code,
       },
     });
   },
@@ -310,12 +323,12 @@ export const loggerMethods = {
     });
   },
 
-  smsFailed: (to: string, error: any) => {
+  smsFailed: (to: string, error: unknown) => {
     logger.error('SMS Failed', {
       to,
       error: {
-        message: error.message,
-        code: error.code,
+        message: asErrorFields(error).message,
+        code: asErrorFields(error).code,
       },
     });
   },
@@ -329,13 +342,13 @@ export const loggerMethods = {
     });
   },
 
-  fileUploadFailed: (filename: string, error: any, userId?: string) => {
+  fileUploadFailed: (filename: string, error: unknown, userId?: string) => {
     logger.error('File Upload Failed', {
       filename,
       userId,
       error: {
-        message: error.message,
-        code: error.code,
+        message: asErrorFields(error).message,
+        code: asErrorFields(error).code,
       },
     });
   },
@@ -362,7 +375,7 @@ export const loggerMethods = {
   },
 
   // Job operations
-  jobStarted: (jobName: string, jobId: string, data?: any) => {
+  jobStarted: (jobName: string, jobId: string, data?: unknown) => {
     logger.info('Job Started', {
       jobName,
       jobId,
@@ -378,13 +391,13 @@ export const loggerMethods = {
     });
   },
 
-  jobFailed: (jobName: string, jobId: string, error: any) => {
+  jobFailed: (jobName: string, jobId: string, error: unknown) => {
     logger.error('Job Failed', {
       jobName,
       jobId,
       error: {
-        message: error.message,
-        stack: error.stack,
+        message: asErrorFields(error).message,
+        stack: asErrorFields(error).stack,
       },
     });
   },
@@ -399,14 +412,14 @@ export const loggerMethods = {
     });
   },
 
-  externalApiError: (service: string, endpoint: string, error: any) => {
+  externalApiError: (service: string, endpoint: string, error: unknown) => {
     logger.error('External API Error', {
       service,
       endpoint,
       error: {
-        message: error.message,
-        status: error.status,
-        response: error.response?.data,
+        message: asErrorFields(error).message,
+        status: asErrorFields(error).status,
+        response: asErrorFields(error).response?.data,
       },
     });
   },

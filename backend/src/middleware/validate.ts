@@ -133,6 +133,45 @@ export const createPaymentIntentSchema = z.object({
 export type CreatePaymentIntentInput = z.infer<typeof createPaymentIntentSchema>;
 
 // ============================================================
+// User Schemas
+// ============================================================
+
+// What a user may change about themselves. Unknown fields are dropped, not applied.
+export const updateProfileSchema = z.object({
+    firstName: z.string().trim().min(1).max(100).optional(),
+    lastName: z.string().trim().min(1).max(100).optional(),
+    phone: z.string().trim().max(30).nullable().optional(),
+    avatar: z.string().max(2048).nullable().optional(),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+// Preferences are a closed set. Anything else (userId, id, ...) is rejected, never stored.
+export const updatePreferencesSchema = z.object({
+    theme: z.enum(['light', 'dark']).optional(),
+    language: z.string().trim().min(2).max(10).optional(),
+    timezone: z.string().trim().min(1).max(64).optional(),
+    emailNotifications: z.boolean().optional(),
+    smsNotifications: z.boolean().optional(),
+    pushNotifications: z.boolean().optional(),
+}).strict();
+
+export type UpdatePreferencesInput = z.infer<typeof updatePreferencesSchema>;
+
+// What an admin may change about any user
+export const adminUpdateUserSchema = z.object({
+    email: z.string().email(),
+    firstName: z.string().trim().min(1).max(100),
+    lastName: z.string().trim().min(1).max(100),
+    phone: z.string().trim().max(30).nullable(),
+    role: z.enum(['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER']),
+    isActive: z.boolean(),
+    password: z.string().min(8).max(200),
+}).partial().strict();
+
+export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
+
+// ============================================================
 // Booking confirmation (staff)
 // ============================================================
 

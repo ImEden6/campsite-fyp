@@ -1,7 +1,7 @@
 // Error Handling Utilities
 
 import { Request, Response, NextFunction } from 'express';
-import { ZodError } from 'zod';
+import { ZodError, type ZodTypeAny } from 'zod';
 import { Prisma } from '@prisma/client';
 import { logger } from './logger';
 
@@ -10,13 +10,13 @@ export class ApiError extends Error {
   public statusCode: number;
   public isOperational: boolean;
   public code: string | undefined;
-  public details?: any;
+  public details?: unknown;
 
   constructor(
     statusCode: number,
     message: string,
     code?: string,
-    details?: any,
+    details?: unknown,
     isOperational = true,
     stack = ''
   ) {
@@ -49,7 +49,7 @@ export interface ValidationErrorDetail {
   field: string;
   message: string;
   code: string;
-  value?: any;
+  value?: unknown;
 }
 
 // Authentication Error class
@@ -171,7 +171,7 @@ export const handleJWTError = (error: Error): ApiError => {
 };
 
 // Handle Multer errors
-export const handleMulterError = (error: any): ApiError => {
+export const handleMulterError = (error: Error & { code?: string }): ApiError => {
   if (error.code === 'LIMIT_FILE_SIZE') {
     return new ValidationError([{
       field: 'file',
@@ -204,7 +204,7 @@ export const handleMulterError = (error: any): ApiError => {
 };
 
 // Handle Stripe errors
-export const handleStripeError = (error: any): ApiError => {
+export const handleStripeError = (error: Error & { type?: string }): ApiError => {
   switch (error.type) {
     case 'StripeCardError':
       return new PaymentError('Card was declined', 'CARD_DECLINED');
@@ -233,9 +233,21 @@ export const handleStripeError = (error: any): ApiError => {
   }
 };
 
+export interface ErrorResponse {
+  success: false;
+  error: {
+    message: string;
+    code: string | undefined;
+    statusCode: number;
+    validationErrors?: ValidationErrorDetail[];
+    details?: unknown;
+  };
+  timestamp: string;
+}
+
 // Convert error to API response format
-export const formatErrorResponse = (error: ApiError) => {
-  const response: any = {
+export const formatErrorResponse = (error: ApiError): ErrorResponse => {
+  const response: ErrorResponse = {
     success: false,
     error: {
       message: error.message,
@@ -323,14 +335,14 @@ export const notFoundHandler = (req: Request, res: Response, next: NextFunction)
 };
 
 // Async error wrapper
-export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any> | any) => {
+export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => unknown) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
 
 // Validation middleware factory
-export const validate = (schema: any) => {
+export const validate = (schema: ZodTypeAny) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = schema.parse(req.body);
@@ -347,11 +359,11 @@ export const validate = (schema: any) => {
 };
 
 // Query validation middleware factory
-export const validateQuery = (schema: any) => {
+export const validateQuery = (schema: ZodTypeAny) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = schema.parse(req.query);
-      req.query = validatedData;
+      req.query = validatedData as Request['query'];
       next();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -364,11 +376,11 @@ export const validateQuery = (schema: any) => {
 };
 
 // Params validation middleware factory
-export const validateParams = (schema: any) => {
+export const validateParams = (schema: ZodTypeAny) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = schema.parse(req.params);
-      req.params = validatedData;
+      req.params = validatedData as Request['params'];
       next();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -381,7 +393,7 @@ export const validateParams = (schema: any) => {
 };
 
 // Error factory functions
-export const createValidationError = (field: string, message: string, code: string, value?: any): ValidationError => {
+export const createValidationError = (field: string, message: string, code: string, value?: unknown): ValidationError => {
   return new ValidationError([{ field, message, code, value }]);
 };
 
@@ -431,3 +443,14 @@ export default {
   createPaymentError,
   createExternalServiceError,
 };
+
+/** A readable message from anything that was thrown (errors are not always Error objects). */
+export const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Unknown error';
+};
+
+/** True when a Prisma query failed with the given error code (P2002 unique, P2025 not found, ...). */
+export const hasPrismaCode = (error: unknown, code: string): boolean =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === code;

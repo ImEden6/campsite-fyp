@@ -29,7 +29,7 @@ export interface EmailAttachment {
 }
 
 export interface EmailTemplateData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export type EmailProvider = 'sendgrid' | 'smtp' | 'mock';

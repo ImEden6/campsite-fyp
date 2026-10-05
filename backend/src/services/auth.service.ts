@@ -3,7 +3,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, User, UserPreferences } from '@prisma/client';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 import {
@@ -668,7 +668,7 @@ export class AuthService {
   }
 
   // Sanitize user object (remove sensitive data)
-  private sanitizeUser(user: any) {
+  private sanitizeUser(user: User & { preferences?: UserPreferences | null }) {
     const sanitized = {
       id: user.id,
       email: user.email,
@@ -704,7 +704,7 @@ export class AuthService {
   }
 
   // Get user sessions
-  async getUserSessions(userId: string): Promise<any[]> {
+  async getUserSessions(userId: string): Promise<Array<{ id: string; createdAt: Date; expiresAt: Date }>> {
     return prisma.userSession.findMany({
       where: {
         userId,

@@ -148,7 +148,7 @@ export class ApiKeyService implements IApiKeyService {
         },
       });
 
-      let matchedKey: any = null;
+      let matchedKey: (typeof apiKeys)[number] | null = null;
 
       // Check each key hash
       for (const apiKey of apiKeys) {

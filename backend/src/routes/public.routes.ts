@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { getPrismaClient } from '@/database';
+import logger from '@/utils/logger';
 
 const router = Router();
 
@@ -13,15 +14,10 @@ const useMockData = (): boolean => {
  * Returns real-time counts from the database
  */
 router.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
-    console.log('=== PUBLIC STATS DEBUG ===');
-    console.log('USE_MOCK_DATA:', process.env.USE_MOCK_DATA);
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('useMockData():', useMockData());
     
     try {
         // Return mock data in mock mode
         if (useMockData()) {
-            console.log('Using mock data');
             return res.json({
                 data: {
                     siteCount: 8,
@@ -31,13 +27,10 @@ router.get('/stats', async (req: Request, res: Response, next: NextFunction) => 
                 },
             });
         }
-
-        console.log('Getting Prisma client from database module...');
         
         const prisma = getPrismaClient();
         
         // Use raw SQL for everything to avoid Prisma enum issues
-        console.log('Fetching data with raw SQL...');
         
         // Get total sites
         const siteCountResult = await prisma.$queryRaw<Array<{count: bigint}>>`SELECT COUNT(*) as count FROM sites`;
@@ -73,8 +66,6 @@ router.get('/stats', async (req: Request, res: Response, next: NextFunction) => 
         `;
         const totalCustomers = Number(customersResult[0]?.count || 0);
 
-        console.log('Data fetched:', { totalSites, activeBookingsThisMonth, totalCustomers });
-
         res.json({
             data: {
                 siteCount: totalSites,
@@ -83,18 +74,10 @@ router.get('/stats', async (req: Request, res: Response, next: NextFunction) => 
                 totalCustomers,
             },
         });
-    } catch (error: any) {
-        console.error('ERROR:', error.message);
-        console.error('STACK:', error.stack);
-        res.status(500).json({
-            success: false,
-            error: {
-                message: error.message,
-                code: 'INTERNAL_ERROR',
-                statusCode: 500,
-            },
-            timestamp: new Date().toISOString(),
-        });
+    } catch (error) {
+        // The shared error handler logs it and answers with a safe message (no internals)
+        logger.error('Failed to load public stats', error);
+        next(error);
     }
 });
 

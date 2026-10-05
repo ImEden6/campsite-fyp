@@ -423,3 +423,51 @@ describe('real-time events', () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe('refund reasons', () => {
+  const payment = { id: PAYMENT_ID, userId: 'user-1', bookingId: BOOKING_ID, amount: 100, status: 'PAID', stripePaymentId: 'pi_1' };
+  const refund = (body: object) => request(app).post(`/payments/${PAYMENT_ID}/refund`).set(as('admin-1', 'ADMIN')).send(body);
+  const sentToStripe = () => stripeMock.refunds.create.mock.calls[0]![0];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.payment.findUnique.mockResolvedValue(payment);
+    prismaMock.payment.update.mockResolvedValue({ ...payment, status: 'REFUNDED' });
+    stripeMock.refunds.create.mockResolvedValue({ id: 're_1' });
+  });
+
+  it.each(['duplicate', 'fraudulent', 'requested_by_customer'])('passes the Stripe reason "%s" straight through', async (reason) => {
+    const res = await refund({ reason });
+
+    expect(res.status).toBe(200);
+    expect(sentToStripe()).toMatchObject({ reason });
+    expect(sentToStripe()).not.toHaveProperty('metadata');
+  });
+
+  it('keeps a free-text reason as a note, since Stripe would reject it as a reason', async () => {
+    const res = await refund({ reason: 'Guest was unhappy with the site' });
+
+    expect(res.status).toBe(200);
+    expect(sentToStripe()).toMatchObject({ reason: 'requested_by_customer', metadata: { note: 'Guest was unhappy with the site' } });
+  });
+
+  it('limits how long a note can be', async () => {
+    await refund({ reason: 'x'.repeat(2000) });
+
+    expect(sentToStripe().metadata.note).toHaveLength(500);
+  });
+
+  it('defaults to requested_by_customer when no reason is given', async () => {
+    await refund({});
+
+    expect(sentToStripe()).toMatchObject({ reason: 'requested_by_customer' });
+    expect(sentToStripe()).not.toHaveProperty('metadata');
+  });
+
+  it.each([123, true, { a: 1 }, ['duplicate']])('refuses a reason that is not text (%j)', async (reason) => {
+    const res = await refund({ reason });
+
+    expect(res.status).toBe(400);
+    expect(stripeMock.refunds.create).not.toHaveBeenCalled();
+  });
+});

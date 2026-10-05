@@ -197,6 +197,9 @@ router.post('/:id/refund', authenticate, authorize('ADMIN', 'MANAGER'), async (r
         if (amount !== undefined && typeof amount !== 'number') {
             throw new ApiError(400, 'Refund amount must be a number');
         }
+        if (reason !== undefined && typeof reason !== 'string') {
+            throw new ApiError(400, 'Refund reason must be text');
+        }
 
         const refund = await paymentService.processRefund(id as string, amount, reason);
 

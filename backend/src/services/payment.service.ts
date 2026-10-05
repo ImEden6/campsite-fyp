@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { config } from '@/config';
 import logger from '@/utils/logger';
-import { ApiError } from '@/utils/errors';
+import { ApiError, getErrorMessage } from '@/utils/errors';
 import { PaymentStatus, PaymentMethod, BookingStatus } from '@prisma/client';
 
 import prisma from '@/database';
@@ -12,6 +12,8 @@ export const PAYMENT_CURRENCY = 'myr';
 
 // Never expose the full User row (it contains the password hash) in payment responses.
 const safeUserSelect = { id: true, email: true, firstName: true, lastName: true } as const;
+
+const STRIPE_REFUND_REASONS = ['duplicate', 'fraudulent', 'requested_by_customer'] as const;
 
 const toCents = (amount: number) => Math.round(amount * 100);
 
@@ -248,10 +250,15 @@ class PaymentService {
                 throw new ApiError(400, 'Refund amount must be greater than 0 and at most the payment amount');
             }
 
+            // Stripe only accepts three reasons. Anything else a staff member typed is kept as a note.
+            const stripeReason = STRIPE_REFUND_REASONS.find((r) => r === reason) ?? 'requested_by_customer';
+            const note = reason && !STRIPE_REFUND_REASONS.some((r) => r === reason) ? reason.slice(0, 500) : undefined;
+
             const refund = await this.stripe.refunds.create({
                 payment_intent: payment.stripePaymentId,
                 amount: amount ? Math.round(amount * 100) : undefined, // Full refund if undefined
-                reason: (reason as any) || 'requested_by_customer',
+                reason: stripeReason,
+                ...(note && { metadata: { note } }),
             });
 
             const updatedPayment = await prisma.payment.update({
@@ -289,8 +296,8 @@ class PaymentService {
         let event: Stripe.Event;
         try {
             event = this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-        } catch (error: any) {
-            logger.warn(`Webhook signature verification failed: ${error.message}`);
+        } catch (error) {
+            logger.warn(`Webhook signature verification failed: ${getErrorMessage(error)}`);
             throw new ApiError(400, 'Invalid webhook signature');
         }
 

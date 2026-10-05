@@ -1,6 +1,6 @@
 // Cache Service using Redis
 
-import Redis from 'ioredis';
+import Redis, { type RedisOptions } from 'ioredis';
 import crypto from 'crypto';
 import { config } from '@/config';
 import logger from '@/utils/logger';
@@ -15,7 +15,7 @@ export class CacheService {
   private serviceName: string = 'campsite';
 
   constructor() {
-    const redisOptions: any = {
+    const redisOptions: RedisOptions = {
       host: this.extractHost(config.redis.url),
       port: this.extractPort(config.redis.url),
       maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
@@ -122,7 +122,7 @@ export class CacheService {
   }
 
   // Set a value in cache
-  async set(key: string, value: any, ttl?: number): Promise<void> {
+  async set(key: string, value: unknown, ttl?: number): Promise<void> {
     try {
       if (!this.isReady()) {
         logger.warn('Cache service not ready, skipping set operation');
@@ -144,7 +144,7 @@ export class CacheService {
   }
 
   // Get a value from cache
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T = unknown>(key: string): Promise<T | null> {
     try {
       if (!this.isReady()) {
         logger.warn('Cache service not ready, skipping get operation');
@@ -270,7 +270,7 @@ export class CacheService {
   }
 
   // Get multiple values at once
-  async mget<T = any>(keys: string[]): Promise<(T | null)[]> {
+  async mget<T = unknown>(keys: string[]): Promise<(T | null)[]> {
     try {
       if (!this.isReady() || keys.length === 0) {
         return [];
@@ -294,7 +294,7 @@ export class CacheService {
   }
 
   // Set multiple values at once
-  async mset(keyValuePairs: Record<string, any>, ttl?: number): Promise<void> {
+  async mset(keyValuePairs: Record<string, unknown>, ttl?: number): Promise<void> {
     try {
       if (!this.isReady()) {
         return;
@@ -502,7 +502,7 @@ export class CacheService {
   }
 
   // Hash operations
-  async hset(key: string, field: string, value: any): Promise<void> {
+  async hset(key: string, field: string, value: unknown): Promise<void> {
     try {
       if (!this.isReady()) {
         return;
@@ -514,7 +514,7 @@ export class CacheService {
     }
   }
 
-  async hget<T = any>(key: string, field: string): Promise<T | null> {
+  async hget<T = unknown>(key: string, field: string): Promise<T | null> {
     try {
       if (!this.isReady()) {
         return null;
@@ -541,7 +541,7 @@ export class CacheService {
     }
   }
 
-  async hgetall<T = any>(key: string): Promise<Record<string, T>> {
+  async hgetall<T = unknown>(key: string): Promise<Record<string, T>> {
     try {
       if (!this.isReady()) {
         return {};
@@ -589,7 +589,7 @@ export class CacheService {
    * Set to cache with namespace prefix
    * Fail-open: silently fails on error
    */
-  async safeSet(resource: string, value: any, ttl?: number): Promise<void> {
+  async safeSet(resource: string, value: unknown, ttl?: number): Promise<void> {
     if (!this.isCachingEnabled()) return;
 
     try {

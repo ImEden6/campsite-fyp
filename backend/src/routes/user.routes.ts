@@ -3,6 +3,13 @@ import { Router, Request, Response, NextFunction } from 'express';
 import userService from '@/services/user.service';
 import { authenticate, authorize } from '@/middleware/auth';
 import { ApiError } from '@/utils/errors';
+import {
+    validateBody,
+    updateProfileSchema,
+    updatePreferencesSchema,
+    adminUpdateUserSchema,
+    type AdminUpdateUserInput,
+} from '@/middleware/validate';
 import { UserRole } from '@prisma/client';
 
 const router = Router();
@@ -37,19 +44,10 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
  * PUT /users/me
  * Update current user profile
  */
-router.put('/me', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/me', validateBody(updateProfileSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Whitelist allowed fields for self-update
-        const allowedFields = ['firstName', 'lastName', 'phone', 'avatar'];
-        const updateData: any = {};
-
-        Object.keys(req.body).forEach(key => {
-            if (allowedFields.includes(key)) {
-                updateData[key] = req.body[key];
-            }
-        });
-
-        const user = await userService.updateUser(req.user!.id, updateData);
+        // validateBody keeps only the fields a user may change (name, phone, avatar)
+        const user = await userService.updateUser(req.user!.id, req.body);
         const { password, ...safeUser } = user;
 
         res.json({
@@ -65,7 +63,7 @@ router.put('/me', async (req: Request, res: Response, next: NextFunction) => {
  * PUT /users/me/preferences
  * Update current user preferences
  */
-router.put('/me/preferences', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/me/preferences', validateBody(updatePreferencesSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const preferences = await userService.updateUserPreferences(req.user!.id, req.body);
 
@@ -134,15 +132,16 @@ router.get('/:id', authorize('ADMIN', 'MANAGER'), async (req: Request, res: Resp
  * PUT /users/:id
  * Update specific user (Admin only)
  */
-router.put('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', authorize('ADMIN'), validateBody(adminUpdateUserSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
+        const changes = req.body as AdminUpdateUserInput;
         // Don't allow changing own role to avoid lockout, or implement checks logic
-        if (id === req.user!.id && req.body.role && req.body.role !== 'ADMIN') {
+        if (id === req.user!.id && changes.role && changes.role !== 'ADMIN') {
             throw new ApiError(400, 'Cannot demote yourself');
         }
 
-        const user = await userService.updateUser(id as string, req.body);
+        const user = await userService.updateUser(id as string, changes);
         const { password, ...safeUser } = user;
 
         res.json({

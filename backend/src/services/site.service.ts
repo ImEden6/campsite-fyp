@@ -1,6 +1,6 @@
 
 import { Site, SiteStatus, SiteType, Prisma } from '@prisma/client';
-import { ApiError } from '@/utils/errors';
+import { ApiError, hasPrismaCode } from '@/utils/errors';
 import logger from '@/utils/logger';
 import { getPrismaClient } from '@/database';
 import cacheService from '@/services/cache.service';
@@ -12,7 +12,7 @@ const prisma = getPrismaClient();
 const SITE_CACHE_TTL = 3600; // 1 hour for static site data
 
 // Generate stable cache key from filters (sorted keys for consistency)
-function generateCacheKey(prefix: string, params: Record<string, any>): string {
+function generateCacheKey(prefix: string, params: Record<string, unknown>): string {
     const sortedParams = Object.keys(params)
         .filter(key => params[key] !== undefined)
         .sort()
@@ -92,8 +92,8 @@ export class SiteService {
 
             logger.info(`Site created: ${site.id}`);
             return site;
-        } catch (error: any) {
-            if (error.code === 'P2002') {
+        } catch (error) {
+            if (hasPrismaCode(error, 'P2002')) {
                 throw new ApiError(409, 'A site with this name already exists');
             }
             throw error;
@@ -112,11 +112,11 @@ export class SiteService {
 
             logger.info(`Site updated: ${site.id}`);
             return site;
-        } catch (error: any) {
-            if (error.code === 'P2025') {
+        } catch (error) {
+            if (hasPrismaCode(error, 'P2025')) {
                 throw new ApiError(404, 'Site not found');
             }
-            if (error.code === 'P2002') {
+            if (hasPrismaCode(error, 'P2002')) {
                 throw new ApiError(409, 'A site with this name already exists');
             }
             throw error;
@@ -133,12 +133,12 @@ export class SiteService {
             await this.invalidateSiteCache(id);
 
             logger.info(`Site deleted: ${id}`);
-        } catch (error: any) {
-            if (error.code === 'P2025') {
+        } catch (error) {
+            if (hasPrismaCode(error, 'P2025')) {
                 throw new ApiError(404, 'Site not found');
             }
             // Check for foreign key constraints (e.g. existing bookings)
-            if (error.code === 'P2003') {
+            if (hasPrismaCode(error, 'P2003')) {
                 throw new ApiError(400, 'Cannot delete site with existing bookings');
             }
             throw error;

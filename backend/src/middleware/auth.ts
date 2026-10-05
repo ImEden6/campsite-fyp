@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import type { UserRole as PrismaUserRole } from '@prisma/client';
 
 import { config } from '@/config';
 import logger from '@/utils/logger';
@@ -88,7 +89,7 @@ const resolveMockUser = async (token: string): Promise<AuthUser> => {
 
   // Prefer a real database user so downstream FK-constrained writes (e.g. bookings.userId) succeed.
   const dbUser = await prisma.user.findFirst({
-    where: { OR: [{ email: mockUser.email }, { role: mockUser.role as any }] },
+    where: { OR: [{ email: mockUser.email }, { role: mockUser.role as PrismaUserRole }] },
     select: userSelect,
   });
 
@@ -126,7 +127,7 @@ export const authenticateToken = async (token: string | undefined, ctx: AuthCont
 
   // Check cache first for user profile
   const cacheKey = `user:${decoded.userId}:profile`;
-  let user = await cacheService.get(cacheKey);
+  let user: AuthUser | null = await cacheService.get<AuthUser>(cacheKey);
 
   // Cache miss - query database
   if (!user) {
@@ -201,7 +202,7 @@ export const optionalAuthenticate = async (
 
     // Check cache first for user profile
     const cacheKey = `user:${decoded.userId}:profile`;
-    let user = await cacheService.get(cacheKey);
+    let user: AuthUser | null = await cacheService.get<AuthUser>(cacheKey);
 
     // Cache miss - query database
     if (!user) {

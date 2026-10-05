@@ -143,7 +143,7 @@ export class TemplateRenderer {
     });
 
     // Conditional helper
-    Handlebars.registerHelper('ifEquals', function(this: any, arg1: any, arg2: any, options: any) {
+    Handlebars.registerHelper('ifEquals', function(this: unknown, arg1: unknown, arg2: unknown, options: Handlebars.HelperOptions) {
       return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
     });
   }

@@ -240,4 +240,32 @@ describe('Equipment Routes - Availability Endpoint', () => {
       expect(second.body.cached).toBeDefined();
     });
   });
+
+  describe('unknown equipment categories', () => {
+    it('are refused when listing equipment, instead of failing inside the database', async () => {
+      const res = await request(app).get('/equipment').query({ category: 'NOT_A_CATEGORY' });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('NOT_A_CATEGORY');
+    });
+
+    it('are refused when any one of several is unknown', async () => {
+      const res = await request(app).get('/equipment').query({ category: [EquipmentCategory.CAMPING_GEAR, 'BOGUS'] });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('are refused when checking availability', async () => {
+      const res = await request(app).get('/equipment/available').query({ ...range, equipmentType: 'NOT_A_CATEGORY' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('still list equipment for a real category', async () => {
+      const res = await request(app).get('/equipment').query({ category: EquipmentCategory.CAMPING_GEAR });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.every((e: { category: string }) => e.category === EquipmentCategory.CAMPING_GEAR)).toBe(true);
+    });
+  });
 });

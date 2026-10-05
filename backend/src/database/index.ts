@@ -84,7 +84,7 @@ export async function transaction<T>(
 ): Promise<T> {
   const client = getPrismaClient();
    
-  return (client as any).$transaction(callback);
+  return client.$transaction((tx) => callback(tx as PrismaClient));
 }
 
 // Database metrics

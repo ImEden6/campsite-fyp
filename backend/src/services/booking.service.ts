@@ -1,6 +1,6 @@
 // Booking Service
 
-import { PrismaClient, Equipment, GuestType, Prisma, Booking, BookingStatus, PaymentMethod, PaymentStatus, Payment } from '@prisma/client';
+import { PrismaClient, Equipment, EquipmentCategory, GuestType, Prisma, Booking, BookingStatus, PaymentMethod, PaymentStatus, Payment } from '@prisma/client';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
@@ -163,6 +163,10 @@ export class BookingService {
       throw new ApiError(400, 'Start date must be before end date');
     }
 
+    if (equipmentType && !(Object.values(EquipmentCategory) as string[]).includes(equipmentType)) {
+      throw new ApiError(400, `Unknown equipment type: ${equipmentType}`);
+    }
+
     // Convert dates to UTC to ensure consistent timezone handling
     const startDateUTC = new Date(startDate.toISOString());
     const endDateUTC = new Date(endDate.toISOString());
@@ -177,7 +181,7 @@ export class BookingService {
         const equipment = await prisma.equipment.findMany({
           where: {
 
-            ...(equipmentType && { category: equipmentType as any }),
+            ...(equipmentType && { category: equipmentType as EquipmentCategory }),
           },
           include: {
             reservations: {

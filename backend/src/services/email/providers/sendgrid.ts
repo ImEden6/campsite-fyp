@@ -1,9 +1,16 @@
 // SendGrid Email Service Provider
 
 import sgMail from '@sendgrid/mail';
+import type { MailDataRequired } from '@sendgrid/mail';
 import { EmailService } from '../base';
 import { EmailOptions, EmailResult } from '../types';
 import logger from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errors';
+
+// The part of a SendGrid failure that carries the useful message
+interface SendGridError {
+  response?: { body?: { errors?: Array<{ message?: string }> } };
+}
 
 export class SendGridEmailService extends EmailService {
   protected providerName = 'SendGrid';
@@ -33,7 +40,7 @@ export class SendGridEmailService extends EmailService {
         })),
       };
 
-      const response = await sgMail.send(msg as any);
+      const response = await sgMail.send(msg as MailDataRequired);
       const messageId = response[0]?.headers?.['x-message-id'] || undefined;
 
       this.logEmailAttempt(options, true);
@@ -42,8 +49,8 @@ export class SendGridEmailService extends EmailService {
         success: true,
         messageId,
       };
-    } catch (error: any) {
-      const errorMessage = error?.response?.body?.errors?.[0]?.message || error.message;
+    } catch (error) {
+      const errorMessage = (error as SendGridError)?.response?.body?.errors?.[0]?.message || getErrorMessage(error);
       
       logger.error('SendGrid email failed', {
         error: errorMessage,

@@ -6,12 +6,15 @@ import { CacheService } from '@/services/cache.service';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 import { getPrismaClient } from '@/database';
-import { EquipmentItemStatus } from '@prisma/client';
+import { EquipmentItemStatus, EquipmentCategory } from '@prisma/client';
 import { EquipmentStatus } from '@campsite-management/shared';
 
 const router = Router();
 const cacheService = new CacheService();
 const prisma = getPrismaClient();
+
+const isEquipmentCategory = (value: string): value is EquipmentCategory =>
+  (Object.values(EquipmentCategory) as string[]).includes(value);
 
 const toArray = (value: unknown): string[] => {
   if (!value) return [];
@@ -30,6 +33,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     const skip = (page - 1) * limit;
 
     const categories = toArray(req.query.category);
+    const unknownCategories = categories.filter((c) => !isEquipmentCategory(c));
+    if (unknownCategories.length > 0) {
+      throw new ApiError(400, `Unknown equipment category: ${unknownCategories.join(', ')}`);
+    }
     const statuses = toArray(req.query.status);
     const search = req.query.search ? String(req.query.search).trim() : '';
     const minPrice = req.query.minPrice ? parseFloat(String(req.query.minPrice)) : undefined;
@@ -37,7 +44,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     const availableOnly = String(req.query.availableOnly || '').toLowerCase() === 'true';
 
     const where = {
-      ...(categories.length > 0 ? { category: { in: categories as any[] } } : {}),
+      ...(categories.length > 0 ? { category: { in: categories as EquipmentCategory[] } } : {}),
       ...(search
         ? {
             OR: [

@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import { EmailService } from '../base';
 import { EmailOptions, EmailResult } from '../types';
 import logger from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errors';
 
 export interface NodemailerConfig {
   host: string;
@@ -58,8 +59,8 @@ export class NodemailerEmailService extends EmailService {
         success: true,
         messageId: info.messageId,
       };
-    } catch (error: any) {
-      const errorMessage = error.message || 'Unknown error';
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
       
       logger.error('Nodemailer email failed', {
         error: errorMessage,

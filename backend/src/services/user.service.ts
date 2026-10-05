@@ -1,6 +1,6 @@
 
-import { User, UserRole } from '@prisma/client';
-import { ApiError } from '@/utils/errors';
+import { Prisma, User, UserRole, UserPreferences } from '@prisma/client';
+import { ApiError, hasPrismaCode } from '@/utils/errors';
 import logger from '@/utils/logger';
 import bcrypt from 'bcryptjs';
 
@@ -43,7 +43,7 @@ export class UserService {
     /**
      * Update user profile
      */
-    async updateUser(id: string, data: Partial<User>): Promise<User> {
+    async updateUser(id: string, data: Prisma.UserUpdateInput & { password?: string }): Promise<User> {
         try {
             // If updating password, hash it
             if (data.password) {
@@ -56,11 +56,11 @@ export class UserService {
             });
             logger.info(`User updated: ${id}`);
             return user;
-        } catch (error: any) {
-            if (error.code === 'P2025') {
+        } catch (error) {
+            if (hasPrismaCode(error, 'P2025')) {
                 throw new ApiError(404, 'User not found');
             }
-            if (error.code === 'P2002') {
+            if (hasPrismaCode(error, 'P2002')) {
                 throw new ApiError(409, 'Email already in use');
             }
             throw error;
@@ -76,8 +76,8 @@ export class UserService {
                 where: { id },
             });
             logger.info(`User deleted: ${id}`);
-        } catch (error: any) {
-            if (error.code === 'P2025') {
+        } catch (error) {
+            if (hasPrismaCode(error, 'P2025')) {
                 throw new ApiError(404, 'User not found');
             }
             throw error;
@@ -87,7 +87,10 @@ export class UserService {
     /**
      * Update user preferences
      */
-    async updateUserPreferences(userId: string, preferences: any): Promise<any> {
+    async updateUserPreferences(
+        userId: string,
+        preferences: Partial<Pick<UserPreferences, 'theme' | 'language' | 'timezone' | 'emailNotifications' | 'smsNotifications' | 'pushNotifications'>>
+    ): Promise<UserPreferences> {
         return prisma.userPreferences.upsert({
             where: { userId },
             update: preferences,
