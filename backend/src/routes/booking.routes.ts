@@ -15,7 +15,7 @@ import {
   confirmBookingSchema,
   ConfirmBookingInput
 } from '@/middleware/validate';
-import socketService from '@/services/socket.service';
+import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
 
 const router = Router();
 const prisma = getPrismaClient();
@@ -550,16 +550,8 @@ router.post('/:id/cancel', authenticate, authorizeBookingOwnership, async (req: 
       refundPercentage: refund.refundPercentage,
     });
 
-    // Notify all connected clients so the booking calendar removes/updates the entry in real-time
-    socketService.emit('booking:cancelled', {
-      id: updatedBooking.id,
-      userId: updatedBooking.userId,
-      siteId: updatedBooking.siteId,
-      status: updatedBooking.status,
-      checkInDate: updatedBooking.checkInDate,
-      checkOutDate: updatedBooking.checkOutDate,
-      bookingNumber: updatedBooking.bookingNumber,
-    });
+    // Staff calendars and the booking's owner see the cancellation in real-time
+    publishBookingEvent(BOOKING_EVENTS.cancelled, updatedBooking);
 
     res.json({
       success: true,
@@ -847,16 +839,8 @@ router.post('/', authenticate, validateBody(createBookingSchema), async (req: Re
       userId: req.user!.id
     });
 
-    // Notify all connected staff/admin/manager clients so the booking calendar updates in real-time
-    socketService.emit('booking:created', {
-      id: booking.id,
-      userId: booking.userId,
-      siteId: booking.siteId,
-      status: booking.status,
-      checkInDate: booking.checkInDate,
-      checkOutDate: booking.checkOutDate,
-      bookingNumber: booking.bookingNumber,
-    });
+    // Staff calendars and the booking's owner see the new booking in real-time
+    publishBookingEvent(BOOKING_EVENTS.created, booking);
 
     res.status(201).json({
       success: true,

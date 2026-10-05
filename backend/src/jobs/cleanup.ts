@@ -7,7 +7,7 @@ import cron, { ScheduledTask } from 'node-cron';
 import { getPrismaClient } from '@/database';
 import logger from '@/utils/logger';
 import bookingService from '@/services/booking.service';
-import socketService from '@/services/socket.service';
+import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
 
 // Store active cron jobs for graceful shutdown
 const activeTasks: ScheduledTask[] = [];
@@ -48,17 +48,9 @@ function scheduleSessionCleanup(): void {
 export async function expireUnpaidBookingsNow(): Promise<number> {
     const cancelled = await bookingService.expireUnpaidBookings();
 
-    // Same event the cancel route emits, so open booking calendars drop the entry
+    // Same event the cancel route publishes, so open booking calendars drop the entry
     for (const booking of cancelled) {
-        socketService.emit('booking:cancelled', {
-            id: booking.id,
-            userId: booking.userId,
-            siteId: booking.siteId,
-            status: booking.status,
-            checkInDate: booking.checkInDate,
-            checkOutDate: booking.checkOutDate,
-            bookingNumber: booking.bookingNumber,
-        });
+        publishBookingEvent(BOOKING_EVENTS.cancelled, booking);
     }
 
     return cancelled.length;

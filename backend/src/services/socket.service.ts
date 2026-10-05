@@ -1,6 +1,8 @@
 // Socket Service
-// Singleton that holds the Socket.io server instance and provides helper methods
-// for emitting real-time events from anywhere in the application.
+// Singleton that holds the Socket.io server instance and emits real-time events.
+//
+// There is deliberately no "emit to everyone" method: every event goes to named rooms
+// (see src/socket/rooms.ts) so a client only ever receives what it is entitled to see.
 
 import { Server } from 'socket.io';
 import logger from '@/utils/logger';
@@ -18,25 +20,15 @@ class SocketService {
   }
 
   /**
-   * Broadcast an event to all connected clients.
+   * Emit an event to one or more rooms. A client in several of the rooms still receives it once.
    */
-  emit(event: string, data: unknown): void {
+  emitToRooms(rooms: string[], event: string, data: unknown): void {
     if (!this.io) {
       logger.warn(`[SocketService] Cannot emit "${event}" — service not initialized`);
       return;
     }
-    this.io.emit(event, data);
-  }
-
-  /**
-   * Emit an event to a specific Socket.io room.
-   */
-  emitToRoom(room: string, event: string, data: unknown): void {
-    if (!this.io) {
-      logger.warn(`[SocketService] Cannot emit "${event}" to room "${room}" — service not initialized`);
-      return;
-    }
-    this.io.to(room).emit(event, data);
+    if (rooms.length === 0) return;
+    this.io.to(rooms).emit(event, data);
   }
 }
 

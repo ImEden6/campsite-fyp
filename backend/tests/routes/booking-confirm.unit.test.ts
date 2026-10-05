@@ -6,7 +6,7 @@ import express from 'express';
 
 const { bookingServiceMock, socketMock } = vi.hoisted(() => ({
   bookingServiceMock: { confirmBooking: vi.fn(), expireUnpaidBookings: vi.fn() },
-  socketMock: { emit: vi.fn(), emitToRoom: vi.fn() },
+  socketMock: { emitToRooms: vi.fn() },
 }));
 
 vi.mock('@/database', () => ({ default: {}, getPrismaClient: () => ({}) }));
@@ -80,7 +80,7 @@ describe('POST /bookings/:id/confirm', () => {
 describe('expiry job', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('tells connected clients about each booking it cancels', async () => {
+  it('tells the staff room and the booking owner about each booking it cancels', async () => {
     const booking = {
       id: 'b-9', userId: 'u-9', siteId: 's-9', status: 'CANCELLED', bookingNumber: 'BK-9',
       checkInDate: new Date('2033-01-01'), checkOutDate: new Date('2033-01-03'),
@@ -88,13 +88,17 @@ describe('expiry job', () => {
     bookingServiceMock.expireUnpaidBookings.mockResolvedValue([booking]);
 
     expect(await expireUnpaidBookingsNow()).toBe(1);
-    expect(socketMock.emit).toHaveBeenCalledWith('booking:cancelled', expect.objectContaining({ id: 'b-9', status: 'CANCELLED' }));
+    expect(socketMock.emitToRooms).toHaveBeenCalledWith(
+      ['staff', 'user:u-9'],
+      'booking:cancelled',
+      expect.objectContaining({ id: 'b-9', status: 'CANCELLED' })
+    );
   });
 
   it('emits nothing when nothing expired', async () => {
     bookingServiceMock.expireUnpaidBookings.mockResolvedValue([]);
 
     expect(await expireUnpaidBookingsNow()).toBe(0);
-    expect(socketMock.emit).not.toHaveBeenCalled();
+    expect(socketMock.emitToRooms).not.toHaveBeenCalled();
   });
 });
