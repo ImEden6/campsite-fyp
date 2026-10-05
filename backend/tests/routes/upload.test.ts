@@ -22,7 +22,7 @@ describe('Upload Routes', () => {
     // Create a test user
     const user = await prisma.user.create({
       data: {
-        email: `test-${Date.now()}@example.com`,
+        email: `test-${Date.now()}-${Math.random()}@example.com`,
         firstName: 'Test',
         lastName: 'User',
         password: 'hashedpassword',

@@ -53,7 +53,7 @@ describe('confirmPayment (real database)', () => {
     siteId = (
       await prisma.site.create({
         data: {
-          name: `Pay site ${Date.now()}`, type: 'TENT', status: 'AVAILABLE', capacity: 4, basePrice: 50, maxVehicles: 1,
+          name: `Pay site ${Date.now()}-${Math.random()}`, type: 'TENT', status: 'AVAILABLE', capacity: 4, basePrice: 50, maxVehicles: 1,
           maxTents: 1, sizeLength: 1, sizeWidth: 1, sizeUnit: 'feet', latitude: 1, longitude: 1, mapPositionX: 1, mapPositionY: 1,
         },
       })

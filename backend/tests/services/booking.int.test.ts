@@ -27,7 +27,7 @@ describe('Booking Service - Equipment Availability', () => {
     // Create test site
     const testSite = await prisma.site.create({
       data: {
-        name: `Test Site ${Date.now()}`,
+        name: `Test Site ${Date.now()}-${Math.random()}`,
         type: 'TENT',
         status: 'AVAILABLE',
         capacity: 4,

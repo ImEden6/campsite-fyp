@@ -29,7 +29,7 @@ describe('Equipment Routes - Availability Endpoint', () => {
     // Create test user
     const testUser = await prisma.user.create({
       data: {
-        email: `test-${Date.now()}@example.com`,
+        email: `test-${Date.now()}-${Math.random()}@example.com`,
         firstName: 'Test',
         lastName: 'User',
         password: 'hashedpassword',
@@ -41,7 +41,7 @@ describe('Equipment Routes - Availability Endpoint', () => {
     // Create test site
     const testSite = await prisma.site.create({
       data: {
-        name: `Test Site ${Date.now()}`,
+        name: `Test Site ${Date.now()}-${Math.random()}`,
         type: 'TENT',
         status: 'AVAILABLE',
         capacity: 4,

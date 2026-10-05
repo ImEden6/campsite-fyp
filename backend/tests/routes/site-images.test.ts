@@ -22,7 +22,7 @@ describe('Site image routes', () => {
   beforeEach(async () => {
     const adminUser = await prisma.user.create({
       data: {
-        email: `site-img-admin-${Date.now()}@example.com`,
+        email: `site-img-admin-${Date.now()}-${Math.random()}@example.com`,
         firstName: 'Admin',
         lastName: 'User',
         password: 'hashedpassword',
@@ -38,7 +38,7 @@ describe('Site image routes', () => {
 
     const site = await prisma.site.create({
       data: {
-        name: `Img Test Site ${Date.now()}`,
+        name: `Img Test Site ${Date.now()}-${Math.random()}`,
         type: 'TENT',
         status: 'AVAILABLE',
         capacity: 4,

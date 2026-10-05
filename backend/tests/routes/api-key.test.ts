@@ -27,7 +27,7 @@ describe('API Key Routes', () => {
     // Create admin user
     const adminUser = await prisma.user.create({
       data: {
-        email: `admin-${Date.now()}@example.com`,
+        email: `admin-${Date.now()}-${Math.random()}@example.com`,
         firstName: 'Admin',
         lastName: 'User',
         password: 'hashedpassword',
@@ -39,7 +39,7 @@ describe('API Key Routes', () => {
     // Create manager user
     const managerUser = await prisma.user.create({
       data: {
-        email: `manager-${Date.now()}@example.com`,
+        email: `manager-${Date.now()}-${Math.random()}@example.com`,
         firstName: 'Manager',
         lastName: 'User',
         password: 'hashedpassword',
