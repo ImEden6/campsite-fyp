@@ -8,7 +8,7 @@ const BOOKING_ID = 'cjld2cjxh0000qzrmn831i7rn';
 const PAYMENT_ID = 'cjld2cjxh0001qzrmn831i7rn';
 const IDEM_KEY = '3f2b8c1e-9a4d-4c6e-8b1a-2d5f7e9a0b3c';
 
-const { prismaMock, stripeMock, cacheMock } = vi.hoisted(() => {
+const { prismaMock, stripeMock, cacheMock, socketMock } = vi.hoisted(() => {
   const model = () => ({
     findUnique: vi.fn(),
     findUniqueOrThrow: vi.fn(),
@@ -29,12 +29,14 @@ const { prismaMock, stripeMock, cacheMock } = vi.hoisted(() => {
       webhooks: { constructEvent: vi.fn() },
     },
     cacheMock: { safeGet: vi.fn(), safeSet: vi.fn() },
+    socketMock: { emitToRooms: vi.fn() },
   };
 });
 
 vi.mock('stripe', () => ({ default: vi.fn(() => stripeMock) }));
 vi.mock('@/database', () => ({ default: prismaMock, getPrismaClient: () => prismaMock }));
 vi.mock('@/services/cache.service', () => ({ default: cacheMock }));
+vi.mock('@/services/socket.service', () => ({ default: socketMock }));
 vi.mock('@/middleware/security', () => ({
   paymentRateLimit: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
@@ -173,7 +175,11 @@ describe('POST /payments/confirm/:id', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prismaMock.payment.findFirst.mockResolvedValue(payment);
-    prismaMock.payment.findUniqueOrThrow.mockResolvedValue({ ...payment, status: 'PAID' });
+    prismaMock.payment.findUniqueOrThrow.mockResolvedValue({
+      ...payment,
+      status: 'PAID',
+      booking: { id: BOOKING_ID, userId: 'user-1', siteId: 'site-1', status: 'CONFIRMED', bookingNumber: 'BK-1', checkInDate: new Date('2034-01-01'), checkOutDate: new Date('2034-01-03') },
+    });
     prismaMock.payment.updateMany.mockResolvedValue({ count: 1 });
     prismaMock.booking.update.mockResolvedValue({ status: 'PENDING', totalAmount: 200, paidAmount: 200 });
     stripeMock.paymentIntents.retrieve.mockResolvedValue({ id: 'pi_1', status: 'succeeded', amount_received: 15000 });
@@ -301,8 +307,10 @@ describe('POST /payments/webhook', () => {
       type: 'payment_intent.payment_failed',
       data: { object: { id: 'pi_1' } },
     });
-    await request(app).post('/payments/webhook').set('stripe-signature', 'sig').send({});
+    prismaMock.payment.findMany.mockResolvedValue([]);
+    const res = await request(app).post('/payments/webhook').set('stripe-signature', 'sig').send({});
 
+    expect(res.status).toBe(200);
     expect(prismaMock.payment.updateMany).toHaveBeenCalledWith({
       where: { stripePaymentId: 'pi_1', status: 'PENDING' },
       data: { status: 'FAILED' },
@@ -324,5 +332,94 @@ describe('POST /payments/:id/refund', () => {
 
     expect(res.status).toBe(400);
     expect(stripeMock.refunds.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('real-time events', () => {
+  const payment = { id: PAYMENT_ID, userId: 'user-1', bookingId: BOOKING_ID, amount: 150, status: 'PENDING' };
+  const booking = (status: string) => ({
+    id: BOOKING_ID, userId: 'user-1', siteId: 'site-1', status, bookingNumber: 'BK-1',
+    checkInDate: new Date('2034-01-01'), checkOutDate: new Date('2034-01-03'),
+  });
+  const ROOMS = ['staff', 'user:user-1'];
+  const eventsSent = () => socketMock.emitToRooms.mock.calls.map(([rooms, event, data]) => ({ rooms, event, data }));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.payment.findFirst.mockResolvedValue(payment);
+    prismaMock.payment.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.payment.findUniqueOrThrow.mockResolvedValue({ ...payment, status: 'PAID', booking: booking('CONFIRMED') });
+    prismaMock.booking.update.mockResolvedValue({ status: 'PENDING', totalAmount: 200, paidAmount: 200 });
+    stripeMock.paymentIntents.retrieve.mockResolvedValue({ id: 'pi_1', status: 'succeeded', amount_received: 15000 });
+  });
+
+  it('announces a payment and the booking it confirmed, to staff and the payer', async () => {
+    await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
+
+    expect(eventsSent()).toEqual([
+      { rooms: ROOMS, event: 'payment:processed', data: { id: PAYMENT_ID, bookingId: BOOKING_ID, userId: 'user-1', amount: 150, status: 'PAID' } },
+      { rooms: ROOMS, event: 'booking:confirmed', data: expect.objectContaining({ id: BOOKING_ID, status: 'CONFIRMED' }) },
+    ]);
+  });
+
+  it('announces a plain booking update when the payment is only partial', async () => {
+    prismaMock.booking.update.mockResolvedValueOnce({ status: 'PENDING', totalAmount: 200, paidAmount: 150 });
+    prismaMock.payment.findUniqueOrThrow.mockResolvedValue({ ...payment, status: 'PAID', booking: booking('PENDING') });
+    await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
+
+    expect(eventsSent().map((e) => e.event)).toEqual(['payment:processed', 'booking:updated']);
+  });
+
+  it('stays silent when the payment was already confirmed (webhook + manual confirm)', async () => {
+    prismaMock.payment.updateMany.mockResolvedValue({ count: 0 });
+    await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
+
+    expect(eventsSent()).toEqual([]);
+  });
+
+  it('stays silent when the confirm is rejected', async () => {
+    stripeMock.paymentIntents.retrieve.mockResolvedValue({ id: 'pi_1', status: 'succeeded', amount_received: 100 });
+    await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
+
+    expect(eventsSent()).toEqual([]);
+  });
+
+  it('announces a failed payment from the webhook, once per pending payment', async () => {
+    stripeMock.webhooks.constructEvent.mockReturnValue({ type: 'payment_intent.payment_failed', data: { object: { id: 'pi_1' } } });
+    prismaMock.payment.findMany.mockResolvedValue([payment]);
+    await request(app).post('/payments/webhook').set('stripe-signature', 'sig').send({});
+
+    expect(eventsSent()).toEqual([
+      { rooms: ROOMS, event: 'payment:failed', data: expect.objectContaining({ id: PAYMENT_ID, status: 'FAILED' }) },
+    ]);
+  });
+
+  it('says nothing about a failure for a payment that is no longer pending', async () => {
+    stripeMock.webhooks.constructEvent.mockReturnValue({ type: 'payment_intent.payment_failed', data: { object: { id: 'pi_1' } } });
+    prismaMock.payment.findMany.mockResolvedValue([]);
+    await request(app).post('/payments/webhook').set('stripe-signature', 'sig').send({});
+
+    expect(eventsSent()).toEqual([]);
+  });
+
+  it('announces a refund', async () => {
+    prismaMock.payment.findUnique.mockResolvedValue({ ...payment, stripePaymentId: 'pi_1', status: 'PAID' });
+    stripeMock.refunds.create.mockResolvedValue({ id: 're_1' });
+    prismaMock.payment.update.mockResolvedValue({ ...payment, status: 'REFUNDED' });
+    const res = await request(app).post(`/payments/${PAYMENT_ID}/refund`).set(as('admin-1', 'ADMIN')).send({});
+
+    expect(res.status).toBe(200);
+    expect(eventsSent()).toEqual([
+      { rooms: ROOMS, event: 'payment:refunded', data: { id: PAYMENT_ID, bookingId: BOOKING_ID, userId: 'user-1', amount: 150, status: 'REFUNDED' } },
+    ]);
+  });
+
+  it('a failing socket never fails the payment', async () => {
+    socketMock.emitToRooms.mockImplementation(() => {
+      throw new Error('socket exploded');
+    });
+    const res = await request(app).post('/payments/confirm/pi_1').set(as('user-1'));
+
+    expect(res.status).toBe(200);
   });
 });

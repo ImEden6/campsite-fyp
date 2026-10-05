@@ -708,6 +708,8 @@ router.post('/:id/check-in', authenticate, authorize('STAFF', 'MANAGER', 'ADMIN'
       },
     });
 
+    publishBookingEvent(BOOKING_EVENTS.checkedIn, updatedBooking);
+
     logger.info('Booking checked in', {
       bookingId: id,
       bookingNumber: updatedBooking.bookingNumber,
@@ -769,6 +771,8 @@ router.post('/:id/check-out', authenticate, authorize('STAFF', 'MANAGER', 'ADMIN
         site: true,
       },
     });
+
+    publishBookingEvent(BOOKING_EVENTS.checkedOut, updatedBooking);
 
     logger.info('Booking checked out', {
       bookingId: id,

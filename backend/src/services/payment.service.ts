@@ -5,6 +5,8 @@ import { ApiError } from '@/utils/errors';
 import { PaymentStatus, PaymentMethod, BookingStatus } from '@prisma/client';
 
 import prisma from '@/database';
+import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
+import { publishPaymentEvent, PAYMENT_EVENTS } from '@/socket/payment-events';
 
 export const PAYMENT_CURRENCY = 'myr';
 
@@ -123,7 +125,7 @@ class PaymentService {
                 throw new ApiError(409, 'Payment amount mismatch');
             }
 
-            return await prisma.$transaction(async (tx) => {
+            const { payment: confirmed, newlyPaid, bookingConfirmed } = await prisma.$transaction(async (tx) => {
                 const claimed = await tx.payment.updateMany({
                     where: { id: payment.id, status: PaymentStatus.PENDING },
                     data: {
@@ -132,6 +134,8 @@ class PaymentService {
                         transactionId: paymentIntent.id,
                     },
                 });
+
+                let bookingConfirmed = false;
 
                 if (claimed.count === 1) {
                     // The increment locks the booking row until this transaction commits, so the
@@ -142,24 +146,33 @@ class PaymentService {
                     });
                     // Compare in cents to avoid floating point drift
                     const fullyPaid = toCents(booking.paidAmount) >= toCents(booking.totalAmount);
+                    // Paying in full confirms a pending booking. Anything else (e.g. already
+                    // cancelled while the payment was in flight) keeps its status.
+                    bookingConfirmed = fullyPaid && booking.status === BookingStatus.PENDING;
                     await tx.booking.update({
                         where: { id: payment.bookingId },
                         data: {
                             paymentStatus: fullyPaid ? PaymentStatus.PAID : PaymentStatus.PARTIAL,
-                            // Paying in full confirms a pending booking. Anything else (e.g. already
-                            // cancelled while the payment was in flight) keeps its status.
-                            ...(fullyPaid && booking.status === BookingStatus.PENDING
-                                ? { status: BookingStatus.CONFIRMED }
-                                : {}),
+                            ...(bookingConfirmed ? { status: BookingStatus.CONFIRMED } : {}),
                         },
                     });
                 }
 
-                return tx.payment.findUniqueOrThrow({
+                const result = await tx.payment.findUniqueOrThrow({
                     where: { id: payment.id },
                     include: { user: { select: safeUserSelect }, booking: true },
                 });
+                return { payment: result, newlyPaid: claimed.count === 1, bookingConfirmed };
             });
+
+            // After commit, and only for the call that actually moved the payment to PAID, so
+            // repeated confirms (webhook + manual) don't produce duplicate events.
+            if (newlyPaid) {
+                publishPaymentEvent(PAYMENT_EVENTS.processed, confirmed);
+                publishBookingEvent(bookingConfirmed ? BOOKING_EVENTS.confirmed : BOOKING_EVENTS.updated, confirmed.booking);
+            }
+
+            return confirmed;
         } catch (error) {
             logger.error('Failed to confirm payment', error);
             if (error instanceof ApiError) {
@@ -250,6 +263,7 @@ class PaymentService {
                 },
             });
 
+            publishPaymentEvent(PAYMENT_EVENTS.refunded, updatedPayment);
             return updatedPayment;
         } catch (error) {
             logger.error('Failed to process refund', error);
@@ -291,10 +305,16 @@ class PaymentService {
                 const failedIntent = event.data.object as Stripe.PaymentIntent;
                 logger.warn('Webhook: Payment failed', { id: failedIntent.id });
                 // Only PENDING payments: a late/out-of-order failure must not undo a PAID one
+                const pending = await prisma.payment.findMany({
+                    where: { stripePaymentId: failedIntent.id, status: PaymentStatus.PENDING },
+                });
                 await prisma.payment.updateMany({
                     where: { stripePaymentId: failedIntent.id, status: PaymentStatus.PENDING },
                     data: { status: PaymentStatus.FAILED },
                 });
+                for (const payment of pending) {
+                    publishPaymentEvent(PAYMENT_EVENTS.failed, { ...payment, status: PaymentStatus.FAILED });
+                }
                 break;
             }
         }

@@ -1,9 +1,10 @@
 // Staff confirmation + automatic expiry of unpaid PENDING bookings (real Postgres)
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import bookingService from '@/services/booking.service';
 import prisma from '@/database';
 import { config } from '@/config';
+import socketService from '@/services/socket.service';
 
 const MIN = 60_000;
 
@@ -124,6 +125,74 @@ describe('Booking lifecycle (real database)', () => {
       expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
       expect(await prisma.payment.count({ where: { bookingId: booking.id } })).toBe(1);
       expect((await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } })).paidAmount).toBe(100);
+    });
+  });
+
+  describe('real-time events', () => {
+    let spy: ReturnType<typeof vi.spyOn>;
+    beforeEach(() => {
+      spy = vi.spyOn(socketService, 'emitToRooms').mockImplementation(() => {});
+    });
+    afterEach(() => spy.mockRestore());
+
+    const sent = () => spy.mock.calls.map(([rooms, event, data]) => ({ rooms, event, data }));
+    const rooms = () => ['staff', `user:${userId}`];
+
+    it('confirming with payment announces the booking and the payment, to staff and the owner', async () => {
+      const booking = await newBooking();
+
+      await bookingService.confirmBooking(booking.id, { paymentMethod: 'CASH', confirmedBy: staffId });
+
+      expect(sent().map((e) => e.event)).toEqual(['booking:confirmed', 'payment:processed']);
+      expect(sent().every((e) => JSON.stringify(e.rooms) === JSON.stringify(rooms()))).toBe(true);
+      expect(sent()[0]!.data).toMatchObject({ id: booking.id, status: 'CONFIRMED', userId });
+      expect(sent()[1]!.data).toMatchObject({ bookingId: booking.id, amount: 100, status: 'PAID' });
+    });
+
+    it('confirming without payment announces only the booking', async () => {
+      const booking = await newBooking();
+
+      await bookingService.confirmBooking(booking.id, { confirmedBy: staffId });
+
+      expect(sent().map((e) => e.event)).toEqual(['booking:confirmed']);
+    });
+
+    it('a rejected confirm announces nothing', async () => {
+      const booking = await newBooking({ status: 'CANCELLED' });
+
+      await bookingService.confirmBooking(booking.id, { confirmedBy: staffId }).catch(() => undefined);
+
+      expect(sent()).toEqual([]);
+    });
+
+    it('editing a booking announces the updated state', async () => {
+      const booking = await newBooking();
+
+      await bookingService.updateBooking(booking.id, { notes: 'Late arrival' });
+
+      expect(sent()).toEqual([
+        { rooms: rooms(), event: 'booking:updated', data: expect.objectContaining({ id: booking.id, status: 'PENDING' }) },
+      ]);
+    });
+
+    it('replacing the guest list announces the updated booking', async () => {
+      const booking = await newBooking();
+      const guests = [{ firstName: 'Una', lastName: 'User', type: 'ADULT' as const, isPrimary: true }];
+
+      await bookingService.updateBookingGuests(booking.id, guests);
+
+      expect(sent().map((e) => e.event)).toEqual(['booking:updated']);
+    });
+
+    it('an edit that conflicts with another booking announces nothing', async () => {
+      const first = await newBooking();
+      const second = await newBooking();
+
+      await bookingService
+        .updateBooking(second.id, { checkInDate: first.checkInDate, checkOutDate: first.checkOutDate })
+        .catch(() => undefined);
+
+      expect(sent()).toEqual([]);
     });
   });
 

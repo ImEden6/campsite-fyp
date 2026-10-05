@@ -13,6 +13,7 @@ import { STAFF_ROOM, userRoom } from './rooms';
 export const BOOKING_EVENTS = {
   created: 'booking:created',
   updated: 'booking:updated',
+  confirmed: 'booking:confirmed',
   cancelled: 'booking:cancelled',
   checkedIn: 'booking:checked_in',
   checkedOut: 'booking:checked_out',
@@ -48,6 +49,6 @@ export function publishBookingEvent(event: BookingEventName, booking: BookingEve
   try {
     socketService.emitToRooms([STAFF_ROOM, userRoom(booking.userId)], event, toBookingEventPayload(booking));
   } catch (error) {
-    logger.error('Failed to publish booking event', { event, bookingId: booking.id, error });
+    logger.error('Failed to publish booking event', { event, bookingId: booking?.id, error });
   }
 }

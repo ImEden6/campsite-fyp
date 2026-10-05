@@ -19,6 +19,7 @@ vi.mock('@/services/cache.service', () => ({ default: cacheMock }));
 import { config } from '@/config';
 import { createSocketServer } from '@/socket/server';
 import { publishBookingEvent, BOOKING_EVENTS, type BookingEventPayload } from '@/socket/booking-events';
+import { publishPaymentEvent, PAYMENT_EVENTS, type PaymentEventPayload } from '@/socket/payment-events';
 import { roomsFor, userRoom, STAFF_ROOM } from '@/socket/rooms';
 import socketService from '@/services/socket.service';
 
@@ -218,6 +219,27 @@ describe('booking events over real sockets', () => {
     await settle(client);
 
     expect(eventsOf(client)).toHaveLength(0);
+  });
+
+  it('delivers payments to staff and the payer only, with no personal details', async () => {
+    const [alice, bob, stella] = await Promise.all(['alice', 'bob', 'stella'].map(connectAs));
+
+    publishPaymentEvent(PAYMENT_EVENTS.processed, {
+      id: 'pay-1', bookingId: 'bk-1', userId: 'alice', amount: 150, status: 'PAID',
+      ...({ stripePaymentId: 'pi_secret', receiptUrl: 'https://x', user: { email: 'a@b.c' } } as object),
+    } as PaymentEventPayload);
+    await settle(alice!, bob!, stella!);
+
+    for (const entitled of [alice!, stella!]) {
+      expect(eventsOf(entitled, PAYMENT_EVENTS.processed)).toHaveLength(1);
+      expect(Object.keys(eventsOf(entitled, PAYMENT_EVENTS.processed)[0]!.data as object).sort()).toEqual(['amount', 'bookingId', 'id', 'status', 'userId']);
+    }
+    expect(eventsOf(bob!, PAYMENT_EVENTS.processed)).toHaveLength(0);
+  });
+
+  it.each([undefined, null, {}])('publishers never throw, even for malformed input (%j)', (bad) => {
+    expect(() => publishBookingEvent(BOOKING_EVENTS.created, bad as never)).not.toThrow();
+    expect(() => publishPaymentEvent(PAYMENT_EVENTS.processed, bad as never)).not.toThrow();
   });
 
   it('never lets a failed emit break the caller', () => {

@@ -1,11 +1,13 @@
 // Booking Service
 
-import { PrismaClient, Equipment, GuestType, Prisma, Booking, BookingStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+import { PrismaClient, Equipment, GuestType, Prisma, Booking, BookingStatus, PaymentMethod, PaymentStatus, Payment } from '@prisma/client';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
 import { config } from '@/config';
+import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
+import { publishPaymentEvent, PAYMENT_EVENTS } from '@/socket/payment-events';
 
 const prisma = getPrismaClient();
 
@@ -371,7 +373,7 @@ export class BookingService {
   ): Promise<Booking> {
     const { paymentMethod, confirmedBy } = options;
 
-    return await prisma.$transaction(async (tx) => {
+    const { booking: confirmed, payment } = await prisma.$transaction(async (tx) => {
       // Claim the PENDING -> CONFIRMED transition so concurrent confirms/expiry can't both win
       const claimed = await tx.booking.updateMany({
         where: { id, status: 'PENDING' },
@@ -387,8 +389,9 @@ export class BookingService {
       const booking = await tx.booking.findUniqueOrThrow({ where: { id } });
       const outstanding = Math.round((booking.totalAmount - booking.paidAmount) * 100) / 100;
 
+      let payment: Payment | null = null;
       if (paymentMethod && outstanding > 0) {
-        await tx.payment.create({
+        payment = await tx.payment.create({
           data: {
             bookingId: id,
             userId: booking.userId,
@@ -411,14 +414,21 @@ export class BookingService {
         paymentRecorded: Boolean(paymentMethod && outstanding > 0),
       });
 
-      return tx.booking.findUniqueOrThrow({
+      const updated = await tx.booking.findUniqueOrThrow({
         where: { id },
         include: {
           user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true } },
           site: true,
         },
       });
+      return { booking: updated, payment };
     });
+
+    // After commit, so clients that refetch always see the new state
+    publishBookingEvent(BOOKING_EVENTS.confirmed, confirmed);
+    if (payment) publishPaymentEvent(PAYMENT_EVENTS.processed, payment);
+
+    return confirmed;
   }
 
   /**
@@ -482,7 +492,7 @@ export class BookingService {
    * Update booking (Dates, Guests, Notes, etc.)
    */
   async updateBooking(id: string, data: Partial<CreateBookingDto> & { notes?: string, specialRequests?: string }): Promise<Booking> {
-    return await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
         where: { id },
         include: { site: true, guests: true }
@@ -577,6 +587,9 @@ export class BookingService {
       if (isOverlapViolation(error)) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
       throw error;
     });
+
+    publishBookingEvent(BOOKING_EVENTS.updated, updated);
+    return updated;
   }
 
   /**
@@ -593,7 +606,7 @@ export class BookingService {
     if (!primary || primary.type !== GuestType.ADULT) throw new ApiError(400, 'PRIMARY_MUST_BE_ADULT');
     if (guests.filter(g => g.isPrimary).length !== 1) throw new ApiError(400, 'Exactly one primary guest required');
 
-    return await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({ where: { id: bookingId }, include: { site: true } });
       if (!booking) throw new ApiError(404, 'Booking not found');
 
@@ -627,6 +640,9 @@ export class BookingService {
         include: { guests: true }
       });
     });
+
+    publishBookingEvent(BOOKING_EVENTS.updated, updated);
+    return updated;
   }
 }
 
