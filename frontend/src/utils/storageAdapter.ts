@@ -22,18 +22,18 @@ function getStringSize(str: string): number {
   return new Blob([str]).size;
 }
 
+/** When a stored map was last updated, in ms (0 if it never recorded one). */
+const updatedAtMs = (map: unknown): number => {
+  const updatedAt = (map as { updatedAt?: string | number | Date }).updatedAt;
+  return updatedAt ? new Date(updatedAt).getTime() : 0;
+};
+
 /**
  * Compress data by removing unnecessary fields and optimizing structure
  */
 function compressData(data: StorageData): StorageData {
   // Sort maps by updatedAt (most recent first) and keep only the most recent ones
-  const sortedMaps = [...(data.maps || [])].sort((a: unknown, b: unknown) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const aTime = (a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bTime = (b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0;
-    return bTime - aTime;
-  });
+  const sortedMaps = [...(data.maps || [])].sort((a: unknown, b: unknown) => updatedAtMs(b) - updatedAtMs(a));
 
   // Keep only the most recent maps
   const mapsToKeep = sortedMaps.slice(0, MAX_MAPS_TO_KEEP);

@@ -3,11 +3,9 @@
  * Handles Fabric.js rendering and management of the background layer.
  */
 
-import * as fabricImpl from 'fabric';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fabric: any = fabricImpl;
 import type { BackgroundLayer, Position, Size } from '@/types';
 import type { FabricObject, FabricCanvas, FabricImage } from '@/types/fabricTypes';
+import { fabric } from '@/utils/fabricRuntime';
 
 // Store reference to the background image for updates
 const BACKGROUND_DATA_KEY = 'isBackgroundLayer';
@@ -53,16 +51,17 @@ export function removeBackgroundLayer(canvas: FabricCanvas): boolean {
  * @param canvas - Fabric.js canvas
  * @param layer - BackgroundLayer data
  * @param onComplete - Callback when rendering completes
+ * @returns the image, or null if it could not be loaded (the editor keeps working without it)
  */
 export async function renderBackgroundLayer(
     canvas: FabricCanvas,
     layer: BackgroundLayer,
     onComplete?: () => void
-): Promise<FabricImage> {
+): Promise<FabricImage | null> {
     // Remove existing background first
     removeBackgroundLayer(canvas);
 
-    return new Promise((resolve, _reject) => {
+    return new Promise<FabricImage | null>((resolve) => {
         fabric.FabricImage.fromURL(layer.imageData)
             .then((img: FabricImage) => {
                 const imgWidth = img.width || 1;
@@ -100,7 +99,6 @@ export async function renderBackgroundLayer(
             .catch((error: Error) => {
                 console.error('[backgroundLayer] Failed to load background image:', error);
                 // Resolve with null instead of rejecting to prevent breaking the initialization chain
-                // @ts-ignore - Allowing null resolve for fail-soft behavior
                 resolve(null);
             });
     });

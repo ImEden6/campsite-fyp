@@ -4,12 +4,10 @@
  * Handles validation, scaling, and placement.
  */
 
-import * as fabricImpl from 'fabric';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fabric: any = fabricImpl;
 import type { Size } from '@/types';
 import type { FabricObject, FabricCanvas, FabricImage } from '@/types/fabricTypes';
 import { isBackgroundObject } from '@/types/fabricTypes';
+import { fabric } from '@/utils/fabricRuntime';
 
 // Re-export for backward compatibility
 export { isBackgroundObject };

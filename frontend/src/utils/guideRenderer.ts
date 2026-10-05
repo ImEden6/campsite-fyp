@@ -4,12 +4,10 @@
  * Guides are draggable alignment lines created from rulers.
  */
 
-import * as fabricImpl from 'fabric';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fabric: any = fabricImpl;
 import type { Position, Size } from '@/types';
 import type { FabricObject, FabricCanvas, FabricLine } from '@/types/fabricTypes';
 import { isGuideObject, getGuideId } from '@/types/fabricTypes';
+import { fabric } from '@/utils/fabricRuntime';
 
 // Re-export for backward compatibility
 export { isGuideObject, getGuideId };

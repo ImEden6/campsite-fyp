@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
 import type { FabricCanvas, FabricObject, FabricEvent } from '@/types/fabricTypes';
 import { getModuleId } from '@/types/fabricTypes';
+import { fabric } from '@/utils/fabricRuntime';
 
 // ============================================================================
 // TYPES
@@ -136,12 +137,8 @@ export function useSelectionManager(
                     canvas.setActiveObject(unlocked[0]!);
                 } else if (unlocked.length > 1) {
                     // Create ActiveSelection for multiple objects
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const fabric = (window as any).fabric;
-                    if (fabric?.ActiveSelection) {
-                        const selection = new fabric.ActiveSelection(unlocked, { canvas });
-                        canvas.setActiveObject(selection);
-                    }
+                    const selection = new fabric.ActiveSelection(unlocked, { canvas });
+                    canvas.setActiveObject(selection);
                 }
 
                 canvas.requestRenderAll();
@@ -181,12 +178,8 @@ export function useSelectionManager(
                 if (validObjects.length === 1) {
                     canvas.setActiveObject(validObjects[0]!);
                 } else if (validObjects.length > 1) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const fabric = (window as any).fabric;
-                    if (fabric?.ActiveSelection) {
-                        const selection = new fabric.ActiveSelection(validObjects, { canvas });
-                        canvas.setActiveObject(selection);
-                    }
+                    const selection = new fabric.ActiveSelection(validObjects, { canvas });
+                    canvas.setActiveObject(selection);
                 }
 
                 canvas.requestRenderAll();
@@ -295,12 +288,8 @@ export function useSelectionManager(
         if (toSelect.length === 1) {
             canvas.setActiveObject(toSelect[0]!);
         } else if (toSelect.length > 1) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const fabric = (window as any).fabric;
-            if (fabric?.ActiveSelection) {
-                const selection = new fabric.ActiveSelection(toSelect, { canvas });
-                canvas.setActiveObject(selection);
-            }
+            const selection = new fabric.ActiveSelection(toSelect, { canvas });
+            canvas.setActiveObject(selection);
         }
 
         canvas.requestRenderAll();

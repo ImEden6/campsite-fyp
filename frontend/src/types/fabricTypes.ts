@@ -55,10 +55,10 @@ export interface FabricObject {
     set?(options: Partial<FabricObject>): void;
     setCoords?(): void;
     dispose?(): void;
+    getBoundingRect?(absolute?: boolean): { left: number; top: number; width: number; height: number };
 
     // Index signature for additional Fabric.js properties
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**
@@ -171,8 +171,7 @@ export interface FabricCanvas {
     off(event: string, handler: (e: FabricEvent) => void): void;
 
     // Index signature for additional properties
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 // ============================================================================
@@ -225,8 +224,7 @@ export interface FabricEvent {
     scenePoint?: Point;
     viewportPoint?: Point;
     // Index signature for additional properties
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**

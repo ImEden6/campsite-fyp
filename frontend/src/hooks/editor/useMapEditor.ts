@@ -34,6 +34,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { createNewModule } from '@/utils/moduleFactory';
 import type { FabricCanvas, Point } from '@/types/fabricTypes';
 import type { AnyModule, ModuleType } from '@/types';
+import type { Command } from '@/commands/Command';
 
 // ============================================================================
 // TYPES
@@ -110,7 +111,7 @@ export interface UseMapEditorReturn {
     /** Whether redo is available */
     canRedo: boolean;
     /** Execute an editor command */
-    executeCommand: (command: any) => void;
+    executeCommand: (command: Command) => void;
 
     // Module operations
     /** Delete selected modules */

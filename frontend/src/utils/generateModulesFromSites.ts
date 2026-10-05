@@ -10,6 +10,9 @@
 import type { Site, CampsiteMap, AnyModule, SiteType } from '@/types';
 import { useMapOverridesStore, type SiteModuleOverride } from '@/stores/mapOverridesStore';
 
+// The backend's Prisma model stores the map position as two flat columns
+type SiteWithFlatMapPosition = { mapPositionX?: number | null; mapPositionY?: number | null };
+
 // ============================================================================
 // Constants
 // ============================================================================
@@ -49,8 +52,8 @@ export function siteToModule(
         // Visual properties - use override if available, else defaults
         // Fallback for flat mapPositionX/Y from backend Prisma model
         position: override?.position ?? (site.location?.mapPosition || {
-            x: (site as any).mapPositionX ?? 0,
-            y: (site as any).mapPositionY ?? 0
+            x: (site as SiteWithFlatMapPosition).mapPositionX ?? 0,
+            y: (site as SiteWithFlatMapPosition).mapPositionY ?? 0
         }),
         size: override?.size ?? defaultSize,
         rotation: override?.rotation ?? 0,

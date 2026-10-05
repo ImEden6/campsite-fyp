@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, X } from 'lucide-react';
@@ -72,8 +72,8 @@ const SiteFormModal: React.FC<SiteFormModalProps> = ({
         setValue,
         formState: { errors },
     } = useForm<SiteFormValues>({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolver: zodResolver(siteFormSchema) as any,
+        // The schema and form values are kept in step by hand, so tell the resolver what it produces
+        resolver: zodResolver(siteFormSchema) as unknown as Resolver<SiteFormValues>,
         defaultValues: {
             name: '',
             type: defaultType,

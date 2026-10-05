@@ -143,6 +143,10 @@ function isMoveOnly(start: ObjectStartState, end: ObjectStartState): boolean {
  * });
  * ```
  */
+/** The objects inside a multi-selection (Fabric's ActiveSelection), if this is one. */
+const selectedObjects = (target: FabricObject): FabricObject[] | undefined =>
+    (target as FabricObject & { getObjects?: () => FabricObject[] }).getObjects?.();
+
 export function useTransformHandler(
     canvas: FabricCanvas | null,
     options: UseTransformHandlerOptions = {}
@@ -297,25 +301,23 @@ export function useTransformHandler(
             obj.setCoords?.();
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const t = target as any;
-        if (t.type === 'activeSelection') {
-            const objs: FabricObject[] = t.getObjects?.() ?? [];
+        if (target.type === 'activeSelection') {
+            const objs: FabricObject[] = selectedObjects(target) ?? [];
             if (objs.length === 0) return;
             if (objs.length === 1) {
                 applyToModule(objs[0]!);
                 return;
             }
             const bbox =
-                typeof t.getBoundingRect === 'function' ? t.getBoundingRect(true) : null;
+                typeof target.getBoundingRect === 'function' ? target.getBoundingRect(true) : null;
             if (!bbox) return;
             const tl = { x: bbox.left, y: bbox.top };
             const snappedTL = snapWorldPointToGrid(tl, gridSize, true);
             const dx = snappedTL.x - tl.x;
             const dy = snappedTL.y - tl.y;
             if (dx === 0 && dy === 0) return;
-            t.set({ left: (t.left ?? 0) + dx, top: (t.top ?? 0) + dy });
-            t.setCoords?.();
+            target.set?.({ left: (target.left ?? 0) + dx, top: (target.top ?? 0) + dy });
+            target.setCoords?.();
 
             return;
         }
@@ -331,8 +333,7 @@ export function useTransformHandler(
                 const objects = e.transform?.target
                     ? [e.transform.target]
                     : target.type === 'activeSelection'
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ? (target as any).getObjects?.() || [target]
+                        ? selectedObjects(target) || [target]
                         : [target];
                 startTracking(objects);
             }
@@ -362,8 +363,7 @@ export function useTransformHandler(
         if (target) {
             // Get all objects that were modified
             const objects = target.type === 'activeSelection'
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ? (target as any).getObjects?.() || [target]
+                ? selectedObjects(target) || [target]
                 : [target];
             commitTransform(objects);
         }

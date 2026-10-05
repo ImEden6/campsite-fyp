@@ -9,9 +9,7 @@
  */
 
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import * as fabricImpl from 'fabric';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fabric: any = fabricImpl;
+import { fabric } from '@/utils/fabricRuntime';
 
 import type {
     FabricCanvas,

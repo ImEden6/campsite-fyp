@@ -12,14 +12,12 @@
 
 import type React from 'react';
 import { useCallback, useRef, useMemo, useEffect } from 'react';
-import * as fabricImpl from 'fabric';
 import { useEditorStore } from '@/stores/editorStore';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fabric: any = fabricImpl;
 import type { FabricCanvas, FabricObject, Point } from '@/types/fabricTypes';
 import { isGridObject } from '@/types/fabricTypes';
 import { snapWorldPointToGrid } from '@/utils/gridSnap';
+import { fabric } from '@/utils/fabricRuntime';
 
 // ============================================================================
 // TYPES

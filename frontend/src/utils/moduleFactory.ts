@@ -3,20 +3,13 @@
  * Creates Fabric.js objects from module data
  */
 
-import * as fabricImpl from 'fabric';
 import { Point } from 'fabric';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fabric: any = fabricImpl;
-
-type FabricUtil = {
-    makeBoundingBoxFromPoints: (
-        points: Array<{ x: number; y: number }>
-    ) => { left: number; top: number; width: number; height: number };
-};
-const fabricUtil = fabricImpl.util as FabricUtil;
 import type { AnyModule, ModuleType, Position, Size } from '@/types';
 import { useMapStore } from '@/stores/mapStore';
 import type { FabricObject, FabricGroup } from '@/types/fabricTypes';
+import { fabric } from '@/utils/fabricRuntime';
+
+const fabricUtil = fabric.util;
 import {
     hasDataProperty,
     OPACITY_HIDDEN,
@@ -449,8 +442,7 @@ export function createModuleObject(module: AnyModule): FabricGroup {
     });
 
     // Store module ID for reference (set after creation for Fabric v6)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (group as any & { data?: Record<string, unknown> }).data = {
+    (group as FabricGroup & { data?: Record<string, unknown> }).data = {
         moduleId: module.id,
         moduleType: module.type
     };

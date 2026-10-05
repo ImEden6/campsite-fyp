@@ -3,11 +3,10 @@
  * This helps diagnose timing issues with icon imports
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function testIconInitialization() {
   const results = {
     timestamp: performance.now(),
-    tests: [] as Array<{ name: string; passed: boolean; error?: string; details?: any }>,
+    tests: [] as Array<{ name: string; passed: boolean; error?: string; details?: unknown }>,
   };
 
   // Test 1: Check if lucide-react module is available
