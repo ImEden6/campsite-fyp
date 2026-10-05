@@ -227,7 +227,7 @@ const createApiClient = (): AxiosInstance => {
 /**
  * Refresh authentication token
  */
-const refreshAuthToken = async (): Promise<string | null> => {
+export const refreshAuthToken = async (): Promise<string | null> => {
   try {
     // Get refresh token from storage
     const refreshToken = localStorage.getItem('campsite_refresh_token');

@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -21,6 +20,7 @@ import { authMiddleware } from './middleware/auth';
 import { initializeErrorTracking, getErrorTracker } from './services/error-tracking';
 import { startCleanupJobs, stopCleanupJobs } from './jobs/cleanup';
 import socketService from './services/socket.service';
+import { createSocketServer } from './socket/server';
 
 // Import routes (these will be created later)
 import authRoutes from './routes/auth.routes';
@@ -41,12 +41,7 @@ import mapRoutes from './routes/map.routes';
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true
-  }
-});
+const io = createSocketServer(server);
 
 // Rate limiting - using generalRateLimit from security.ts
 // Specific rate limiters are now applied at route level in each route file
@@ -106,10 +101,11 @@ app.use('/api/v1/public', publicRoutes);
 socketService.initialize(io);
 
 io.on('connection', (socket) => {
-  logger.info(`Client connected: ${socket.id}`);
+  const { user } = socket.data as { user: { id: string; role: string } };
+  logger.info(`Client connected: ${socket.id}`, { userId: user.id, role: user.role });
 
   socket.on('disconnect', () => {
-    logger.info(`Client disconnected: ${socket.id}`);
+    logger.info(`Client disconnected: ${socket.id}`, { userId: user.id });
   });
 
   // Add more socket event handlers as needed

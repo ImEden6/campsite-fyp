@@ -99,3 +99,21 @@ For production, implement **Option B** (API Key) or **Option A** (Real JWT). The
 - `frontend/src/services/api/mock-auth.ts` - Mock auth implementation
 - `backend/src/middleware/auth.ts` - Authentication middleware
 - `docs/development/mock-auth.md` - Original mock auth documentation
+## Update: mock tokens are development-only (October 2026)
+
+The bypass above originally had no environment check, so any deployment would accept
+`Authorization: Bearer mock-access-token-admin-1` and treat the caller as an admin.
+
+It is now limited to `NODE_ENV=development` and `NODE_ENV=test` (`isMockAuthAllowed()` in
+`backend/src/middleware/auth.ts`). In any other environment, including `production`, `staging`
+and an unset `NODE_ENV` that resolves to anything else, mock tokens are rejected with 401 like any
+other invalid token.
+
+- The demo stack in `docker-compose.yml` runs the backend with `NODE_ENV=development`, so mock auth
+  keeps working there.
+- `docker-compose.prod.yml` runs with `NODE_ENV=production`, so mock auth does not work there.
+
+REST requests and Socket.IO connections share one function, `authenticateToken`, so both apply the
+same rules (mock-token gate, signature, user exists, active, email verified). Sockets must send the
+token in the handshake `auth` payload; tokens in the URL query string are ignored. A socket is
+closed when its access token expires, and the frontend reconnects with a refreshed token.

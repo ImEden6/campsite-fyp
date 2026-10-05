@@ -6,6 +6,8 @@
 
 import { io, Socket } from 'socket.io-client';
 import { env } from '@/config/env';
+import { getAuthToken } from '@/services/api/storage';
+import { refreshAuthToken } from '@/services/api/client';
 import {
   ConnectionStatus,
   EventHandler,
@@ -13,6 +15,13 @@ import {
   SOCKET_EVENTS,
   WebSocketConfig,
 } from './types';
+
+// connect_error messages the server sends when it rejects the handshake token
+const AUTH_ERROR_MESSAGES = new Set([
+  'Authentication required',
+  'Token expired',
+  'Invalid token',
+]);
 
 /**
  * WebSocket Service Class
@@ -27,6 +36,8 @@ class WebSocketService implements IWebSocketService {
   private reconnectionDelayMax: number;
   private eventHandlers: Map<string, Set<EventHandler>> = new Map();
   private config: WebSocketConfig;
+  // Set once we have tried refreshing the token for a rejected handshake; cleared on connect
+  private authRetried = false;
 
   constructor(config?: Partial<WebSocketConfig>) {
     this.config = {
@@ -58,8 +69,11 @@ class WebSocketService implements IWebSocketService {
     this.status = 'connecting';
     console.log('[WebSocket] Connecting to', this.config.url);
 
+    this.authRetried = false;
     this.socket = io(this.config.url, {
-      auth: { token },
+      // A function, so every (re)connect attempt sends the newest stored token rather than
+      // the one captured when connect() was first called
+      auth: (cb) => cb({ token: getAuthToken() ?? token }),
       autoConnect: this.config.autoConnect ?? false,
       reconnection: this.config.reconnection ?? true,
       reconnectionAttempts: this.config.reconnectionAttempts ?? 5,
@@ -181,6 +195,7 @@ class WebSocketService implements IWebSocketService {
       console.log('[WebSocket] Connected successfully');
       this.status = 'connected';
       this.reconnectAttempts = 0;
+      this.authRetried = false;
 
       // Dispatch custom event for app-wide notification
       window.dispatchEvent(new CustomEvent('websocket:connected'));
@@ -211,6 +226,17 @@ class WebSocketService implements IWebSocketService {
       window.dispatchEvent(
         new CustomEvent('websocket:error', { detail: { error: error.message } })
       );
+
+      // The server rejected our token. Socket.io does not retry rejected handshakes by itself,
+      // so refresh the token once and try again; if that fails the user needs to log in again.
+      if (AUTH_ERROR_MESSAGES.has(error.message) && !this.authRetried) {
+        this.authRetried = true;
+        void refreshAuthToken().then((token) => {
+          if (token && this.socket && !this.socket.connected) {
+            this.socket.connect();
+          }
+        });
+      }
     });
 
     // Reconnection attempt

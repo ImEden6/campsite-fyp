@@ -46,6 +46,117 @@ interface JWTPayload {
   exp?: number;
 }
 
+export type AuthUser = NonNullable<Express.Request['user']>;
+
+interface AuthContext {
+  userAgent?: string | undefined;
+  ip?: string | undefined;
+}
+
+/**
+ * Mock tokens (`mock-access-token-{role}-{id}`) let the demo stack run without real login.
+ * They carry no signature, so they must never be accepted in production.
+ */
+export const isMockAuthAllowed = (): boolean =>
+  config.server.nodeEnv === 'development' || config.server.nodeEnv === 'test';
+
+const MOCK_TOKEN_PREFIX = 'mock-access-token-';
+
+const MOCK_USERS: Record<UserRole, AuthUser> = {
+  ADMIN: { id: '1', email: 'admin@campsite.com', role: 'ADMIN', firstName: 'Admin', lastName: 'User', isActive: true, isEmailVerified: true },
+  MANAGER: { id: '4', email: 'manager@campsite.com', role: 'MANAGER', firstName: 'Mike', lastName: 'Manager', isActive: true, isEmailVerified: true },
+  STAFF: { id: '3', email: 'staff@campsite.com', role: 'STAFF', firstName: 'Sarah', lastName: 'Staff', isActive: true, isEmailVerified: true },
+  CUSTOMER: { id: '2', email: 'user@campsite.com', role: 'CUSTOMER', firstName: 'Test', lastName: 'User', isActive: true, isEmailVerified: true },
+};
+
+const userSelect = {
+  id: true,
+  email: true,
+  role: true,
+  firstName: true,
+  lastName: true,
+  isActive: true,
+  isEmailVerified: true,
+} as const;
+
+// Token format: mock-access-token-{role}-{userId}, e.g. mock-access-token-admin-1
+const resolveMockUser = async (token: string): Promise<AuthUser> => {
+  const [rawRole, rawId] = token.slice(MOCK_TOKEN_PREFIX.length).split('-');
+  const role = (rawRole?.toUpperCase() ?? 'CUSTOMER') as UserRole;
+  const template = MOCK_USERS[role] ?? MOCK_USERS.CUSTOMER;
+  const mockUser: AuthUser = { ...template, id: rawId || template.id };
+
+  // Prefer a real database user so downstream FK-constrained writes (e.g. bookings.userId) succeed.
+  const dbUser = await prisma.user.findFirst({
+    where: { OR: [{ email: mockUser.email }, { role: mockUser.role as any }] },
+    select: userSelect,
+  });
+
+  const user: AuthUser = dbUser ? { ...dbUser, role: dbUser.role as UserRole } : mockUser;
+  logger.info('Mock token authenticated', { userId: user.id, role: user.role, resolvedFromDb: Boolean(dbUser) });
+  return user;
+};
+
+/**
+ * Validate an access token and return the user it belongs to.
+ * Shared by the REST `authenticate` middleware and the Socket.IO handshake so both
+ * apply exactly the same rules. Throws ApiError(401) on any failure.
+ */
+export const authenticateToken = async (token: string | undefined, ctx: AuthContext = {}): Promise<AuthUser> => {
+  if (!token) {
+    logger.authFailure('', 'Missing token', ctx.userAgent, ctx.ip);
+    throw new ApiError(401, 'Authentication required');
+  }
+
+  if (isMockAuthAllowed() && token.startsWith(MOCK_TOKEN_PREFIX)) {
+    return resolveMockUser(token);
+  }
+
+  let decoded: JWTPayload;
+  try {
+    decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      logger.authFailure('', 'Token expired', ctx.userAgent, ctx.ip);
+      throw new ApiError(401, 'Token expired');
+    }
+    logger.authFailure('', 'Invalid token', ctx.userAgent, ctx.ip);
+    throw new ApiError(401, 'Invalid token');
+  }
+
+  // Check cache first for user profile
+  const cacheKey = `user:${decoded.userId}:profile`;
+  let user = await cacheService.get(cacheKey);
+
+  // Cache miss - query database
+  if (!user) {
+    user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: userSelect });
+
+    // Cache the user profile for future requests (1 hour TTL)
+    if (user) {
+      await cacheService.set(cacheKey, user, config.cache.userProfileTtl);
+    }
+  }
+
+  if (!user) {
+    logger.authFailure(decoded.email, 'User not found', ctx.userAgent, ctx.ip);
+    throw new ApiError(401, 'Invalid token');
+  }
+
+  if (!user.isActive) {
+    logger.authFailure(user.email, 'Account inactive', ctx.userAgent, ctx.ip);
+    throw new ApiError(401, 'Account is inactive');
+  }
+
+  if (!user.isEmailVerified && !config.development.skipEmailVerification) {
+    logger.authFailure(user.email, 'Email not verified', ctx.userAgent, ctx.ip);
+    throw new ApiError(401, 'Email verification required');
+  }
+
+  logger.authSuccess(user.id, ctx.userAgent, ctx.ip);
+  return user as AuthUser;
+};
+
 // Authentication middleware
 export const authenticate = async (
   req: Request,
@@ -60,172 +171,9 @@ export const authenticate = async (
       throw new ApiError(401, 'Authentication required');
     }
 
-    const token = authHeader.substring(7);
-
-    if (!token) {
-      logger.authFailure('', 'Missing token', req.get('User-Agent'), req.ip);
-      throw new ApiError(401, 'Authentication required');
-    }
-
-    // Bypass JWT verification for mock tokens (development/demo mode)
-    // Token format: mock-access-token-{role}-{userId}
-    // Examples: mock-access-token-admin-1, mock-access-token-staff-3
-    if (token.startsWith('mock-access-token-')) {
-      const tokenParts = token.replace('mock-access-token-', '').split('-');
-      const role = tokenParts[0]?.toUpperCase();
-      const userId = tokenParts[1] || '1';
-      
-      let mockUser: Express.Request['user'];
-      
-      switch (role) {
-        case 'ADMIN':
-          mockUser = {
-            id: userId || '1',
-            email: 'admin@campsite.com',
-            role: 'ADMIN',
-            firstName: 'Admin',
-            lastName: 'User',
-            isActive: true,
-            isEmailVerified: true,
-          };
-          break;
-        case 'MANAGER':
-          mockUser = {
-            id: userId || '4',
-            email: 'manager@campsite.com',
-            role: 'MANAGER',
-            firstName: 'Mike',
-            lastName: 'Manager',
-            isActive: true,
-            isEmailVerified: true,
-          };
-          break;
-        case 'STAFF':
-          mockUser = {
-            id: userId || '3',
-            email: 'staff@campsite.com',
-            role: 'STAFF',
-            firstName: 'Sarah',
-            lastName: 'Staff',
-            isActive: true,
-            isEmailVerified: true,
-          };
-          break;
-        case 'CUSTOMER':
-        default:
-          mockUser = {
-            id: userId || '2',
-            email: 'user@campsite.com',
-            role: 'CUSTOMER',
-            firstName: 'Test',
-            lastName: 'User',
-            isActive: true,
-            isEmailVerified: true,
-          };
-          break;
-      }
-
-      // Prefer a real database user when using mock tokens so downstream
-      // FK-constrained writes (e.g. bookings.userId) succeed.
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: mockUser.email },
-            { role: mockUser.role as any },
-          ],
-        },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          firstName: true,
-          lastName: true,
-          isActive: true,
-          isEmailVerified: true,
-        },
-      });
-
-      if (dbUser) {
-        req.user = {
-          id: dbUser.id,
-          email: dbUser.email,
-          role: dbUser.role as UserRole,
-          firstName: dbUser.firstName,
-          lastName: dbUser.lastName,
-          isActive: dbUser.isActive,
-          isEmailVerified: dbUser.isEmailVerified,
-        };
-      } else {
-        req.user = mockUser;
-      }
-
-      logger.info('Mock token authenticated', {
-        userId: req.user.id,
-        role: req.user.role,
-        resolvedFromDb: Boolean(dbUser),
-      });
-      return next();
-    }
-
-    // Verify JWT token
-    const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
-
-    // Check cache first for user profile
-    const cacheKey = `user:${decoded.userId}:profile`;
-    let user = await cacheService.get(cacheKey);
-
-    // Cache miss - query database
-    if (!user) {
-      user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          firstName: true,
-          lastName: true,
-          isActive: true,
-          isEmailVerified: true,
-        },
-      });
-
-      // Cache the user profile for future requests (1 hour TTL)
-      if (user) {
-        await cacheService.set(cacheKey, user, config.cache.userProfileTtl);
-      }
-    }
-
-    if (!user) {
-      logger.authFailure(decoded.email, 'User not found', req.get('User-Agent'), req.ip);
-      throw new ApiError(401, 'Invalid token');
-    }
-
-    if (!user.isActive) {
-      logger.authFailure(user.email, 'Account inactive', req.get('User-Agent'), req.ip);
-      throw new ApiError(401, 'Account is inactive');
-    }
-
-    if (!user.isEmailVerified && !config.development.skipEmailVerification) {
-      logger.authFailure(user.email, 'Email not verified', req.get('User-Agent'), req.ip);
-      throw new ApiError(401, 'Email verification required');
-    }
-
-    // Attach user to request
-    req.user = user;
-
-    logger.authSuccess(user.id, req.get('User-Agent'), req.ip);
+    req.user = await authenticateToken(authHeader.substring(7), { userAgent: req.get('User-Agent'), ip: req.ip });
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      logger.authFailure('', 'Token expired', req.get('User-Agent'), req.ip);
-      return next(new ApiError(401, 'Token expired'));
-    }
-
-    if (error instanceof jwt.JsonWebTokenError) {
-      logger.authFailure('', 'Invalid token', req.get('User-Agent'), req.ip);
-      return next(new ApiError(401, 'Invalid token'));
-    }
-
     next(error);
   }
 };
