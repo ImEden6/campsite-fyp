@@ -1,5 +1,6 @@
 // Configuration Management for Campsite Management System
 
+import { productionEnvWarnings } from './envChecks';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -23,10 +24,8 @@ if (missingEnvVars.length > 0) {
 
 // Warn about optional but recommended env vars in production
 if (process.env.NODE_ENV === 'production') {
-  const recommendedEnvVars = ['REDIS_URL', 'EMAIL_USER', 'EMAIL_PASSWORD', 'STRIPE_SECRET_KEY'];
-  const missingRecommended = recommendedEnvVars.filter(varName => !process.env[varName]);
-  if (missingRecommended.length > 0) {
-    console.warn(`Warning: Missing recommended environment variables for production: ${missingRecommended.join(', ')}`);
+  for (const warning of productionEnvWarnings()) {
+    console.warn(`Warning: ${warning}`);
   }
 }
 

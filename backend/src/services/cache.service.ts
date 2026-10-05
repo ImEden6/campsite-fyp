@@ -5,6 +5,10 @@ import crypto from 'crypto';
 import { config } from '@/config';
 import logger from '@/utils/logger';
 
+// Keys looked at per SCAN step, and keys removed per DEL
+const SCAN_BATCH_SIZE = 200;
+const DELETE_BATCH_SIZE = 500;
+
 export class CacheService {
   private redis: Redis;
   private isConnected: boolean = false;
@@ -184,8 +188,11 @@ export class CacheService {
         return;
       }
 
-      await this.redis.del(...keys);
-      logger.debug('Cache keys deleted', { keys });
+      // Chunked: a single DEL with thousands of arguments is a huge command
+      for (let i = 0; i < keys.length; i += DELETE_BATCH_SIZE) {
+        await this.redis.del(...keys.slice(i, i + DELETE_BATCH_SIZE));
+      }
+      logger.debug('Cache keys deleted', { count: keys.length });
     } catch (error) {
       logger.error('Cache delete many operation failed', error, { keys });
     }
@@ -322,7 +329,13 @@ export class CacheService {
         return [];
       }
 
-      return await this.redis.keys(pattern);
+      // SCAN walks the keyspace in small steps. KEYS does it in one blocking call, which stalls
+      // Redis (and every request waiting on it) when there are many keys.
+      const found = new Set<string>(); // SCAN may return the same key more than once
+      for await (const batch of this.redis.scanStream({ match: pattern, count: SCAN_BATCH_SIZE })) {
+        for (const key of batch as string[]) found.add(key);
+      }
+      return [...found];
     } catch (error) {
       logger.error('Cache keys operation failed', error, { pattern });
       return [];
