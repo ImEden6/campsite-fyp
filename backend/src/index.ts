@@ -136,6 +136,15 @@ async function startServer() {
   try {
     validateConfig();
     await connectDatabase();
+
+    // The cache is optional: without it the app still works, just slower, and it reconnects on its own
+    // when Redis comes back. But it never connects unless asked, so ask.
+    try {
+      await cacheService.connect();
+    } catch (error) {
+      logger.warn('Cache unavailable at startup; continuing without it', { error });
+    }
+
     startCleanupJobs();
 
     server.listen(PORT, () => {

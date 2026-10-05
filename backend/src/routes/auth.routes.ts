@@ -47,7 +47,7 @@ router.post('/login', authRateLimit, validateBody(loginSchema), async (req: Requ
  */
 router.post('/register', registerRateLimit, validateBody(registerSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password, firstName, lastName, phone, role } = req.body as RegisterInput;
+    const { email, password, firstName, lastName, phone } = req.body as RegisterInput;
 
     const result = await authService.register({
       email,
@@ -55,7 +55,6 @@ router.post('/register', registerRateLimit, validateBody(registerSchema), async 
       firstName,
       lastName,
       phone,
-      role,
     });
 
     logger.info('User registered', {

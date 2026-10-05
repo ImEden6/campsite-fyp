@@ -259,3 +259,29 @@ Tests run via GitHub Actions with:
 - Unit tests: Always run, fast feedback
 - Integration tests: Run with test database container
 - E2E tests: Run after build, with browser automation
+
+## Running the backend integration tests
+
+Files ending in `.int.test.ts` (and several route tests) use a **real Postgres and a real Redis**, so they catch
+problems mocks hide: database constraints, concurrent requests, row locks, cache behaviour. Unit tests (`*.unit.test.ts`)
+need neither.
+
+Start throwaway services (the test setup expects Postgres on port 5433 and Redis on 6379):
+
+```bash
+docker run -d --name campsite-test-pg -e POSTGRES_USER=campsite_user -e POSTGRES_PASSWORD=d994371ace6e175a9160f147f08e1f55 -e POSTGRES_DB=campsite_db -p 5433:5432 postgres:15-alpine
+docker run -d --name campsite-test-redis -p 6379:6379 redis:7-alpine
+```
+
+Create the schema, then run the tests:
+
+```bash
+cd backend
+DATABASE_URL=postgresql://campsite_user:d994371ace6e175a9160f147f08e1f55@localhost:5433/campsite_db npx prisma migrate deploy
+DATABASE_URL=postgresql://campsite_user:d994371ace6e175a9160f147f08e1f55@localhost:5433/campsite_db npm run test
+```
+
+Remove them afterwards with `docker rm -f campsite-test-pg campsite-test-redis`.
+
+Test files share one database and run in parallel, so each test creates its own uniquely named rows and removes them
+afterwards. Never rely on the table being empty, and never fake the current time in a way that affects other tests' rows.

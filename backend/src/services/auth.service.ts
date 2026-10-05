@@ -11,9 +11,10 @@ import {
   ValidationError,
   ConflictError,
   NotFoundError,
-  BusinessLogicError
+  BusinessLogicError,
+  ApiError
 } from '@/utils/errors';
-import { CacheService } from './cache.service';
+import cacheService from './cache.service';
 import { emailService } from './email';
 import { getPrismaClient } from '@/database';
 
@@ -24,10 +25,11 @@ interface JwtPayload {
   userId: string;
   email: string;
   role: UserRole;
+  /** Makes every refresh token unique, even two issued in the same second. */
+  jti?: string;
 }
 
 const prisma = getPrismaClient();
-const cacheService = new CacheService();
 
 export interface AuthTokens {
   accessToken: string;
@@ -45,8 +47,7 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  phone?: string;
-  role?: UserRole;
+  phone?: string | undefined;
 }
 
 export interface ResetPasswordData {
@@ -59,7 +60,26 @@ export interface ChangePasswordData {
   newPassword: string;
 }
 
+/**
+ * A real password hash that matches nothing. Checking a login against it when the email is
+ * unknown makes that request take as long as a real one, so response time doesn't reveal
+ * which emails have accounts.
+ */
+let dummyHash: Promise<string> | undefined;
+const getDummyHash = (): Promise<string> => (dummyHash ??= bcrypt.hash(crypto.randomBytes(16).toString('hex'), config.security.bcryptRounds));
+
 export class AuthService {
+  /**
+   * Verification and reset links hold a token that lives in the cache. If the cache is down the
+   * token would never be stored, so the emailed link could never work: refuse up front instead.
+   */
+  private requireTokenStore(): void {
+    if (!cacheService.isReady()) {
+      logger.error('Cannot issue an email token: the cache is not available');
+      throw new ApiError(503, 'This is temporarily unavailable, please try again in a few minutes');
+    }
+  }
+
   // Generate JWT tokens
   private generateTokens(user: User): AuthTokens {
     const payload = {
@@ -72,7 +92,9 @@ export class AuthService {
       expiresIn: config.jwt.expiresIn as string,
     } as jwt.SignOptions);
 
-    const refreshToken = jwt.sign(payload, config.jwt.refreshSecret, {
+    // Without a unique id, two refresh tokens for one user in the same second are the same string,
+    // which breaks the unique constraint on sessions and lets rotation delete the new session.
+    const refreshToken = jwt.sign({ ...payload, jti: crypto.randomUUID() }, config.jwt.refreshSecret, {
       expiresIn: config.jwt.refreshExpiresIn as string,
     } as jwt.SignOptions);
 
@@ -157,7 +179,11 @@ export class AuthService {
 
   // Register new user
   async register(userData: RegisterData): Promise<{ user: User; message: string }> {
-    const { email, password, firstName, lastName, phone, role = 'CUSTOMER' as UserRole } = userData;
+    const { email, password, firstName, lastName, phone } = userData;
+    // Self-registration always creates a customer. Staff accounts are made by an admin.
+    const role: UserRole = 'CUSTOMER';
+
+    if (!config.development.skipEmailVerification) this.requireTokenStore();
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -254,6 +280,7 @@ export class AuthService {
     });
 
     if (!user) {
+      await this.verifyPassword(password, await getDummyHash());
       throw new AuthenticationError('Invalid credentials');
     }
 
@@ -375,17 +402,19 @@ export class AuthService {
 
   // Resend verification email
   async resendVerificationEmail(email: string): Promise<{ message: string }> {
+    // The same answer whether or not the account exists or is already verified, so this can't be
+    // used to find out who has an account.
+    const generic = { message: 'If that account needs verifying, a verification email has been sent' };
+
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
-      throw new NotFoundError('User not found');
+    if (!user || user.isEmailVerified) {
+      return generic;
     }
 
-    if (user.isEmailVerified) {
-      throw new BusinessLogicError('Email already verified');
-    }
+    this.requireTokenStore();
 
     // Generate new verification token
     const verificationToken = this.generateVerificationToken();
@@ -402,14 +431,14 @@ export class AuthService {
       await emailService.sendVerificationEmail(user.email, verificationToken, user.firstName);
       logger.info('Verification email resent', { userId: user.id });
     } catch (emailError) {
-      // Log error but return success message to avoid revealing email issues
+      // Log error but return the same answer to avoid revealing email issues
       logger.error('Failed to resend verification email', {
         email: user.email,
         error: emailError
       });
     }
 
-    return { message: 'Verification email sent' };
+    return generic;
   }
 
   // Request password reset
@@ -422,6 +451,8 @@ export class AuthService {
       // Don't reveal if user exists
       return { message: 'If the email exists, a password reset link has been sent' };
     }
+
+    this.requireTokenStore();
 
     // Generate reset token
     const resetToken = this.generateVerificationToken();
@@ -522,9 +553,9 @@ export class AuthService {
       }]);
     }
 
-    // Check if new password is same as current (don't reuse password)
-    const hashedNewPassword = await this.hashPassword(newPassword);
-    if (hashedNewPassword === user.password) {
+    // Refuse to "change" to the password already in use. A new hash of the same password never
+    // equals the stored one (every hash has its own salt), so compare the password itself.
+    if (await this.verifyPassword(newPassword, user.password)) {
       throw new ValidationError([{
         field: 'newPassword',
         message: 'New password must be different from current password',

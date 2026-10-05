@@ -2,7 +2,7 @@
 
 import { Router, Request, Response, NextFunction } from 'express';
 import bookingService from '@/services/booking.service';
-import { CacheService } from '@/services/cache.service';
+import cacheService from '@/services/cache.service';
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 import { getPrismaClient } from '@/database';
@@ -10,7 +10,6 @@ import { EquipmentItemStatus, EquipmentCategory } from '@prisma/client';
 import { EquipmentStatus } from '@campsite-management/shared';
 
 const router = Router();
-const cacheService = new CacheService();
 const prisma = getPrismaClient();
 
 const isEquipmentCategory = (value: string): value is EquipmentCategory =>
