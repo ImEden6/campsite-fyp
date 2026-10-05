@@ -31,9 +31,12 @@ export const paymentService = {
     }
 
     try {
+      // The server charges the booking's outstanding balance. `data.amount` is in minor units
+      // (cents) and only used for display/mock flows, so it must not be sent.
+      const { amount: _displayAmount, ...serverPayload } = data;
       const response = await apiClient.post<ApiResponse<PaymentIntent>>(
         '/payments/intent',
-        data
+        serverPayload
       );
       if (!response.data) {
         throw new Error('Payment intent response missing data');

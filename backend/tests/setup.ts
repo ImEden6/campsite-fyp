@@ -53,6 +53,7 @@ function normalizeTestEnvironment(): void {
     // Hard overrides for test environment - these MUST be set
     process.env.NODE_ENV = 'test';
     process.env.JWT_SECRET = 'test-jwt-secret-do-not-use-in-production';
+    process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret-do-not-use-in-production';
     process.env.JWT_EXPIRES_IN = '1h';
     process.env.BCRYPT_ROUNDS = '1'; // Fast hashing for tests
 

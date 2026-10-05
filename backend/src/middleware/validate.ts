@@ -116,12 +116,14 @@ export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
 
 export const createPaymentIntentSchema = z.object({
     bookingId: cuidSchema,
+    // Optional: the server charges the booking's outstanding balance by default.
+    // If provided (major units, e.g. 25.50) it may only be a partial payment of that balance.
     amount: z.preprocess(
         (val) => (typeof val === 'string' ? parseFloat(val) : val),
         z.number()
-            .min(0.50, 'Amount must be at least $0.50')
-            .max(999999.99, 'Amount cannot exceed $999,999.99')
-    ),
+            .min(0.50, 'Amount must be at least 0.50')
+            .max(999999.99, 'Amount cannot exceed 999,999.99')
+    ).optional(),
     currency: z.string().optional(),
     description: z.string().optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),

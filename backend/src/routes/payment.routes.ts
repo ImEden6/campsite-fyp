@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, authorize } from '@/middleware/auth';
 import { paymentRateLimit } from '@/middleware/security';
 import { validateBody, createPaymentIntentSchema, CreatePaymentIntentInput } from '@/middleware/validate';
-import paymentService from '@/services/payment.service';
+import paymentService, { PAYMENT_CURRENCY } from '@/services/payment.service';
 import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
 import { ApiError } from '@/utils/errors';
@@ -15,36 +15,71 @@ const prisma = getPrismaClient();
 const IDEMPOTENCY_TTL = 3600;
 
 /**
+ * POST /payments/webhook
+ * Stripe webhook. Unauthenticated by design: authenticity comes from the Stripe signature,
+ * verified against the raw request body captured in index.ts.
+ */
+router.post('/webhook', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const signature = req.headers['stripe-signature'];
+        const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+
+        if (typeof signature !== 'string' || !rawBody) {
+            throw new ApiError(400, 'Missing Stripe signature or body');
+        }
+
+        await paymentService.handleWebhook(signature, rawBody);
+        res.json({ received: true });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * POST /payments/intent
- * Create a payment intent
- * Middleware order: rate limiter -> validation -> controller
+ * Create a payment intent for a booking.
+ * The amount is derived from the booking's outstanding balance on the server; a client-supplied
+ * amount can only request a partial payment of that balance.
+ * Middleware order: authenticate -> rate limiter -> validation -> controller
  */
 router.post('/intent', authenticate, paymentRateLimit, validateBody(createPaymentIntentSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { bookingId, amount, idempotencyKey } = req.body as CreatePaymentIntentInput;
+        const { bookingId, amount: requestedAmount, idempotencyKey } = req.body as CreatePaymentIntentInput;
         const userId = req.user!.id;
 
-        // Security: Verify booking exists and belongs to user
         const booking = await prisma.booking.findUnique({
             where: { id: bookingId },
         });
 
-        if (!booking) {
+        // Same response for "missing" and "not yours" so booking ids can't be probed
+        if (!booking || (booking.userId !== userId && req.user!.role === 'CUSTOMER')) {
             throw new ApiError(404, 'Booking not found');
         }
 
-        if (booking.userId !== userId && req.user!.role === 'CUSTOMER') {
-            throw new ApiError(403, 'Not authorized to pay for this booking');
+        if (booking.status === 'CANCELLED' || booking.status === 'NO_SHOW') {
+            throw new ApiError(409, 'This booking can no longer be paid');
         }
 
-        // Security: Re-check amount bounds server-side
-        if (amount < 0.50 || amount > 999999.99) {
-            throw new ApiError(400, 'Amount must be between $0.50 and $999,999.99');
+        const outstanding = Math.round((booking.totalAmount - booking.paidAmount) * 100) / 100;
+        if (outstanding <= 0) {
+            throw new ApiError(409, 'This booking has no outstanding balance');
         }
 
-        // Idempotency: Return cached result if key provided
-        if (idempotencyKey) {
-            const idempotencyResource = `payment:idempotency:${idempotencyKey}`;
+        let amount = outstanding;
+        if (requestedAmount !== undefined) {
+            if (requestedAmount > outstanding) {
+                throw new ApiError(400, `Amount exceeds the outstanding balance of ${outstanding.toFixed(2)}`);
+            }
+            amount = requestedAmount;
+        }
+
+        // Idempotency: scoped per user and booking so one user's key can never return
+        // another user's payment intent (and its clientSecret)
+        const idempotencyResource = idempotencyKey
+            ? `payment:idempotency:${userId}:${bookingId}:${idempotencyKey}`
+            : null;
+
+        if (idempotencyResource) {
             const existing = await cacheService.safeGet<object>(idempotencyResource);
             if (existing) {
                 logger.info('Returning idempotent payment intent', { idempotencyKey });
@@ -58,15 +93,14 @@ router.post('/intent', authenticate, paymentRateLimit, validateBody(createPaymen
 
         const result = await paymentService.createPaymentIntent(
             amount,
-            'myr',
+            PAYMENT_CURRENCY,
             bookingId,
             `Payment for booking ${booking.bookingNumber}`,
             userId
         );
 
-        // Cache result with idempotency key
-        if (idempotencyKey) {
-            await cacheService.safeSet(`payment:idempotency:${idempotencyKey}`, result, IDEMPOTENCY_TTL);
+        if (idempotencyResource) {
+            await cacheService.safeSet(idempotencyResource, result, IDEMPOTENCY_TTL);
         }
 
         res.json({
@@ -102,13 +136,19 @@ router.get('/history', authenticate, async (req: Request, res: Response, next: N
  */
 router.post('/confirm/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
-        const payment = await paymentService.confirmPayment(id as string);
+        const id = req.params.id as string;
+
+        // Only the payer or staff may trigger a confirm; unknown and foreign ids look identical
+        const existing = await paymentService.getPaymentByIntentId(id);
+        const isStaff = ['STAFF', 'MANAGER', 'ADMIN'].includes(req.user!.role);
+        if (!existing || (existing.userId !== req.user!.id && !isStaff)) {
+            res.status(404).json({ success: false, message: 'Payment not found or not successful' });
+            return;
+        }
+
+        const payment = await paymentService.confirmPayment(id);
 
         if (!payment) {
-            // If payment is not found or not succeeded, try to sync with Stripe again inside service? 
-            // Current implementation just checks database or stripe status. 
-            // For now, return 404 or pending.
             res.status(404).json({ success: false, message: 'Payment not found or not successful' });
             return;
         }
@@ -154,6 +194,9 @@ router.post('/:id/refund', authenticate, authorize('ADMIN', 'MANAGER'), async (r
     try {
         const { id } = req.params;
         const { amount, reason } = req.body;
+        if (amount !== undefined && typeof amount !== 'number') {
+            throw new ApiError(400, 'Refund amount must be a number');
+        }
 
         const refund = await paymentService.processRefund(id as string, amount, reason);
 
