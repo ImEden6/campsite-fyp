@@ -13,6 +13,7 @@ dotenv.config();
 
 // Import configuration and services
 import { config, validateConfig } from './config';
+import { getAllowedOrigins } from './config/origins';
 import { logger } from './utils/logger';
 import { connectDatabase } from './database';
 import { errorHandler } from './utils/errors';
@@ -56,9 +57,7 @@ if (errorTracker.isEnabled() && 'getRequestHandler' in errorTracker) {
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN 
-    ? process.env.CORS_ORIGIN.split(',') 
-    : process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: getAllowedOrigins(),
   credentials: true
 }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));

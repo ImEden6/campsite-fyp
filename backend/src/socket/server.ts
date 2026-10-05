@@ -4,13 +4,14 @@
 import type { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
 
+import { getAllowedOrigins } from '@/config/origins';
 import { socketAuthMiddleware } from './auth';
 import { roomsFor } from './rooms';
 
 export function createSocketServer(httpServer: HttpServer): Server {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: getAllowedOrigins(),
       credentials: true,
     },
   });
