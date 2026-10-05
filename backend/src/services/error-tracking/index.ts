@@ -7,6 +7,7 @@ import { IErrorTracker, ErrorTrackerConfig } from '@campsite-management/shared';
 import { SentryErrorTracker } from './sentry';
 import { ConsoleErrorTracker } from './console';
 import { config } from '@/config';
+import type { ErrorRequestHandler, RequestHandler } from 'express';
 
 let errorTrackerInstance: IErrorTracker | null = null;
 
@@ -56,3 +57,22 @@ export function initializeErrorTracking(): IErrorTracker {
 
 export { SentryErrorTracker } from './sentry';
 export { ConsoleErrorTracker } from './console';
+
+/** Trackers that can plug into Express (Sentry); the console tracker cannot. */
+export interface ExpressErrorTracking {
+  getRequestHandler(): RequestHandler;
+  getErrorHandler(): ErrorRequestHandler;
+}
+
+export function hasExpressHandlers(tracker: IErrorTracker): tracker is IErrorTracker & ExpressErrorTracking {
+  const candidate = tracker as Partial<ExpressErrorTracking>;
+  return typeof candidate.getRequestHandler === 'function' && typeof candidate.getErrorHandler === 'function';
+}
+
+/** Flush buffered events before exit, if the tracker buffers any. */
+export async function flushErrorTracker(tracker: IErrorTracker, timeoutMs = 2000): Promise<void> {
+  const candidate = tracker as { flush?: (timeout?: number) => Promise<boolean> };
+  if (typeof candidate.flush === 'function') {
+    await candidate.flush(timeoutMs);
+  }
+}

@@ -1,29 +1,31 @@
+// Load environment variables before anything reads them (config is read at import time)
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import { createServer } from 'http';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
+import { createServer } from 'http';
 
-// Load environment variables
-dotenv.config();
-
-// Import configuration and services
 import { config, validateConfig } from './config';
 import { getAllowedOrigins } from './config/origins';
 import { logger } from './utils/logger';
-import { connectDatabase } from './database';
+import { connectDatabase, disconnectDatabase } from './database';
 import { errorHandler } from './utils/errors';
-import { authMiddleware } from './middleware/auth';
-import { initializeErrorTracking, getErrorTracker } from './services/error-tracking';
-import { startCleanupJobs, stopCleanupJobs } from './jobs/cleanup';
+import { generalRateLimit } from './middleware/security';
+import {
+  initializeErrorTracking,
+  hasExpressHandlers,
+  flushErrorTracker,
+} from './services/error-tracking';
+import cacheService from './services/cache.service';
 import socketService from './services/socket.service';
+import { startCleanupJobs, stopCleanupJobs } from './jobs/cleanup';
 import { createSocketServer } from './socket/server';
+import { createShutdown } from './shutdown';
 
-// Import routes (these will be created later)
 import authRoutes from './routes/auth.routes';
 import campsiteRoutes from './routes/site.routes';
 import bookingRoutes from './routes/booking.routes';
@@ -33,53 +35,38 @@ import apiKeyRoutes from './routes/api-key.routes';
 import equipmentRoutes from './routes/equipment.routes';
 import paymentRoutes from './routes/payment.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import mapRoutes from './routes/map.routes';
 import publicRoutes from './routes/public.routes';
 
-// Initialize error tracking first
 const errorTracker = initializeErrorTracking();
-
-import mapRoutes from './routes/map.routes';
 
 const app = express();
 const server = createServer(app);
 const io = createSocketServer(server);
-
-// Rate limiting - using generalRateLimit from security.ts
-// Specific rate limiters are now applied at route level in each route file
-import { generalRateLimit } from './middleware/security';
-
-// Sentry request handler
-if (errorTracker.isEnabled() && 'getRequestHandler' in errorTracker) {
-  app.use((errorTracker as any).getRequestHandler());
-}
 
 // Middleware
 app.use(helmet());
 app.use(compression());
 app.use(cors({
   origin: getAllowedOrigins(),
-  credentials: true
+  credentials: true,
 }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
-app.use(generalRateLimit); // General rate limit for all routes
+// General rate limit for all routes. Stricter limits sit on specific routes
+// (login/register, payment intents, booking creation); see middleware/security.ts.
+app.use(generalRateLimit);
 app.use(express.json({
   limit: '10mb',
-  verify: (req: any, res, buf) => {
-    req.rawBody = buf;
-  }
+  // Keep the raw bytes: Stripe webhook signatures are verified against them
+  verify: (req, _res, buf) => {
+    (req as typeof req & { rawBody?: Buffer }).rawBody = buf;
+  },
 }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(config.upload.staticPath, express.static(config.upload.path));
 
-// Rate limiting is now applied at route level:
-// - authRateLimit on /auth/login and /auth/register
-// - registerRateLimit on /auth/register  
-// - paymentRateLimit on /payments/intent
-// - bookingRateLimit defined in security.ts for booking creation
-
-// Health check route
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -96,7 +83,20 @@ app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/maps', mapRoutes);
 app.use('/api/v1/public', publicRoutes);
 
-// Socket.io connection handling
+app.use('*', (_req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found',
+  });
+});
+
+// Error handling. Order matters: report to the error tracker first, then answer the client.
+if (hasExpressHandlers(errorTracker)) {
+  app.use(errorTracker.getErrorHandler());
+}
+app.use(errorHandler);
+
+// Real-time updates
 socketService.initialize(io);
 
 io.on('connection', (socket) => {
@@ -106,42 +106,38 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     logger.info(`Client disconnected: ${socket.id}`, { userId: user.id });
   });
-
-  // Add more socket event handlers as needed
 });
 
-// Sentry error handler (must be before other error handlers)
-// Temporarily disabled due to compilation issues
-// if (errorTracker.isEnabled() && 'getErrorHandler' in errorTracker) {
-//   app.use((errorTracker as any).getErrorHandler());
-// }
-
-// Error handling middleware
-app.use(errorHandler);
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested resource was not found'
-  });
+// Graceful shutdown: stop taking work, close connections, flush, then release resources.
+const shutdown = createShutdown({
+  steps: [
+    { name: 'background jobs', run: () => stopCleanupJobs() },
+    { name: 'http and socket server', run: () => io.close() }, // also closes the HTTP server
+    { name: 'error tracker', run: () => flushErrorTracker(errorTracker) },
+    { name: 'cache', run: () => cacheService.disconnect() },
+    { name: 'database', run: () => disconnectDatabase() },
+  ],
 });
 
-// Start server
+process.on('SIGINT', () => void shutdown('SIGINT'));
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', error);
+  void shutdown('uncaughtException', 1);
+});
+// A rejected promise nobody handled is a bug, but not worth taking the whole server down for
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', reason instanceof Error ? reason : new Error(String(reason)));
+});
+
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    // Validate configuration
     validateConfig();
-
-    // Connect to database
     await connectDatabase();
-
-    // Start cleanup jobs
     startCleanupJobs();
 
-    // Start server
     server.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -152,24 +148,5 @@ async function startServer() {
     process.exit(1);
   }
 }
-
-// Handle graceful shutdown
-process.on('SIGINT', () => {
-  logger.info('Received SIGINT, shutting down gracefully...');
-  stopCleanupJobs();
-  server.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
-  });
-});
-
-process.on('SIGTERM', () => {
-  logger.info('Received SIGTERM, shutting down gracefully...');
-  stopCleanupJobs();
-  server.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
-  });
-});
 
 startServer();

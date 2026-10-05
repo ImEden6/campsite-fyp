@@ -25,18 +25,10 @@ const initializePrisma = (): PrismaClient => {
       }
     };
 
-    // Handle process termination
+    // Safety net for scripts and tests that never call disconnectDatabase().
+    // SIGINT/SIGTERM are deliberately NOT handled here: the server's graceful shutdown owns them
+    // (src/shutdown.ts). Exiting from here would cut that shutdown short.
     process.on('beforeExit', () => cleanup('beforeExit'));
-
-    process.on('SIGINT', async () => {
-      await cleanup('SIGINT');
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      await cleanup('SIGTERM');
-      process.exit(0);
-    });
   }
 
   return prisma;

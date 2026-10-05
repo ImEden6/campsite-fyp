@@ -4,6 +4,7 @@
  */
 
 import * as Sentry from '@sentry/node';
+import type { ErrorRequestHandler, RequestHandler } from 'express';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import type {
   IErrorTracker,
@@ -174,25 +175,24 @@ export class SentryErrorTracker implements IErrorTracker {
   }
 
   /**
-   * Get Sentry request handler middleware
+   * Express request middleware. Since Sentry v8 requests are instrumented automatically, so there
+   * is nothing to mount; it exists so callers don't need to know which tracker is active.
    */
-  getRequestHandler() {
-    if (!this.enabled) {
-      return (req: any, res: any, next: any) => next();
-    }
-    // Sentry v8+ uses different API
-    return (req: any, res: any, next: any) => next();
+  getRequestHandler(): RequestHandler {
+    return (_req, _res, next) => next();
   }
 
   /**
-   * Get Sentry error handler middleware
+   * Express error middleware: reports errors that reach Express's error pipeline (5xx by default,
+   * so expected 4xx responses are not reported). Mount it before the app's own error handler.
    */
-  getErrorHandler() {
+  getErrorHandler(): ErrorRequestHandler {
     if (!this.enabled) {
-      return (err: any, req: any, res: any, next: any) => next(err);
+      return (err, _req, _res, next) => next(err);
     }
-    // Sentry v8+ uses different API
-    return (err: any, req: any, res: any, next: any) => next(err);
+    // Sentry declares its own minimal Express types, which don't line up with @types/express.
+    // It is a standard (err, req, res, next) middleware, so the cast is safe.
+    return Sentry.expressErrorHandler() as unknown as ErrorRequestHandler;
   }
 
   /**

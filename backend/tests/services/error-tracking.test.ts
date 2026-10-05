@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConsoleErrorTracker } from '../console';
+import { ConsoleErrorTracker } from '@/services/error-tracking/console';
 import { ErrorTrackerConfig } from '@campsite-management/shared';
 
 describe('Error Tracking Service', () => {
