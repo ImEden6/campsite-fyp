@@ -7,6 +7,8 @@ import CheckInPage from '@/pages/CheckInPage';
 import CheckOutPage from '@/pages/CheckOutPage';
 import { mockBooking, mockStaff, mockBookingsList } from '../utils/mock-data';
 
+const confirmRequests: unknown[] = [];
+
 const server = setupServer(
   // Search bookings endpoint (used by CheckInPage)
   http.get('http://localhost:5000/api/v1/bookings', ({ request }) => {
@@ -17,7 +19,8 @@ const server = setupServer(
     // Ensure all mock bookings have unique IDs to avoid duplicate key warnings
     let filtered = [
       ...mockBookingsList.map((b, i) => ({ ...b, id: `list-${i}` })),
-      { ...mockBooking, id: 'unique-checkin-id', bookingNumber: 'BK-CHECKIN', status: 'CONFIRMED' as any }
+      { ...mockBooking, id: 'unique-checkin-id', bookingNumber: 'BK-CHECKIN', status: 'CONFIRMED' as any },
+      { ...mockBooking, id: 'pending-booking-id', bookingNumber: 'BK-PENDING', status: 'PENDING' as any, totalAmount: 120, paidAmount: 0 }
     ];
     
     if (searchTerm && searchTerm.length >= 3) {
@@ -44,6 +47,13 @@ const server = setupServer(
   // Get QR code
   http.get('http://localhost:5000/api/v1/bookings/:id/qr-code', () => {
     return HttpResponse.json({ data: { qrCode: 'mock-qr-code-data' }, success: true });
+  }),
+  http.post('http://localhost:5000/api/v1/bookings/:id/confirm', async ({ request }) => {
+    confirmRequests.push(await request.json());
+    return HttpResponse.json({
+      data: { ...mockBooking, id: 'pending-booking-id', bookingNumber: 'BK-PENDING', status: 'CONFIRMED' },
+      success: true
+    });
   }),
   http.post('http://localhost:5000/api/v1/bookings/:id/check-in', () => {
     return HttpResponse.json({
@@ -75,6 +85,7 @@ beforeEach(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  confirmRequests.length = 0;
 });
 
 afterAll(() => {
@@ -123,6 +134,50 @@ describe('Staff Check-in/Check-out Flow', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /success/i })).toBeInTheDocument();
     }, { timeout: 3000 });
+  });
+
+  it('confirms a pending booking (recording cash) before it can be checked in', async () => {
+    const user = userEvent.setup();
+    render(<CheckInPage />);
+
+    await user.type(screen.getByPlaceholderText(/Search by guest name/i), 'BK-PENDING');
+
+    await waitFor(() => {
+      expect(screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const bookingCard = screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i')).closest('div[class*="cursor-pointer"]');
+    await user.click(bookingCard!);
+
+    // Pending: confirm first, no check-in yet
+    expect(await screen.findByText(/not confirmed yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/balance due/i)).toHaveTextContent('120.00');
+    expect(screen.queryByRole('button', { name: /check in guest/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^payment$/i }));
+    await user.click(await screen.findByText(/paid in full - cash/i));
+    await user.click(screen.getByRole('button', { name: /confirm booking/i }));
+
+    // Confirmed: check-in becomes available
+    expect(await screen.findByRole('button', { name: /check in guest/i })).toBeInTheDocument();
+    expect(screen.queryByText(/not confirmed yet/i)).not.toBeInTheDocument();
+    expect(confirmRequests).toEqual([{ paymentMethod: 'CASH' }]);
+  });
+
+  it('confirms without payment when no method is chosen', async () => {
+    const user = userEvent.setup();
+    render(<CheckInPage />);
+
+    await user.type(screen.getByPlaceholderText(/Search by guest name/i), 'BK-PENDING');
+    await waitFor(() => {
+      expect(screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i'))).toBeInTheDocument();
+    }, { timeout: 3000 });
+    await user.click(screen.getByText(new RegExp(`${mockBooking.user.firstName} ${mockBooking.user.lastName}`, 'i')).closest('div[class*="cursor-pointer"]')!);
+
+    await user.click(await screen.findByRole('button', { name: /confirm booking/i }));
+
+    await screen.findByRole('button', { name: /check in guest/i });
+    expect(confirmRequests).toEqual([{}]);
   });
 
   it('should complete check-out process', async () => {

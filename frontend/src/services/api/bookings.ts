@@ -232,6 +232,24 @@ export const calculateCancellationRefund = async (id: string): Promise<Cancellat
 };
 
 /**
+ * Confirm a pending booking (Staff only).
+ * With a paymentMethod, the outstanding balance is recorded as paid by that method;
+ * without one, the booking is confirmed and the balance stays due.
+ */
+export type ManualPaymentMethod = 'CASH' | 'CHECK' | 'BANK_TRANSFER' | 'DEBIT_CARD' | 'CREDIT_CARD';
+
+export const confirmBooking = async (id: string, paymentMethod?: ManualPaymentMethod): Promise<Booking> => {
+  const response = await post<ApiResponse<Booking>>(
+    `/bookings/${id}/confirm`,
+    paymentMethod ? { paymentMethod } : {}
+  );
+  if (!response.data) {
+    throw new Error(`Failed to confirm booking: ${id}`);
+  }
+  return response.data;
+};
+
+/**
  * Check-in booking (Staff only)
  */
 export const checkInBooking = async (id: string): Promise<Booking> => {

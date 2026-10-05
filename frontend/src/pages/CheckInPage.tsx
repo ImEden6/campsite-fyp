@@ -6,9 +6,10 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, User, ArrowLeft, MapPin, Calendar } from 'lucide-react';
-import { Button, ErrorAlert } from '@/components/ui';
+import { Button, ErrorAlert, Select } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { getBookings, checkInBooking, getBookingQRCode } from '@/services/api/bookings';
+import { getBookings, checkInBooking, confirmBooking, getBookingQRCode } from '@/services/api/bookings';
+import type { ManualPaymentMethod } from '@/services/api/bookings';
 import { queryKeys } from '@/config/query-keys';
 import { Booking, BookingStatus } from '@/types';
 import { format } from 'date-fns';
@@ -16,11 +17,24 @@ import { CURRENCY_SYMBOL } from '@/utils/currency';
 import { useNavigate } from 'react-router-dom';
 import { BookingSearchPanel } from '@/features/bookings/components';
 
+const SEARCH_STATUSES = [BookingStatus.PENDING, BookingStatus.CONFIRMED];
+
+// '' = confirm without taking payment (balance stays due)
+const CONFIRM_PAYMENT_OPTIONS = [
+  { value: '', label: 'Confirm without payment (pay later)' },
+  { value: 'CASH', label: 'Paid in full - cash' },
+  { value: 'DEBIT_CARD', label: 'Paid in full - debit card' },
+  { value: 'CREDIT_CARD', label: 'Paid in full - credit card' },
+  { value: 'BANK_TRANSFER', label: 'Paid in full - bank transfer' },
+  { value: 'CHECK', label: 'Paid in full - check' },
+] as const;
+
 const CheckInPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [confirmPaymentMethod, setConfirmPaymentMethod] = useState('');
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
@@ -29,11 +43,11 @@ const CheckInPage: React.FC = () => {
   const { data: bookings = [], isLoading: searchLoading } = useQuery({
     queryKey: queryKeys.bookings.list({
       searchTerm,
-      status: [BookingStatus.CONFIRMED],
+      status: SEARCH_STATUSES,
     }),
     queryFn: () => getBookings({
       searchTerm,
-      status: [BookingStatus.CONFIRMED],
+      status: SEARCH_STATUSES,
     }),
     enabled: searchTerm.length >= 3,
   });
@@ -57,10 +71,32 @@ const CheckInPage: React.FC = () => {
     },
   });
 
+  // Confirm a pending booking (optionally recording a payment taken at the desk)
+  const confirmMutation = useMutation({
+    mutationFn: ({ bookingId, method }: { bookingId: string; method: ManualPaymentMethod | undefined }) =>
+      confirmBooking(bookingId, method),
+    onSuccess: (updatedBooking) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+      setSelectedBooking(updatedBooking);
+      setConfirmPaymentMethod('');
+    },
+  });
+
   const handleSelectBooking = (booking: Booking) => {
     setSelectedBooking(booking);
     setQrCode(null);
     setShowSuccess(false);
+    setConfirmPaymentMethod('');
+    confirmMutation.reset();
+  };
+
+  const handleConfirm = () => {
+    if (selectedBooking) {
+      confirmMutation.mutate({
+        bookingId: selectedBooking.id,
+        method: (confirmPaymentMethod || undefined) as ManualPaymentMethod | undefined,
+      });
+    }
   };
 
   const handleCheckIn = () => {
@@ -154,7 +190,39 @@ const CheckInPage: React.FC = () => {
           </div>
         )}
 
-        {!showSuccess && (
+        {!showSuccess && selectedBooking.status === BookingStatus.PENDING && (
+          <div className="pt-4 border-t border-gray-200 dark:border-secondary-700">
+            <div className="mb-4 p-4 rounded-lg border border-yellow-200 bg-yellow-50/60 dark:border-yellow-800/30 dark:bg-yellow-900/10 text-sm text-yellow-800 dark:text-yellow-200">
+              This booking is not confirmed yet. Balance due:{' '}
+              <span className="font-semibold">
+                {CURRENCY_SYMBOL}{Math.max(selectedBooking.totalAmount - (selectedBooking.paidAmount ?? 0), 0).toFixed(2)}
+              </span>
+              . Confirm it before checking the guest in.
+            </div>
+            <div className="mb-4 max-w-sm">
+              <Select
+                label="Payment"
+                options={CONFIRM_PAYMENT_OPTIONS}
+                value={confirmPaymentMethod}
+                onChange={setConfirmPaymentMethod}
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={handleReset}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                disabled={confirmMutation.isPending}
+                className="shadow-lg shadow-primary-600/20"
+              >
+                {confirmMutation.isPending ? 'Confirming...' : 'Confirm Booking'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!showSuccess && selectedBooking.status !== BookingStatus.PENDING && (
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-secondary-700">
             <Button variant="ghost" onClick={handleReset}>
               Cancel
@@ -208,7 +276,7 @@ const CheckInPage: React.FC = () => {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="font-heading text-3xl font-bold mb-2 text-gray-900 dark:text-primary-100">Guest Check-In</h1>
-            <p className="text-secondary-600 dark:text-secondary-400">Search for and check in confirmed bookings</p>
+            <p className="text-secondary-600 dark:text-secondary-400">Search for a booking, confirm it if needed, then check the guest in</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate('/staff/dashboard')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -224,7 +292,7 @@ const CheckInPage: React.FC = () => {
             isLoading={searchLoading}
             selectedBooking={selectedBooking}
             onSelectBooking={handleSelectBooking}
-            emptyMessage="No confirmed bookings found"
+            emptyMessage="No pending or confirmed bookings found"
             badgeVariant="info"
             renderSecondaryInfo={(booking) => (
               <>
@@ -249,6 +317,9 @@ const CheckInPage: React.FC = () => {
         {selectedBooking && !showSuccess && renderBookingDetails()}
         {showSuccess && renderSuccess()}
 
+        {confirmMutation.isError && (
+          <ErrorAlert message={`Failed to confirm: ${(confirmMutation.error as Error)?.message || 'Unknown error'}`} />
+        )}
         {checkInMutation.isError && (
           <ErrorAlert message={`Failed to check in: ${(checkInMutation.error as Error)?.message || 'Unknown error'}`} />
         )}
