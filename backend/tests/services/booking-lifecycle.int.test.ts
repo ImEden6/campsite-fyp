@@ -134,8 +134,8 @@ describe('Booking lifecycle (real database)', () => {
     const minutesAgo = (m: number) => new Date(Date.now() - m * MIN);
     const hold = () => config.business.pendingBookingHoldMinutes;
 
-    it('defaults to a 30 minute hold', () => {
-      expect(config.business.pendingBookingHoldMinutes).toBe(30);
+    it('defaults to a 3 day hold', () => {
+      expect(config.business.pendingBookingHoldMinutes).toBe(3 * 24 * 60);
     });
 
     it('cancels an unpaid PENDING booking after the hold and frees the site', async () => {
@@ -169,7 +169,7 @@ describe('Booking lifecycle (real database)', () => {
       expect(await statusOf(booking.id)).toBe('PENDING');
     });
 
-    it('leaves a booking alone while a payment started within the hold window is in flight', async () => {
+    it('leaves a booking alone while a payment started in the last hour is in flight', async () => {
       const booking = await newBooking({ createdAt: minutesAgo(hold() + 1) });
       await addPayment(booking.id, 'PENDING', minutesAgo(5));
 
@@ -178,9 +178,9 @@ describe('Booking lifecycle (real database)', () => {
       expect(await statusOf(booking.id)).toBe('PENDING');
     });
 
-    it('expires a booking whose payment attempt is older than the hold window', async () => {
+    it('expires a booking whose payment attempt was abandoned over an hour ago', async () => {
       const booking = await newBooking({ createdAt: minutesAgo(hold() + 60) });
-      await addPayment(booking.id, 'PENDING', minutesAgo(hold() + 15));
+      await addPayment(booking.id, 'PENDING', minutesAgo(90));
 
       await bookingService.expireUnpaidBookings();
 

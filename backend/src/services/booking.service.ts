@@ -16,6 +16,12 @@ const prisma = getPrismaClient();
  */
 const SITE_HOLDING_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'CHECKED_IN'];
 
+/**
+ * A payment attempt this recent means the customer may be paying right now, so the booking is
+ * not expired underneath them. Deliberately much shorter than the booking hold itself.
+ */
+const PAYMENT_IN_FLIGHT_MINUTES = 60;
+
 const SITE_UNAVAILABLE_MESSAGE = 'Site is not available for these dates';
 
 /**
@@ -419,11 +425,12 @@ export class BookingService {
    * Cancel unpaid PENDING bookings that have held their site longer than the hold window.
    *
    * A booking is left alone if any money is involved: a payment taken, or a payment started
-   * within the hold window (the customer may be paying right now).
+   * within the last PAYMENT_IN_FLIGHT_MINUTES (the customer may be paying right now).
    * Returns the bookings that were cancelled so callers can notify clients.
    */
   async expireUnpaidBookings(): Promise<Booking[]> {
     const cutoff = new Date(Date.now() - config.business.pendingBookingHoldMinutes * 60_000);
+    const inFlightCutoff = new Date(Date.now() - PAYMENT_IN_FLIGHT_MINUTES * 60_000);
 
     const where: Prisma.BookingWhereInput = {
       status: 'PENDING',
@@ -433,7 +440,7 @@ export class BookingService {
         none: {
           OR: [
             { status: { in: [PaymentStatus.PAID, PaymentStatus.PARTIAL] } },
-            { status: PaymentStatus.PENDING, createdAt: { gte: cutoff } },
+            { status: PaymentStatus.PENDING, createdAt: { gte: inFlightCutoff } },
           ],
         },
       },
