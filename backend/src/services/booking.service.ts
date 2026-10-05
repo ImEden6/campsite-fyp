@@ -1,12 +1,30 @@
 // Booking Service
 
-import { PrismaClient, Equipment, GuestType, Prisma, Booking } from '@prisma/client';
+import { PrismaClient, Equipment, GuestType, Prisma, Booking, BookingStatus } from '@prisma/client';
 import logger from '@/utils/logger';
 import { ApiError } from '@/utils/errors';
 import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
 
 const prisma = getPrismaClient();
+
+/**
+ * Booking statuses that hold a site for their dates. A new booking starts as PENDING, so it
+ * must block the site too. Keep in sync with the `bookings_no_overlap` constraint in
+ * prisma/migrations/20261005120000_prevent_overlapping_bookings.
+ */
+const SITE_HOLDING_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'CHECKED_IN'];
+
+const SITE_UNAVAILABLE_MESSAGE = 'Site is not available for these dates';
+
+/**
+ * True when Postgres rejected a write because of the `bookings_no_overlap` exclusion constraint,
+ * i.e. a concurrent request took the site between our availability check and the write.
+ */
+function isOverlapViolation(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : '';
+  return message.includes('bookings_no_overlap') || message.includes('exclusion constraint');
+}
 
 export interface EquipmentAvailabilityQuery {
   startDate: Date;
@@ -268,6 +286,8 @@ export class BookingService {
     if (primaryGuest.type !== GuestType.ADULT) throw new ApiError(400, 'PRIMARY_MUST_BE_ADULT: Primary guest must be an adult');
 
     // 4. Transaction: Verify Site & Create
+    // The overlap check below gives a clean error in the common case; the database constraint
+    // catches the race where two requests pass it at once.
     const booking = await prisma.$transaction(async (tx) => {
       // Check Site
       const site = await tx.site.findUnique({ where: { id: siteId } });
@@ -281,13 +301,13 @@ export class BookingService {
       const conflicting = await tx.booking.findFirst({
         where: {
           siteId,
-          status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+          status: { in: SITE_HOLDING_STATUSES },
           OR: [
             { checkInDate: { lt: end }, checkOutDate: { gt: start } }
           ]
         }
       });
-      if (conflicting) throw new ApiError(409, 'Site is not available for these dates');
+      if (conflicting) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
 
       // Calculate Price (Simplified for MVP)
       const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
@@ -321,6 +341,9 @@ export class BookingService {
         },
         include: { guests: true }
       });
+    }).catch((error: unknown) => {
+      if (isOverlapViolation(error)) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
+      throw error;
     });
 
     // Invalidate caches after successful transaction
@@ -364,13 +387,13 @@ export class BookingService {
             where: {
               siteId: booking.siteId,
               id: { not: id }, // Exclude self
-              status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+              status: { in: SITE_HOLDING_STATUSES },
               OR: [
                 { checkInDate: { lt: end }, checkOutDate: { gt: start } }
               ]
             }
           });
-          if (conflicting) throw new ApiError(409, 'Site is not available for these dates');
+          if (conflicting) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
 
           updates.checkInDate = start;
           updates.checkOutDate = end;
@@ -433,6 +456,9 @@ export class BookingService {
         where: { id },
         include: { guests: true }
       });
+    }).catch((error: unknown) => {
+      if (isOverlapViolation(error)) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
+      throw error;
     });
   }
 

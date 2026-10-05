@@ -142,6 +142,9 @@ model MapFacility {
   @@map("map_facilities")
 }
 
+// NOTE: overlapping bookings for a site are prevented by the `bookings_no_overlap` exclusion
+// constraint (raw SQL migration 20261005120000_prevent_overlapping_bookings). Prisma cannot
+// express it, so it is not declared here.
 model Booking {
   id                    String                 @id @default(cuid())
   bookingNumber         String                 @unique
