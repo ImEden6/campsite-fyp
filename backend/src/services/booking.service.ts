@@ -110,7 +110,6 @@ function isOverlapViolation(error: unknown): boolean {
 export interface EquipmentAvailabilityQuery {
   startDate: Date;
   endDate: Date;
-  siteId?: string;
   equipmentType?: string;
 }
 

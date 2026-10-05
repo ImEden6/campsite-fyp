@@ -230,6 +230,20 @@ describe('Equipment Routes - Availability Endpoint', () => {
       expect(kayak.conflictingBookings).toBeUndefined();
     });
 
+    it('gives the same answer for every site, because equipment is one shared inventory', async () => {
+      await reserve(testEquipmentIds[0]!, 2);
+
+      const anySite = await request(app).get('/equipment/available').query(range);
+      const oneSite = await request(app).get('/equipment/available').query({ ...range, siteId: testSiteIds[0] });
+      const otherSite = await request(app).get('/equipment/available').query({ ...range, siteId: 'some-other-site' });
+
+      for (const res of [oneSite, otherSite]) {
+        expect(res.status).toBe(200);
+        expect(find(res.body, testEquipmentIds[0]!).availableQuantity).toBe(3);
+      }
+      expect(find(anySite.body, testEquipmentIds[0]!).availableQuantity).toBe(3);
+    });
+
     it('says whether the answer came from the cache', async () => {
       const first = await request(app).get('/equipment/available').query(range);
       const second = await request(app).get('/equipment/available').query(range);

@@ -129,11 +129,12 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 /**
  * GET /equipment/available
  * Get available equipment for a date range
- * Query params: startDate, endDate, siteId (optional), equipmentType (optional)
+ * Query params: startDate, endDate, equipmentType (optional)
+ * Equipment is one inventory shared by every site, so availability never depends on the site.
  */
 router.get('/available', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { startDate, endDate, siteId, equipmentType } = req.query;
+    const { startDate, endDate, equipmentType } = req.query;
 
     // Validate required parameters
     if (!startDate || !endDate) {
@@ -153,7 +154,7 @@ router.get('/available', async (req: Request, res: Response, next: NextFunction)
     }
 
     // Create cache key
-    const cacheKey = `equipment:availability:${startDate}:${endDate}:${siteId || 'all'}:${equipmentType || 'all'}`;
+    const cacheKey = `equipment:availability:${startDate}:${endDate}:${equipmentType || 'all'}`;
 
     // Check cache first
     const cachedData = await cacheService.get(cacheKey);
@@ -170,7 +171,6 @@ router.get('/available', async (req: Request, res: Response, next: NextFunction)
     const equipment = await bookingService.getAvailableEquipment({
       startDate: start,
       endDate: end,
-      siteId: siteId as string | undefined,
       equipmentType: equipmentType as string | undefined,
     });
 
@@ -180,7 +180,6 @@ router.get('/available', async (req: Request, res: Response, next: NextFunction)
     logger.info('Equipment availability retrieved', {
       startDate,
       endDate,
-      siteId,
       equipmentType,
       count: equipment.length,
     });
