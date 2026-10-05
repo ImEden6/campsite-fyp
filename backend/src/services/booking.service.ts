@@ -7,6 +7,7 @@ import cacheService from '@/services/cache.service';
 import { getPrismaClient } from '@/database';
 import { config } from '@/config';
 import { generateBookingNumber, isBookingNumberCollision } from '@/utils/bookingNumber';
+import pricingService, { computeQuote } from '@/services/pricing.service';
 import { publishBookingEvent, BOOKING_EVENTS } from '@/socket/booking-events';
 import { publishPaymentEvent, PAYMENT_EVENTS } from '@/socket/payment-events';
 
@@ -26,6 +27,52 @@ const SITE_HOLDING_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'CHECKED
 const PAYMENT_IN_FLIGHT_MINUTES = 60;
 
 const SITE_UNAVAILABLE_MESSAGE = 'Site is not available for these dates';
+
+const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
+
+/**
+ * Make sure every requested equipment item has enough units free for the dates.
+ *
+ * The equipment rows are locked first (FOR UPDATE, in id order so two bookings can't deadlock),
+ * so two bookings racing for the last unit are handled one after the other and the second one
+ * sees the first one's reservation. Without the lock both would read "1 left" and both succeed.
+ */
+async function assertEquipmentAvailable(
+  tx: Prisma.TransactionClient,
+  lines: Array<{ equipmentId: string; quantity: number }>,
+  start: Date,
+  end: Date,
+  excludeBookingId?: string
+): Promise<void> {
+  if (lines.length === 0) return;
+
+  const ids = [...new Set(lines.map((l) => l.equipmentId))].sort();
+  await tx.$queryRaw`SELECT id FROM equipment WHERE id IN (${Prisma.join(ids)}) ORDER BY id FOR UPDATE`;
+
+  const [equipment, reserved] = await Promise.all([
+    tx.equipment.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, quantity: true } }),
+    tx.equipmentReservation.groupBy({
+      by: ['equipmentId'],
+      where: {
+        equipmentId: { in: ids },
+        status: 'CONFIRMED',
+        startDate: { lt: end },
+        endDate: { gt: start },
+        ...(excludeBookingId && { bookingId: { not: excludeBookingId } }),
+      },
+      _sum: { quantity: true },
+    }),
+  ]);
+
+  const takenById = new Map(reserved.map((r) => [r.equipmentId, r._sum.quantity ?? 0]));
+  for (const item of equipment) {
+    const wanted = lines.filter((l) => l.equipmentId === item.id).reduce((sum, l) => sum + l.quantity, 0);
+    const free = item.quantity - (takenById.get(item.id) ?? 0);
+    if (wanted > free) {
+      throw new ApiError(409, `Not enough ${item.name} available for these dates (${Math.max(free, 0)} left)`);
+    }
+  }
+}
 
 const BOOKING_NUMBER_ATTEMPTS = 5;
 
@@ -93,6 +140,7 @@ export interface CreateBookingDto {
   childGuests: number;
   petGuests?: number;
   guests?: GuestInput[];
+  equipmentReservations?: Array<{ equipmentId: string; quantity: number }>;
 }
 
 export class BookingService {
@@ -221,7 +269,7 @@ export class BookingService {
   async createBooking(data: CreateBookingDto): Promise<Booking> {
     const {
       userId, siteId, checkInDate, checkOutDate,
-      petGuests = 0, guests, ...rest
+      petGuests = 0, guests, equipmentReservations, ...rest
     } = data;
 
     // 1. Basic Date Validation
@@ -342,9 +390,9 @@ export class BookingService {
       });
       if (conflicting) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
 
-      // Calculate Price (Simplified for MVP)
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      const totalAmount = site.basePrice * days; // + equipment logic?
+      // Price the stay (site rules, equipment, tax, deposit) with the same engine that quotes it
+      const quote = await pricingService.quote({ siteId, start, end, equipmentReservations }, tx);
+      await assertEquipmentAvailable(tx, quote.equipment, start, end);
 
       // Create Booking
       const bookingNumber = generateBookingNumber();
@@ -359,7 +407,10 @@ export class BookingService {
           adultGuests: finalAdultCount,
           childGuests: finalChildCount,
           petGuests,
-          totalAmount,
+          totalAmount: quote.totalAmount,
+          taxAmount: quote.taxAmount,
+          depositAmount: quote.depositAmount,
+          discountAmount: quote.discountAmount,
           status: 'PENDING',
           guests: {
             create: finalGuests.map(g => ({
@@ -370,9 +421,20 @@ export class BookingService {
               type: g.type,
               isPrimary: g.isPrimary
             }))
-          }
+          },
+          equipmentReservations: {
+            create: quote.equipment.map((line) => ({
+              equipmentId: line.equipmentId,
+              quantity: line.quantity,
+              startDate: start,
+              endDate: end,
+              status: 'CONFIRMED' as const,
+              dailyRate: line.dailyRate,
+              totalAmount: line.totalAmount,
+            })),
+          },
         },
-        include: { guests: true }
+        include: { guests: true, equipmentReservations: true }
       });
     })).catch((error: unknown) => {
       if (isOverlapViolation(error)) throw new ApiError(409, SITE_UNAVAILABLE_MESSAGE);
@@ -484,11 +546,18 @@ export class BookingService {
     if (candidates.length === 0) return [];
     const ids = candidates.map((b) => b.id);
 
-    // Re-apply the conditions in the write itself so a payment landing in between wins
-    await prisma.booking.updateMany({
-      where: { ...where, id: { in: ids } },
-      data: { status: 'CANCELLED' },
-    });
+    // Re-apply the conditions in the write itself so a payment landing in between wins, and
+    // release the equipment of whichever bookings were really cancelled
+    await prisma.$transaction([
+      prisma.booking.updateMany({
+        where: { ...where, id: { in: ids } },
+        data: { status: 'CANCELLED' },
+      }),
+      prisma.equipmentReservation.updateMany({
+        where: { bookingId: { in: ids }, status: 'CONFIRMED', booking: { status: 'CANCELLED' } },
+        data: { status: 'CANCELLED' },
+      }),
+    ]);
 
     const cancelled = await prisma.booking.findMany({ where: { id: { in: ids }, status: 'CANCELLED' } });
 
@@ -549,9 +618,35 @@ export class BookingService {
           updates.checkInDate = start;
           updates.checkOutDate = end;
 
-          // Re-calculate price (Simple version)
-          const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-          updates.totalAmount = booking.site.basePrice * days;
+          // Equipment travels with the stay: keep what was reserved (at the rates agreed then),
+          // check it is free for the new dates, and re-price everything with the same engine
+          const reservations = await tx.equipmentReservation.findMany({ where: { bookingId: id, status: 'CONFIRMED' } });
+          const quote = await pricingService.quote(
+            {
+              siteId: booking.siteId,
+              start,
+              end,
+              equipmentReservations: reservations.map((r) => ({ equipmentId: r.equipmentId, quantity: r.quantity })),
+              equipmentRates: new Map(reservations.map((r) => [r.equipmentId, r.dailyRate])),
+            },
+            tx
+          );
+          await assertEquipmentAvailable(tx, quote.equipment, start, end, id);
+
+          for (const reservation of reservations) {
+            await tx.equipmentReservation.update({
+              where: { id: reservation.id },
+              data: {
+                startDate: start,
+                endDate: end,
+                totalAmount: round2(reservation.dailyRate * reservation.quantity * quote.nights),
+              },
+            });
+          }
+
+          updates.totalAmount = quote.totalAmount;
+          updates.taxAmount = quote.taxAmount;
+          updates.depositAmount = quote.depositAmount;
         }
       }
 

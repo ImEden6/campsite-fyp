@@ -6,12 +6,14 @@ import { authenticate, authorize, authorizeBookingOwnership } from '@/middleware
 import { ApiError } from '@/utils/errors';
 import logger from '@/utils/logger';
 import bookingService from '@/services/booking.service';
+import pricingService from '@/services/pricing.service';
 import { getPrismaClient } from '@/database';
 import {
   validateBody,
   createBookingSchema,
   updateBookingSchema,
   updateGuestsSchema,
+  calculatePriceSchema,
   confirmBookingSchema,
   ConfirmBookingInput
 } from '@/middleware/validate';
@@ -507,6 +509,8 @@ router.post('/:id/cancel', authenticate, authorizeBookingOwnership, async (req: 
       where: { id: id as string },
       data: {
         status: 'CANCELLED',
+        // Give the equipment back so someone else can book it
+        equipmentReservations: { updateMany: { where: { status: 'CONFIRMED' }, data: { status: 'CANCELLED' } } },
         paymentStatus: booking.paidAmount > 0 ? 'REFUNDED' : 'PENDING',
         notes: reason
           ? [booking.notes, `Cancellation reason: ${reason}`].filter(Boolean).join('\n')
@@ -632,6 +636,28 @@ router.get('/:id', authenticate, authorizeBookingOwnership, async (req: Request,
       success: true,
       data: transformedBooking,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /bookings/calculate-price
+ * Quote what a stay would cost: nightly rates, equipment, tax and deposit.
+ * Public (prices are shown to visitors anyway); uses the same engine as booking creation.
+ */
+router.post('/calculate-price', validateBody(calculatePriceSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { siteId, checkInDate, checkOutDate, equipmentReservations } = req.body;
+
+    const quote = await pricingService.quote({
+      siteId,
+      start: new Date(checkInDate),
+      end: new Date(checkOutDate),
+      equipmentReservations,
+    });
+
+    res.json({ success: true, data: quote });
   } catch (error) {
     next(error);
   }

@@ -166,6 +166,22 @@ export type GuestInputValidated = z.infer<typeof guestInputSchema>;
 // Booking Schemas
 // ============================================================
 
+// One equipment item on a booking or a price quote
+const equipmentRequestSchema = z.object({
+    equipmentId: z.string().min(1, 'Equipment ID is required'),
+    quantity: z.number().int().min(1, 'Quantity must be at least 1'),
+});
+
+export const calculatePriceSchema = z.object({
+    siteId: z.string().min(1, 'Site ID is required'),
+    checkInDate: bookingDateSchema,
+    checkOutDate: bookingDateSchema,
+    equipmentReservations: z.array(equipmentRequestSchema).optional(),
+}).strict().refine(
+    (data) => new Date(data.checkInDate) < new Date(data.checkOutDate),
+    { message: 'Check-in date must be before check-out date', path: ['checkInDate'] }
+);
+
 export const createBookingSchema = z.object({
     siteId: z.string().min(1, 'Site ID is required'),
     checkInDate: bookingDateSchema,
@@ -176,7 +192,7 @@ export const createBookingSchema = z.object({
     guests: z.array(guestInputSchema).optional(),
     specialRequests: z.string().optional(),
     vehicles: z.array(z.unknown()).optional(),
-    equipmentReservations: z.array(z.unknown()).optional(),
+    equipmentReservations: z.array(equipmentRequestSchema).optional(),
 }).strict().refine(
     (data) => new Date(data.checkInDate) < new Date(data.checkOutDate),
     { message: 'Check-in date must be before check-out date', path: ['checkInDate'] }
